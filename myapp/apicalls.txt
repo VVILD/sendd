@@ -1,0 +1,10 @@
+curl --dump-header - -H "Content-Type: application/json" -X POST --data '{ "name": "sar", "phone": "22" , "password": "Y"}' http://127.0.0.1:8000/api/v1/user/
+
+
+for shipment
+
+
+curl --dump-header - -H "Content-Type: application/json" -X POST --data '{ "category": "P", "drop_name": "nav", "drop_phone": "8879006465" ,"drop_address": "/api/v1/address/1/", "image": "/media/static/shipment/images/dota_clash_6_by_kunkka-d4k3wj9.jpg", "order": "/api/v1/order/1/" }' http://127.0.0.1:8000/api/v1/shipment/
+
+
+[{"category": "P", "drop_name": "nav", "drop_phone": "8879006465", "id": 1, "image": "/media/static/shipment/images/dota_clash_6_by_kunkka-d4k3wj9.jpg", "order": "/api/v1/order/1/", "resource_uri": "/api/v1/shipment/1/"}]
