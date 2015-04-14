@@ -4,7 +4,7 @@ import hashlib
 from datetime import datetime,timedelta
 from pytz import timezone
 import pytz
-
+import random
 
 
 class User(models.Model):
@@ -61,7 +61,7 @@ class Order(models.Model):
 									  default='N')
 
 	latitude = models.DecimalField(max_digits=25, decimal_places=20,null=True ,blank=True)
-   	longitude = models.DecimalField(max_digits=25, decimal_places=20,null=True ,blank=True)
+	longitude = models.DecimalField(max_digits=25, decimal_places=20,null=True ,blank=True)
 	address=models.CharField(max_length = 200,null=True ,blank=True)
 	pincode=models.CharField(max_length =30,null=True ,blank=True)
 	flat_no=models.CharField(max_length =100,null=True ,blank=True)
@@ -77,6 +77,7 @@ class Shipment(models.Model):
 	price=models.CharField(max_length=10,null=True,blank=True)
 	name=models.CharField(max_length=50,null=True,blank=True)
 	tracking_no=models.AutoField(primary_key=True)
+	real_tracking_no=models.CharField(max_length=10,blank=True,null=True)
 	mapped_tracking_no=models.CharField(max_length = 50,null=True,blank=True)
 	tracking_data=models.CharField(max_length = 8000,null=True,blank=True)
 	img=models.ImageField(upload_to = 'shipment/')	
@@ -97,11 +98,12 @@ class Shipment(models.Model):
 	company=models.CharField(max_length=1,
 									  choices=(('F','FedEx') ,('D','Delhivery'),),
 									  blank=True , null = True)
-
-
+	
 	def save(self, *args, **kwargs):
-		''' On save, update timestamps '''
+		print self.tracking_no
+		print self.pk
 		if not self.pk:
+			print self.pk
 			z=timezone('Asia/Kolkata')
 			fmt='%Y-%m-%d %H:%M:%S'
 			ind_time=datetime.now(z)
@@ -109,8 +111,18 @@ class Shipment(models.Model):
 			time=str(time)
 			self.tracking_data = "[{\"status\": \"Booking Received\", \"date\"	: \"" +time+" \", \"location\": \"Mumbai (Maharashtra)\"}]"
 			print self.tracking_data
-		print self.status
+			print self.status
+			super(Shipment, self).save(*args, **kwargs)
+			print self.pk
+			alphabet=random.choice('BDQP')
+			no1=random.choice('1234567890')
+			no2=random.choice('1234567890')
+			no=int(self.pk)+ 134528
+			trackingno='S'+str(no) + str(alphabet)+str(no1)+str(no2)
+			print trackingno
+			self.real_tracking_no=trackingno
 		super(Shipment, self).save(*args, **kwargs)
+			
 
 class Forgotpass(models.Model):
 	user=models.ForeignKey(User)
@@ -126,9 +138,9 @@ class Forgotpass(models.Model):
 
 
 class X(models.Model):
-    Name = models.CharField(max_length = 100)
-    C=models.ImageField(upload_to = 'shipment/')
-    order=models.ForeignKey(Order,null=True)
+	Name = models.CharField(max_length = 100)
+	C=models.ImageField(upload_to = 'shipment/')
+	order=models.ForeignKey(Order,null=True)
 
 class LoginSession(models.Model):
 	user=models.ForeignKey(User,null=True,blank=True)
