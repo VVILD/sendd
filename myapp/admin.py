@@ -2,6 +2,7 @@ from django.contrib import admin
 from .models import *
 import pdb
 import hashlib
+from myapp.forms import ShipmentForm
 # Register your models here.
 
 class UserAdmin(admin.ModelAdmin):
@@ -31,6 +32,7 @@ class OrderAdmin(admin.ModelAdmin):
 admin.site.register(Order,OrderAdmin)
 
 class ShipmentAdmin(admin.ModelAdmin):
+	form=ShipmentForm
 	search_fields=['order__order_no',]
 	list_display = ('real_tracking_no','name','price','weight','mapped_tracking_no','company','category','drop_phone','drop_name','status','drop_address','img_thumbnail','m_c')
 	list_filter=['category']
