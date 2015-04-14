@@ -31,7 +31,7 @@ MEDIA_URL = '/media/'
 #MEDIA_URL = '/media/'
 #MEDIA_ROOT='/home/django/'
 
-
+#jhvjhbj
 # Application definition
 
 INSTALLED_APPS = (
