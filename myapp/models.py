@@ -50,7 +50,7 @@ class Order(models.Model):
 	user=models.ForeignKey(User)
 	status=models.CharField(max_length=1,
 									  choices=(('P','pending') ,('C','complete'),('N','cancelled'),('F','fake'),),
-									  default='F')
+									  default='P')
 
 	way=models.CharField(max_length=1,
 									  choices=(('A','app') ,('W','web'),('C','call'),),
