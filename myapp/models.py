@@ -49,26 +49,45 @@ class Order(models.Model):
 	time=models.TimeField(null=True,blank =True)
 	user=models.ForeignKey(User)
 	status=models.CharField(max_length=1,
-									  choices=(('P','pending') ,('C','complete'),),
-									  default='P')
-	cost=models.CharField(max_length = 10,null=True ,blank=True)
-	paid=models.CharField(max_length=1,
-									  choices=(('Y','yes') ,('N','no'),),
-									  blank=True , null = True)
+									  choices=(('P','pending') ,('C','complete'),('N','cancelled'),('F','fake'),),
+									  default='F')
 
-	cancelled=models.CharField(max_length=1,
-									  choices=(('Y','yes') ,('N','no'),),
-									  default='N')
+	way=models.CharField(max_length=1,
+									  choices=(('A','app') ,('W','web'),('C','call'),),
+									  default='A')
+	#source=models.CharField(max_length=1,
+	#								  choices=(('P','pending') ,('C','complete'),('N','cancelled'),('F','fake'),),
+	#								  default='F')
+	#cost=models.CharField(max_length = 10,null=True ,blank=True)
+	#paid=models.CharField(max_length=1,
+	#								  choices=(('Y','yes') ,('N','no'),),
+	#								  blank=True , null = True)
+
+	#cancelled=models.CharField(max_length=1,
+	#								  choices=(('Y','yes') ,('N','no'),),
+	#								  default='N')
 
 	latitude = models.DecimalField(max_digits=25, decimal_places=20,null=True ,blank=True)
 	longitude = models.DecimalField(max_digits=25, decimal_places=20,null=True ,blank=True)
 	address=models.CharField(max_length = 200,null=True ,blank=True)
 	pincode=models.CharField(max_length =30,null=True ,blank=True)
 	flat_no=models.CharField(max_length =100,null=True ,blank=True)
-	picked_up=models.BooleanField(default=False)
+	#picked_up=models.BooleanField(default=False)
+
+	book_time=models.DateTimeField(null=True,blank=True)
+	
 
 	def __unicode__(self):
 		return str(self.order_no)
+
+	def save(self, *args, **kwargs):
+		''' On save, update timestamps '''
+		z=timezone('Asia/Kolkata')
+		fmt='%Y-%m-%d %H:%M:%S'
+		ind_time=datetime.now(z)
+		if not self.pk:
+			self.book_time = ind_time.strftime(fmt)
+		super(Order, self).save(*args, **kwargs)
 
 
 

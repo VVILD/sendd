@@ -4,12 +4,20 @@ import pdb
 import hashlib
 from myapp.forms import ShipmentForm
 # Register your models here.
+from django.http import HttpResponse
 
 class UserAdmin(admin.ModelAdmin):
 	search_fields=['phone','name']
 	list_display = ('phone','name','otp','apikey','email','time')
 	list_editable = ('name',)
-
+	def response_change(self, request, obj):
+		print self
+		print "sdddddddddddddddddddddddddddd"
+		#return super(UserAdmin, self).response_change(request, obj)
+		return HttpResponse('''
+   <script type="text/javascript">
+      opener.dismissAddAnotherPopup(window);
+   </script>''')
 
 admin.site.register(User,UserAdmin)
 
@@ -17,16 +25,26 @@ admin.site.register(Address)
 
 class OrderAdmin(admin.ModelAdmin):
 	search_fields=['phone','name']
-	list_display = ('order_no','date','time','address','user','cost','paid','cancelled','shipments','picked_up')
-	list_editable = ('cost','paid','cancelled','picked_up',)
-	list_filter=['date','picked_up','cancelled']
+	list_display = ('order_no','book_time','date','time','address','book_user','status','way','shipments')
+	list_editable = ('date','time','address','status',)
+	list_filter=['date','status','book_time']
+
+
+
+	def book_user(self, obj):
+		phone=obj.user.pk
+		name=obj.user.name
+		email=obj.user.email
+		return '<a href="/admin/myapp/user/%s/" onclick="return showAddAnotherPopup(this);">%s|%s|%s</a>' % (phone,name,email,phone)
+	book_user.allow_tags = True
+
 
 	def shipments(self, obj):
 		shipments = Shipment.objects.filter(order=obj.order_no)
 		i=0
 		for x in shipments:
 			i=i+1
-		return str(i) + '<a href ="http://128.199.159.90/admin/myapp/shipment/?q=%s" onmouseover="this.width=\'500\'; this.height=\'500\'" onmouseout="this.width=\'100\'; this.height=\'100\'"> shipments (click to see) </a>' % (obj.order_no)
+		return str(i) + '<a href ="http://128.199.159.90/admin/myapp/shipment/?q=%s" > shipments (click to see) </a>' % (obj.order_no)
 	shipments.allow_tags = True
 
 #	<img src="https://farm8.staticflickr.com/7042/6873010155_d4160a32a2_s.jpg" onmouseover="this.width='500'; this.height='500'" onmouseout="this.width='100'; this.height='100'">
@@ -45,7 +63,7 @@ class ShipmentAdmin(admin.ModelAdmin):
 		name=str(obj.img)
 		name_mod=name[9:]
 		full_url='http://128.199.159.90/static/'+name_mod
-		return '<img src="%s" width=60 height=60 />' % (full_url)
+		return '<img src="%s" width=60 height=60 onmouseover="this.width=\'500\'; this.height=\'500\'" onmouseout="this.width=\'100\'; this.height=\'100\'" />' % (full_url)
 	img_thumbnail.allow_tags = True
 
 	def m_c(self, obj):
@@ -147,6 +165,7 @@ admin.site.register(Forgotpass)
 
 class LoginSessionAdmin(admin.ModelAdmin):
 	list_display = ('time','success','user')
+	list_filter=['time']
 
 
 admin.site.register(LoginSession,LoginSessionAdmin)
