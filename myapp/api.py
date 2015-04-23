@@ -196,18 +196,29 @@ class ShipmentResource(MultipartResource,ModelResource):
 	def hydrate(self,bundle):
 
 
-		bundle.data['order']="/api/v1/order/"+str(bundle.data['order'])+"/"
-		address_on_database=Address.objects.filter(flat_no=bundle.data['drop_flat_no'],locality=bundle.data['drop_locality'],city=bundle.data['drop_city'],state=bundle.data['drop_state'],country=bundle.data['drop_country'],pincode=bundle.data['drop_pincode'])
-		if (address_on_database.count()==0) :
-			address_on_database = Address.objects.create(flat_no=bundle.data['drop_flat_no'],locality=bundle.data['drop_locality'],city=bundle.data['drop_city'],state=bundle.data['drop_state'],country=bundle.data['drop_country'],pincode=bundle.data['drop_pincode'])
-			address_on_database.save()
-			pk=address_on_database.pk
-		#bundle.obj = Address(address="nick", locality = "", password,timezone.now(),"od_test")
-		else :
-			for x in address_on_database:
-				pk= x.id
-		#queryset= Address.objects.get(number=bundle.data['number'])
-		bundle.data['drop_address']="/api/v1/address/"+str(pk)+"/"
+		try:
+			bundle.data['order']="/api/v1/order/"+str(bundle.data['order'])+"/"
+		except:
+			print "sd"
+
+		try:
+			address_on_database=Address.objects.filter(flat_no=bundle.data['drop_flat_no'],locality=bundle.data['drop_locality'],city=bundle.data['drop_city'],state=bundle.data['drop_state'],country=bundle.data['drop_country'],pincode=bundle.data['drop_pincode'])
+
+
+			if (address_on_database.count()==0) :
+				address_on_database = Address.objects.create(flat_no=bundle.data['drop_flat_no'],locality=bundle.data['drop_locality'],city=bundle.data['drop_city'],state=bundle.data['drop_state'],country=bundle.data['drop_country'],pincode=bundle.data['drop_pincode'])
+				address_on_database.save()
+				pk=address_on_database.pk
+			#bundle.obj = Address(address="nick", locality = "", password,timezone.now(),"od_test")
+			else :
+				for x in address_on_database:
+					pk= x.id
+			#queryset= Address.objects.get(number=bundle.data['number'])
+			bundle.data['drop_address']="/api/v1/address/"+str(pk)+"/"
+
+		except:
+			print "fu"
+			
 		return bundle
 
 	def dehydrate(self,bundle):
