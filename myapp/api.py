@@ -184,8 +184,8 @@ class OrderResource(MultipartResource,ModelResource):
 
 
 class ShipmentResource(MultipartResource,ModelResource):
-	order=fields.ForeignKey(OrderResource, 'order')
-	drop_address= fields.ForeignKey(AddressResource, 'drop_address')
+	order=fields.ForeignKey(OrderResource, 'order', null=True, blank=True)
+	drop_address= fields.ForeignKey(AddressResource, 'drop_address', null=True, blank=True)
 	img = fields.FileField(attribute="img", null=True, blank=True)
 	class Meta:
 		queryset = Shipment.objects.all()
