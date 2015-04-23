@@ -218,16 +218,18 @@ class ShipmentResource(MultipartResource,ModelResource):
 
 		except:
 			print "fu"
-			
+
 		return bundle
 
 	def dehydrate(self,bundle):
-
-		print 'dfd'
-		print bundle.data['drop_address']
-		pk=bundle.data['drop_address'].split('/')[4]
-		print pk
-		bundle.data['drop_address']=Address.objects.get(pk=pk)
+		try:
+			print 'dfd'
+			print bundle.data['drop_address']
+			pk=bundle.data['drop_address'].split('/')[4]
+			print pk
+			bundle.data['drop_address']=Address.objects.get(pk=pk)
+		except:
+			print "df"
 		return bundle
 
 
