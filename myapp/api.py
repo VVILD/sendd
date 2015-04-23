@@ -41,6 +41,7 @@ class UserResource(ModelResource):
 		authorization= Authorization()
 		always_return_data = True
 	def hydrate(self, bundle):
+		print bundle.request
 		try:
 			override_method=bundle.request.META['HTTP_X_HTTP_METHOD_OVERRIDE']
 			print "changed to PATCH"

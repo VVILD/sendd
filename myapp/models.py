@@ -7,6 +7,15 @@ import pytz
 import random
 
 
+
+class Pricing(models.Model):
+	amount_charged_by_courier=models.IntegerField(null=True,blank=True)
+	amount_spent_in_packingpickup=models.IntegerField(null=True,blank=True)
+	amount_paid=models.IntegerField(null=True,blank=True)
+
+	def __unicode__(self):
+		return str(self.amount_paid-self.amount_charged_by_courier-self.amount_spent_in_packingpickup)
+
 class User(models.Model):
 	phone_regex = RegexValidator(regex=r'^[0-9]*$', message="Phone number must be entered in the format: '999999999'. Up to 12 digits allowed.")
 	phone = models.CharField(validators=[phone_regex],max_length = 12,primary_key=True)
@@ -99,25 +108,29 @@ class Shipment(models.Model):
 	real_tracking_no=models.CharField(max_length=10,blank=True,null=True)
 	mapped_tracking_no=models.CharField(max_length = 50,null=True,blank=True)
 	tracking_data=models.CharField(max_length = 8000,null=True,blank=True)
-	img=models.ImageField(upload_to = 'shipment/')	
+	img=models.ImageField(upload_to = 'shipment/',null=True,blank=True)	
 	category=models.CharField(max_length=1,
 									  choices=(('P','premium') ,('S','standard'),('E','economy'),),
 									  blank=True , null = True)
-	drop_name=models.CharField(max_length = 100,null=True)
+	drop_name=models.CharField(max_length = 100,null=True,blank=True)
 	phone_regex = RegexValidator(regex=r'^[0-9]*$', message="Phone number must be entered in the format: '+999999999'. Up to 15 digits allowed.")
-	drop_phone = models.CharField(validators=[phone_regex],max_length =12,null=True)
-	drop_address=models.ForeignKey(Address,null=True)
-	order=models.ForeignKey(Order,null=True)
+	drop_phone = models.CharField(validators=[phone_regex],max_length =12,null=True,blank=True)
+	drop_address=models.ForeignKey(Address,null=True,blank=True)
+	order=models.ForeignKey(Order,null=True,blank=True)
 	status=models.CharField(max_length=1,
 									  choices=(('P','pending') ,('C','complete'),),
-									  default='P')
+									  default='P',null=True,blank=True)
 	paid=models.CharField(max_length=10,
 									  choices=(('Paid','Paid') ,('Not Paid','Not Paid'),),
 									  blank=True , null = True ,default='Not Paid')
 	company=models.CharField(max_length=1,
 									  choices=(('F','FedEx') ,('D','Delhivery'),),
 									  blank=True , null = True)
+
+	pricing=models.ForeignKey(Pricing,null=True,blank=True)
 	
+
+
 	def save(self, *args, **kwargs):
 		print self.tracking_no
 		print self.pk
@@ -140,6 +153,8 @@ class Shipment(models.Model):
 			trackingno='S'+str(no) + str(alphabet)+str(no1)+str(no2)
 			print trackingno
 			self.real_tracking_no=trackingno
+			p = Pricing.objects.create(amount_charged_by_courier=0, amount_spent_in_packingpickup=0,amount_paid=0)
+			self.pricing=p
 		super(Shipment, self).save(*args, **kwargs)
 			
 
@@ -206,6 +221,9 @@ class Priceapp(models.Model):
 
 class Dateapp(models.Model):
 	pincode=models.CharField(max_length = 60)
+
+
+
 
 
 
