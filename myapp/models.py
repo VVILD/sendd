@@ -155,6 +155,7 @@ class Shipment(models.Model):
 			self.real_tracking_no=trackingno
 			p = Pricing.objects.create(amount_charged_by_courier=0, amount_spent_in_packingpickup=0,amount_paid=0)
 			self.pricing=p
+			
 		super(Shipment, self).save(*args, **kwargs)
 			
 

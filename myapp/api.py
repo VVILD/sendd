@@ -117,6 +117,9 @@ class WeborderResource(MultipartResource,ModelResource):
 		authorization= Authorization()
 		always_return_data = True
 
+	def hydrate(self, bundle):
+		send_mail("New Web Order","badhai ho", "Team Sendd <help@sendd.co>",["Team Sendd <hello@sendd.co>"])
+		return bundle
 
 
 class ForgotpassResource(MultipartResource,ModelResource):
@@ -152,8 +155,8 @@ class OrderResource(MultipartResource,ModelResource):
 		authorization= Authorization()
 		always_return_data = True
 		filtering = {
-            "user": ('exact',),
-        }
+			"user": ALL,
+		}
 
 	def hydrate(self,bundle):
 		pk=int(bundle.data['user'])
@@ -179,6 +182,7 @@ class OrderResource(MultipartResource,ModelResource):
 		mail="Dear "+str(cust.name) +",\n\nWe have successfully received your booking.\n\nYou will receive details of the pick up representative who will come to collect your parcel shortly.\n\nIf you have any query, you can get in touch with us at +91-8080028081 or mail us at help@sendd.co\n\n\nRegards,\nTeam Sendd"
 		subject=str(cust.name) + ", We have received your parcel booking."
 		send_mail(subject, mail, "Team Sendd <hello@sendd.co>", [str(cust.email)])
+		send_mail("New Order","badhai ho", "Team Sendd <help@sendd.co>",["Team Sendd <hello@sendd.co>"])
 		
 		return bundle
 
@@ -192,6 +196,28 @@ class ShipmentResource(MultipartResource,ModelResource):
 		resource_name = 'shipment'
 		authorization= Authorization()
 		always_return_data = True
+		filtering = {
+			"drop_address": ALL,
+		}
+
+	def build_filters(self, filters=None):
+		print "shit"
+		print filters
+		if filters is None:
+			filters = {}
+		orm_filters = super(ShipmentResource, self).build_filters(filters)
+
+		if 'q' in filters:
+			orm_filters['q'] = filters['q']
+		return orm_filters
+
+	def apply_filters(self, request, orm_filters):
+		base_object_list = super(ShipmentResource, self).apply_filters(request, {})
+		print orm_filters
+		if 'q' in orm_filters:
+			return base_object_list.filter(order__user__phone=orm_filters['q'])
+		print base_object_list
+		return base_object_list
 
 	def hydrate(self,bundle):
 
@@ -230,6 +256,7 @@ class ShipmentResource(MultipartResource,ModelResource):
 			bundle.data['drop_address']=Address.objects.get(pk=pk)
 		except:
 			print "df"
+
 		return bundle
 
 
@@ -295,15 +322,15 @@ class PriceappResource(MultipartResource,ModelResource):
 			pin=urllib.quote(pin)
 			state= cities[pin]
 			if 'Mumbai' in pin: 
-	   			zone=0
-	   		elif state=='Maharashtra':
-	   			zone=1
-	   		elif (('Chennai' in pin) or ('Delhi' in pin) or ('Kolkata' in pin) or ('Banglore' in pin)):
-	   			zone=2
-	   		elif ((state=='Jammu and Kashmir') or (state=='Assam') or (state=='Arunachal Pradesh') or (state=='Manipur') or (state=='Meghalaya') or (state=='Mizoram') or (state=='Nagaland')or (state=='Tripura')):
-	   			zone=4
+				zone=0
+			elif state=='Maharashtra':
+				zone=1
+			elif (('Chennai' in pin) or ('Delhi' in pin) or ('Kolkata' in pin) or ('Banglore' in pin)):
+				zone=2
+			elif ((state=='Jammu and Kashmir') or (state=='Assam') or (state=='Arunachal Pradesh') or (state=='Manipur') or (state=='Meghalaya') or (state=='Mizoram') or (state=='Nagaland')or (state=='Tripura')):
+				zone=4
 
-	   		bundle.data['zone']=zone
+			bundle.data['zone']=zone
 
 
 		try:
@@ -382,15 +409,15 @@ class DateappResource(MultipartResource,ModelResource):
 			pin=urllib.quote(pin)
 			state= cities[pin]
 			if 'Mumbai' in pin: 
-	   			zone=0
-	   		elif state=='Maharashtra':
-	   			zone=1
-	   		elif (('Chennai' in pin) or ('Delhi' in pin) or ('Kolkata' in pin) or ('Banglore' in pin)):
-	   			zone=2
-	   		elif ((state=='Jammu and Kashmir') or (state=='Assam') or (state=='Arunachal Pradesh') or (state=='Manipur') or (state=='Meghalaya') or (state=='Mizoram') or (state=='Nagaland')or (state=='Tripura')):
-	   			zone=4
+				zone=0
+			elif state=='Maharashtra':
+				zone=1
+			elif (('Chennai' in pin) or ('Delhi' in pin) or ('Kolkata' in pin) or ('Banglore' in pin)):
+				zone=2
+			elif ((state=='Jammu and Kashmir') or (state=='Assam') or (state=='Arunachal Pradesh') or (state=='Manipur') or (state=='Meghalaya') or (state=='Mizoram') or (state=='Nagaland')or (state=='Tripura')):
+				zone=4
 
-	   		bundle.data['zone']=zone
+			bundle.data['zone']=zone
 
 
 
