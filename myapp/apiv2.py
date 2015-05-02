@@ -34,7 +34,7 @@ class MultipartResource(object):
 
 
 
-class UserResource(ModelResource):
+class UserResource2(ModelResource):
 	class Meta:
 		queryset = User.objects.all()
 		resource_name = 'user'
@@ -62,6 +62,16 @@ class UserResource(ModelResource):
 					print "fuck"
 					bundle.data['phone']=0
 					bundle.data["msg"]='olduser'
+					bundle.data['otp'] = randint(1000, 9999)
+					msg0="http://enterprise.smsgupshup.com/GatewayAPI/rest?method=SendMessage&send_to="
+					msga=str(bundle.data['phone'])
+					msg1="&msg=Welcome+to+Sendd.+Your+OTP+is+"
+					msg2=str(bundle.data['otp'])
+					msg3=".This+message+is+for+automated+verification+purpose.+No+action+required.&msg_type=TEXT&userid=2000142364&auth_scheme=plain&password=h0s6jgB4N&v=1.1&format=text"
+					#url1="http://49.50.69.90//api/smsapi.aspx?username=doormint&password=naman123&to="+ str(bundle.data['phone']) +"&from=DORMNT&message="
+					query=''.join([msg0,msga,msg1,msg2,msg3])
+					print query
+					urllib2.urlopen(query).read()					
 					return bundle
 					
 				except:
@@ -77,9 +87,9 @@ class UserResource(ModelResource):
 					query=''.join([msg0,msga,msg1,msg2,msg3])
 					print query
 					urllib2.urlopen(query).read()
-					mail="Dear "+str(bundle.data['name'])+",\n\nWe are excited to have you join us and start shipping in a hassle free and convenient manner.\n\nOur team is always there to ensure that you have the best possible experience with us. Some of the questions that are frequently asked can be seen on the website as well as the app.\n\nIf you have any other query, you can get in touch with us at +91-8080028081 or mail us at help@sendd.co\n\n\nRegards,\nTeam Sendd"
-					subject=str(bundle.data["name"])+", Thanks for signing up with sendd."
-					send_mail(subject, mail, "Team Sendd <hello@sendd.co>", [str(bundle.data["email"])])
+					#mail="Dear "+str(bundle.data['name'])+",\n\nWe are excited to have you join us and start shipping in a hassle free and convenient manner.\n\nOur team is always there to ensure that you have the best possible experience with us. Some of the questions that are frequently asked can be seen on the website as well as the app.\n\nIf you have any other query, you can get in touch with us at +91-8080028081 or mail us at help@sendd.co\n\n\nRegards,\nTeam Sendd"
+					#subject=str(bundle.data["name"])+", Thanks for signing up with sendd."
+					#send_mail(subject, mail, "Team Sendd <hello@sendd.co>", [str(bundle.data["email"])])
 
 			return bundle
 		if bundle.request.META['REQUEST_METHOD'] == 'PUT':
@@ -102,7 +112,7 @@ class UserResource(ModelResource):
 			return bundle
 
 
-class AddressResource(MultipartResource,ModelResource):
+class AddressResource2(MultipartResource,ModelResource):
 	class Meta:
 		queryset = Address.objects.all()
 		resource_name = 'address'
@@ -110,7 +120,7 @@ class AddressResource(MultipartResource,ModelResource):
 		always_return_data = True
 
 
-class WeborderResource(MultipartResource,ModelResource):
+class WeborderResource2(MultipartResource,ModelResource):
 	class Meta:
 		queryset = Weborder.objects.all()
 		resource_name = 'weborder'
@@ -122,8 +132,8 @@ class WeborderResource(MultipartResource,ModelResource):
 		return bundle
 
 
-class ForgotpassResource(MultipartResource,ModelResource):
-	user = fields.ForeignKey(UserResource, 'user')
+class ForgotpassResource2(MultipartResource,ModelResource):
+	user = fields.ForeignKey(UserResource2, 'user')
 	class Meta:
 		queryset = Forgotpass.objects.all()
 		resource_name = 'forgotpass'
@@ -147,8 +157,8 @@ class ForgotpassResource(MultipartResource,ModelResource):
 		bundle.data['auth']="GEN"
 		return bundle
 
-class OrderResource(MultipartResource,ModelResource):
-	user = fields.ForeignKey(UserResource, 'user')
+class OrderResource2(MultipartResource,ModelResource):
+	user = fields.ForeignKey(UserResource2, 'user')
 	class Meta:
 		queryset = Order.objects.all()
 		resource_name = 'order'
@@ -187,9 +197,9 @@ class OrderResource(MultipartResource,ModelResource):
 		return bundle
 
 
-class ShipmentResource(MultipartResource,ModelResource):
-	order=fields.ForeignKey(OrderResource, 'order', null=True, blank=True)
-	drop_address= fields.ForeignKey(AddressResource, 'drop_address', null=True, blank=True)
+class ShipmentResource2(MultipartResource,ModelResource):
+	order=fields.ForeignKey(OrderResource2, 'order', null=True, blank=True)
+	drop_address= fields.ForeignKey(AddressResource2, 'drop_address', null=True, blank=True)
 	img = fields.FileField(attribute="img", null=True, blank=True)
 	class Meta:
 		queryset = Shipment.objects.all()
@@ -205,14 +215,14 @@ class ShipmentResource(MultipartResource,ModelResource):
 		print filters
 		if filters is None:
 			filters = {}
-		orm_filters = super(ShipmentResource, self).build_filters(filters)
+		orm_filters = super(ShipmentResource2, self).build_filters(filters)
 
 		if 'q' in filters:
 			orm_filters['q'] = filters['q']
 		return orm_filters
 
 	def apply_filters(self, request, orm_filters):
-		base_object_list = super(ShipmentResource, self).apply_filters(request, {})
+		base_object_list = super(ShipmentResource2, self).apply_filters(request, {})
 		print orm_filters
 		if 'q' in orm_filters:
 			return base_object_list.filter(order__user__phone=orm_filters['q'])
@@ -256,13 +266,22 @@ class ShipmentResource(MultipartResource,ModelResource):
 			bundle.data['drop_address']=Address.objects.get(pk=pk)
 		except:
 			print "df"
-		print 'v1'
+
+		try:
+			bundle.data['img']='http://128.199.159.90/static'+str(bundle.data['img'])[15:]
+		except:
+			print 'img'
+
+		try:
+			bundle.data['tracking_no'],bundle.data['real_tracking_no']=bundle.data['real_tracking_no'],bundle.data['tracking_no']
+		except:
+			'tracking number failed'
 		return bundle
 
 
-class XResource(MultipartResource,ModelResource):
+class XResource2(MultipartResource,ModelResource):
 	C = fields.FileField(attribute="C", null=True, blank=True)
-	order=fields.ForeignKey(OrderResource, 'order' , null=True , blank =True)
+	order=fields.ForeignKey(OrderResource2, 'order' , null=True , blank =True)
 	class Meta:
 		queryset = X.objects.all()
 		resource_name = 'x'
@@ -280,7 +299,7 @@ class XResource(MultipartResource,ModelResource):
 
 
 
-class PriceappResource(MultipartResource,ModelResource):
+class PriceappResource2(MultipartResource,ModelResource):
 	class Meta:
 		queryset = Priceapp.objects.all()
 		resource_name = 'priceapp'
@@ -366,7 +385,7 @@ class PriceappResource(MultipartResource,ModelResource):
 		return bundle			
 
 
-class DateappResource(MultipartResource,ModelResource):
+class DateappResource2(MultipartResource,ModelResource):
 	class Meta:
 		queryset = Dateapp.objects.all()
 		resource_name = 'dateapp'
@@ -435,8 +454,8 @@ class DateappResource(MultipartResource,ModelResource):
 		return bundle
 
 
-class LoginSessionResource(MultipartResource,ModelResource):
-	user = fields.ForeignKey(UserResource, 'user' ,null=True)
+class LoginSessionResource2(MultipartResource,ModelResource):
+	user = fields.ForeignKey(UserResource2, 'user' ,null=True)
 	class Meta:
 		queryset = LoginSession.objects.all()
 		resource_name = 'loginsession'

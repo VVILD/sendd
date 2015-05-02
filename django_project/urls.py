@@ -16,6 +16,21 @@ v1_api.register(PriceappResource())
 v1_api.register(DateappResource())
 v1_api.register(ForgotpassResource())
 
+from myapp.apiv2 import UserResource2,AddressResource2,OrderResource2,ShipmentResource2,XResource2,LoginSessionResource2,WeborderResource2,PriceappResource2,DateappResource2,ForgotpassResource2
+
+
+v2_api = Api(api_name='v2')
+v2_api.register(UserResource2())
+v2_api.register(AddressResource2())
+v2_api.register(OrderResource2())
+v2_api.register(ShipmentResource2())
+v2_api.register(XResource2())
+v2_api.register(LoginSessionResource2())
+v2_api.register(WeborderResource2())
+v2_api.register(PriceappResource2())
+v2_api.register(DateappResource2())
+v2_api.register(ForgotpassResource2())
+
 
 urlpatterns = patterns('',
     # Examples:
@@ -24,4 +39,5 @@ urlpatterns = patterns('',
 
     url(r'^admin/', include(admin.site.urls)),
     url(r'^api/', include(v1_api.urls)),
+ 	url(r'^api/', include(v2_api.urls)),       
 )

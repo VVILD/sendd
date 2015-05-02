@@ -19,8 +19,8 @@ class Pricing(models.Model):
 class User(models.Model):
 	phone_regex = RegexValidator(regex=r'^[0-9]*$', message="Phone number must be entered in the format: '999999999'. Up to 12 digits allowed.")
 	phone = models.CharField(validators=[phone_regex],max_length = 12,primary_key=True)
-	name = models.CharField(max_length = 100)
-	password=models.CharField(max_length = 300)
+	name = models.CharField(max_length = 100,null=True,blank =True)
+	password=models.CharField(max_length = 300,null=True,blank =True)
 	email = models.EmailField(max_length = 75,null=True,blank =True)
 	otp=models.IntegerField(null=True,blank=True)
 	apikey= models.CharField(max_length = 100,null=True,blank=True)
@@ -64,6 +64,9 @@ class Order(models.Model):
 	way=models.CharField(max_length=1,
 									  choices=(('A','app') ,('W','web'),('C','call'),),
 									  default='A')
+	pick_now=models.CharField(max_length=1,
+									  choices=(('Y','yes') ,('N','no'),),
+									  default='Y')
 	#source=models.CharField(max_length=1,
 	#								  choices=(('P','pending') ,('C','complete'),('N','cancelled'),('F','fake'),),
 	#								  default='F')
