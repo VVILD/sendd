@@ -131,13 +131,18 @@ class WeborderResource2(MultipartResource,ModelResource):
 		send_mail("New Web Order","badhai ho", "Team Sendd <help@sendd.co>",["Team Sendd <hello@sendd.co>"])
 
 		#creating user if doesnt exist
-		#try:
-		#	user=User.objects.get(pk=bundle.data['number'])
-
-		#except:
+		try:
+			user=User.objects.get(pk=bundle.data['number'])
+		except:
+			newuser= User.objects.create(phone=bundle.data['number'])
+			newuser.save()
+			pk=newuser.pk
 
 		
 		#create order
+
+
+
 
 
 
@@ -283,6 +288,15 @@ class ShipmentResource2(MultipartResource,ModelResource):
 			bundle.data['img']='http://128.199.159.90/static'+str(bundle.data['img'])[15:]
 		except:
 			print 'img'
+
+
+		try:
+			order_pk=pk=bundle.data['order'].split('/')[4]
+			order=Order.objects.get(pk=pk)
+			bundle.data['date']=order.date
+			bundle.data['time']=order.time
+		except:
+			print "sad"
 
 		try:
 			bundle.data['tracking_no'],bundle.data['real_tracking_no']=bundle.data['real_tracking_no'],bundle.data['tracking_no']
