@@ -309,6 +309,12 @@ class ShipmentResource2(MultipartResource,ModelResource):
 			order=Order.objects.get(pk=pk)
 			bundle.data['date']=order.date
 			bundle.data['time']=order.time
+			bundle.data['address']=order.address
+			bundle.data['pincode']=order.pincode
+			user=order.user
+			bundle.data['phone']=user.phone
+			bundle.data['order']=bundle.data['order'].split('/')[4]
+
 		except:
 			print "sad"
 
