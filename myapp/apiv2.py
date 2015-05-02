@@ -140,6 +140,20 @@ class WeborderResource2(MultipartResource,ModelResource):
 
 		
 		#create order
+		try:
+			neworder=Order.objects.create(user=newuser,address=bundle.data['pickup_location'],way='W',pickup_now='N',pincode=bundle.data['pincode'])
+			neworder.save()
+			order_pk=neworder.pk
+		except:
+			print "cool shit"
+
+		#create shipment
+
+		try:
+			shipment=Shipment.objects.create(order=neworder,item_name=bundle.data['item_details'])
+			shipment.save()
+		except:
+			print "haw"
 
 
 
