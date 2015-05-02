@@ -141,6 +141,7 @@ class Shipment(models.Model):
 	def save(self, *args, **kwargs):
 		print self.tracking_no
 		print self.pk
+		print "jkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkj"
 		if not self.pk:
 			print self.pk
 			z=timezone('Asia/Kolkata')
@@ -162,9 +163,12 @@ class Shipment(models.Model):
 			self.real_tracking_no=trackingno
 			p = Pricing.objects.create(amount_charged_by_courier=0, amount_spent_in_packingpickup=0,amount_paid=0)
 			self.pricing=p
+			kwargs['force_update'] = True
+			kwargs['force_insert'] = False
 			
+			print "H"
 		super(Shipment, self).save(*args, **kwargs)
-			
+		print "L"
 
 class Forgotpass(models.Model):
 	user=models.ForeignKey(User)

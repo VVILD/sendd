@@ -1,4 +1,5 @@
 from tastypie.resources import ModelResource
+from django.conf.urls import url
 from myapp.models import *
 from tastypie.authorization import Authorization
 from tastypie import fields
@@ -132,26 +133,27 @@ class WeborderResource2(MultipartResource,ModelResource):
 
 		#creating user if doesnt exist
 		try:
-			user=User.objects.get(pk=bundle.data['number'])
+			newuser=User.objects.get(pk=bundle.data['number'])
 		except:
 			newuser= User.objects.create(phone=bundle.data['number'])
-			newuser.save()
+			#newuser.save()
 			pk=newuser.pk
 
 		
 		#create order
 		try:
-			neworder=Order.objects.create(user=newuser,address=bundle.data['pickup_location'],way='W',pickup_now='N',pincode=bundle.data['pincode'])
-			neworder.save()
-			order_pk=neworder.pk
+			print "s"
 		except:
 			print "cool shit"
+		neworder=Order.objects.create(user=newuser,address=bundle.data['pickup_location'],way='W',pick_now='N',pincode=bundle.data['pincode'])
+		#neworder.save()
+		order_pk=neworder.pk
+			
 
 		#create shipment
-
+		
 		try:
 			shipment=Shipment.objects.create(order=neworder,item_name=bundle.data['item_details'])
-			shipment.save()
 		except:
 			print "haw"
 
@@ -235,11 +237,24 @@ class ShipmentResource2(MultipartResource,ModelResource):
 	class Meta:
 		queryset = Shipment.objects.all()
 		resource_name = 'shipment'
+		detail_uri_name = 'real_tracking_no'
 		authorization= Authorization()
 		always_return_data = True
 		filtering = {
 			"drop_address": ALL,
 		}
+
+	def prepend_urls(self):
+		return [
+            url(r"^(?P<resource_name>%s)/(?P<real_tracking_no>[\w\d_.-]+)/$" % self._meta.resource_name, self.wrap_view('dispatch_detail'), name="api_dispatch_detail"),
+        ]
+
+
+
+	#def over_urls(self):
+	#	return [
+    #   	url(r'^(?P<resource_name>%s)/(?P<track>[\w\.-]+)/$' % self._meta.resource_name, self.wrap_view('dispatch_detail'), name='api_dispatch_detail_track'),
+    #        ]
 
 	def build_filters(self, filters=None):
 		print "shit"
@@ -294,9 +309,10 @@ class ShipmentResource2(MultipartResource,ModelResource):
 			print bundle.data['drop_address']
 			pk=bundle.data['drop_address'].split('/')[4]
 			print pk
-			bundle.data['drop_address']=Address.objects.get(pk=pk)
-
-			bundle.data['pincode']='400076'
+			address=Address.objects.get(pk=pk)
+			bundle.data['drop_address']=address
+			print address
+			bundle.data['pincode']=address.pincode
 
 		except:
 			print "df"
@@ -320,6 +336,7 @@ class ShipmentResource2(MultipartResource,ModelResource):
 			bundle.data['name']=order.name
 			bundle.data['phone']=user.phone
 			bundle.data['order']=bundle.data['order'].split('/')[4]	
+
 
 		except:
 			print "sad"
