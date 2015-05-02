@@ -295,7 +295,9 @@ class ShipmentResource2(MultipartResource,ModelResource):
 			pk=bundle.data['drop_address'].split('/')[4]
 			print pk
 			bundle.data['drop_address']=Address.objects.get(pk=pk)
-			bundle.data['drop_pincode']=Address.pincode
+
+			bundle.data['pincode']='400076'
+
 		except:
 			print "df"
 
