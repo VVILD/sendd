@@ -131,6 +131,8 @@ class Shipment(models.Model):
 									  blank=True , null = True)
 
 	pricing=models.ForeignKey(Pricing,null=True,blank=True)
+	cost_of_courier= models.CharField(max_length = 100,null=True,blank=True)
+	item_name=models.CharField(max_length = 100,null=True,blank=True)
 	
 
 
