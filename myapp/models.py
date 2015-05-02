@@ -57,6 +57,8 @@ class Order(models.Model):
 	date=models.DateField(null=True,blank =True)
 	time=models.TimeField(null=True,blank =True)
 	user=models.ForeignKey(User)
+	name = models.CharField(max_length = 100,null=True,blank =True)
+	email = models.EmailField(max_length = 75,null=True,blank =True)
 	status=models.CharField(max_length=1,
 									  choices=(('P','pending') ,('C','complete'),('N','cancelled'),('F','fake'),),
 									  default='P')

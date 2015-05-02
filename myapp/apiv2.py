@@ -295,6 +295,7 @@ class ShipmentResource2(MultipartResource,ModelResource):
 			pk=bundle.data['drop_address'].split('/')[4]
 			print pk
 			bundle.data['drop_address']=Address.objects.get(pk=pk)
+			bundle.data['drop_pincode']=Address.pincode
 		except:
 			print "df"
 
@@ -310,10 +311,13 @@ class ShipmentResource2(MultipartResource,ModelResource):
 			bundle.data['date']=order.date
 			bundle.data['time']=order.time
 			bundle.data['address']=order.address
-			bundle.data['pincode']=order.pincode
+
+			bundle.data['name']=order.name
+			bundle.data['email']=order.email
 			user=order.user
+			bundle.data['name']=order.name
 			bundle.data['phone']=user.phone
-			bundle.data['order']=bundle.data['order'].split('/')[4]
+			bundle.data['order']=bundle.data['order'].split('/')[4]	
 
 		except:
 			print "sad"
