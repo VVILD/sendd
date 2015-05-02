@@ -129,6 +129,18 @@ class WeborderResource2(MultipartResource,ModelResource):
 
 	def hydrate(self, bundle):
 		send_mail("New Web Order","badhai ho", "Team Sendd <help@sendd.co>",["Team Sendd <hello@sendd.co>"])
+
+		#creating user if doesnt exist
+		#try:
+		#	user=User.objects.get(pk=bundle.data['number'])
+
+		#except:
+
+		
+		#create order
+
+
+
 		return bundle
 
 
@@ -143,12 +155,12 @@ class ForgotpassResource2(MultipartResource,ModelResource):
 	def hydrate(self,bundle):
 		try:
 			user=User.objects.get(pk=bundle.data['phone'])
-			bundle.data['user']="/api/v1/user/"+str(bundle.data['phone'])+"/"
+			bundle.data['user']="/api/v2/user/"+str(bundle.data['phone'])+"/"
 			bundle.data['msg']="user exists"
 			bundle.data['auth']=''.join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(20))
 		
 		except:
-			bundle.data['user']="/api/v1/user/0/"	
+			bundle.data['user']="/api/v2/user/0/"	
 			bundle.data['msg']="user not exist"
 
 		return bundle
@@ -171,7 +183,7 @@ class OrderResource2(MultipartResource,ModelResource):
 	def hydrate(self,bundle):
 		pk=int(bundle.data['user'])
 		
-		bundle.data['user']="/api/v1/user/"+str(bundle.data['user'])+"/"
+		bundle.data['user']="/api/v2/user/"+str(bundle.data['user'])+"/"
 		print bundle.data['user']
 		cust=User.objects.get(pk=pk)
 		print cust.name
@@ -233,7 +245,7 @@ class ShipmentResource2(MultipartResource,ModelResource):
 
 
 		try:
-			bundle.data['order']="/api/v1/order/"+str(bundle.data['order'])+"/"
+			bundle.data['order']="/api/v2/order/"+str(bundle.data['order'])+"/"
 		except:
 			print "sd"
 
@@ -250,7 +262,7 @@ class ShipmentResource2(MultipartResource,ModelResource):
 				for x in address_on_database:
 					pk= x.id
 			#queryset= Address.objects.get(number=bundle.data['number'])
-			bundle.data['drop_address']="/api/v1/address/"+str(pk)+"/"
+			bundle.data['drop_address']="/api/v2/address/"+str(pk)+"/"
 
 		except:
 			print "fu"
@@ -471,7 +483,7 @@ class LoginSessionResource2(MultipartResource,ModelResource):
 			return bundle
 
 		password=user.password
-		bundle.data['user']="/api/v1/user/"+str(bundle.data['phone'])+"/"
+		bundle.data['user']="/api/v2/user/"+str(bundle.data['phone'])+"/"
 		salt='crawLINGINmySKin'
 		passw= str(bundle.data['password'])
 		print passw
