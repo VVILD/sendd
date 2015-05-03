@@ -203,6 +203,7 @@ class ForgotpassResource2(MultipartResource,ModelResource):
 
 class OrderResource2(MultipartResource,ModelResource):
 	user = fields.ForeignKey(UserResource2, 'user')
+	namemail = fields.ForeignKey(NamemailResource2, 'namemail')
 	class Meta:
 		queryset = Order.objects.all()
 		resource_name = 'order'
