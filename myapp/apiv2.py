@@ -142,19 +142,33 @@ class WeborderResource2(MultipartResource,ModelResource):
 			#newuser.save()
 			pk=newuser.pk
 
+			
 		
-		#create order
+		#create nameemail
 		try:
-			print "s"
+			newnamemail=Namemail.objects.filter(user=newuser,name=bundle.data['name'],email=bundle.data['email'])
+			if (newnamemail.count()==0) :
+				newnamemail = Namemail.objects.create(user=newuser,name=bundle.data['name'],email=bundle.data['email'])
+				newnamemail.save()
+				pk=newnamemail.pk
+			#bundle.obj = Address(address="nick", locality = "", password,timezone.now(),"od_test")
+			else :
+				for x in newnamemail:
+					pk= x.id
+
 		except:
 			print "cool shit"
-		neworder=Order.objects.create(user=newuser,address=bundle.data['pickup_location'],way='W',pick_now='N',pincode=bundle.data['pincode'])
-		#neworder.save()
-		order_pk=neworder.pk
-			
-
-		#create shipment
 		
+
+		#create order
+		try:
+			neworder=Order.objects.create(namemail=newnamemail,user=newuser,address=bundle.data['pickup_location'],way='W',pick_now='N',pincode=bundle.data['pincode'])
+		#neworder.save()
+			order_pk=neworder.pk
+		except:
+			print "cool shit"
+		
+		#create shipment
 		try:
 			shipment=Shipment.objects.create(order=neworder,item_name=bundle.data['item_details'])
 		except:
@@ -206,6 +220,24 @@ class OrderResource2(MultipartResource,ModelResource):
 		cust=User.objects.get(pk=pk)
 		print cust.name
 		print cust.phone
+
+
+		#create nameemail
+		try:
+			newnamemail=Namemail.objects.filter(user=cust,name=bundle.data['name'],email=bundle.data['email'])
+			if (newnamemail.count()==0) :
+				newnamemail = Namemail.objects.create(user=cust,name=bundle.data['name'],email=bundle.data['email'])
+				newnamemail.save()
+				nm_pk=newnamemail.pk
+			#bundle.obj = Address(address="nick", locality = "", password,timezone.now(),"od_test")
+			else :
+				for x in newnamemail:
+					nm_pk= x.id
+
+		except:
+			print "cool shit"
+
+		bundle.data['namemail']="/api/v2/namemail/"+str(nm_pk)+"/"
 		
 		msg0="http://enterprise.smsgupshup.com/GatewayAPI/rest?method=SendMessage&send_to="
 		msga=str(cust.phone)
