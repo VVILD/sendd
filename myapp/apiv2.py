@@ -242,7 +242,7 @@ class OrderResource2(MultipartResource,ModelResource):
 			#bundle.obj = Address(address="nick", locality = "", password,timezone.now(),"od_test")
 			else :
 				for x in newnamemail:
-					nm_pk= x.id
+					nm_pk= x.pk
 
 		except:
 			print "cool shit"
