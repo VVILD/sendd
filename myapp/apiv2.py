@@ -395,6 +395,13 @@ class XResource2(MultipartResource,ModelResource):
 		return bundle
 
 
+class NamemailResource2(MultipartResource,ModelResource):
+	user = fields.ForeignKey(UserResource2, 'user')
+	class Meta:
+		queryset = Namemail.objects.all()
+		resource_name = 'namemail'
+		authorization= Authorization()
+		always_return_data = True
 
 class PriceappResource2(MultipartResource,ModelResource):
 	class Meta:
