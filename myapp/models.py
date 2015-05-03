@@ -124,7 +124,7 @@ class Shipment(models.Model):
 	img=models.ImageField(upload_to = 'shipment/',null=True,blank=True)	
 	category=models.CharField(max_length=1,
 									  choices=(('P','premium') ,('S','standard'),('E','economy'),),
-									  blank=True , null = True)
+									  default='S',blank=True , null = True)
 	drop_name=models.CharField(max_length = 100,null=True,blank=True)
 	phone_regex = RegexValidator(regex=r'^[0-9]*$', message="Phone number must be entered in the format: '+999999999'. Up to 15 digits allowed.")
 	drop_phone = models.CharField(validators=[phone_regex],max_length =12,null=True,blank=True)

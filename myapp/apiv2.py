@@ -61,7 +61,7 @@ class UserResource2(ModelResource):
 				try:
 					user=User.objects.get(pk=bundle.data['phone'])
 					print "fuck"
-					bundle.data['phone']=0
+					#undle.data['phone']=0
 					bundle.data["msg"]='olduser'
 					bundle.data['otp'] = randint(1000, 9999)
 					msg0="http://enterprise.smsgupshup.com/GatewayAPI/rest?method=SendMessage&send_to="
@@ -72,8 +72,9 @@ class UserResource2(ModelResource):
 					#url1="http://49.50.69.90//api/smsapi.aspx?username=doormint&password=naman123&to="+ str(bundle.data['phone']) +"&from=DORMNT&message="
 					query=''.join([msg0,msga,msg1,msg2,msg3])
 					print query
-					urllib2.urlopen(query).read()					
-					return bundle
+					x=urllib2.urlopen(query).read()
+					print x
+					print "hjhjhjhj"
 					
 				except:
 					print "shit"
@@ -103,9 +104,11 @@ class UserResource2(ModelResource):
 			 #generate apikey if otp recieved = otp sent
 				bundle.data['apikey']=hashlib.sha224( str(random.getrandbits(256)) ).hexdigest();
 				print bundle.data['apikey']
+				bundle.data['valid']=1
 			else:
 				#bundle.data['otp'].del()
 				print "nahi hua"
+				bundle.data['valid']=0
 			return bundle
 
 		if bundle.request.META['REQUEST_METHOD'] == 'POST' and override_method=='PATCH':
@@ -156,12 +159,6 @@ class WeborderResource2(MultipartResource,ModelResource):
 			shipment=Shipment.objects.create(order=neworder,item_name=bundle.data['item_details'])
 		except:
 			print "haw"
-
-
-
-
-
-
 		return bundle
 
 
