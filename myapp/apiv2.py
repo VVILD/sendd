@@ -226,7 +226,6 @@ class OrderResource2(MultipartResource,ModelResource):
 		subject=str(cust.name) + ", We have received your parcel booking."
 		send_mail(subject, mail, "Team Sendd <hello@sendd.co>", [str(cust.email)])
 		send_mail("New Order","badhai ho", "Team Sendd <help@sendd.co>",["Team Sendd <hello@sendd.co>"])
-		
 		return bundle
 
 

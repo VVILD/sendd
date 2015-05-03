@@ -35,20 +35,40 @@ class AddressAdmin(admin.ModelAdmin):
 
 admin.site.register(Address,AddressAdmin)
 
+
+
+class NamemailAdmin(admin.ModelAdmin):
+	def response_change(self, request, obj):
+		print self
+		print "sdddddddddddddddddddddddddddd"
+		#return super(UserAdmin, self).response_change(request, obj)
+		return HttpResponse('''
+   <script type="text/javascript">
+      opener.dismissAddAnotherPopup(window);
+   </script>''')
+
+
+admin.site.register(Namemail,NamemailAdmin)
+
+
 class OrderAdmin(admin.ModelAdmin):
 	search_fields=['phone','name']
-	list_display = ('order_no','book_time','date','time','address','book_user','status','way','shipments')
+	list_display = ('order_no','book_time','date','time','address','user','name_email','status','way','shipments')
 	list_editable = ('date','time','address','status',)
 	list_filter=['date','status','book_time']
 
 
 
-	def book_user(self, obj):
-		phone=obj.user.pk
-		name=obj.user.name
-		email=obj.user.email
-		return '<a href="/admin/myapp/user/%s/" onclick="return showAddAnotherPopup(this);">%s|%s|%s</a>' % (phone,name,email,phone)
-	book_user.allow_tags = True
+	def name_email(self, obj):
+		#pk=obj.namemail.pk
+		try:
+			pk=obj.namemail.pk
+			name=obj.namemail.name
+			email=obj.namemail.email
+			return '<a href="/admin/myapp/namemail/%s/" onclick="return showAddAnotherPopup(this);">%s|%s</a>' % (pk,name,email)
+		except:
+			return 'fail'
+	name_email.allow_tags = True
 
 
 	def shipments(self, obj):

@@ -40,7 +40,7 @@ class User(models.Model):
 
 
 	def __unicode__(self):
-		return str(self.name)+ '|' +str(self.phone)
+		return str(self.phone)
 
 class Address(models.Model):
 	flat_no=models.CharField(max_length = 100)
@@ -52,11 +52,18 @@ class Address(models.Model):
 	def __unicode__(self):
 		return str(self.flat_no) + ',' + str(self.locality) + ',' + str(self.city) + ',' +str(self.state) +'-' +str(self.pincode)  
 
+class Namemail(models.Model):
+	nm_no=models.AutoField(primary_key=True)
+	name=models.CharField(max_length = 160,null=True,blank =True)
+	email = models.EmailField(max_length = 75,null=True,blank =True)
+	user=models.ForeignKey(User)
+
 class Order(models.Model):
 	order_no=models.AutoField(primary_key=True)
 	date=models.DateField(null=True,blank =True)
 	time=models.TimeField(null=True,blank =True)
 	user=models.ForeignKey(User)
+	namemail=models.ForeignKey(Namemail,null=True,blank=True)
 	name = models.CharField(max_length = 100,null=True,blank =True)
 	email = models.EmailField(max_length = 75,null=True,blank =True)
 	status=models.CharField(max_length=1,
@@ -84,6 +91,7 @@ class Order(models.Model):
 	latitude = models.DecimalField(max_digits=25, decimal_places=20,null=True ,blank=True)
 	longitude = models.DecimalField(max_digits=25, decimal_places=20,null=True ,blank=True)
 	address=models.CharField(max_length = 200,null=True ,blank=True)
+	
 	pincode=models.CharField(max_length =30,null=True ,blank=True)
 	flat_no=models.CharField(max_length =100,null=True ,blank=True)
 	#picked_up=models.BooleanField(default=False)
@@ -139,9 +147,9 @@ class Shipment(models.Model):
 
 
 	def save(self, *args, **kwargs):
-		print self.tracking_no
-		print self.pk
-		print "jkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkj"
+		#print self.tracking_no
+		#print self.pk
+		#print "jkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkj"
 		if not self.pk:
 			print self.pk
 			z=timezone('Asia/Kolkata')
@@ -238,6 +246,9 @@ class Dateapp(models.Model):
 
 
 
+
+
+	
 
 
 
