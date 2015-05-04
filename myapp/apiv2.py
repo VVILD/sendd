@@ -249,22 +249,6 @@ class OrderResource2(MultipartResource,ModelResource):
 
 		bundle.data['namemail']="/api/v2/namemail/"+str(nm_pk)+"/"
 		
-		msg0="http://enterprise.smsgupshup.com/GatewayAPI/rest?method=SendMessage&send_to="
-		msga=str(cust.phone)
-		msg1="&msg=Hi+"
-		msg2=urllib.quote(str(cust.name))
-		msg3="%2C+your+booking+for+parcel+has+been+received.+You+will+shortly+receive+the+contact+of+our+authorized+pickup+boy+and+a+call+on+"
-		#url1="http://49.50.69.90//api/smsapi.aspx?username=doormint&password=naman123&to="+ str(bundle.data['phone']) +"&from=DORMNT&message="
-		msg4=str(cust.phone)
-		msg5="+for+details.&msg_type=TEXT&userid=2000142364&auth_scheme=plain&password=h0s6jgB4N&v=1.1&format=text"
-		query=''.join([msg0,msga,msg1,msg2,msg3,msg4,msg5])
-		print query
-		#bundle.data['query']=query
-		urllib2.urlopen(query)	
-		mail="Dear "+str(cust.name) +",\n\nWe have successfully received your booking.\n\nYou will receive details of the pick up representative who will come to collect your parcel shortly.\n\nIf you have any query, you can get in touch with us at +91-8080028081 or mail us at help@sendd.co\n\n\nRegards,\nTeam Sendd"
-		subject=str(cust.name) + ", We have received your parcel booking."
-		send_mail(subject, mail, "Team Sendd <hello@sendd.co>", [str(cust.email)])
-		send_mail("New Order","badhai ho", "Team Sendd <help@sendd.co>",["Team Sendd <hello@sendd.co>"])
 		return bundle
 
 
@@ -316,6 +300,41 @@ class ShipmentResource2(MultipartResource,ModelResource):
 	def hydrate(self,bundle):
 
 
+
+#sending mail and sms
+		try:
+			order=Order.objects.get(pk=bundle.data['order'])
+			email= order.namemail.email
+			name= order.namemail.name
+			phone= order.user.phone
+
+			
+
+			
+			msg0="http://enterprise.smsgupshup.com/GatewayAPI/rest?method=SendMessage&send_to="
+			msga=urllib.quote(str(phone))
+			msg1="&msg=Hi+"
+			msg2=urllib.quote(str(name))
+			msg3="%2C+your+booking+for+parcel+has+been+received.+You+will+shortly+receive+the+contact+of+our+authorized+pickup+boy+and+a+call+on+"
+			#url1="http://49.50.69.90//api/smsapi.aspx?username=doormint&password=naman123&to="+ str(bundle.data['phone']) +"&from=DORMNT&message="
+			msg4=urllib.quote(str(phone))
+			msg5="+for+details.&msg_type=TEXT&userid=2000142364&auth_scheme=plain&password=h0s6jgB4N&v=1.1&format=text"
+			query=''.join([msg0,msga,msg1,msg2,msg3,msg4,msg5])
+			print query
+			#bundle.data['query']=query
+			urllib2.urlopen(query)	
+			mail="Dear "+str(name) +",\n\nWe have successfully received your booking.\n\nYou will shortly receive details of the pick up representative who will come to collect your parcel at your designated time.\n\nIf you have any query, you can get in touch with us at +91-8080028081 or mail us at help@sendd.co\n\n\nRegards,\nTeam Sendd"
+			subject=str(name) + ", We have received your parcel booking."
+			send_mail(subject, mail, "Team Sendd <hello@sendd.co>", [str(email)])
+			send_mail("New Order","badhai ho", "Team Sendd <help@sendd.co>",["Team Sendd <hello@sendd.co>"])
+			
+
+
+
+		except:
+			print "error"
+
+#
 		try:
 			bundle.data['order']="/api/v2/order/"+str(bundle.data['order'])+"/"
 		except:
