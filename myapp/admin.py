@@ -55,7 +55,7 @@ class OrderAdmin(admin.ModelAdmin):
 	search_fields=['phone','name']
 	list_display = ('order_no','book_time','date','time','address','user','name_email','status','way','shipments')
 	list_editable = ('date','time','address','status',)
-	list_filter=['date','status','book_time']
+	list_filter=['book_time','status']
 
 
 
@@ -88,7 +88,7 @@ class ShipmentAdmin(admin.ModelAdmin):
 	search_fields=['order__order_no',]
 	list_display = ('real_tracking_no','name','cost_of_courier','weight','mapped_tracking_no','company','price','category','drop_phone','drop_name','status','address','img_thumbnail','pricing','m_c')
 	list_filter=['category']
-	list_editable = ('name','cost_of_courier','weight','mapped_tracking_no','company','price','drop_phone','drop_name',)
+	list_editable = ('name','cost_of_courier','weight','mapped_tracking_no','company','price','category','drop_phone','drop_name',)
 	
 
 	def address(self,obj):

@@ -28,14 +28,10 @@ class User(models.Model):
 	time=models.DateTimeField(null=True,blank=True)
 
 	def save(self, *args, **kwargs):
-		if self.password:
-			salt='crawLINGINmySKin'
-			hsh = hashlib.sha224(self.password+salt).hexdigest()
-			self.password=hsh
-			z=timezone('Asia/Kolkata')
-			fmt='%Y-%m-%d %H:%M:%S'
-			ind_time=datetime.now(z)
-			self.time = ind_time.strftime(fmt)
+		z=timezone('Asia/Kolkata')
+		fmt='%Y-%m-%d %H:%M:%S'
+		ind_time=datetime.now(z)
+		self.time = ind_time.strftime(fmt)
 		super(User, self).save(*args, **kwargs)
 
 
@@ -43,12 +39,12 @@ class User(models.Model):
 		return str(self.phone)
 
 class Address(models.Model):
-	flat_no=models.CharField(max_length = 100)
-	locality=models.CharField(max_length = 200)
-	city=models.CharField(max_length = 50)
-	state=models.CharField(max_length = 50)
-	pincode=models.CharField(max_length =30)
-	country=models.CharField(max_length =30)
+	flat_no=models.CharField(max_length = 100,null=True,blank =True)
+	locality=models.CharField(max_length = 200,null=True,blank =True)
+	city=models.CharField(max_length = 50,null=True,blank =True)
+	state=models.CharField(max_length = 50,null=True,blank =True)
+	pincode=models.CharField(max_length =30,null=True,blank =True)
+	country=models.CharField(max_length =30,null=True,blank =True)
 	def __unicode__(self):
 		return str(self.flat_no) + ',' + str(self.locality) + ',' + str(self.city) + ',' +str(self.state) +'-' +str(self.pincode)  
 

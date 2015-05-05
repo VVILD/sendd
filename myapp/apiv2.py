@@ -177,6 +177,14 @@ class WeborderResource2(MultipartResource,ModelResource):
 		except:
 			print "cool shit"
 		
+		#create address
+		try:
+			address=Address.objects.create()
+		except:
+			print "haw"
+		return bundle
+
+
 		#create shipment
 		try:
 			shipment=Shipment.objects.create(order=neworder,item_name=bundle.data['item_details'])
