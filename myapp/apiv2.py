@@ -186,7 +186,7 @@ class WeborderResource2(MultipartResource,ModelResource):
 
 		#create shipment
 		try:
-			shipment=Shipment.objects.create(order=neworder,item_name=bundle.data['item_details'])
+			shipment=Shipment.objects.create(order=neworder,item_name=bundle.data['item_details'],drop_address=address)
 		except:
 			print "haw"
 		return bundle
