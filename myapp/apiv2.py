@@ -182,7 +182,6 @@ class WeborderResource2(MultipartResource,ModelResource):
 			address=Address.objects.create()
 		except:
 			print "haw"
-		return bundle
 
 
 		#create shipment
