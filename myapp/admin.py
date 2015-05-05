@@ -138,7 +138,7 @@ class ShipmentAdmin(admin.ModelAdmin):
 				print 's'
 
 			try:
-				price=shipment.price
+				price=shipment.cost_of_courier
 				if(str(price)!=' '):
 					string=string+ 'price='+str(price)+ '&'
 			except:
