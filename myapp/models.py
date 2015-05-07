@@ -122,8 +122,7 @@ class Shipment(models.Model):
 									  choices=(('P','premium') ,('S','standard'),('E','economy'),),
 									  default='P',blank=True , null = True)
 	drop_name=models.CharField(max_length = 100,null=True,blank=True)
-	phone_regex = RegexValidator(regex=r'^[0-9]*$', message="Phone number must be entered in the format: '+999999999'. Up to 15 digits allowed.")
-	drop_phone = models.CharField(validators=[phone_regex],max_length =12,null=True,blank=True)
+	drop_phone = models.CharField(max_length =16,null=True,blank=True)
 	drop_address=models.ForeignKey(Address,null=True,blank=True)
 	order=models.ForeignKey(Order,null=True,blank=True)
 	status=models.CharField(max_length=1,
