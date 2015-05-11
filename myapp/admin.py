@@ -52,6 +52,7 @@ admin.site.register(Namemail,NamemailAdmin)
 
 
 class OrderAdmin(admin.ModelAdmin):
+	list_per_page = 10
 	search_fields=['phone','name']
 	list_display = ('order_no','book_time','date','time','address','user','name_email','status','way','shipments')
 	list_editable = ('date','time','address','status',)
@@ -84,9 +85,10 @@ class OrderAdmin(admin.ModelAdmin):
 admin.site.register(Order,OrderAdmin)
 
 class ShipmentAdmin(admin.ModelAdmin):
+	list_per_page = 10
 	form=ShipmentForm
 	search_fields=['order__order_no',]
-	list_display = ('real_tracking_no','name','cost_of_courier','weight','mapped_tracking_no','company','price','category','drop_phone','drop_name','status','address','img_thumbnail','pricing','m_c')
+	list_display = ('real_tracking_no','name','cost_of_courier','weight','mapped_tracking_no','company','price','category','drop_phone','drop_name','status','address','parcel_details','generate_order')
 	list_filter=['category']
 	list_editable = ('name','cost_of_courier','weight','mapped_tracking_no','company','price','category','drop_phone','drop_name',)
 	
@@ -102,7 +104,7 @@ class ShipmentAdmin(admin.ModelAdmin):
 	address.allow_tags = True
 
 
-	def img_thumbnail(self, obj):
+	def parcel_details(self, obj):
 		name=str(obj.img)
 		print name
 		if(name==''):
@@ -110,74 +112,120 @@ class ShipmentAdmin(admin.ModelAdmin):
 		name_mod=name[9:]
 		full_url='http://128.199.159.90/static/'+name_mod
 		return '<img src="%s" width=60 height=60 onmouseover="this.width=\'500\'; this.height=\'500\'" onmouseout="this.width=\'100\'; this.height=\'100\'" />' % (full_url)
-	img_thumbnail.allow_tags = True
+	parcel_details.allow_tags = True
 
-	def m_c(self, obj):
+	def generate_order(self, obj):
+		valid=1
 		try:
 			shipment = Shipment.objects.get(pk=obj.pk)
 			address = shipment.drop_address
 			string=''
+			error_string=''
 			try:
 				orderid=shipment.pk
 				string=string+'orderid='+ str(orderid)+ '&'
 			except:
-				print 's'
+				valid=0
+				error_string=error_string + 'orderid not set <br>'
 
 				
 			try:
 				name=shipment.drop_name
-				string=string+ 'name='+str(name)+ '&'
+				print "jkjkjkjkjkjkjkjkjkjk"
+				print name
+				print "jkjkjkjkjkjkjkjkjkjk"
+				if(str(name)!=''):
+					string=string+ 'name='+str(name)+ '&'
+				else:
+					error_string=error_string + 'drop_name not set<br>'
+					valid=0
+
 			except:
-				print 's'
+				valid=0
+				error_string=error_string + 'drop_name not set<br>'
 
 			try:
 				pname=shipment.name
 				if(str(pname)!=''):
 					string=string+ 'pname='+str(pname)+ '&'
+				else:
+					error_string=error_string + 'item_name not set<br>'
+					valid=0
 			except:
 				print 's'
+				error_string=error_string + 'item_name not set<br>'
+				valid=0
 
 			try:
 				price=shipment.cost_of_courier
-				if(str(price)!=' '):
+				if(str(price)!=''):
 					string=string+ 'price='+str(price)+ '&'
+				else:
+					error_string=error_string + 'item_cost not set<br>'
+					valid=0
 			except:
 				print 's'
+				error_string=error_string + 'item_cost not set<br>'
+				valid=0
+
+
 			try:
 				weight=shipment.weight
 				if(str(weight)!=''):
 					string=string+ 'weight='+str(weight)+ '&'
+				else:
+					error_string=error_string + 'item_weight not set<br>'
+					valid=0
+
 			except:
 				print 's'
+				error_string=error_string + 'item_weight not set<br>'
+				valid=0
+
 
 			try:
 				phone=shipment.drop_phone
-				string=string+ 'phone='+str(phone)+ '&'
+				if(str(phone)!=''):
+					string=string+ 'phone='+str(phone)+ '&'
+				else:
+					error_string=error_string + 'drop_phone not set<br>'
+					valid=0
 			except:
 				print 's'
+				error_string=error_string + 'drop_phone not set<br>'
+				valid=0
+
 
 			try:
 				address1=str(address.flat_no) + str (address.locality)
 				string=string+ 'address='+str(address1)+ '&'
 			except:
 				print 's'
+				error_string=error_string + 'address not set<br>'
+				valid=0
 			
 			try:
 				city=address.city
 				string=string+ 'city='+str(city)+ '&'
 			except:
+				error_string=error_string + 'city not set<br>'
+				valid=0				
 				print 'k'
 			
 			try:
 				state=address.state
 				string=string+ 'state='+str(state)+ '&'
 			except:
+				error_string=error_string + 'state not set<br>'
+				valid=0
 				print 's'
 
 			try:
 				pincode=address.pincode
 				string=string+ 'pincode='+str(pincode)+ '&'
 			except:
+				error_string=error_string + 'pincode not set<br>'
+				valid=0				
 				print 's'
 
 						
@@ -188,8 +236,11 @@ class ShipmentAdmin(admin.ModelAdmin):
 		except:
 			print 's'
 
-		return '<a href="http://order.sendmates.com/?%s" target="_blank" >C Sms</a>' % (string)
-	m_c.allow_tags = True
+		if (valid):
+			return '<a href="http://order.sendmates.com/?%s" target="_blank" >All good! Create Order</a>' % (string)
+		else:
+			return '<div style="color:red">'+ error_string + '</div>'
+	generate_order.allow_tags = True
 
 
 admin.site.register(Shipment,ShipmentAdmin)

@@ -110,9 +110,9 @@ class Order(models.Model):
 
 
 class Shipment(models.Model):
-	weight=models.CharField(max_length=10,null=True,blank=True)
+	weight=models.CharField(verbose_name='item weight',max_length=10,null=True,blank=True)
 	price=models.CharField(max_length=10,null=True,blank=True)
-	name=models.CharField(max_length=50,null=True,blank=True)
+	name=models.CharField(verbose_name='item name',max_length=50,null=True,blank=True)
 	tracking_no=models.AutoField(primary_key=True)
 	real_tracking_no=models.CharField(max_length=10,blank=True,null=True)
 	mapped_tracking_no=models.CharField(max_length = 50,null=True,blank=True)
@@ -136,7 +136,7 @@ class Shipment(models.Model):
 									  blank=True , null = True)
 
 	pricing=models.ForeignKey(Pricing,null=True,blank=True)
-	cost_of_courier= models.CharField(max_length = 100,null=True,blank=True)
+	cost_of_courier= models.CharField(verbose_name='item cost',max_length = 100,null=True,blank=True)
 	item_name=models.CharField(max_length = 100,null=True,blank=True)
 	
 
