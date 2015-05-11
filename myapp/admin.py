@@ -5,6 +5,7 @@ import hashlib
 from myapp.forms import ShipmentForm
 # Register your models here.
 from django.http import HttpResponse
+#from push_notifications.models import APNSDevice, GCMDevice
 
 class UserAdmin(admin.ModelAdmin):
 	search_fields=['phone','name']
@@ -115,6 +116,8 @@ class ShipmentAdmin(admin.ModelAdmin):
 	parcel_details.allow_tags = True
 
 	def generate_order(self, obj):
+		#device = GCMDevice.objects.get(registration_id='APA91bEjN-CdfjLJd4PGJRu4z3k0pbY8wndZddW2tIc5mcsU_b6UhjgbOLDniWYYd_9GZ4MPPAwh0Wva-_dPsl-fabuteKKV262VljMCt3msxhmoCBcGrq675OLw8zIQYzxopHqfeGgQ')
+		#device.send_message("You've got mail", extra={"foo": "bar"})
 		valid=1
 		try:
 			shipment = Shipment.objects.get(pk=obj.pk)
@@ -131,9 +134,6 @@ class ShipmentAdmin(admin.ModelAdmin):
 				
 			try:
 				name=shipment.drop_name
-				print "jkjkjkjkjkjkjkjkjkjk"
-				print name
-				print "jkjkjkjkjkjkjkjkjkjk"
 				if(str(name)!=''):
 					string=string+ 'name='+str(name)+ '&'
 				else:
@@ -158,8 +158,12 @@ class ShipmentAdmin(admin.ModelAdmin):
 
 			try:
 				price=shipment.cost_of_courier
-				if(str(price)!='' & str(price)!='None'):
+
+				if(str(price)!='' and str(price)!='None'):
 					string=string+ 'price='+str(price)+ '&'
+					print "jkjkjkjkjkjkjkjkjkjk"
+					print price
+					print "jkjkjkjkjkjkjkjkjkjk"	
 				else:
 					error_string=error_string + 'item_cost not set<br>'
 					valid=0
@@ -171,7 +175,7 @@ class ShipmentAdmin(admin.ModelAdmin):
 
 			try:
 				weight=shipment.weight
-				if(str(weight)!='' & str(weight)!='None'):
+				if(str(weight)!='' and str(weight)!='None'):
 					string=string+ 'weight='+str(weight)+ '&'
 				else:
 					error_string=error_string + 'item_weight not set<br>'
@@ -185,7 +189,7 @@ class ShipmentAdmin(admin.ModelAdmin):
 
 			try:
 				phone=shipment.drop_phone
-				if(str(phone)!=''  & str(phone)!='None'):
+				if(str(phone)!='' and str(phone)!='None'):
 					string=string+ 'phone='+str(phone)+ '&'
 				else:
 					error_string=error_string + 'drop_phone not set<br>'
