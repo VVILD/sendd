@@ -26,6 +26,7 @@ class User(models.Model):
 	apikey= models.CharField(max_length = 100,null=True,blank=True)
 	referral_code= models.CharField(max_length = 50,null=True,blank=True)
 	time=models.DateTimeField(null=True,blank=True)
+	gcmid=models.TextField(null=True,blank=True)
 
 	def save(self, *args, **kwargs):
 		z=timezone('Asia/Kolkata')
