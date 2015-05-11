@@ -158,7 +158,7 @@ class ShipmentAdmin(admin.ModelAdmin):
 
 			try:
 				price=shipment.cost_of_courier
-				if(str(price)!=''):
+				if(str(price)!='' & str(price)!='None'):
 					string=string+ 'price='+str(price)+ '&'
 				else:
 					error_string=error_string + 'item_cost not set<br>'
@@ -171,7 +171,7 @@ class ShipmentAdmin(admin.ModelAdmin):
 
 			try:
 				weight=shipment.weight
-				if(str(weight)!=''):
+				if(str(weight)!='' & str(weight)!='None'):
 					string=string+ 'weight='+str(weight)+ '&'
 				else:
 					error_string=error_string + 'item_weight not set<br>'
@@ -185,7 +185,7 @@ class ShipmentAdmin(admin.ModelAdmin):
 
 			try:
 				phone=shipment.drop_phone
-				if(str(phone)!=''):
+				if(str(phone)!=''  & str(phone)!='None'):
 					string=string+ 'phone='+str(phone)+ '&'
 				else:
 					error_string=error_string + 'drop_phone not set<br>'
