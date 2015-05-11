@@ -98,7 +98,7 @@ class ShipmentAdmin(admin.ModelAdmin):
 		try:
 			address=obj.drop_address
 			pk=address.pk
-			add=str(address.flat_no)+','+str(address.locality)+','+str(address.city)+','+str(address.state)
+			add=str(address.flat_no)+','+str(address.locality)+','+str(address.city)+','+str(address.state)+'-'+str(address.pincode)
 			return '<a href="/admin/myapp/address/%s/" onclick="return showAddAnotherPopup(this);">%s</a>' % (pk,add)
 		except:
 			return "no add"
