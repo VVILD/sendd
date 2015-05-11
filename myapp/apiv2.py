@@ -141,8 +141,7 @@ class WeborderResource2(MultipartResource,ModelResource):
 		always_return_data = True
 
 	def hydrate(self, bundle):
-		send_mail("New Web Order","badhai ho", "Team Sendd <help@sendd.co>",["Team Sendd <hello@sendd.co>"])
-
+		
 		#creating user if doesnt exist
 		try:
 			newuser=User.objects.get(pk=bundle.data['number'])
@@ -189,6 +188,15 @@ class WeborderResource2(MultipartResource,ModelResource):
 			shipment=Shipment.objects.create(order=neworder,item_name=bundle.data['item_details'],drop_address=address)
 		except:
 			print "haw"
+
+
+		try:	
+			mail="Dear "+str(bundle.data["name"]) +",\n\nWe have successfully received your booking.\n\nYou will shortly receive details of the pick up representative who will come to collect your parcel at your designated time.\n\nIf you have any query, you can get in touch with us at +91-8080028081 or mail us at help@sendd.co\n\n\nRegards,\nTeam Sendd"
+			subject=str(bundle.data["name"]) + ", We have received your parcel booking."
+			send_mail(subject, mail, "Team Sendd <hello@sendd.co>", [str(bundle.data["email"]),"Team Sendd <hello@sendd.co>"])
+		except:
+			print "mail not sent"
+		
 		return bundle
 
 
@@ -329,12 +337,13 @@ class ShipmentResource2(MultipartResource,ModelResource):
 			query=''.join([msg0,msga,msg1,msg2,msg3,msg4,msg5])
 			print query
 			#bundle.data['query']=query
-			urllib2.urlopen(query)	
-			mail="Dear "+str(name) +",\n\nWe have successfully received your booking.\n\nYou will shortly receive details of the pick up representative who will come to collect your parcel at your designated time.\n\nIf you have any query, you can get in touch with us at +91-8080028081 or mail us at help@sendd.co\n\n\nRegards,\nTeam Sendd"
-			subject=str(name) + ", We have received your parcel booking."
-			send_mail(subject, mail, "Team Sendd <hello@sendd.co>", [str(email)])
-			send_mail("New Order","badhai ho", "Team Sendd <help@sendd.co>",["Team Sendd <hello@sendd.co>"])
-			
+			urllib2.urlopen(query)
+			try:	
+				mail="Dear "+str(name) +",\n\nWe have successfully received your booking.\n\nYou will shortly receive details of the pick up representative who will come to collect your parcel at your designated time.\n\nIf you have any query, you can get in touch with us at +91-8080028081 or mail us at help@sendd.co\n\n\nRegards,\nTeam Sendd"
+				subject=str(name) + ", We have received your parcel booking."
+				send_mail(subject, mail, "Team Sendd <hello@sendd.co>", [str(email),"Team Sendd <hello@sendd.co>"])
+			except:
+				print "mail not sent"	
 
 
 
