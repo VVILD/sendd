@@ -1,1 +1,1 @@
-import myapp.signals
+#import myapp.signals
