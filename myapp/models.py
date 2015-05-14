@@ -251,22 +251,28 @@ class Dateapp(models.Model):
 class Gcmmessage(models.Model):
 	message=models.TextField()
 	def __unicode__(self):
-		return str(self.message	)
+		return str(self.message)
 
 
 	def save(self, *args, **kwargs):
 		''' On save, update timestamps '''
 		devices=GCMDevice.objects.all()
 		devices.send_message(self.message)
-
-
-
 		#device = GCMDevice.objects.get(registration_id='APA91bEjN-CdfjLJd4PGJRu4z3k0pbY8wndZddW2tIc5mcsU_b6UhjgbOLDniWYYd_9GZ4MPPAwh0Wva-_dPsl-fabuteKKV262VljMCt3msxhmoCBcGrq675OLw8zIQYzxopHqfeGgQ')
 		#device.send_message("harsh bahut bada chakka hai.harsh", extra={"tracking_no": "S134807P31","url":"http://128.199.159.90/static/IMG_20150508_144433.jpeg"})
-		
-		
 		super(Gcmmessage, self).save(*args, **kwargs)
 
+class Promocheck(models.Model):
+	code=models.CharField(max_length = 20)
+	user=models.ForeignKey(User,null=True,blank=True)
+	valid=models.CharField(max_length=1,choices=(('Y','yes') ,('N','no'),),)
+
+class Promocode(models.Model):
+	code=models.CharField(max_length = 20,primary_key=True)
+	msg=models.CharField(max_length = 150)
+	only_for_first=models.CharField(max_length=1,choices=(('Y','yes') ,('N','no'),),)
+	def __unicode__(self):
+		return str(self.msg)+ '|' +str(self.code)
 
 
 

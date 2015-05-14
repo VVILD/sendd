@@ -657,6 +657,44 @@ class LoginSessionResource2(MultipartResource,ModelResource):
 		return bundle
 
 
+class PromocheckResource2(MultipartResource,ModelResource):
+	user = fields.ForeignKey(UserResource2, 'user' ,null=True)
+	class Meta:
+		queryset = Promocheck.objects.all()
+		resource_name = 'promocheck'
+		authorization= Authorization()
+		always_return_data = True
+
+	def hydrate(self,bundle):
+
+
+
+		try:
+			user=User.objects.get(pk=bundle.data['phone'])
+			bundle.data['user']="/api/v2/user/"+str(bundle.data['phone'])+"/"
+		except:
+			bundle.data["promomsg"]='Please register first'
+			return bundle
+
+		try:
+			promocode=Promocode.objects.get(pk=bundle.data['code'])
+			
+			if (promocode.only_for_first=='Y'):
+				shipment=Shipment.objects.filter(order__user__phone=bundle.data['phone'])
+				if (shipment.count()==0):
+					#everything good
+					bundle.data['promomsg']=promocode.msg
+					bundle.data['valid']='Y'
+				else:
+					bundle.data['promomsg']="You are not a first time user"
+					bundle.data['valid']='N'
+			else:
+				bundle.data['promomsg']=promocode.msg
+				bundle.data['valid']='Y'
+		except:
+			bundle.data['promomsg']="Wrong promo code"
+			bundle.data['valid']='N'
+		return bundle
 
 	
 

@@ -85,6 +85,8 @@ class OrderAdmin(admin.ModelAdmin):
 
 admin.site.register(Order,OrderAdmin)
 admin.site.register(Gcmmessage)
+admin.site.register(Promocode)
+admin.site.register(Promocheck)
 
 
 class ShipmentAdmin(admin.ModelAdmin):
