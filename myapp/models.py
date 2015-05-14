@@ -5,6 +5,7 @@ from datetime import datetime,timedelta
 from pytz import timezone
 import pytz
 import random
+from push_notifications.models import APNSDevice, GCMDevice
 
 
 
@@ -209,6 +210,13 @@ class LoginSession(models.Model):
 		super(LoginSession, self).save(*args, **kwargs)
 
 
+
+
+
+
+
+
+
 class Weborder(models.Model):
 	item_details=models.CharField(max_length = 100)
 	pickup_location=models.CharField(max_length = 4000)
@@ -240,6 +248,24 @@ class Dateapp(models.Model):
 
 
 
+class Gcmmessage(models.Model):
+	message=models.TextField()
+	def __unicode__(self):
+		return str(self.message	)
+
+
+	def save(self, *args, **kwargs):
+		''' On save, update timestamps '''
+		devices=GCMDevice.objects.all()
+		devices.send_message(self.message)
+
+
+
+		#device = GCMDevice.objects.get(registration_id='APA91bEjN-CdfjLJd4PGJRu4z3k0pbY8wndZddW2tIc5mcsU_b6UhjgbOLDniWYYd_9GZ4MPPAwh0Wva-_dPsl-fabuteKKV262VljMCt3msxhmoCBcGrq675OLw8zIQYzxopHqfeGgQ')
+		#device.send_message("harsh bahut bada chakka hai.harsh", extra={"tracking_no": "S134807P31","url":"http://128.199.159.90/static/IMG_20150508_144433.jpeg"})
+		
+		
+		super(Gcmmessage, self).save(*args, **kwargs)
 
 
 
