@@ -261,6 +261,7 @@ class Dateapp(models.Model):
 
 
 class Gcmmessage(models.Model):
+	title=models.CharField(max_length = 60)
 	message=models.TextField()
 	def __unicode__(self):
 		return str(self.message)
@@ -269,7 +270,7 @@ class Gcmmessage(models.Model):
 	def save(self, *args, **kwargs):
 		''' On save, update timestamps '''
 		devices=GCMDevice.objects.all()
-		devices.send_message(self.message)
+		devices.send_message(self.message,extra={"title":self.title})
 		#device = GCMDevice.objects.get(registration_id='APA91bEjN-CdfjLJd4PGJRu4z3k0pbY8wndZddW2tIc5mcsU_b6UhjgbOLDniWYYd_9GZ4MPPAwh0Wva-_dPsl-fabuteKKV262VljMCt3msxhmoCBcGrq675OLw8zIQYzxopHqfeGgQ')
 		#device.send_message("harsh bahut bada chakka hai.harsh", extra={"tracking_no": "S134807P31","url":"http://128.199.159.90/static/IMG_20150508_144433.jpeg"})
 		super(Gcmmessage, self).save(*args, **kwargs)
