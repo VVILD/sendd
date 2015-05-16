@@ -16,7 +16,7 @@ v1_api.register(PriceappResource())
 v1_api.register(DateappResource())
 v1_api.register(ForgotpassResource())
 
-from myapp.apiv2 import UserResource2,AddressResource2,OrderResource2,ShipmentResource2,XResource2,LoginSessionResource2,WeborderResource2,PriceappResource2,DateappResource2,ForgotpassResource2,NamemailResource2,PromocheckResource2
+from myapp.apiv2 import UserResource2,AddressResource2,OrderResource2,ShipmentResource2,XResource2,LoginSessionResource2,WeborderResource2,PriceappResource2,DateappResource2,ForgotpassResource2,NamemailResource2,PromocheckResource2,PromocodeResource2,PincodecheckResource2
 
 
 
@@ -33,7 +33,8 @@ v2_api.register(DateappResource2())
 v2_api.register(ForgotpassResource2())
 v2_api.register(NamemailResource2())
 v2_api.register(PromocheckResource2())
-
+v2_api.register(PromocodeResource2())
+v2_api.register(PincodecheckResource2())
 
 urlpatterns = patterns('',
     # Examples:

@@ -56,11 +56,22 @@ class Namemail(models.Model):
 	email = models.EmailField(max_length = 75,null=True,blank =True)
 	user=models.ForeignKey(User)
 
+class Promocode(models.Model):
+	code=models.CharField(max_length = 20,primary_key=True)
+	msg=models.CharField(max_length = 150)
+	only_for_first=models.CharField(max_length=1,choices=(('Y','yes') ,('N','no'),),)
+	def __unicode__(self):
+		return str(self.msg)+ '|' +str(self.code)
+
+
+
 class Order(models.Model):
 	order_no=models.AutoField(primary_key=True)
 	date=models.DateField(null=True,blank =True)
 	time=models.TimeField(null=True,blank =True)
 	user=models.ForeignKey(User)
+	promocode=models.ForeignKey(Promocode,null=True,blank=True)
+	
 	namemail=models.ForeignKey(Namemail,null=True,blank=True)
 	name = models.CharField(max_length = 100,null=True,blank =True)
 	email = models.EmailField(max_length = 75,null=True,blank =True)
@@ -267,17 +278,13 @@ class Promocheck(models.Model):
 	user=models.ForeignKey(User,null=True,blank=True)
 	valid=models.CharField(max_length=1,choices=(('Y','yes') ,('N','no'),),)
 
-class Promocode(models.Model):
-	code=models.CharField(max_length = 20,primary_key=True)
-	msg=models.CharField(max_length = 150)
-	only_for_first=models.CharField(max_length=1,choices=(('Y','yes') ,('N','no'),),)
-	def __unicode__(self):
-		return str(self.msg)+ '|' +str(self.code)
-
-
 
 	
 
+class Pincodecheck(models.Model):
+	pincode=models.CharField(max_length=6)
+	def __unicode__(self):
+		return str(self.pincode)
 
 
 

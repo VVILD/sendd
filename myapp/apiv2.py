@@ -249,9 +249,20 @@ class ForgotpassResource2(MultipartResource,ModelResource):
 		bundle.data['auth']="GEN"
 		return bundle
 
+class PromocodeResource2(MultipartResource,ModelResource):
+	#user = fields.ForeignKey(UserResource2, 'user' ,null=True)
+	class Meta:
+		queryset = Promocode.objects.all()
+		resource_name = 'promocode'
+		authorization= Authorization()
+		always_return_data = True
+
+
 class OrderResource2(MultipartResource,ModelResource):
 	user = fields.ForeignKey(UserResource2, 'user')
-	namemail = fields.ForeignKey(NamemailResource2, 'namemail')
+	namemail = fields.ForeignKey(NamemailResource2, 'namemail',null=True,blank=True)
+	promocode = fields.ForeignKey(PromocodeResource2, 'promocode',null=True,blank=True)
+	
 	class Meta:
 		queryset = Order.objects.all()
 		resource_name = 'order'
@@ -267,9 +278,33 @@ class OrderResource2(MultipartResource,ModelResource):
 		bundle.data['user']="/api/v2/user/"+str(bundle.data['user'])+"/"
 		print bundle.data['user']
 		cust=User.objects.get(pk=pk)
-		print cust.name
-		print cust.phone
 
+		#promocode
+
+		try:
+			promocode=Promocode.objects.get(pk=bundle.data['code'])
+
+			print '1'
+			
+			if (promocode.only_for_first=='Y'):
+				shipment=Shipment.objects.filter(order__user__phone=bundle.data['phone'])
+				if (shipment.count()==0):
+					#everything good
+					bundle.data['promocode']="/api/v2/promocode/"+str(promocode.pk)+"/"
+					print str(bundle.data['code'])
+					bundle.data['valid']='Y'
+				else:
+					bundle.data['promomsg']="You are not a first time user"
+					#bundle.data['valid']='N'
+			else:
+				bundle.data['promocode']="/api/v2/promocode/"+str(promocode.pk)+"/"
+				print str(bundle.data['code'])
+				#bundle.data['valid']='Y'
+		except:
+			bundle.data['promomsg']="Wrong promo code"
+			#bundle.data['valid']='N'
+			print '2'
+		#print bundle.data['promocode']
 
 		#create nameemail
 		try:
@@ -282,11 +317,11 @@ class OrderResource2(MultipartResource,ModelResource):
 			else :
 				for x in newnamemail:
 					nm_pk= x.pk
-
+			bundle.data['namemail']="/api/v2/namemail/"+str(nm_pk)+"/"
+		
 		except:
 			print "cool shit"
 
-		bundle.data['namemail']="/api/v2/namemail/"+str(nm_pk)+"/"
 		
 		return bundle
 
@@ -666,9 +701,6 @@ class PromocheckResource2(MultipartResource,ModelResource):
 		always_return_data = True
 
 	def hydrate(self,bundle):
-
-
-
 		try:
 			user=User.objects.get(pk=bundle.data['phone'])
 			bundle.data['user']="/api/v2/user/"+str(bundle.data['phone'])+"/"
@@ -701,3 +733,21 @@ class PromocheckResource2(MultipartResource,ModelResource):
 
 
 
+class PincodecheckResource2(MultipartResource,ModelResource):
+	class Meta:
+		queryset = Pincodecheck.objects.all()
+		resource_name = 'pincodecheck'
+		authorization= Authorization()
+		always_return_data = True
+
+	def hydrate(self,bundle):
+
+		goodpincodes=['400076','400072']
+
+		if bundle.data['pincode'] in goodpincodes:
+			bundle.data['valid']=1
+		else:
+			bundle.data['valid']=0
+			bundle.data['msg']='we dont have pickup service available in your desired pickup location.'
+
+		return bundle
