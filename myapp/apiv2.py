@@ -137,6 +137,17 @@ class UserResource2(ModelResource):
 
 		if bundle.request.META['REQUEST_METHOD'] == 'POST' and override_method=='PATCH':
 			print "patch"
+			try:
+				gcmdevice=GCMDevice.objects.filter(registration_id=bundle.data['gcmid'])
+				if (gcmdevice.count()==0) :
+					gcmdevice = GCMDevice.objects.create(registration_id=bundle.data['gcmid'])
+				else:
+					print "GCM device already exist"
+					
+			except:
+				print "GCM device not created"
+
+
 			return bundle
 
 

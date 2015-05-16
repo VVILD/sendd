@@ -28,7 +28,8 @@ class User(models.Model):
 	referral_code= models.CharField(max_length = 50,null=True,blank=True)
 	time=models.DateTimeField(null=True,blank=True)
 	gcmid=models.TextField(null=True,blank=True)
-
+	deviceid= models.CharField(max_length = 25,null=True,blank=True)
+	
 	def save(self, *args, **kwargs):
 		z=timezone('Asia/Kolkata')
 		fmt='%Y-%m-%d %H:%M:%S'

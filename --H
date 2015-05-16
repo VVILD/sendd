@@ -1,0 +1,22 @@
+HTTP/1.0 403 Forbidden
+Server: squid/3.1.16
+Mime-Version: 1.0
+Date: Sat, 16 May 2015 10:31:17 GMT
+Content-Type: text/html
+Content-Length: 3242
+X-Squid-Error: ERR_ACCESS_DENIED 0
+Vary: Accept-Language
+Content-Language: en
+X-Cache: MISS from localhost.localdomain
+X-Cache-Lookup: NONE from localhost.localdomain:31280
+Via: 1.0 localhost.localdomain (squid/3.1.16)
+Connection: close
+
+HTTP/1.1 500 INTERNAL SERVER ERROR
+Server: nginx/1.4.6 (Ubuntu)
+Date: Sat, 16 May 2015 10:14:14 GMT
+Content-Type: application/json
+Transfer-Encoding: chunked
+Connection: keep-alive
+X-Frame-Options: SAMEORIGIN
+
