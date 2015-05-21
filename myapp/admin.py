@@ -78,7 +78,7 @@ class OrderAdmin(admin.ModelAdmin):
 		i=0
 		for x in shipments:
 			i=i+1
-		return str(i) + '<a href ="http://128.199.159.90/admin/myapp/shipment/?q=%s" target="_blank" > shipments (click to see) </a>' % (obj.order_no)
+		return str(i) + '<a href ="http://128.199.159.90/admin/myapp/shipment/?order__order_no=%s" target="_blank" > shipments (click to see) </a>' % (obj.order_no)
 	shipments.allow_tags = True
 
 #	<img src="https://farm8.staticflickr.com/7042/6873010155_d4160a32a2_s.jpg" onmouseover="this.width='500'; this.height='500'" onmouseout="this.width='100'; this.height='100'">
