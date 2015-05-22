@@ -557,7 +557,7 @@ class PriceappResource2(MultipartResource,ModelResource):
 				zone=0
 			elif state=='Maharashtra':
 				zone=1
-			elif (('Chennai' in pin) or ('Delhi' in pin) or ('Kolkata' in pin) or ('Banglore' in pin)):
+			elif (('Chennai' in pin) or ('Delhi' in pin) or ('Kolkata' in pin) or ('Banglore' in pin) or ('Bangalore' in pin)):
 				zone=2
 			elif ((state=='Jammu and Kashmir') or (state=='Assam') or (state=='Arunachal Pradesh') or (state=='Manipur') or (state=='Meghalaya') or (state=='Mizoram') or (state=='Nagaland')or (state=='Tripura')):
 				zone=4
@@ -644,7 +644,7 @@ class DateappResource2(MultipartResource,ModelResource):
 				zone=0
 			elif state=='Maharashtra':
 				zone=1
-			elif (('Chennai' in pin) or ('Delhi' in pin) or ('Kolkata' in pin) or ('Banglore' in pin)):
+			elif (('Chennai' in pin) or ('Delhi' in pin) or ('Kolkata' in pin) or ('Banglore' in pin) or ('Bangalore' in pin)):
 				zone=2
 			elif ((state=='Jammu and Kashmir') or (state=='Assam') or (state=='Arunachal Pradesh') or (state=='Manipur') or (state=='Meghalaya') or (state=='Mizoram') or (state=='Nagaland')or (state=='Tripura')):
 				zone=4
@@ -753,7 +753,7 @@ class PincodecheckResource2(MultipartResource,ModelResource):
 
 	def hydrate(self,bundle):
 
-		goodpincodes=['400076','400072']
+		goodpincodes=['400076','400072','400078','400077','400080','400079']
 
 		if bundle.data['pincode'] in goodpincodes:
 			bundle.data['valid']=1

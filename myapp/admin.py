@@ -55,9 +55,26 @@ admin.site.register(Namemail,NamemailAdmin)
 class OrderAdmin(admin.ModelAdmin):
 	list_per_page = 10
 	search_fields=['user__phone','name','namemail__name','namemail__email']
-	list_display = ('order_no','book_time','date','time','address','user','name_email','status','way','shipments')
+	list_display = ('order_no','book_time','date','time','address','user','name_email','status','way','shipments','send_invoice')
 	list_editable = ('date','time','address','status',)
 	list_filter=['book_time','status']
+
+
+
+	def send_invoice(self,obj):
+		valid=1
+		try:
+			order_no=obj.order_no
+			name=obj.namemail.name
+			email=obj.namemail.email
+			address=obj.address
+			shipments = Shipment.objects.filter(order=obj.order_no)
+			mail_subject="a"
+			mail_content="ggh"
+			return 'h'
+		except:
+			return 'fail'
+
 
 
 
@@ -120,18 +137,12 @@ class ShipmentAdmin(admin.ModelAdmin):
 	parcel_details.allow_tags = True
 
 	def generate_order(self, obj):
+		#print "Ffgd"
 		#neworder=GCMDevice.objects.create(registration_id='fdgfdgfdsgfsfdg')
-		try:
-			gcmdevice=GCMDevice.objects.filter(registration_id='ADFASFDDSA')
-			if (gcmdevice.count()==0) :
-				gcmdevice = GCMDevice.objects.create(registration_id='ADFASFDDSA')
-			else:
-				print "GCM device already exist"
-				
-		except:
-			print "GCM device not created"
-
-
+		#device = GCMDevice.objects.get(registration_id='APA91bGKEsBkDFeODXaS0coILc__0qPaWA6etPbK3fiWad2vluI_Q_EQVw9wocFgqCufbJy43PPXxhr7TB2QMx4QSHCgvBoq2l9dzxGRGX0Mnx6V9pPH2p2lAP93XZKyKjVWRu1PIvwd')
+		#print "dsa"
+		#device.send_message("wadhwsdfdsa")
+		#print device
 		#device = GCMDevice.objects.get(registration_id='APA91bFT-KrRjrc6fWp8KPHDCATa5dgWCmCIARc_ESElyQ2yLKCoVVJAa477on0VtxDaZtvZCAdMerld7lLyr_TW3F3xoUUCqv1zmzr3JnVJrt5EvnoolR2p6J5pgC3ks4jF6o6_5ITE')
 		#device.send_message("harsh bahut bada chakka hai.harsh", extra={"tracking_no": "S134807P31","url":"http://128.199.159.90/static/IMG_20150508_144433.jpeg"})
 		#device.send_message("harsh bahut bada chakka hai.harsh")
