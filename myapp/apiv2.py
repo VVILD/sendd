@@ -298,7 +298,7 @@ class OrderResource2(MultipartResource,ModelResource):
 			print '1'
 			
 			if (promocode.only_for_first=='Y'):
-				shipment=Shipment.objects.filter(order__user__phone=bundle.data['phone'])
+				shipment=Shipment.objects.filter(order__user__phone=bundle.data['user'])
 				if (shipment.count()==0):
 					#everything good
 					bundle.data['promocode']="/api/v2/promocode/"+str(promocode.pk)+"/"
