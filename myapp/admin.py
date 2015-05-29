@@ -11,14 +11,6 @@ class UserAdmin(admin.ModelAdmin):
 	search_fields=['phone','name']
 	list_display = ('phone','name','otp','apikey','email','time')
 	list_editable = ('name',)
-	def response_change(self, request, obj):
-		print self
-		print "sdddddddddddddddddddddddddddd"
-		#return super(UserAdmin, self).response_change(request, obj)
-		return HttpResponse('''
-   <script type="text/javascript">
-      opener.dismissAddAnotherPopup(window);
-   </script>''')
 
 admin.site.register(User,UserAdmin)
 
@@ -55,11 +47,22 @@ admin.site.register(Namemail,NamemailAdmin)
 class OrderAdmin(admin.ModelAdmin):
 	list_per_page = 10
 	search_fields=['user__phone','name','namemail__name','namemail__email']
-	list_display = ('order_no','book_time','date','time','address','user','name_email','status','way','shipments','send_invoice')
-	list_editable = ('date','time','address','status',)
+	list_display = ('order_no','book_time','code','date','time','full_address','user','name_email','status','way','shipments','send_invoice')
+	list_editable = ('date','time','status',)
 	list_filter=['book_time','status']
 
 
+
+	def full_address(self,obj):
+		return str(obj.flat_no)+' '+str(obj.address)+' '+str(obj.pincode)
+
+	def code(self,obj):
+		try:
+			code=obj.promocode.code
+			return '<div style="color:red">%s</div>' % (code)
+		except:
+			return "no code"
+	code.allow_tags = True
 
 	def send_invoice(self,obj):
 		valid=1

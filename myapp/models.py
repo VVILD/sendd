@@ -1,3 +1,4 @@
+from django.db.models.signals import post_save
 from django.db import models
 from django.core.validators import RegexValidator
 import hashlib
@@ -62,7 +63,7 @@ class Promocode(models.Model):
 	msg=models.CharField(max_length = 150)
 	only_for_first=models.CharField(max_length=1,choices=(('Y','yes') ,('N','no'),),)
 	def __unicode__(self):
-		return str(self.msg)+ '|' +str(self.code)
+		return str(self.code)
 
 
 
@@ -105,6 +106,7 @@ class Order(models.Model):
 	pincode=models.CharField(max_length =30,null=True ,blank=True)
 	flat_no=models.CharField(max_length =100,null=True ,blank=True)
 	#picked_up=models.BooleanField(default=False)
+	
 
 	book_time=models.DateTimeField(null=True,blank=True)
 	
@@ -186,6 +188,9 @@ class Shipment(models.Model):
 			print "H"
 		super(Shipment, self).save(*args, **kwargs)
 		print "L"
+
+	
+
 
 class Forgotpass(models.Model):
 	user=models.ForeignKey(User)
@@ -270,7 +275,6 @@ class Gcmmessage(models.Model):
 	def save(self, *args, **kwargs):
 		''' On save, update timestamps '''
 		try:
-
 			devices=GCMDevice.objects.all()
 			devices.send_message(self.message,extra={"title":self.title})
 			#device = GCMDevice.objects.get(registration_id='APA91bEjN-CdfjLJd4PGJRu4z3k0pbY8wndZddW2tIc5mcsU_b6UhjgbOLDniWYYd_9GZ4MPPAwh0Wva-_dPsl-fabuteKKV262VljMCt3msxhmoCBcGrq675OLw8zIQYzxopHqfeGgQ')
@@ -293,9 +297,17 @@ class Pincodecheck(models.Model):
 		return str(self.pincode)
 
 
+'''
+	def send_update(sender, instance, created, **kwargs):
+	    if instance.real_tracking_no:
+
+		super(Gcmmessage, self).save(*args, **kwargs)
 
 
 
+	post_save.connect(send_update, sender=Shipment)
+
+'''
 
 
 

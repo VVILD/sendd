@@ -36,6 +36,15 @@ v2_api.register(PromocheckResource2())
 v2_api.register(PromocodeResource2())
 v2_api.register(PincodecheckResource2())
 
+from businessapp.api import BusinessResource,LoginSessionResource,OrderResource,ProductResource
+bv1_api = Api(api_name='v1')
+bv1_api.register(BusinessResource())
+bv1_api.register(LoginSessionResource())
+bv1_api.register(OrderResource())
+bv1_api.register(ProductResource())
+
+
+
 urlpatterns = patterns('',
     # Examples:
     # url(r'^$', 'shippanda.views.home', name='home'),
@@ -43,5 +52,6 @@ urlpatterns = patterns('',
 
     url(r'^admin/', include(admin.site.urls)),
     url(r'^api/', include(v1_api.urls)),
- 	url(r'^api/', include(v2_api.urls)),       
+ 	url(r'^api/', include(v2_api.urls)),
+ 	url(r'^bapi/', include(bv1_api.urls)),       
 )

@@ -1,0 +1,148 @@
+
+business login
+
+curl --dump-header - -H "Content-Type: application/json" -X POST --data '{ "username": "asda", "password": "asd"}' http://127.0.0.1:8000/bapi/v1/loginsession/
+
+Wrong password
+
+sargun@sargun-X550LC:~/Desktop/fresh/sendd$ curl --dump-header - -H "Content-Type: application/json" -X POST --data '{ "username": "asda", "password": "aasd"}' http://127.0.0.1:8000/bapi/v1/loginsession/
+HTTP/1.0 201 CREATED
+Date: Tue, 26 May 2015 06:21:46 GMT
+Server: WSGIServer/0.1 Python/2.7.6
+Vary: Accept
+X-Frame-Options: SAMEORIGIN
+Content-Type: application/json
+Location: http://127.0.0.1:8000/bapi/v1/loginsession/2/
+
+{"business": "/bapi/v1/business/asda/", "id": 2, "msg": "wrongpassword", "password": "aasd", "resource_uri": "/bapi/v1/loginsession/2/", "time": "2015-05-26T11:51:46", "username": "asda"}sargun@sargun-X550LC:~/Desktop/fresh/sendd$ 
+
+
+right password 
+
+
+sargun@sargun-X550LC:~/Desktop/fresh/sendd$ curl --dump-header - -H "Content-Type: application/json" -X POST --data '{ "username": "asda", "password": "asd"}' http://127.0.0.1:8000/bapi/v1/loginsession/
+HTTP/1.0 201 CREATED
+Date: Tue, 26 May 2015 06:22:45 GMT
+Server: WSGIServer/0.1 Python/2.7.6
+Vary: Accept
+X-Frame-Options: SAMEORIGIN
+Content-Type: application/json
+Location: http://127.0.0.1:8000/bapi/v1/loginsession/3/
+
+{"business": "/bapi/v1/business/asda/", "id": 3, "msg": "success", "name": "", "password": "asd", "resource_uri": "/bapi/v1/loginsession/3/", "time": "2015-05-26T11:52:45", "username": "asda"}sargun@sargun-X550LC:~/Desktop/fresh/sendd$ 
+
+
+Unkonwn username 
+sargun@sargun-X550LC:~/Desktop/fresh/sendd$ curl --dump-header - -H "Content-Type: application/json" -X POST --data '{ "username": "asdagffg", "password": "asd"}' http://127.0.0.1:8000/bapi/v1/loginsession/
+HTTP/1.0 201 CREATED
+Date: Tue, 26 May 2015 09:19:18 GMT
+Server: WSGIServer/0.1 Python/2.7.6
+Vary: Accept
+X-Frame-Options: SAMEORIGIN
+Content-Type: application/json
+Location: http://127.0.0.1:8000/bapi/v1/loginsession/4/
+
+{"business": null, "id": 4, "msg": "notregistered", "password": "asd", "resource_uri": "/bapi/v1/loginsession/4/", "time": "2015-05-26T14:49:18", "username": "asdagffg"}sargun@sargun-X550LC:~/Desktop/fresh/sendd$ 
+
+
+
+new business
+
+
+REQuired fields:
+username=models.CharField(max_length = 20,primary_key=True)
+business_name = models.CharField(max_length = 100)
+password=models.CharField(max_length = 300)
+email = models.EmailField(max_length = 75)	
+name = models.CharField(max_length = 100)
+contact_mob = models.CharField(max_length = 15)
+	
+
+
+curl --dump-header - -H "Content-Type: application/json" -X POST --data '{ "username": "newuser3", "password": "asd" , "email":"sas@gmail.com","business_name":"cloudesign","name":"nishant" , "contact_mob":"8879006197" }' http://127.0.0.1:8000/bapi/v1/business/
+
+
+{"address": null, "business_name": "cloudesign", "city": null, "company_name": null, "contact_mob": "8879006197", "contact_office": null, "email": "sas@gmail.com", "msg": "business created", "name": "nishant", "password": "asd", "pickup_time": null, "pincode": null, "resource_uri": "/bapi/v1/business/newuser3/", "state": null, "username": "newuser3", "website": null}sargun@sargun-X550LC:~/Desktop/fresh/sendd$ 
+
+
+
+if user exist:
+
+sargun@sargun-X550LC:~/Desktop/fresh/sendd$ curl --dump-header - -H "Content-Type: application/json" -X POST --data '{ "username": "asdagffg", "password": "asd" , "email":"sas@gmail.com","business_name":"cloudesign","name":"nishant" , "contact_mob":"8879006197" }' http://127.0.0.1:8000/bapi/v1/business/
+HTTP/1.0 201 CREATED
+Date: Tue, 26 May 2015 13:46:33 GMT
+Server: WSGIServer/0.1 Python/2.7.6
+Vary: Accept
+X-Frame-Options: SAMEORIGIN
+Content-Type: application/json
+Location: http://127.0.0.1:8000/bapi/v1/business/0/
+
+{"address": null, "business_name": "cloudesign", "city": null, "company_name": null, "contact_mob": "8879006197", "contact_office": null, "email": "sas@gmail.com", "msg": "Username exist", "name": "nishant", "password": "asd", "pickup_time": null, "pincode": null, "resource_uri": "/bapi/v1/business/0/", "state": null, "username": "0", "website": null}sargun@sargun-X550LC:~/Desktop/fresh/sendd$ ^C
+sargun@sargun-X550LC:~/Desktop/fresh/sendd$ 
+
+
+
+
+UPdate profile:
+extra fields:
+
+	contact_office= models.CharField(max_length = 15,null=True,blank =True)
+	pickup_time=models.CharField(max_length=1,choices=(('M','morning') ,('N','noon'),('E','evening'),),null=True,blank =True)
+	address=models.CharField(max_length = 315,null=True,blank =True)
+	city=models.CharField(max_length = 50,null=True,blank =True)
+	state=models.CharField(max_length = 50,null=True,blank =True)
+	pincode=models.CharField(max_length = 50,null=True,blank =True)
+	company_name = models.CharField(max_length = 100,null=True,blank =True)
+	website =models.CharField(max_length = 100,null=True,blank =True)
+
+Patch request:
+sargun@sargun-X550LC:~/Desktop/fresh/sendd$ curl --dump-header - -H "Content-Type: application/json" -X PATCH --data '{ "username": "nore", "password": "asd" , "email":"sas@gmail.com","business_name":"cloudesign","name":"nishant" , "contact_mob":"8879006197","address":"fjafdsaj" }' http://127.0.0.1:8000/bapi/v1/business/nore/
+HTTP/1.0 202 ACCEPTED
+Date: Tue, 26 May 2015 09:43:34 GMT
+Server: WSGIServer/0.1 Python/2.7.6
+Vary: Accept
+X-Frame-Options: SAMEORIGIN
+Content-Type: application/json
+
+{"address": "fjafdsaj", "business_name": "cloudesign", "city": null, "company_name": null, "contact_mob": "8879006197", "contact_office": null, "email": "sas@gmail.com", "name": "nishant", "password": "asd", "pickup_time": null, "pincode": null, "resource_uri": "/bapi/v1/business/nore/", "state": null, "username": "nore", "website": null}sargun@sargun-X550LC:~/Desktop/fresh/sendd$ 
+
+
+
+
+
+
+
+
+
+CREATE ORDER
+
+	order_no=models.AutoField(primary_key=True)
+	name = models.CharField(max_length = 100,null=True,blank =True)
+	phone = models.CharField(max_length = 12)
+	street_address=models.CharField(max_length = 300,null=True,blank =True)
+	city=models.CharField(max_length = 50,null=True,blank =True)
+	state=models.CharField(max_length = 50,null=True,blank =True)
+	pincode=models.CharField(max_length =30,null=True,blank =True)
+	country=models.CharField(max_length =30,null=True,blank =True)
+	payment_method=models.CharField(max_length=1,choices=(('F','free checkout') ,('C','cod'),),)
+	book_time=models.DateTimeField(null=True,blank=True)
+	status=models.CharField(max_length=1,choices=(('P','pending') ,('C','complete'),('N','cancelled'),('D','delivered'),),)
+	business=models.ForeignKey(Business)
+
+
+
+count=2 // number of products
+
+	name = models.CharField(max_length = 100,null=True,blank =True)
+	price = models.CharField(max_length = 10,null=True,blank =True)
+	weight = models.CharField(max_length = 10,null=True,blank =True)
+
+
+curl --dump-header - -H "Content-Type: application/json" -X POST --data '{ "username": "newuser3", "name": "asd" , "phone":"8879006197","street_address":"office no 307, powai plaza","city":"mumbai","state":"maharashtra" ,"pincode":"400076","country":"india" , "payment_method":"F" ,"pname":"['clothes','books']","pprice":"['50','60']" ,"pweight":"['2','7']" }' http://127.0.0.1:8000/bapi/v1/product/
+
+
+
+
+
+
+

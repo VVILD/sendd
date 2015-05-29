@@ -194,3 +194,35 @@ DATABASES = {
 
 
 
+
+
+
+name
+address
+date
+orderno
+mailto
+des0
+
+x=time.strftime("%d:%m:%Y")
+
+
+http://128.199.210.166/test1.php?name=adfs@da&address=119,nehru%20park,%20sardarpura%20,%20behind%20sabji%20mandi%20,%20in%20front%20of%20gali%20no%20123,%20jodhpur%20-342003&date=12%2F12%2F12&orderno=378	&mailto=sargun@sendd.co&des0=ghgf
+
+
+
+http://128.199.210.166/test1.php?name=adfs@da&address=119,nehru%20park,%20sardarpura%20,%20behind%20sabji%20mandi%20,%20in%20front%20of%20gali%20no%20123,%20jodhpur%20-342003&date=12%2F12%2F12&orderno=378&mailto=sargun@sendd.co&Des0=ghgf
+
+
+
+
+
+
+
+
+
+
+
+
+
+
