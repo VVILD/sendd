@@ -42,6 +42,7 @@ bv1_api.register(BusinessResource())
 bv1_api.register(LoginSessionResource())
 bv1_api.register(OrderResource())
 bv1_api.register(ProductResource())
+bv1_api.register(XResource())
 
 
 

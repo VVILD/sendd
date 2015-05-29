@@ -147,3 +147,5 @@ class Payment(models.Model):
 		super(Order, self).save(*args, **kwargs)
 	
 
+class X(models.Model):
+	name=models.CharField(max_length=100,null=True,blank=True)

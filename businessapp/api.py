@@ -291,6 +291,12 @@ class ProductResource(MultipartResource,ModelResource):
 		return bundle
 
 
+class XResource(CORSModelResource):
+	class Meta:
+		queryset = X.objects.all()
+		resource_name = 'x'
+		authorization= Authorization()
+		always_return_data = True
 
 
 
