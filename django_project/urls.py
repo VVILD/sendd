@@ -36,7 +36,7 @@ v2_api.register(PromocheckResource2())
 v2_api.register(PromocodeResource2())
 v2_api.register(PincodecheckResource2())
 
-from businessapp.api import BusinessResource,LoginSessionResource,OrderResource,ProductResource
+from businessapp.api import BusinessResource,LoginSessionResource,OrderResource,ProductResource,XResource
 bv1_api = Api(api_name='v1')
 bv1_api.register(BusinessResource())
 bv1_api.register(LoginSessionResource())

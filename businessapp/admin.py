@@ -7,7 +7,7 @@ class BusinessAdmin(admin.ModelAdmin):
 	#list_editable = ('name',)
 
 
-
+admin.site.register(X)
 
 admin.site.register(Business,BusinessAdmin)
 
