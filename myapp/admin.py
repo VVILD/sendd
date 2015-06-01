@@ -23,7 +23,7 @@ class AddressAdmin(admin.ModelAdmin):
 		#return super(UserAdmin, self).response_change(request, obj)
 		return HttpResponse('''
    <script type="text/javascript">
-      opener.dismissAddAnotherPopup(window);
+	  opener.dismissAddAnotherPopup(window);
    </script>''')
 
 
@@ -38,7 +38,7 @@ class NamemailAdmin(admin.ModelAdmin):
 		#return super(UserAdmin, self).response_change(request, obj)
 		return HttpResponse('''
    <script type="text/javascript">
-      opener.dismissAddAnotherPopup(window);
+	  opener.dismissAddAnotherPopup(window);
    </script>''')
 
 
@@ -201,7 +201,7 @@ class ShipmentAdmin(admin.ModelAdmin):
 	list_per_page = 10
 	form=ShipmentForm
 	search_fields=['order__order_no','real_tracking_no','mapped_tracking_no','drop_phone','drop_name']
-	list_display = ('real_tracking_no','name','cost_of_courier','weight','mapped_tracking_no','company','parcel_details','price','category','drop_phone','drop_name','status','address','generate_order')
+	list_display = ('real_tracking_no','name','cost_of_courier','weight','mapped_tracking_no','company','parcel_details','price','category','drop_phone','drop_name','status','address','print_invoice','generate_order')
 	list_filter=['category']
 	list_editable = ('name','cost_of_courier','weight','mapped_tracking_no','company','price','category','drop_phone','drop_name',)
 	
@@ -216,6 +216,71 @@ class ShipmentAdmin(admin.ModelAdmin):
 			return "no add"
 	address.allow_tags = True
 
+	def print_invoice(self,obj):
+		valid=1
+		e_string=''
+		invoice_dict={}
+		#total=0
+		try:
+			order_no=obj.order.order_no
+			invoice_dict['orderno']=order_no
+		except:
+			e_string=e_string+'order_no not set <br>'
+			valid=0
+
+
+		try:
+			name=obj.order.namemail.name
+			invoice_dict['name']=name
+		except:
+			e_string=e_string+'name not set <br>'
+			valid=0
+
+		try:
+			address=obj.order.address
+			invoice_dict['address']=address
+		except:
+			e_string=e_string+'address not set <br>'
+			valid=0
+
+		try:
+			name2=obj.drop_name
+			invoice_dict['name2']=name2
+		except:
+			e_string=e_string+'drop_name not set <br>'			
+
+		try:
+			address2=obj.drop_address
+			invoice_dict['address2']=address2
+		except:
+			e_string=e_string+'drop_address not set <br>'			
+
+
+		try:
+			book_time=obj.order.book_time
+			invoice_dict['date']=str(book_time)[0:10]
+		except:
+			e_string=e_string+'time not set <br>'			
+
+		try:
+			invoice_dict['tracking']=str(obj.real_tracking_no)
+
+		except:
+			e_string=e_string+'number of xx shipments not set <br>'
+			valid=0
+
+		
+
+
+#			address=obj.address
+#			shipments = Shipment.objects.filter(order=obj.order_no)
+#			mail_subject="a"
+#			mail_content="ggh"
+		if (valid):
+			return '<a target="_blank" href="http://128.199.210.166/secondinvoice.php?%s">generate pdf</a>' % (urllib.urlencode(invoice_dict))
+		else:
+			return e_string
+	print_invoice.allow_tags = True
 
 	def parcel_details(self, obj):
 		name=str(obj.img)
@@ -227,12 +292,13 @@ class ShipmentAdmin(admin.ModelAdmin):
 		return '<img src="%s" width=60 height=60 onmouseover="this.width=\'500\'; this.height=\'500\'" onmouseout="this.width=\'100\'; this.height=\'100\'" />' % (full_url)
 	parcel_details.allow_tags = True
 
+
+
 	def generate_order(self, obj):
-		#print "Ffgd"
 		#neworder=GCMDevice.objects.create(registration_id='fdgfdgfdsgfsfdg')
 		#device = GCMDevice.objects.get(registration_id='APA91bGKEsBkDFeODXaS0coILc__0qPaWA6etPbK3fiWad2vluI_Q_EQVw9wocFgqCufbJy43PPXxhr7TB2QMx4QSHCgvBoq2l9dzxGRGX0Mnx6V9pPH2p2lAP93XZKyKjVWRu1PIvwd')
 		#print "dsa"
-		#device.send_message("wadhwsdfdsa")
+		#devicorder.e.send_message("wadhwsdfdsa")
 		#print device
 		#device = GCMDevice.objects.get(registration_id='APA91bFT-KrRjrc6fWp8KPHDCATa5dgWCmCIARc_ESElyQ2yLKCoVVJAa477on0VtxDaZtvZCAdMerld7lLyr_TW3F3xoUUCqv1zmzr3JnVJrt5EvnoolR2p6J5pgC3ks4jF6o6_5ITE')
 		#device.send_message("harsh bahut bada chakka hai.harsh", extra={"tracking_no": "S134807P31","url":"http://128.199.159.90/static/IMG_20150508_144433.jpeg"})
