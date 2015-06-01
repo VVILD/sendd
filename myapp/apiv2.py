@@ -199,7 +199,7 @@ class WeborderResource2(MultipartResource,ModelResource):
 				for x in newnamemail:
 					pk= x.id
 
-		except:
+		except:	
 			print "cool shit"
 		
 
@@ -741,6 +741,12 @@ class PromocheckResource2(MultipartResource,ModelResource):
 
 	
 
+class InvoicesentResource2(MultipartResource,ModelResource):
+	class Meta:
+		queryset =Invoicesent.objects.all()
+		resource_name = 'invoicesent'
+		authorization= Authorization()
+		always_return_data = True
 
 
 
@@ -762,3 +768,5 @@ class PincodecheckResource2(MultipartResource,ModelResource):
 			bundle.data['msg']='we dont have pickup service available in your desired pickup location.'
 
 		return bundle
+
+
