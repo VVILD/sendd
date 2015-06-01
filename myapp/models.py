@@ -101,8 +101,7 @@ class Order(models.Model):
 
 	latitude = models.DecimalField(max_digits=25, decimal_places=20,null=True ,blank=True)
 	longitude = models.DecimalField(max_digits=25, decimal_places=20,null=True ,blank=True)
-	address=models.CharField(max_length = 200,null=True ,blank=True)
-	
+	address=models.CharField(max_length = 200,null=True ,blank=True)	
 	pincode=models.CharField(max_length =30,null=True ,blank=True)
 	flat_no=models.CharField(max_length =100,null=True ,blank=True)
 	#picked_up=models.BooleanField(default=False)
@@ -310,7 +309,11 @@ class Pincodecheck(models.Model):
 '''
 
 
-
+class Invoicesent(models.Model):
+	order=models.ForeignKey(Order)
+	success=models.CharField(max_length=1,
+									  choices=(('Y','yes') ,('N','no'),),
+									  default='N')
 
 
 

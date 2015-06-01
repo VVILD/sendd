@@ -6,6 +6,7 @@ from myapp.forms import ShipmentForm
 # Register your models here.
 from django.http import HttpResponse
 from push_notifications.models import APNSDevice, GCMDevice
+import urllib
 
 class UserAdmin(admin.ModelAdmin):
 	search_fields=['phone','name']
@@ -66,20 +67,101 @@ class OrderAdmin(admin.ModelAdmin):
 
 	def send_invoice(self,obj):
 		valid=1
+		e_string=''
+		invoice_dict={}
+		total=0
+		order_no=obj.order_no
+		invoice_dict['orderno']=order_no
+
 		try:
-			order_no=obj.order_no
 			name=obj.namemail.name
-			email=obj.namemail.email
-			address=obj.address
-			shipments = Shipment.objects.filter(order=obj.order_no)
-			mail_subject="a"
-			mail_content="ggh"
-			return 'h'
+			invoice_dict['name']=name
 		except:
-			return 'fail'
+			e_string=e_string+'name not set <br>'
+			valid=0
+
+		try:
+			address=obj.address
+			invoice_dict['address']=address
+		except:
+			e_string=e_string+'address not set <br>'
+			valid=0
+
+		try:
+			email=obj.namemail.email
+			invoice_dict['mailto']=email
+		except:
+			e_string=e_string+'email not set <br>'			
+
+		try:
+			book_time=obj.book_time
+			invoice_dict['date']=str(book_time)[0:10]
+		except:
+			e_string=e_string+'time not set <br>'			
+
+		try:
+			shipments = Shipment.objects.filter(order=obj.order_no)
+			number=shipments.count()
+			invoice_dict['numberofshipment']=number
+			count=0
+			total=0
+			for s in shipments:
+				try:
+
+					print s.real_tracking_no
+					print s.drop_address.pincode
+					print s.weight
+					print 'check'
+
+					if s.weight is None or s.weight.strip()=='':
+						e_string=e_string + str(s.real_tracking_no)+ ' weight not set <br>'
+						valid=0
+					if s.drop_address.pincode is None:
+						e_string=e_string + str(s.real_tracking_no) + ' drop_address pincode not set <br>'
+						valid=0
+					if s.price is None or s.price.strip()=='':
+						e_string=e_string + str(s.real_tracking_no) + ' price not set <br>'
+						valid=0
+
+					try:
+						invoice_dict['des'+str(count)]= str(s.weight)+ ' kg to ' + str(s.drop_address.pincode)
+						invoice_dict['tracking'+str(count)]= str(s.real_tracking_no)
+						invoice_dict['price'+str(count)]= str(s.price)
+						invoice_dict['total'+str(count)]= str(s.price)
+						invoice_dict['quantity'+str(count)]='1'
+						total= total + int(s.price)
+					except Exception,e:
+						print str(e)
+
+					count = count + 1
+				except Exception,e:
+					print str(e)
+					e_string=e_string+'error in fetching shipments <br>'
+					valid=0
+
+				invoice_dict['overalltotal']=total				
+
+
+		except:
+			e_string=e_string+'number of xx shipments not set <br>'
+			valid=0
+
+		
+
+
+#			address=obj.address
+#			shipments = Shipment.objects.filter(order=obj.order_no)
+#			mail_subject="a"
+#			mail_content="ggh"
+		if (valid):
+			return '<a target="_blank" href="http://128.199.210.166/test1.php?%s">generate  and send invoice to %s</a>' % (urllib.urlencode(invoice_dict),invoice_dict['mailto'])
+		else:
+			return e_string
+	send_invoice.allow_tags = True
 
 
 
+#http://128.199.210.166/test1.php?name=sargun&address=119%2C+nehru+park&orderno=123&date=12%2F12%2F12&mailto=sargungu%40gmail.com&numberofshipment=1&des0=5+kg+to+400076&des1=1+kg+to+456006&des2=&tracking0=S123433&tracking1=S342423&tracking2=&price0=12&price1=12&price2=&quantity0=1&quantity1=1&quantity2=&total0=12&total1=12&total2=&overalltotal=24&discount=&submit=Submit
 
 	def name_email(self, obj):
 		#pk=obj.namemail.pk

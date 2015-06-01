@@ -175,7 +175,7 @@ class BusinessResource(CORSModelResource):
 			return bundle
 
 
-class LoginSessionResource(MultipartResource,ModelResource):
+class LoginSessionResource(CORSModelResource):
 	business = fields.ForeignKey(BusinessResource, 'business' ,null=True)
 	class Meta:
 		queryset = LoginSession.objects.all()
@@ -205,7 +205,7 @@ class LoginSessionResource(MultipartResource,ModelResource):
 		return bundle
 
 
-class OrderResource(MultipartResource,ModelResource):
+class OrderResource(CORSModelResource):
 	business = fields.ForeignKey(BusinessResource, 'business' ,null=True)
 	class Meta:
 		queryset = Order.objects.all()
@@ -214,7 +214,7 @@ class OrderResource(MultipartResource,ModelResource):
 		always_return_data = True
 
 
-class ProductResource(MultipartResource,ModelResource):
+class ProductResource(CORSModelResource):
 	order = fields.ForeignKey(OrderResource, 'order' ,null=True)
 	class Meta:
 		queryset = Product.objects.all()
