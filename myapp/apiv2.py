@@ -742,6 +742,7 @@ class PromocheckResource2(MultipartResource,ModelResource):
 	
 
 class InvoicesentResource2(MultipartResource,ModelResource):
+	order=fields.ForeignKey(OrderResource2, 'order' , null=True , blank =True)
 	class Meta:
 		queryset =Invoicesent.objects.all()
 		resource_name = 'invoicesent'

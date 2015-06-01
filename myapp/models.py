@@ -311,9 +311,6 @@ class Pincodecheck(models.Model):
 
 class Invoicesent(models.Model):
 	order=models.ForeignKey(Order)
-	success=models.CharField(max_length=1,
-									  choices=(('Y','yes') ,('N','no'),),
-									  default='N')
-
+	times=models.IntegerField(default=0)
 
 

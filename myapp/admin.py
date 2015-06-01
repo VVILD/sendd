@@ -74,6 +74,12 @@ class OrderAdmin(admin.ModelAdmin):
 		invoice_dict['orderno']=order_no
 
 		try:
+			times=Invoicesent.objects.filter(order=obj.order_no)
+			times_count=str(times.count()) +' invoices sent'
+		except:
+			times_count="0 invoices sent"
+
+		try:
 			name=obj.namemail.name
 			invoice_dict['name']=name
 		except:
@@ -154,7 +160,7 @@ class OrderAdmin(admin.ModelAdmin):
 #			mail_subject="a"
 #			mail_content="ggh"
 		if (valid):
-			return '<a target="_blank" href="http://128.199.210.166/test1.php?%s">generate  and send invoice to %s</a>' % (urllib.urlencode(invoice_dict),invoice_dict['mailto'])
+			return '%s <br> <a target="_blank" href="http://128.199.210.166/test1.php?%s">generate  and send invoice to %s</a>' % (times_count,urllib.urlencode(invoice_dict),invoice_dict['mailto'])
 		else:
 			return e_string
 	send_invoice.allow_tags = True
