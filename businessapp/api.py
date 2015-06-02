@@ -53,7 +53,7 @@ class BaseCorsResource(Resource):
         
     def add_cors_headers(self, response, expose_headers=False):
         response['Access-Control-Allow-Origin'] = '*'
-        response['Access-Control-Allow-Headers'] = 'content-type, authorization'
+        response['Access-Control-Allow-Headers'] = 'content-type, authorization, x-requested-with'
         if expose_headers:
             response['Access-Control-Expose-Headers'] = 'Location'
         return response    
@@ -110,7 +110,7 @@ class BaseCorsResource(Resource):
         if request_method == 'options':
             response = HttpResponse(allows)
             response['Access-Control-Allow-Origin'] = '*'
-            response['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+            response['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-Requested-With'
             response['Access-Control-Allow-Methods'] = "GET, PUT, POST, PATCH"
             response['Allow'] = allows
             raise ImmediateHttpResponse(response=response)
