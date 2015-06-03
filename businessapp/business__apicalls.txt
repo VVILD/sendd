@@ -62,6 +62,9 @@ contact_mob = models.CharField(max_length = 15)
 curl --dump-header - -H "Content-Type: application/json" -X POST --data '{ "username": "newuser3", "password": "asd" , "email":"sas@gmail.com","business_name":"cloudesign","name":"nishant" , "contact_mob":"8879006197" }' http://127.0.0.1:8000/bapi/v1/business/
 
 
+curl --dump-header - -H "Content-Type: application/json" -X POST --data '{ "name":"sdf" }' http://127.0.0.1:8000/bapi/v1/x/
+
+
 {"address": null, "business_name": "cloudesign", "city": null, "company_name": null, "contact_mob": "8879006197", "contact_office": null, "email": "sas@gmail.com", "msg": "business created", "name": "nishant", "password": "asd", "pickup_time": null, "pincode": null, "resource_uri": "/bapi/v1/business/newuser3/", "state": null, "username": "newuser3", "website": null}sargun@sargun-X550LC:~/Desktop/fresh/sendd$ 
 
 
@@ -107,6 +110,8 @@ Content-Type: application/json
 {"address": "fjafdsaj", "business_name": "cloudesign", "city": null, "company_name": null, "contact_mob": "8879006197", "contact_office": null, "email": "sas@gmail.com", "name": "nishant", "password": "asd", "pickup_time": null, "pincode": null, "resource_uri": "/bapi/v1/business/nore/", "state": null, "username": "nore", "website": null}sargun@sargun-X550LC:~/Desktop/fresh/sendd$ 
 
 
+curl --dump-header - -H "Content-Type: application/json" -H "X-HTTP-Method-Override: PATCH" -X POST --data '{ "username": "nore", "password": "asd" , "email":"sas@gmail.com","business_name":"cloudesign","name":"nishant" , "contact_mob":"8879006197","address":"fjafdsaj" }' http://sendmates.com/bapi/v1/business/nore/
+
 
 
 
@@ -116,7 +121,7 @@ Content-Type: application/json
 
 CREATE ORDER
 
-	order_no=models.AutoField(primary_key=True)
+	#order_no=models.AutoField(primary_key=True)
 	name = models.CharField(max_length = 100,null=True,blank =True)
 	phone = models.CharField(max_length = 12)
 	street_address=models.CharField(max_length = 300,null=True,blank =True)
@@ -141,8 +146,34 @@ count=2 // number of products
 curl --dump-header - -H "Content-Type: application/json" -X POST --data '{ "username": "newuser3", "name": "asd" , "phone":"8879006197","street_address":"office no 307, powai plaza","city":"mumbai","state":"maharashtra" ,"pincode":"400076","country":"india" , "payment_method":"F" ,"pname":"['clothes','books']","pprice":"['50','60']" ,"pweight":"['2','7']" }' http://127.0.0.1:8000/bapi/v1/product/
 
 
+curl --dump-header - -H "Content-Type: application/json" -X POST --data '{ "username": "newuser3", "name": "asd" , "phone":"8879006197","street_address":"office no 307, powai plaza","city":"mumbai","state":"maharashtra" ,"pincode":"400076","country":"india" , "payment_method":"F" ,"pname":"['clothes','books']","pprice":"['50','60']" ,"pweight":"['2','7']" }' http://127.0.0.1:8000/bapi/v1/product/
 
 
 
 
 
+curl --dump-header - -H "Content-Type: application/json" -X POST --data '{"username":"cloudesign","name":"erwer","street_address":"werwer","pincode":"123123","city":"sadasd","state":"sadads","country":"India","phone":"13123","payment_method":"F","pname":"['asdasd','asdas']","pprice":"['12','123']","pweight":"['122','2323']","array":["asd","asd"]}' http://127.0.0.1:8000/bapi/v1/product/
+
+
+USername check
+
+curl --dump-header - -H "Content-Type: application/json" -X POST --data '{ "username": "asdagffg" }' http://127.0.0.1:8000/bapi/v1/usernamecheck/
+
+sargun@sargun-X550LC:~$ curl --dump-header - -H "Content-Type: application/json" -X POST --data '{ "username": "new1" }' http://127.0.0.1:8000/bapi/v1/usernamecheck/
+HTTP/1.0 201 CREATED
+Date: Wed, 03 Jun 2015 08:31:42 GMT
+Server: WSGIServer/0.1 Python/2.7.6
+Access-Control-Allow-Methods: POST,GET,OPTIONS,PUT,DELETE
+Access-Control-Expose-Headers: Location
+Vary: Accept
+Location: http://127.0.0.1:8000/bapi/v1/usernamecheck/2/
+Access-Control-Allow-Credentials: true
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Headers: Content-Type,*
+Content-Type: application/json
+X-Frame-Options: SAMEORIGIN
+
+{"exist": "N", "id": 2, "resource_uri": "/bapi/v1/usernamecheck/2/", "username": "new1"}sargun@sargun-X550LC:~$ 
+
+
+password change

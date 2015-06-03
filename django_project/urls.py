@@ -38,13 +38,14 @@ v2_api.register(PincodecheckResource2())
 v2_api.register(InvoicesentResource2())
 
 
-from businessapp.api import BusinessResource,LoginSessionResource,OrderResource,ProductResource,XResource
+from businessapp.api import BusinessResource,LoginSessionResource,OrderResource,ProductResource,XResource,UsernamecheckResource
 bv1_api = Api(api_name='v1')
 bv1_api.register(BusinessResource())
 bv1_api.register(LoginSessionResource())
 bv1_api.register(OrderResource())
 bv1_api.register(ProductResource())
 bv1_api.register(XResource())
+bv1_api.register(UsernamecheckResource())
 
 
 

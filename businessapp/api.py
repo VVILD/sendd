@@ -175,6 +175,22 @@ class BusinessResource(CORSModelResource):
 	# 		return bundle
 
 
+class UsernamecheckResource(CORSModelResource):
+	class Meta:
+		queryset = Usernamecheck.objects.all()
+		resource_name = 'usernamecheck'
+		authorization= Authorization()
+		always_return_data = True
+
+	def hydrate(self,bundle):
+		try:
+			business=Business.objects.get(pk=bundle.data['username'])
+			bundle.data["exist"]='Y'
+			return bundle
+		except:
+			bundle.data["exist"]='N'
+			return bundle
+
 class LoginSessionResource(CORSModelResource):
 	business = fields.ForeignKey(BusinessResource, 'business' ,null=True)
 	class Meta:
@@ -261,19 +277,12 @@ class ProductResource(CORSModelResource):
 			print "order created	"
 
 			try:
-				productname=str(bundle.data['pname'])
-				productname=productname[1:-1]
-				namearray=productname.split(',')
+				print "check here"
+				#print bundle.data['array'][0]
+				#print len(bundle.data['array'])
 
-				productweight=str(bundle.data['pweight'])
-				productweight=productweight[1:-1]
-				weightarray=productweight.split(',')
-
-				productprice=str(bundle.data['pprice'])
-				productprice=productprice[1:-1]
-				pricearray=productprice.split(',')
-				for x in range (0,len(namearray)-1):
-					product =Product.objects.create(order=order,name=namearray[x],weight=weightarray[x],price=pricearray[x])					
+				for x in range (0,len(bundle.data['pname'])-1):
+					product =Product.objects.create(order=order,name=bundle.data['pname'][x],weight=bundle.data['pweight'][x],price=bundle.data['pprice'][x])					
 
 			except:
 				bundle.data['errormsg']='error creating product'
@@ -282,9 +291,9 @@ class ProductResource(CORSModelResource):
 			bundle.data['errormsg']='error creating order'
 
 		x=x+1
-		bundle.data['name']=str(namearray[x])
-		bundle.data['weight']=str(weightarray[x])
-		bundle.data['price']=str(pricearray[x])
+		bundle.data['name']=str(bundle.data['pname'][x])
+		bundle.data['weight']=str(bundle.data['pweight'][x])
+		bundle.data['price']=str(bundle.data['pprice'][x])
 
 		bundle.data['order']="/bapi/v1/order/"+ str(order.pk) + "/"
 

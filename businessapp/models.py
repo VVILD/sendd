@@ -149,3 +149,11 @@ class Payment(models.Model):
 
 class X(models.Model):
 	name=models.CharField(max_length=100,null=True,blank=True)
+
+
+
+class Usernamecheck(models.Model):
+	username=models.CharField(max_length=100,null=True,blank=True)
+	exist=models.CharField(max_length=1,
+									  choices=(('Y','yes') ,('N','no'),),
+									  default='N')
