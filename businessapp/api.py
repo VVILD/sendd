@@ -299,6 +299,20 @@ class ProductResource(CORSModelResource):
 
 		return bundle
 
+	def dehydrate(self,bundle):
+		try:
+			order_pk=pk=bundle.data['order'].split('/')[4]
+			order=Order.objects.get(pk=pk)
+			bundle.data['recipient_name']=order.name
+			bundle.data['city']=order.city
+			bundle.data['status']=order.status
+			bundle.data['date']=order.book_time.date()
+			bundle.data['time']=order.book_time.time()
+
+		except:
+			print "shit"
+		return bundle
+
 
 class XResource(CORSModelResource):
 	class Meta:

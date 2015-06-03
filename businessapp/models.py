@@ -98,6 +98,8 @@ class Product(models.Model):
 	company=models.CharField(max_length=1,
 									  choices=(('F','FedEx') ,('D','Delhivery'),),
 									  blank=True , null = True)
+	shipping_cost=models.IntegerField(null=True,blank=True)
+
 	def save(self, *args, **kwargs):
 		#print self.tracking_no
 		#print self.pk
