@@ -49,8 +49,8 @@ class Address(models.Model):
 	state=models.CharField(max_length = 50,null=True,blank =True)
 	pincode=models.CharField(max_length =30,null=True,blank =True)
 	country=models.CharField(max_length =30,null=True,blank =True)
-	#def __unicode__(self):
-	#	return str(self.flat_no) + ',' + str(self.locality) + ',' + str(self.city) + ',' +str(self.state) +'-' +str(self.pincode)  
+	def __unicode__(self):
+		return str(self.flat_no) + ',' + str(self.locality) + ',' + str(self.city) + ',' +str(self.state) +'-' +str(self.pincode)  
 
 class Namemail(models.Model):
 	nm_no=models.AutoField(primary_key=True)
