@@ -301,13 +301,16 @@ class ProductResource(CORSModelResource):
 
 	def dehydrate(self,bundle):
 		try:
-			order_pk=pk=bundle.data['order'].split('/')[4]
+			pk=bundle.data['order'].split('/')[4]
 			order=Order.objects.get(pk=pk)
 			bundle.data['recipient_name']=order.name
 			bundle.data['city']=order.city
 			bundle.data['status']=order.status
 			bundle.data['date']=order.book_time.date()
 			bundle.data['time']=order.book_time.time()
+			
+			bundle.data['order_no']=436+int(bundle.data['id'])
+			print bundle.data['order_no']
 
 		except:
 			print "shit"
