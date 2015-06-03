@@ -110,7 +110,7 @@ class BaseCorsResource(Resource):
         if request_method == 'options':
             response = HttpResponse(allows)
             response['Access-Control-Allow-Origin'] = '*'
-            response['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-Requested-With, X-CSRFToken'
+            response['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-Requested-With, X-CSRFToken, X-HTTP-Method-Override'
             response['Access-Control-Allow-Methods'] = "GET, PUT, POST, PATCH"
             response['Allow'] = allows
             raise ImmediateHttpResponse(response=response)
@@ -162,6 +162,17 @@ class BusinessResource(CORSModelResource):
 		resource_name = 'business'
 		authorization= Authorization()
 		always_return_data = True
+	
+	# def hydrate(self,bundle):
+	# 	try:
+	# 		business=Business.objects.get(pk=bundle.data['username'])
+	# 		bundle.data["username"]='0'
+	# 		bundle.data["msg"]='Username exist'
+	# 		return bundle
+	# 	except:
+	# 		print "fuck"
+	# 		bundle.data["msg"]='business created'
+	# 		return bundle
 
 
 class LoginSessionResource(CORSModelResource):
