@@ -162,17 +162,6 @@ class BusinessResource(CORSModelResource):
 		resource_name = 'business'
 		authorization= Authorization()
 		always_return_data = True
-	
-	def hydrate(self,bundle):
-		try:
-			business=Business.objects.get(pk=bundle.data['username'])
-			bundle.data["username"]='0'
-			bundle.data["msg"]='Username exist'
-			return bundle
-		except:
-			print "fuck"
-			bundle.data["msg"]='business created'
-			return bundle
 
 
 class LoginSessionResource(CORSModelResource):
