@@ -146,7 +146,7 @@ class Payment(models.Model):
 			fmt='%Y-%m-%d %H:%M:%S'
 			ind_time=datetime.now(z)
 			self.payment_time = ind_time.strftime(fmt)
-		super(Order, self).save(*args, **kwargs)
+		super(Payment, self).save(*args, **kwargs)
 	
 
 class X(models.Model):
@@ -159,3 +159,22 @@ class Usernamecheck(models.Model):
 	exist=models.CharField(max_length=1,
 									  choices=(('Y','yes') ,('N','no'),),
 									  default='N')
+
+
+class Pricing(models.Model):
+	business=models.ForeignKey(Business)
+	normal_zone_a_1=models.IntegerField()
+	normal_zone_a_2=models.IntegerField()
+	normal_zone_b_1=models.IntegerField()
+	normal_zone_b_2=models.IntegerField()
+	normal_zone_c_1=models.IntegerField()
+	normal_zone_c_2=models.IntegerField()
+	normal_zone_d_1=models.IntegerField()
+	normal_zone_d_2=models.IntegerField()
+	normal_zone_e_1=models.IntegerField()
+	normal_zone_e_2=models.IntegerField()
+	bulk_zone_a=models.IntegerField()
+	bulk_zone_b=models.IntegerField()
+	bulk_zone_c=models.IntegerField()
+	bulk_zone_d=models.IntegerField()
+	bulk_zone_e=models.IntegerField()

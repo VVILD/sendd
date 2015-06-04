@@ -295,16 +295,19 @@ class OrderResource2(MultipartResource,ModelResource):
 		try:
 			promocode=Promocode.objects.get(pk=bundle.data['code'])
 
-			print '1'
+			print '1'	
 			
 			if (promocode.only_for_first=='Y'):
 				shipment=Shipment.objects.filter(order__user__phone=bundle.data['user'])
-				if (shipment.count()==0):
+				print shipment.count
+				print shipment.count()
+				if (shipment.count==0):
 					#everything good
 					bundle.data['promocode']="/api/v2/promocode/"+str(promocode.pk)+"/"
 					print str(bundle.data['code'])
 					bundle.data['valid']='Y'
 				else:
+					print "purane users"
 					bundle.data['promomsg']="You are not a first time user"
 					#bundle.data['valid']='N'
 			else:

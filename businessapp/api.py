@@ -175,6 +175,14 @@ class BusinessResource(CORSModelResource):
 	# 		return bundle
 
 
+class PaymentResource(CORSModelResource):
+	class Meta:
+		queryset = Payment.objects.all()
+		resource_name = 'payment'
+		authorization= Authorization()
+		always_return_data = True
+
+
 class UsernamecheckResource(CORSModelResource):
 	class Meta:
 		queryset = Usernamecheck.objects.all()
@@ -284,34 +292,59 @@ class ProductResource(CORSModelResource):
 				order =Order.objects.create(business=business,name=bundle.data['name'],phone=bundle.data['phone'],street_address=bundle.data['street_address'],city=bundle.data['city'],state=bundle.data['state'],pincode=bundle.data['pincode'],country=bundle.data['country'],payment_method=bundle.data['payment_method'])
 				print "order created	"
 
-				try:
-					print "check here"
-					#print bundle.data['array'][0]
-					#print len(bundle.data['array'])
+				print "check here"				
+				print isinstance(bundle.data['pname'], list)
+				print "check here"
+				
+				if (isinstance(bundle.data['pname'], list)):
+					try:
+						#print bundle.data['array'][0]
+						#print len(bundle.data['array'])
 
-					for x in range (0,len(bundle.data['pname'])-1):
-						product =Product.objects.create(order=order,name=bundle.data['pname'][x],weight=bundle.data['pweight'][x],price=bundle.data['pprice'][x])					
+						for x in range (0,len(bundle.data['pname'])-1):
+							product =Product.objects.create(order=order,name=bundle.data['pname'][x],weight=bundle.data['pweight'][x],price=bundle.data['pprice'][x])					
 
-				except:
-					bundle.data['errormsg']='error creating product'
+					except:
+						bundle.data['errormsg']='error creating product'
 			
 			except:
 				bundle.data['errormsg']='error creating order'
 
-			x=x+1
-			bundle.data['name']=str(bundle.data['pname'][x])
-			bundle.data['weight']=str(bundle.data['pweight'][x])
-			bundle.data['price']=str(bundle.data['pprice'][x])
+			if (isinstance(bundle.data['pname'], list)):	
+				x=x+1
+				bundle.data['name']=str(bundle.data['pname'][x])
+				bundle.data['weight']=str(bundle.data['pweight'][x])
+				bundle.data['price']=str(bundle.data['pprice'][x])
+			else:
+				bundle.data['name']=str(bundle.data['pname'])
+				bundle.data['weight']=str(bundle.data['pweight'])
+				bundle.data['price']=str(bundle.data['pprice'])
+
 
 			bundle.data['order']="/bapi/v1/order/"+ str(order.pk) + "/"
 
 			return bundle
 
 
-
 		if bundle.request.META['REQUEST_METHOD'] == 'POST' and override_method=='PATCH':
 			print "patch"
 			return bundle
+
+	def obj_delete(self, bundle, **kwargs):
+		#print bundle.data['id']
+		pk=bundle.request.path.split('/')[4]
+		product=Product.objects.get(pk=pk)
+		status=product.order.status
+		if status=='P': # validated
+			bundle.data["delete"]="True"
+			super(ProductResource, self).obj_delete(bundle, **kwargs)
+		else:
+		# TODO
+		# do my thing here
+			bundle.data["delete"]="False"
+			pass
+
+
 
 	def dehydrate(self,bundle):
 
