@@ -22,5 +22,6 @@ admin.site.register(Product,ProductAdmin)
 
 
 admin.site.register(Payment)
+admin.site.register(Pricing)
 
 admin.site.register(BusinessManager)

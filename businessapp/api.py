@@ -176,11 +176,32 @@ class BusinessResource(CORSModelResource):
 
 
 class PaymentResource(CORSModelResource):
+	business = fields.ForeignKey(BusinessResource, 'business' ,null=True)
 	class Meta:
 		queryset = Payment.objects.all()
 		resource_name = 'payment'
 		authorization= Authorization()
 		always_return_data = True
+
+	def build_filters(self, filters=None):
+		print "shit"
+		print filters
+		if filters is None:
+			filters = {}
+		orm_filters = super(PaymentResource, self).build_filters(filters)
+
+		if 'q' in filters:
+			orm_filters['q'] = filters['q']
+		return orm_filters
+
+	def apply_filters(self, request, orm_filters):
+		base_object_list = super(PaymentResource, self).apply_filters(request, {})
+		print orm_filters
+		if 'q' in orm_filters:
+			return base_object_list.filter(business__username=orm_filters['q'])
+		print base_object_list
+		return base_object_list
+
 
 
 class UsernamecheckResource(CORSModelResource):
@@ -245,6 +266,7 @@ class ProductResource(CORSModelResource):
 		resource_name = 'product'
 		authorization= Authorization()
 		always_return_data = True
+		ordering = ['date']
 
 	def build_filters(self, filters=None):
 		print "shit"

@@ -89,8 +89,8 @@ class Order(models.Model):
 
 class Product(models.Model):
 	name = models.CharField(max_length = 100,null=True,blank =True)
-	price = models.CharField(max_length = 10,null=True,blank =True)
-	weight = models.CharField(max_length = 10,null=True,blank =True)
+	price = models.IntegerField(max_length = 10,null=True,blank =True)
+	weight = models.IntegerField(max_length = 10,null=True,blank =True)
 	order=models.ForeignKey(Order,null=True,blank =True)
 	real_tracking_no=models.CharField(max_length=10,blank=True,null=True)
 	mapped_tracking_no=models.CharField(max_length = 50,null=True,blank=True)
@@ -99,6 +99,7 @@ class Product(models.Model):
 									  choices=(('F','FedEx') ,('D','Delhivery'),),
 									  blank=True , null = True)
 	shipping_cost=models.IntegerField(null=True,blank=True)
+	date=models.DateTimeField(null=True,blank=True)
 
 	def save(self, *args, **kwargs):
 		#print self.tracking_no
@@ -110,6 +111,7 @@ class Product(models.Model):
 			fmt='%Y-%m-%d %H:%M:%S'
 			ind_time=datetime.now(z)
 			time = ind_time.strftime(fmt)
+			self.date = ind_time.strftime(fmt)			
 			time=str(time)
 			self.tracking_data = "[{\"status\": \"Booking Received\", \"date\"	: \"" +time+" \", \"location\": \"Mumbai (Maharashtra)\"}]"
 			print self.tracking_data
@@ -162,7 +164,7 @@ class Usernamecheck(models.Model):
 
 
 class Pricing(models.Model):
-	business=models.ForeignKey(Business)
+	business=models.OneToOneField(Business,primary_key=True)
 	normal_zone_a_1=models.IntegerField()
 	normal_zone_a_2=models.IntegerField()
 	normal_zone_b_1=models.IntegerField()
