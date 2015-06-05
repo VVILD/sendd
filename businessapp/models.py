@@ -12,7 +12,7 @@ from django.contrib.auth.models import User, UserManager
 
 class BusinessManager(User):
     """User with app settings."""
-    Phone = models.CharField(max_length=50)
+    phone = models.CharField(max_length=50)
 
     # Use UserManager to get the create_user method, etc.
     objects = UserManager()
@@ -95,6 +95,10 @@ class Product(models.Model):
 	real_tracking_no=models.CharField(max_length=10,blank=True,null=True)
 	mapped_tracking_no=models.CharField(max_length = 50,null=True,blank=True)
 	tracking_data=models.CharField(max_length = 8000,null=True,blank=True)
+	
+	method=models.CharField(max_length=1,
+									  choices=(('B','Bulk') ,('N','Normal'),),
+									  blank=True , null = True)
 	company=models.CharField(max_length=1,
 									  choices=(('F','FedEx') ,('D','Delhivery'),),
 									  blank=True , null = True)
@@ -165,18 +169,19 @@ class Usernamecheck(models.Model):
 
 class Pricing(models.Model):
 	business=models.OneToOneField(Business,primary_key=True)
-	normal_zone_a_1=models.IntegerField()
-	normal_zone_a_2=models.IntegerField()
-	normal_zone_b_1=models.IntegerField()
-	normal_zone_b_2=models.IntegerField()
-	normal_zone_c_1=models.IntegerField()
-	normal_zone_c_2=models.IntegerField()
-	normal_zone_d_1=models.IntegerField()
-	normal_zone_d_2=models.IntegerField()
-	normal_zone_e_1=models.IntegerField()
-	normal_zone_e_2=models.IntegerField()
-	bulk_zone_a=models.IntegerField()
-	bulk_zone_b=models.IntegerField()
-	bulk_zone_c=models.IntegerField()
-	bulk_zone_d=models.IntegerField()
-	bulk_zone_e=models.IntegerField()
+	normal_zone_a_1=models.IntegerField(default=25)
+	normal_zone_a_2=models.IntegerField(default=20)
+	normal_zone_b_1=models.IntegerField(default=45)
+	normal_zone_b_2=models.IntegerField(default=38)
+	normal_zone_c_1=models.IntegerField(default=60)
+	normal_zone_c_2=models.IntegerField(default=43)
+	normal_zone_d_1=models.IntegerField(default=70)
+	normal_zone_d_2=models.IntegerField(default=55)
+	normal_zone_e_1=models.IntegerField(default=80)
+	normal_zone_e_2=models.IntegerField(default=60)
+	bulk_zone_a=models.IntegerField(default=13)
+	bulk_zone_b=models.IntegerField(default=15)
+	bulk_zone_c=models.IntegerField(default=18)
+	bulk_zone_d=models.IntegerField(default=20)
+	bulk_zone_e=models.IntegerField(default=22)
+

@@ -243,6 +243,9 @@ class LoginSessionResource(CORSModelResource):
 		if (bundle.data['password']== password):
 			bundle.data["msg"]='success'
 			bundle.data['name']=business.name
+			bundle.data['manager']=str(business.businessmanager.first_name)+' '+str(business.businessmanager.last_name)
+			bundle.data['manager_number']='8879006197'			
+
 
 
 		#print bundle.data['user']
@@ -393,6 +396,39 @@ class XResource(CORSModelResource):
 		resource_name = 'x'
 		authorization= Authorization()
 		always_return_data = True
+
+
+class PricingResource(CORSModelResource):
+	business = fields.ForeignKey(BusinessResource, 'business' ,null=True)
+	class Meta:
+		queryset = Pricing.objects.all()
+		resource_name = 'pricing'
+		authorization= Authorization()
+		always_return_data = True
+
+	def build_filters(self, filters=None):
+		print "shit"
+		print filters
+		if filters is None:
+			filters = {}
+		orm_filters = super(PricingResource, self).build_filters(filters)
+
+		if 'q' in filters:
+			orm_filters['q'] = filters['q']
+		return orm_filters
+
+	def apply_filters(self, request, orm_filters):
+		base_object_list = super(PricingResource, self).apply_filters(request, {})
+		print orm_filters
+		if 'q' in orm_filters:
+			return base_object_list.filter(business__username=orm_filters['q'])
+		print base_object_list
+		return base_object_list
+
+	def dehydrate(self,bundle):
+
+		bundle.data['city']="asd"
+		return bundle
 
 
 
