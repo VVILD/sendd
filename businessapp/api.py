@@ -327,8 +327,7 @@ class ProductResource(CORSModelResource):
 						#print len(bundle.data['array'])
 
 						for x in range (0,len(bundle.data['pname'])-1):
-							product =Product.objects.create(order=order,name=bundle.data['pname'][x],weight=bundle.data['pweight'][x],price=bundle.data['pprice'][x])					
-
+							product =Product.objects.create(order=order,name=bundle.data['pname'][x],weight=bundle.data['pweight'][x],price=bundle.data['pprice'][x],method=bundle.data['pmethod'][x])
 					except:
 						bundle.data['errormsg']='error creating product'
 			
@@ -340,10 +339,13 @@ class ProductResource(CORSModelResource):
 				bundle.data['name']=str(bundle.data['pname'][x])
 				bundle.data['weight']=str(bundle.data['pweight'][x])
 				bundle.data['price']=str(bundle.data['pprice'][x])
+				bundle.data['method']=str(bundle.data['pmethod'][x])
 			else:
 				bundle.data['name']=str(bundle.data['pname'])
 				bundle.data['weight']=str(bundle.data['pweight'])
 				bundle.data['price']=str(bundle.data['pprice'])
+				bundle.data['method']=str(bundle.data['pmethod'])
+
 
 
 			bundle.data['order']="/bapi/v1/order/"+ str(order.pk) + "/"

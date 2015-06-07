@@ -152,7 +152,7 @@ curl --dump-header - -H "Content-Type: application/json" -X POST --data '{ "user
 
 
 
-curl --dump-header - -H "Content-Type: application/json" -X POST --data '{"username":"cloudesign","name":"erwer","street_address":"werwer","pincode":"123123","city":"sadasd","state":"sadads","country":"India","phone":"13123","payment_method":"F","pname":"['asdasd','asdas']","pprice":"['12','123']","pweight":"['122','2323']","array":["asd","asd"]}' http://127.0.0.1:8000/bapi/v1/product/
+curl --dump-header - -H "Content-Type: application/json" -X POST --data '{"username":"cloudesign","name":"erwer","street_address":"werwer","pincode":"123123","city":"sadasd","state":"sadads","country":"India","phone":"13123","payment_method":"F","pname":"['asdasd','asdas']","pprice":['12','123'],"pweight":['122','2323'],"pmethod":["N","B"]}' http://127.0.0.1:8000/bapi/v1/product/
 
 
 USername check
