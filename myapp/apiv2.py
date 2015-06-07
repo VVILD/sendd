@@ -292,16 +292,20 @@ class OrderResource2(MultipartResource,ModelResource):
 
 		#promocode
 
+		#print int(bundle.data['user'])
 		try:
 			promocode=Promocode.objects.get(pk=bundle.data['code'])
 
 			print '1'	
 			
 			if (promocode.only_for_first=='Y'):
-				shipment=Shipment.objects.filter(order__user__phone=bundle.data['user'])
+
+				shipment=Shipment.objects.filter(order__user__phone=pk,order__way='A')#pk is the number
+				print "normal"
 				print shipment.count
+				print "with bracket"
 				print shipment.count()
-				if (shipment.count==0):
+				if (shipment.count()==0):
 					#everything good
 					bundle.data['promocode']="/api/v2/promocode/"+str(promocode.pk)+"/"
 					print str(bundle.data['code'])
@@ -726,7 +730,7 @@ class PromocheckResource2(MultipartResource,ModelResource):
 			promocode=Promocode.objects.get(pk=bundle.data['code'])
 			
 			if (promocode.only_for_first=='Y'):
-				shipment=Shipment.objects.filter(order__user__phone=bundle.data['phone'])
+				shipment=Shipment.objects.filter(order__user__phone=bundle.data['phone'],order__way='A')
 				if (shipment.count()==0):
 					#everything good
 					bundle.data['promomsg']=promocode.msg

@@ -2,7 +2,7 @@ from django.contrib import admin
 from .models import *
 import pdb
 import hashlib
-from myapp.forms import ShipmentForm
+#from myapp.forms import ShipmentForm
 # Register your models here.
 from django.http import HttpResponse
 from push_notifications.models import APNSDevice, GCMDevice
@@ -194,12 +194,18 @@ class OrderAdmin(admin.ModelAdmin):
 admin.site.register(Order,OrderAdmin)
 admin.site.register(Gcmmessage)
 admin.site.register(Promocode)
-admin.site.register(Promocheck)
+
+class PromocheckAdmin(admin.ModelAdmin):
+	list_per_page = 10
+	list_display = ('code','user')
+
+
+admin.site.register(Promocheck,PromocheckAdmin)
 
 
 class ShipmentAdmin(admin.ModelAdmin):
 	list_per_page = 10
-	form=ShipmentForm
+#	form=ShipmentForm
 	search_fields=['order__order_no','real_tracking_no','mapped_tracking_no','drop_phone','drop_name']
 	list_display = ('real_tracking_no','name','cost_of_courier','weight','mapped_tracking_no','company','parcel_details','price','category','drop_phone','drop_name','status','address','print_invoice','generate_order')
 	list_filter=['category']
