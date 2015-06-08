@@ -50,7 +50,7 @@ class Address(models.Model):
 	pincode=models.CharField(max_length =30,null=True,blank =True)
 	country=models.CharField(max_length =30,null=True,blank =True)
 	def __unicode__(self):
-		address=str(self.flat_no) + ',' + str(self.locality) + ',' + str(self.city) + ',' +str(self.state) +'-' +str(self.pincode)
+		address=str(self.pincode)
 		return force_bytes(address)
 
 class Namemail(models.Model):
@@ -84,7 +84,7 @@ class Order(models.Model):
 
 	way=models.CharField(max_length=1,
 									  choices=(('A','app') ,('W','web'),('C','call'),),
-									  default='C')
+									  default='A')
 	pick_now=models.CharField(max_length=1,
 									  choices=(('Y','yes') ,('N','no'),),
 									  default='Y')
