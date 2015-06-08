@@ -50,7 +50,8 @@ class Address(models.Model):
 	pincode=models.CharField(max_length =30,null=True,blank =True)
 	country=models.CharField(max_length =30,null=True,blank =True)
 	def __unicode__(self):
-		return str(self.flat_no) + ',' + str(self.locality) + ',' + str(self.city) + ',' +str(self.state) +'-' +str(self.pincode)  
+		address=str(self.flat_no) + ',' + str(self.locality) + ',' + str(self.city) + ',' +str(self.state) +'-' +str(self.pincode)
+		return address.encode('ascii', 'ignore')
 
 class Namemail(models.Model):
 	nm_no=models.AutoField(primary_key=True)
@@ -83,7 +84,7 @@ class Order(models.Model):
 
 	way=models.CharField(max_length=1,
 									  choices=(('A','app') ,('W','web'),('C','call'),),
-									  default='A')
+									  default='C')
 	pick_now=models.CharField(max_length=1,
 									  choices=(('Y','yes') ,('N','no'),),
 									  default='Y')
@@ -104,8 +105,7 @@ class Order(models.Model):
 	address=models.CharField(max_length = 200,null=True ,blank=True)	
 	pincode=models.CharField(max_length =30,null=True ,blank=True)
 	flat_no=models.CharField(max_length =100,null=True ,blank=True)
-	#picked_up=models.BooleanField(default=False)
-	
+	#picked_up=models.BooleanField(default=False
 
 	book_time=models.DateTimeField(null=True,blank=True)
 	

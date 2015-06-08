@@ -2,7 +2,7 @@ from django.contrib import admin
 from .models import *
 import pdb
 import hashlib
-#from myapp.forms import ShipmentForm
+from myapp.forms import ShipmentForm,OrderForm
 # Register your models here.
 from django.http import HttpResponse
 from push_notifications.models import APNSDevice, GCMDevice
@@ -47,12 +47,18 @@ admin.site.register(Namemail,NamemailAdmin)
 
 class OrderAdmin(admin.ModelAdmin):
 	list_per_page = 10
+	form=OrderForm
 	search_fields=['user__phone','name','namemail__name','namemail__email']
 	list_display = ('order_no','book_time','code','date','time','full_address','user','name_email','status','way','shipments','send_invoice')
 	list_editable = ('date','time','status',)
 	list_filter=['book_time','status']
 
+	fieldsets=(
+		('Basic Information', {'fields':['user','contact_number',('name','email'),'item_details',('date','time'),]}),
+		('Address', {'fields':['flat_no','address','pincode',]}),
+		('Destination Address', {'fields':['drop_name','drop_phone','drop_flat_no','locality','city','state','drop_pincode','country'] , 'classes':['collapse',]})
 
+		)
 
 	def full_address(self,obj):
 		return str(obj.flat_no)+' '+str(obj.address)+' '+str(obj.pincode)
