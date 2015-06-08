@@ -213,7 +213,7 @@ class ShipmentAdmin(admin.ModelAdmin):
 	list_per_page = 10
 #	form=ShipmentForm
 	search_fields=['order__order_no','real_tracking_no','mapped_tracking_no','drop_phone','drop_name']
-	list_display = ('real_tracking_no','name','cost_of_courier','weight','mapped_tracking_no','company','parcel_details','price','category','drop_phone','drop_name','status','address','print_invoice','generate_order')
+	list_display = ('real_tracking_no','name','cost_of_courier','weight','mapped_tracking_no','company','parcel_details','price','category','drop_phone','drop_name','status','generate_order')
 	list_filter=['category']
 	list_editable = ('name','cost_of_courier','weight','mapped_tracking_no','company','price','category','drop_phone','drop_name',)
 	
