@@ -51,7 +51,7 @@ class Address(models.Model):
 	country=models.CharField(max_length =30,null=True,blank =True)
 	def __unicode__(self):
 		address=str(self.flat_no) + ',' + str(self.locality) + ',' + str(self.city) + ',' +str(self.state) +'-' +str(self.pincode)
-		return address.encode('ascii', 'ignore')
+		return address.replace(u'\xa0', u' ')
 
 class Namemail(models.Model):
 	nm_no=models.AutoField(primary_key=True)
