@@ -7,7 +7,7 @@ from pytz import timezone
 import pytz
 import random
 from push_notifications.models import APNSDevice, GCMDevice
-
+from django.utils.encoding import force_bytes
 
 
 class Pricing(models.Model):
@@ -51,7 +51,7 @@ class Address(models.Model):
 	country=models.CharField(max_length =30,null=True,blank =True)
 	def __unicode__(self):
 		address=str(self.flat_no) + ',' + str(self.locality) + ',' + str(self.city) + ',' +str(self.state) +'-' +str(self.pincode)
-		return address.replace(u'\xa0', u' ')
+		return force_bytes(address)
 
 class Namemail(models.Model):
 	nm_no=models.AutoField(primary_key=True)
