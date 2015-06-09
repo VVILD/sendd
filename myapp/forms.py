@@ -2,6 +2,7 @@ from django.forms import ModelForm, Textarea
 from django import forms
 from myapp.models import Shipment,Order,User,Namemail,Address
 from suit.widgets import AutosizedTextarea
+from django.core.mail import send_mail
 
 class ShipmentForm(ModelForm):
 	class Meta:
@@ -86,6 +87,11 @@ class OrderForm(ModelForm):
 		order=Order.objects.get(pk=instance.pk)
 		address=Address.objects.create(flat_no=drop_flat_no,locality=locality,city=city,state=state,pincode=drop_pincode,country=country)
 		shipment=Shipment.objects.create(item_name=item_details,order=order,drop_name=drop_name,drop_phone=drop_phone,drop_address=address)
+
+
+		mail="Dear "+str(name) +",\n\nWe have successfully received your booking.\n\nYou will shortly receive details of the pick up representative who will come to collect your parcel at your designated time.\n\nIf you have any query, you can get in touch with us at +91-8080028081 or mail us at help@sendd.co\n\n\nRegards,\nTeam Sendd"
+		subject=str(name) + ", We have received your parcel booking."
+		send_mail(subject, mail, "Team Sendd <hello@sendd.co>", [str(bundle.data["email"]),"Team Sendd <hello@sendd.co>"])
 
 		return instance
 

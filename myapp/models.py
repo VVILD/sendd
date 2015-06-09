@@ -69,8 +69,8 @@ class Promocode(models.Model):
 
 class Order(models.Model):
 	order_no=models.AutoField(primary_key=True)
-	date=models.DateField(null=True,blank =True)
-	time=models.TimeField(null=True,blank =True)
+	date=models.DateField(verbose_name='pickup date',null=True,blank =True)
+	time=models.TimeField(verbose_name='pickup time',null=True,blank =True)
 	user=models.ForeignKey(User)
 	promocode=models.ForeignKey(Promocode,null=True,blank=True)
 	
@@ -309,6 +309,9 @@ class Pincodecheck(models.Model):
 
 
 class Invoicesent(models.Model):
-	order=models.ForeignKey(Order)	
+	order=models.ForeignKey(Order)
+
+
+
 
 

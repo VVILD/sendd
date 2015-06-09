@@ -241,15 +241,18 @@ class ShipmentAdmin(admin.ModelAdmin):
 	readonly_fields=('real_tracking_no','print_invoice','generate_order','parcel_details','address')
 
 	fieldsets=(
-		('Basic Information', {'fields':['real_tracking_no','parcel_details',('category','status')]}),
-		('Extra Information', {'fields':[('name','weight','cost_of_courier'),'price',]}),
-		('Tracking Information', {'fields':[('mapped_tracking_no','company'),]}),
+		('Basic Information', {'fields':['real_tracking_no','parcel_details',('category','status')]},'classes':('suit-tab','suit-tab-general')),
+		('Parcel Information', {'fields':[('name','weight','cost_of_courier'),]},'classes':('suit-tab','suit-tab-general')),
+		('Amount paid', {'fields':['price',]},'classes':('suit-tab','suit-tab-general')),
+		('Tracking Information', {'fields':[('mapped_tracking_no','company'),]},'classes':('suit-tab','suit-tab-general')),
 		#('Destination Address', {'fields':['drop_name','drop_phone','drop_flat_no','locality','city','state','drop_pincode','country'] , 'classes':['collapse',]})
-		('Destination Address', {'fields':[('drop_name','drop_phone'),'address',] }),
-		('Actions',{'fields':['print_invoice','generate_order']})
+		('Destination Address', {'fields':[('drop_name','drop_phone'),'address',] },'classes':('suit-tab','suit-tab-general')),
+		('Actions',{'fields':['print_invoice','generate_order']},'classes':('suit-tab','suit-tab-general')),
+		('Tracking',{'fields':['tracking_data']},'classes':('suit-tab','suit-tab-tracking'))
+
 		)
 
-#	suit_form_tabs = (('general', 'General'), ('extra', 'Extra'), ('destination', 'Destination Address'),('actions', 'Actions'))
+	suit_form_tabs = (('general', 'General'), ('tracking', 'Tracking'))
 
 
 	def response_change(self, request, obj):
