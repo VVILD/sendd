@@ -4,10 +4,10 @@ import pdb
 import hashlib
 from myapp.forms import ShipmentForm,OrderForm
 # Register your models here.
-from django.http import HttpResponse
+from django.http import HttpResponse,HttpResponseRedirect
 from push_notifications.models import APNSDevice, GCMDevice
 import urllib
-
+from django.shortcuts import redirect
 
 class UserAdmin(admin.ModelAdmin):
 	search_fields=['phone','name']
@@ -185,7 +185,7 @@ class OrderAdmin(admin.ModelAdmin):
 #			mail_subject="a"
 #			mail_content="ggh"
 		if (valid):
-			return '%s <br> <a target="_blank" href="http://sendmates.com/test1.php?%s">generate  and send invoice to %s</a>' % (times_count,urllib.urlencode(invoice_dict),invoice_dict['mailto'])
+			return '%s <br> <a target="_blank" href="http://128.199.210.166/test1.php?%s">generate  and send invoice to %s</a>' % (times_count,urllib.urlencode(invoice_dict),invoice_dict['mailto'])
 		else:
 			return e_string
 	send_invoice.allow_tags = True
@@ -242,16 +242,22 @@ class ShipmentAdmin(admin.ModelAdmin):
 	readonly_fields=('real_tracking_no','print_invoice','generate_order','parcel_details','address')
 
 	fieldsets=(
-		('Basic Information', {'fields':['real_tracking_no','parcel_details','category','status'], 'classes':('suit-tab','suit-tab-general')}),
-		('Extra Information', {'fields':[('name','weight','cost_of_courier'),'price',] , 'classes':['suit-tab','suit-tab-extra',]}),
-		('Tracking Information', {'fields':['mapped_tracking_no','company',], 'classes':('suit-tab','suit-tab-general')}),
+		('Basic Information', {'fields':['real_tracking_no','parcel_details',('category','status')]}),
+		('Extra Information', {'fields':[('name','weight','cost_of_courier'),'price',]}),
+		('Tracking Information', {'fields':[('mapped_tracking_no','company'),]}),
 		#('Destination Address', {'fields':['drop_name','drop_phone','drop_flat_no','locality','city','state','drop_pincode','country'] , 'classes':['collapse',]})
-		('Destination Address', {'fields':[('drop_name','drop_phone'),'address',] , 'classes':['suit-tab','suit-tab-destination',]}),
-		('Actions',{'fields':['print_invoice','generate_order'], 'classes':('suit-tab','suit-tab-actions')})
+		('Destination Address', {'fields':[('drop_name','drop_phone'),'address',] }),
+		('Actions',{'fields':['print_invoice','generate_order']})
 		)
 
-	suit_form_tabs = (('general', 'General'), ('extra', 'Extra'), ('destination', 'Destination Address'),('actions', 'Actions'))
+#	suit_form_tabs = (('general', 'General'), ('extra', 'Extra'), ('destination', 'Destination Address'),('actions', 'Actions'))
 
+
+	def response_change(self, request, obj):
+		print self
+		print "sdddddddddddddddddddddddddddd"
+		#return super(UserAdmin, self).response_change(request, obj)
+		return HttpResponseRedirect('http://sendmates.com/admin/myapp/order/')
 
 	def address(self,obj):
 		try:
