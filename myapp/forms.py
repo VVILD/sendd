@@ -14,18 +14,20 @@ class ShipmentForm(ModelForm):
 class OrderForm(ModelForm):
 
 
-	item_details=forms.CharField(required=False)
-	contact_number=forms.CharField(required=False)
+	item_details=forms.CharField()
+	contact_number=forms.CharField()
+	name=forms.CharField()
+	email=forms.CharField()
 	drop_name=forms.CharField(required=False)
 	drop_phone=forms.CharField(required=False)
-	flat_no=forms.CharField(initial='400076',required=False)
-	drop_flat_no=forms.CharField(initial='400076',required=False)
-	locality=forms.CharField(initial='400076',required=False)
-	city=forms.CharField(initial='400076',required=False)
-	state=forms.CharField(initial='400076',required=False)
-	drop_pincode=forms.CharField(initial='400076',required=False)
+	flat_no=forms.CharField(required=False)
+	drop_flat_no=forms.CharField(required=False)
+	locality=forms.CharField(required=False)
+	city=forms.CharField(required=False)
+	state=forms.CharField(required=False)
+	drop_pincode=forms.CharField(required=False)
 	country=forms.CharField(initial='India',required=False)
-
+	#way=forms.CharField(initial='C',widget=forms.HiddenInput())
 
 	def save(self,commit=True):
 		item_details = self.cleaned_data.get('item_details', None)
@@ -76,6 +78,8 @@ class OrderForm(ModelForm):
 		instance = super(OrderForm, self).save(commit=False)
 		instance.flat_no='dasdsa'
 		instance.namemail=namemail
+		instance.user=user
+		instance.way='C'
 		instance.save()
 
 		print instance.pk
@@ -91,5 +95,7 @@ class OrderForm(ModelForm):
 		model= Order
 		widgets = {
 			'address': AutosizedTextarea,
+			'locality': Textarea(attrs={'cols': 80, 'rows': 20}),
+			'drop_flat_no': Textarea(attrs={'cols': 80, 'rows': 20}),
 			}
 

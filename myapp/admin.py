@@ -44,7 +44,7 @@ class NamemailAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Namemail,NamemailAdmin)
-
+'''
 
 class ShipmentInline(admin.TabularInline):
 	model = Shipment
@@ -58,12 +58,12 @@ class ShipmentInline(admin.TabularInline):
 		#('Invoices',{'fields':['send_invoice',], 'classes':('suit-tab','suit-tab-invoices')})
 	)
 	suit_form_tabs = (('general', 'General'))
-
+'''
 	
 
 
 class OrderAdmin(admin.ModelAdmin):
-	inlines=(ShipmentInline,)
+	#inlines=(ShipmentInline,)
 	list_per_page = 10
 	form=OrderForm
 	search_fields=['user__phone','name','namemail__name','namemail__email']
@@ -72,12 +72,11 @@ class OrderAdmin(admin.ModelAdmin):
 	list_filter=['book_time','status']
 	readonly_fields = ('code','send_invoice',)
 	fieldsets=(
-		('Basic Information', {'fields':['contact_number',('name','email'),'item_details',('date','time'),'code',], 'classes':('suit-tab','suit-tab-general')}),
-		('Address', {'fields':['flat_no','address','pincode',], 'classes':('suit-tab','suit-tab-general')}),
-		#('Destination Address', {'fields':['drop_name','drop_phone','drop_flat_no','locality','city','state','drop_pincode','country'] , 'classes':['collapse',]})
-		('Invoices',{'fields':['send_invoice'], 'classes':('suit-tab','suit-tab-invoices')})
+		('Basic Information', {'fields':['contact_number',('name','email'),'item_details',('date','time'),'code',],}),
+		('Address', {'fields':['flat_no','address','pincode',],}),
+		('Destination Address', {'fields':[('drop_name','drop_phone'),'drop_flat_no','locality',('city','state'),('drop_pincode','country')] ,})
+		#('Invoices',{'fields':['send_invoice'], 'classes':('suit-tab','suit-tab-invoices')})
 		)
-	suit_form_tabs = (('general', 'General'), ('invoices', 'Invoices'), ('shipments', 'Shipments'))
 
 	def full_address(self,obj):
 		return str(obj.flat_no)+' '+str(obj.address)+' '+str(obj.pincode)
@@ -254,10 +253,13 @@ class ShipmentAdmin(admin.ModelAdmin):
 
 
 	def response_change(self, request, obj):
-		print self
+		
+		#print self.__dict__
+		#print request.__dict__
+		#print obj.pk
 		print "sdddddddddddddddddddddddddddd"
 		#return super(UserAdmin, self).response_change(request, obj)
-		return HttpResponseRedirect('http://sendmates.com/admin/myapp/order/')
+		return HttpResponseRedirect('http://sendmates.com/admin/myapp/shipment/'+str(obj.pk) + '/' )
 
 	def address(self,obj):
 		try:
