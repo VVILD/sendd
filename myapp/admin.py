@@ -211,7 +211,7 @@ class OrderAdmin(admin.ModelAdmin):
 		i=0
 		output=''
 		for x in shipments:
-			output=output + '<a href ="http://sendmates.com/admin/myapp/shipment/' +str(x.pk)+'/" "target"="_blank" >'+ str(x.real_tracking_no) + '</a> <br>'
+			output=output + '<a href ="http://sendmates.com/admin/myapp/shipment/' +str(x.pk)+'/" target="_blank" >'+ str(x.real_tracking_no) + '</a> <br>'
 		return output
 	shipments.allow_tags = True
 
@@ -249,7 +249,6 @@ class ShipmentAdmin(admin.ModelAdmin):
 		('Destination Address', {'fields':[('drop_name','drop_phone'),'address',] ,'classes':('suit-tab','suit-tab-general')}),
 		('Actions',{'fields':['print_invoice','generate_order'],'classes':('suit-tab','suit-tab-general')}),
 		('Tracking',{'fields':['tracking_data'],'classes':('suit-tab','suit-tab-tracking')})
-
 		)
 
 	suit_form_tabs = (('general', 'General'), ('tracking', 'Tracking'))
