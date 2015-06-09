@@ -50,8 +50,7 @@ class Address(models.Model):
 	pincode=models.CharField(max_length =30,null=True,blank =True)
 	country=models.CharField(max_length =30,null=True,blank =True)
 	def __unicode__(self):
-		address=str(self.pincode)
-		return force_bytes(address)
+		return str(str(self.flat_no)+ ',' + str(self.locality)+ ',' + str(self.city) + ',' + str(self.state)+',' + str(self.country)+ ',' + str(self.pincode))
 
 class Namemail(models.Model):
 	nm_no=models.AutoField(primary_key=True)
