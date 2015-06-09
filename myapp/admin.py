@@ -46,20 +46,38 @@ class NamemailAdmin(admin.ModelAdmin):
 admin.site.register(Namemail,NamemailAdmin)
 
 
+class ShipmentInline(admin.TabularInline):
+	model = Shipment
+	form=ShipmentForm
+	suit_classes = 'suit-tab suit-tab-shipments'
+	#readonly_fields = ('real_tracking_no','print_invoice',)
+	fieldsets=(
+	('Basic Information', {'fields':['real_tracking_no','print_invoice',], 'classes':('suit-tab','suit-tab-general')}),
+		#('Address', {'fields':['flat_no','address','pincode',], 'classes':('suit-tab','suit-tab-general')}),
+		#('Destination Address', {'fields':['drop_name','drop_phone','drop_flat_no','locality','city','state','drop_pincode','country'] , 'classes':['collapse',]})
+		#('Invoices',{'fields':['send_invoice',], 'classes':('suit-tab','suit-tab-invoices')})
+	)
+	suit_form_tabs = (('general', 'General'))
+
+	
+
+
 class OrderAdmin(admin.ModelAdmin):
+	inlines=(ShipmentInline,)
 	list_per_page = 10
 	form=OrderForm
 	search_fields=['user__phone','name','namemail__name','namemail__email']
-	list_display = ('order_no','book_time','code','date','time','full_address','user','name_email','status','way','shipments','send_invoice')
+	list_display = ('order_no','book_time','code','date','time','full_address','name_email','status','way','shipments','send_invoice')
 	list_editable = ('date','time','status',)
 	list_filter=['book_time','status']
-
+	readonly_fields = ('code','send_invoice',)
 	fieldsets=(
-		('Basic Information', {'fields':['user','contact_number',('name','email'),'item_details',('date','time'),]}),
-		('Address', {'fields':['flat_no','address','pincode',]}),
-		('Destination Address', {'fields':['drop_name','drop_phone','drop_flat_no','locality','city','state','drop_pincode','country'] , 'classes':['collapse',]})
-
+		('Basic Information', {'fields':['contact_number',('name','email'),'item_details',('date','time'),'code',], 'classes':('suit-tab','suit-tab-general')}),
+		('Address', {'fields':['flat_no','address','pincode',], 'classes':('suit-tab','suit-tab-general')}),
+		#('Destination Address', {'fields':['drop_name','drop_phone','drop_flat_no','locality','city','state','drop_pincode','country'] , 'classes':['collapse',]})
+		('Invoices',{'fields':['send_invoice'], 'classes':('suit-tab','suit-tab-invoices')})
 		)
+	suit_form_tabs = (('general', 'General'), ('invoices', 'Invoices'), ('shipments', 'Shipments'))
 
 	def full_address(self,obj):
 		return str(obj.flat_no)+' '+str(obj.address)+' '+str(obj.pincode)
@@ -167,7 +185,7 @@ class OrderAdmin(admin.ModelAdmin):
 #			mail_subject="a"
 #			mail_content="ggh"
 		if (valid):
-			return '%s <br> <a target="_blank" href="http://128.199.210.166/test1.php?%s">generate  and send invoice to %s</a>' % (times_count,urllib.urlencode(invoice_dict),invoice_dict['mailto'])
+			return '%s <br> <a target="_blank" href="http://sendmates.com/test1.php?%s">generate  and send invoice to %s</a>' % (times_count,urllib.urlencode(invoice_dict),invoice_dict['mailto'])
 		else:
 			return e_string
 	send_invoice.allow_tags = True
@@ -179,10 +197,11 @@ class OrderAdmin(admin.ModelAdmin):
 	def name_email(self, obj):
 		#pk=obj.namemail.pk
 		try:
+			user=obj.user
 			pk=obj.namemail.pk
 			name=obj.namemail.name
 			email=obj.namemail.email
-			return '<a href="/admin/myapp/namemail/%s/" onclick="return showAddAnotherPopup(this);">%s|%s</a>' % (pk,name,email)
+			return '%s<br><a href="/admin/myapp/namemail/%s/" onclick="return showAddAnotherPopup(this);">%s|%s</a>' % (user,pk,name,email)
 		except:
 			return 'fail'
 	name_email.allow_tags = True
@@ -191,9 +210,10 @@ class OrderAdmin(admin.ModelAdmin):
 	def shipments(self, obj):
 		shipments = Shipment.objects.filter(order=obj.order_no)
 		i=0
+		output=''
 		for x in shipments:
-			i=i+1
-		return str(i) + '<a href ="http://128.199.159.90/admin/myapp/shipment/?order__order_no=%s" target="_blank" > shipments (click to see) </a>' % (obj.order_no)
+			output=output + '<a href ="http://sendmates.com/admin/myapp/shipment/' +str(x.pk)+'/" "target"="_blank" >'+ str(x.real_tracking_no) + '</a> <br>'
+		return output
 	shipments.allow_tags = True
 
 #	<img src="https://farm8.staticflickr.com/7042/6873010155_d4160a32a2_s.jpg" onmouseover="this.width='500'; this.height='500'" onmouseout="this.width='100'; this.height='100'">
@@ -212,12 +232,26 @@ admin.site.register(Promocheck,PromocheckAdmin)
 
 class ShipmentAdmin(admin.ModelAdmin):
 	list_per_page = 10
-#	form=ShipmentForm
+	form=ShipmentForm
+
+
 	search_fields=['order__order_no','real_tracking_no','mapped_tracking_no','drop_phone','drop_name']
 	list_display = ('real_tracking_no','name','cost_of_courier','weight','mapped_tracking_no','company','parcel_details','price','category','drop_phone','drop_name','status','address','print_invoice','generate_order')
 	list_filter=['category']
 	list_editable = ('name','cost_of_courier','weight','mapped_tracking_no','company','price','category','drop_phone','drop_name',)
-	
+	readonly_fields=('real_tracking_no','print_invoice','generate_order','parcel_details','address')
+
+	fieldsets=(
+		('Basic Information', {'fields':['real_tracking_no','parcel_details','category','status'], 'classes':('suit-tab','suit-tab-general')}),
+		('Extra Information', {'fields':[('name','weight','cost_of_courier'),'price',] , 'classes':['suit-tab','suit-tab-extra',]}),
+		('Tracking Information', {'fields':['mapped_tracking_no','company',], 'classes':('suit-tab','suit-tab-general')}),
+		#('Destination Address', {'fields':['drop_name','drop_phone','drop_flat_no','locality','city','state','drop_pincode','country'] , 'classes':['collapse',]})
+		('Destination Address', {'fields':[('drop_name','drop_phone'),'address',] , 'classes':['suit-tab','suit-tab-destination',]}),
+		('Actions',{'fields':['print_invoice','generate_order'], 'classes':('suit-tab','suit-tab-actions')})
+		)
+
+	suit_form_tabs = (('general', 'General'), ('extra', 'Extra'), ('destination', 'Destination Address'),('actions', 'Actions'))
+
 
 	def address(self,obj):
 		try:
@@ -319,9 +353,9 @@ class ShipmentAdmin(admin.ModelAdmin):
 		
 		valid=1
 		try:
+			string=''
 			shipment = Shipment.objects.get(pk=obj.pk)
 			address = shipment.drop_address
-			string=''
 			error_string=''
 			try:
 				orderid=shipment.pk
