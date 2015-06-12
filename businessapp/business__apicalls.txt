@@ -142,6 +142,12 @@ count=2 // number of products
 	price = models.CharField(max_length = 10,null=True,blank =True)
 	weight = models.CharField(max_length = 10,null=True,blank =True)
 
+curl --dump-header - -H "Content-Type: application/json" -X POST --data '{ "username": "cloudesign", "name": "asd" , "phone":"8879006197","reference_id":"SE487","email":"sargungu@gmail.com","street_address":"office no 307, powai plaza","city":"mumbai","state":"maharashtra" ,"pincode":"400076","country":"india" , "payment_method":"F" ,"pname":["clothes","books"],"pprice":["50","60"] ,"pweight":["2","7"],"pmethod":["N","B"],"psku":["100000","100001"],"pquantity":["2","1"] }' http://127.0.0.1:8000/bapi/v1/product/
+
+
+
+
+
 
 curl --dump-header - -H "Content-Type: application/json" -X POST --data '{ "username": "newuser3", "name": "asd" , "phone":"8879006197","street_address":"office no 307, powai plaza","city":"mumbai","state":"maharashtra" ,"pincode":"400076","country":"india" , "payment_method":"F" ,"pname":"['clothes','books']","pprice":"['50','60']" ,"pweight":"['2','7']" }' http://127.0.0.1:8000/bapi/v1/product/
 
@@ -152,7 +158,9 @@ curl --dump-header - -H "Content-Type: application/json" -X POST --data '{ "user
 
 
 
-curl --dump-header - -H "Content-Type: application/json" -X POST --data '{"username":"cloudesign","name":"erwer","street_address":"werwer","pincode":"123123","city":"sadasd","state":"sadads","country":"India","phone":"13123","payment_method":"F","pname":"['asdasd','asdas']","pprice":['12','123'],"pweight":['122','2323'],"pmethod":["N","B"]}' http://127.0.0.1:8000/bapi/v1/product/
+
+
+#curl --dump-header - -H "Content-Type: application/json" -X POST --data '{"username":"cloudesign","name":"erwer","street_address":"werwer","pincode":"1#23123","city":"sadasd","state":"sadads","country":"India","phone":"13123","payment_method":"F","pname":"['asdasd','asdas']","pprice":['12','123'],"pwei#ght":['122','2323'],"pmethod":["N","B"]}' http://127.0.0.1:8000/bapi/v1/product/
 
 
 USername check
@@ -177,3 +185,36 @@ X-Frame-Options: SAMEORIGIN
 
 
 password change
+
+
+
+
+
+
+
+
+
+
+
+
+
+sending business manager information
+
+sargun@sargun-X550LC:~$ curl --dump-header - -H "Content-Type: application/json" -X POST --data '{ "username": "cloudesign", "password": "hoho"}' http://127.0.0.1:8000/bapi/v1/loginsession/
+HTTP/1.0 201 CREATED
+Date: Fri, 12 Jun 2015 05:08:09 GMT
+Server: WSGIServer/0.1 Python/2.7.6
+Access-Control-Allow-Methods: POST,GET,OPTIONS,PUT,DELETE
+Access-Control-Expose-Headers: Location
+Vary: Accept
+Location: http://127.0.0.1:8000/bapi/v1/loginsession/3/
+Access-Control-Allow-Credentials: true
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Headers: Content-Type,*
+Content-Type: application/json
+X-Frame-Options: SAMEORIGIN
+
+{"business": "/bapi/v1/business/cloudesign/", "id": 3, "manager": "sargun gulati", "manager_number": "8879006197", "msg": "success", "name": "asd", "password": "hoho", "resource_uri": "/bapi/v1/loginsession/3/", "time": "2015-06-12T10:38:08", "username": "cloudesign"}sargun@sargun-X550LC:~$ ^C
+
+
+

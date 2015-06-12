@@ -58,10 +58,11 @@ class LoginSession(models.Model):
 
 
 class Order(models.Model):
+	reference_id=models.CharField(max_length=100)
 	order_no=models.AutoField(primary_key=True)
 	name = models.CharField(max_length = 100,null=True,blank =True)
 	phone = models.CharField(max_length = 12)
-	#email = models.EmailField(max_length = 75,null=True,blank =True)
+	email = models.EmailField(max_length = 75,null=True,blank =True)
 	#address=models.CharField(max_length = 300)
 	#flat_no=models.CharField(max_length = 100,null=True,blank =True)
 	street_address=models.CharField(max_length = 300,null=True,blank =True)
@@ -89,8 +90,11 @@ class Order(models.Model):
 
 class Product(models.Model):
 	name = models.CharField(max_length = 100,null=True,blank =True)
+	quantity = models.IntegerField(max_length = 10,null=True,blank =True)
+	sku = models.CharField(max_length = 100,null=True,blank =True)
 	price = models.IntegerField(max_length = 10,null=True,blank =True)
-	weight = models.IntegerField(max_length = 10,null=True,blank =True)
+	weight = models.IntegerField(max_length = 10,null=True,blank =True)	
+	applied_weight = models.IntegerField(max_length = 10,null=True,blank =True)
 	order=models.ForeignKey(Order,null=True,blank =True)
 	real_tracking_no=models.CharField(max_length=10,blank=True,null=True)
 	mapped_tracking_no=models.CharField(max_length = 50,null=True,blank=True)
@@ -99,6 +103,7 @@ class Product(models.Model):
 	method=models.CharField(max_length=1,
 									  choices=(('B','Bulk') ,('N','Normal'),),
 									  blank=True , null = True)
+	
 	company=models.CharField(max_length=1,
 									  choices=(('F','FedEx') ,('D','Delhivery'),),
 									  blank=True , null = True)

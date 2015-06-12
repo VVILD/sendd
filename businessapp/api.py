@@ -16,8 +16,9 @@ import string
 from django.core.mail import send_mail
 from push_notifications.models import APNSDevice, GCMDevice
 import ast
+import json
 from tastypie.resources import Resource
-
+from tastypie.fields import ListField
 '''
 Add CORS headers for tastypie APIs
 
@@ -243,8 +244,8 @@ class LoginSessionResource(CORSModelResource):
 		if (bundle.data['password']== password):
 			bundle.data["msg"]='success'
 			bundle.data['name']=business.name
-			bundle.data['manager']=str(business.businessmanager.first_name)+' '+str(business.businessmanager.last_name)
-			bundle.data['manager_number']='8879006197'			
+			bundle.data['manager']='sargun gulati'
+			bundle.data['manager_number']='8879006197'
 
 
 
@@ -255,11 +256,80 @@ class LoginSessionResource(CORSModelResource):
 
 class OrderResource(CORSModelResource):
 	business = fields.ForeignKey(BusinessResource, 'business' ,null=True)
+	products = ListField(attribute='products',null=True)
 	class Meta:
 		queryset = Order.objects.all()
 		resource_name = 'order'
 		authorization= Authorization()
 		always_return_data = True
+
+
+	def build_filters(self, filters=None):
+		print "shit"
+		print filters
+		if filters is None:
+			filters = {}
+		orm_filters = super(OrderResource, self).build_filters(filters)
+
+		if 'q' in filters:
+			orm_filters['q'] = filters['q']
+		return orm_filters
+
+	def apply_filters(self, request, orm_filters):
+		base_object_list = super(OrderResource, self).apply_filters(request, {})
+		print orm_filters
+		if 'q' in orm_filters:
+			return base_object_list.filter(business__username=orm_filters['q'])
+		print base_object_list
+		return base_object_list
+
+
+	def dehydrate(self,bundle):
+		try:
+			pk=bundle.data['resource_uri'].split('/')[4]
+			order=Order.objects.get(pk=pk)
+			product=Product.objects.filter(order=order)
+			print product
+			l=[]
+			for p in product:
+				product_name=p.name
+				product_quantity=p.quantity
+				print '1'
+				product_weight=p.weight
+				product_applied_weight=p.applied_weight
+				product_price=p.price
+				product_shipping_cost=p.shipping_cost
+				print '2'
+				if p.method=='B':
+					product_method='Bulk'
+				else:
+					product_method='Premium'
+				tracking_json=json.loads(p.tracking_data)
+				print '3'
+				product_status=tracking_json[-1]['status'].encode('ascii','ignore')
+				product_date=tracking_json[-1]['date'].encode('ascii','ignore')
+				product_location=tracking_json[-1]['location'].encode('ascii','ignore')
+
+
+				l.append({"product_name":product_name,"product_quantity":product_quantity,"product_weight":product_weight,"product_applied_weight":product_applied_weight,"product_price":product_price,"product_shipping_cost":product_shipping_cost,"product_method":product_method,"product_status":product_status,"product_date":product_date,"product_location":product_location,})
+
+			data= json.dumps(l)
+
+			#bundle.data['products']=data
+			bundle.data['products']=l
+			
+			# bundle.data['status']=order.status
+			# bundle.data['date']=order.book_time.date()
+			# bundle.data['time']=order.book_time.time()
+			
+			# bundle.data['order_no']=436+int(bundle.data['id'])
+			# print bundle.data['order_no']
+		except:
+			print "shit"
+
+		#bundle.data['ucts']=[{"product_date": "2015-06-07 18:40:20 ", "product_price": 50, "product_location": "Mumbai (Maharashtra)", "product_applied_weight": "null", "product_method": "Premium", "product_quantity": "null", "product_status": "Booking Received", "product_name": "clothes", "product_weight": 2, "product_shipping_cost": "null"}, {"product_date": "2015-06-07 18:40:20 ", "product_price": 60, "product_location": "Mumbai (Maharashtra)", "product_applied_weight": "null", "product_method": "Bulk", "product_quantity": "null", "product_status": "Booking Received", "product_name": "books", "product_weight": 7, "product_shipping_cost": "null"}]
+
+		return bundle
 
 
 class ProductResource(CORSModelResource):
@@ -314,7 +384,7 @@ class ProductResource(CORSModelResource):
 			#create order
 	#curl --dump-header - -H "Content-Type: application/json" -X POST --data '{ "username": "newuser3", "name": "asd" , "phone":"8879006197","street_address":"office no 307, powai plaza","city":"mumbai","state":"maharashtra" ,"pincode":"400076","country":"india" , "payment_method":"F" ,"pname":"['clothes','books']","pprice":"['50','60']" ,"pweight":"['2','7']" }' http://127.0.0.1:8000/bapi/v1/order/		
 			try:
-				order =Order.objects.create(business=business,name=bundle.data['name'],phone=bundle.data['phone'],street_address=bundle.data['street_address'],city=bundle.data['city'],state=bundle.data['state'],pincode=bundle.data['pincode'],country=bundle.data['country'],payment_method=bundle.data['payment_method'])
+				order =Order.objects.create(business=business,name=bundle.data['name'],phone=bundle.data['phone'],street_address=bundle.data['street_address'],city=bundle.data['city'],state=bundle.data['state'],pincode=bundle.data['pincode'],country=bundle.data['country'],payment_method=bundle.data['payment_method'],reference_id=bundle.data['reference_id'],email=bundle.data['email'])
 				print "order created	"
 
 				print "check here"				
@@ -327,11 +397,12 @@ class ProductResource(CORSModelResource):
 						#print len(bundle.data['array'])
 
 						for x in range (0,len(bundle.data['pname'])-1):
-							product =Product.objects.create(order=order,name=bundle.data['pname'][x],weight=bundle.data['pweight'][x],price=bundle.data['pprice'][x],method=bundle.data['pmethod'][x])
+							product =Product.objects.create(order=order,name=bundle.data['pname'][x],weight=bundle.data['pweight'][x],price=bundle.data['pprice'][x],method=bundle.data['pmethod'][x],sku=bundle.data['psku'][x],quantity=bundle.data['pquantity'][x])
 					except:
 						bundle.data['errormsg']='error creating product'
 			
 			except:
+				print "error"
 				bundle.data['errormsg']='error creating order'
 
 			if (isinstance(bundle.data['pname'], list)):	
@@ -340,11 +411,15 @@ class ProductResource(CORSModelResource):
 				bundle.data['weight']=str(bundle.data['pweight'][x])
 				bundle.data['price']=str(bundle.data['pprice'][x])
 				bundle.data['method']=str(bundle.data['pmethod'][x])
+				bundle.data['sku']=str(bundle.data['psku'][x])
+				bundle.data['quantity']=str(bundle.data['pquantity'][x])
 			else:
 				bundle.data['name']=str(bundle.data['pname'])
 				bundle.data['weight']=str(bundle.data['pweight'])
 				bundle.data['price']=str(bundle.data['pprice'])
 				bundle.data['method']=str(bundle.data['pmethod'])
+				bundle.data['sku']=str(bundle.data['ppsku'])
+				bundle.data['quantity']=str(bundle.data['pquantity'])
 
 
 
