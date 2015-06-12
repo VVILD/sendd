@@ -291,6 +291,13 @@ class OrderResource(CORSModelResource):
 
 
 	def hydrate(self,bundle):
+		try:
+			override_method=bundle.request.META['HTTP_X_HTTP_METHOD_OVERRIDE']
+			print "changed to PATCH"
+		except:
+			override_method='none'
+			print "hello"
+			
 		if bundle.request.META['REQUEST_METHOD'] == 'POST' and override_method=='PATCH':
 			print "patch"
 			return bundle
