@@ -218,3 +218,25 @@ X-Frame-Options: SAMEORIGIN
 
 
 
+Creating order
+
+Added reference_id, email ,
+Added arrays of psku,pquantity
+
+
+curl --dump-header - -H "Content-Type: application/json" -X POST --data '{ "username": "cloudesign", "name": "asd" , "phone":"8879006197","reference_id":"SE487","email":"sargungu@gmail.com","address1":"office no 307, powai plaza","address2":"office no 307, powai plaza","city":"mumbai","state":"maharashtra" ,"pincode":"400076","country":"india" , "payment_method":"F" ,"pname":["clothes","books"],"pprice":["50","60"] ,"pweight":["2","7"],"pmethod":["N","B"],"psku":["100000","100001"],"pquantity":["2","1"] }' http://127.0.0.1:8000/bapi/v1/product/
+
+
+
+How to get order:
+
+http://127.0.0.1:8000/bapi/v1/order/?format=json&q=cloudesign&limit=1000
+
+q= username
+
+
+Get rate card
+
+http://127.0.0.1:8000/bapi/v1/pricing/?format=json&q=cloudesign
+
+RESPONSE={"meta": {"limit": 20, "next": null, "offset": 0, "previous": null, "total_count": 1}, "objects": [{"bulk_zone_a": 13, "bulk_zone_b": 15, "bulk_zone_c": 18, "bulk_zone_d": 20, "bulk_zone_e": 22, "business": "/bapi/v1/business/cloudesign/", "city": "asd", "normal_zone_a_1": 25, "normal_zone_a_2": 20, "normal_zone_b_1": 45, "normal_zone_b_2": 38, "normal_zone_c_1": 60, "normal_zone_c_2": 43, "normal_zone_d_1": 70, "normal_zone_d_2": 55, "normal_zone_e_1": 80, "normal_zone_e_2": 60, "resource_uri": "/bapi/v1/pricing/cloudesign/"}]}

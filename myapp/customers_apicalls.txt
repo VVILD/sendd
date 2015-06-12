@@ -1,0 +1,294 @@
+API
+
+
+
+
+
+Login
+
+POST --data '{"phone": "8879006197"}' http://sendmates.com/api/v2/user/
+
+
+
+sargun@sargun-X550LC:~$ curl --dump-header - -H "Content-Type: application/json" -X POST --data '{"phone": "8879006197"}' http://sendmates.com/api/v2/user/HTTP/1.1 201 Created
+Server: nginx/1.4.6 (Ubuntu)
+Date: Fri, 29 May 2015 02:45:00 GMT
+Content-Type: application/json
+Vary: Accept
+X-Frame-Options: SAMEORIGIN
+Location: http://sendmates.com/api/v2/user/8879006197/
+X-Cache: MISS from nm11.iitb.ac.in
+X-Cache-Lookup: MISS from nm11.iitb.ac.in:80
+Via: 1.1 nm11.iitb.ac.in (squid/3.3.9)
+Connection: close
+
+{"apikey": null, "deviceid": null, "email": null, "gcmid": "", "msg": "newuser", "name": null, "otp": 8371, "password": null, "phone": "8879006197", "referral_code": null, "resource_uri": "/api/v2/user/8879006197/", "time": "2015-05-29T08:15:00"}
+
+
+
+VERIFYING OTP
+
+PUT --data '{ "otp1": "8371","phone":"8879006197" }' http://sendmates.com/api/v2/user/8879006197/
+
+
+
+
+sargun@sargun-X550LC:~$ curl --dump-header - -H "Content-Type: application/json" -X PUT --data '{ "otp1": "8371","phone":"8879006197" }' http://sendmates.com/api/v2/user/8879006197/
+HTTP/1.1 200 OK
+Server: nginx/1.4.6 (Ubuntu)
+Date: Fri, 29 May 2015 02:50:24 GMT
+Content-Type: application/json
+Vary: Accept
+X-Frame-Options: SAMEORIGIN
+X-Cache: MISS from nm11.iitb.ac.in
+X-Cache-Lookup: MISS from nm11.iitb.ac.in:80
+Via: 1.1 nm11.iitb.ac.in (squid/3.3.9)
+Connection: close
+
+{"apikey": "2e07eb05ad45360fdbda7d8fb1a897f4208bc2ddf2d0c854a8d5efef", "deviceid": null, "email": null, "gcmid": "", "name": null, "otp": 8371, "otp1": "8371", "password": null, "phone": "8879006197", "pk": "8879006197", "referral_code": null, "resource_uri": "/api/v2/user/8879006197/", "time": "2015-05-29T08:20:24", "valid": 1}sargun@sargun-X550LC:~$ 
+
+
+
+ADDING ORDER
+
+curl --dump-header - -H "Content-Type: application/json" -X POST --data '{ "name": "sargun","email":"sargungu@gmail.com","user":"8879006197","flat_no": "room no 319 , hostel 5","address":"IIT B" ,"pincode":"400076","date":"2015-03-02","time":"16:59:06", "code":"senddfree"}' http://sendmates.com/api/v2/order/
+
+
+
+ADDING SHIPMENT
+
+
+INVOICES SENT
+curl --dump-header - -H "Content-Type: application/json" -X POST --data '{ "order":"/api/v2/order/3"}' http://127.0.0.1:8000/api/v2/invoicesent/
+
+
+
+
+curl --dump-header - -H "Content-Type: application/json" -X POST --data '{ "name": "sar", "phone": "22" , "password": "Y"}' http://127.0.0.1:8000/api/v1/user/
+
+
+for shipment
+
+
+curl --dump-header - -H "Content-Type: application/json" -X POST --data '{ "category": "P", "drop_name": "nav", "drop_phone": "8879006465" ,"drop_address": "/api/v1/address/1/", "image": "/media/static/shipment/images/dota_clash_6_by_kunkka-d4k3wj9.jpg", "order": "/api/v1/order/1/" }' http://127.0.0.1:8000/api/v1/shipment/
+
+
+[{"category": "P", "drop_name": "nav", "drop_phone": "8879006465", "id": 1, "image": "/media/static/shipment/images/dota_clash_6_by_kunkka-d4k3wj9.jpg", "order": "/api/v1/order/1/", "resource_uri": "/api/v1/shipment/1/"}]
+
+
+        curl --dump-header - -H "Content-Type: application/json" -X POST --data '{ "name": "sar", "phone": "22" , "password": "Y"}' http://127.0.0.1:8000/api/v1/user/
+
+
+for shipment
+
+
+curl --dump-header - -H "Content-Type: application/json" -X POST --data '{ "category": "P", "drop_name": "na  …  v", "drop_phone": "8879006465" ,"drop_flat_no": "asd","drop_locality": "asd","drop_city": "asd","drop_state": "asd","drop_country": "asd","drop_pincode": "asd", "order": "1" }' http://127.0.0.1:8000/api/v1/shipment/
+
+
+flat_no=bundle.data['drop_flat_no'],locality=bundle.data['drop_locality'],city=bundle.data['drop_city'],state=bundle.data['drop_state'],country=bundle.data['drop_country'],pincode=bundle.data['drop_pincode']
+
+curl --dump-header - -H "Content-Type: application/json" -X POST --data '{ "code": "qwe", "phone": "8879006197"}' http://127.0.0.1:8000/api/v2/promocheck/
+
+
+
+
+
+
+
+
+[{"category": "P", "drop_name": "nav", "drop_phone": "8879006465", "id": 1, "image": "/media/static/shipment/images/dota_clash_6_by_kunkka-d4k3wj9.jpg", "order": "/api/v1/order/1/", "resource_uri": "/api/v1/shipment/1/"}]
+
+
+curl -H "Content-Type: application/json" -X POST --data '{ "Name": "qwe"}' http://sendmates.com/api/v1/x/
+
+multipart/form-data
+
+curl --dump-header - -H "Content-Type: multipart/json" -X POST --data '{ "Name": "P", "C": "@a.jpg" }' http://127.0.0.1:8000/api/v1/X/
+
+
+curl --dump-header - -H "Content-Type: multipart/json" -X POST --data '{ "Name": "P", "C": "@a.jpg" }' http://128.199.159.90:80/api/v1/x/
+
+curl -F "Name=test" -F "C=@a.jpg" http://localhost:8000/api/v1/x/
+
+curl -F "C=@a.jpg" -H "Content-Type: application/json" -X POST --data '{ "Name": "P"}' http://localhost:8000/api/v1/x/
+
+/api/v1/order/2/
+
+curl --dump-header - -H "Content-Type: application/json" -X PATCH --data '{"objects": [{"Name": "P", "C": "@a.jpg"},{"Name": "sdasdP", "C": "@a.jpg"}]}' http://128.199.159.90:80/api/v1/x/
+
+
+
+curl -F "Name=test" -F "C=@a.jpg" -F "order=/api/v1/order/1/" http://128.199.159.90:80/api/v1/x/
+
+curl -F "Name=teshhwyt" -F "C=@a.jpg" http://128.199.159.90:80/api/v1/x/ -w %{time_connect}:%{time_starttransfer}:%{time_total}
+
+
+
+
+curl --dump-header - -H "Content-Type: application/json" -X POST --data '{ "name": "sar", "phone": "22" , "password": "Y"}' http://128.199.159.90:80/api/v1/user/
+
+curl -F "phone=887999999" -F "name=jpg" -F "password=dsfds" http://128.199.159.90:80/api/v1/user/
+
+
+Signup
+curl --dump-header - -H "Content-Type: application/json" -X POST --data '{ "name": "sar", "phone": "8879056197" , "password": "Y"}' http:///api/v1/user/
+
+
+curl --dump-header - -H "Content-Type: application/json" -H "X-HTTP-Method-Override: PATCH" -X POST --data '{ "name": "saaa" }' http://128.199.159.90:80/api/v1/user/8879006197/
+
+verify otp
+
+curl --dump-header - -H "Content-Type: application/json" -X PUT --data '{ "otp1": "5415","phone":"8879006197" }' http://localhost:8000/api/v1/user/8879006197/
+
+
+
+make an order
+
+
+curl -F "user=/api/v1/user/8879006197/" -F "date=2015-03-02" -F "pickup_address=/api/v1/address/1/" -F "time=16:59:06" http://localhost:8000/api/v1/order/
+
+
+curl -F "user=/api/v1/user/8879006197/" -F "date=2015-03-02" -F "flat_no=dsfdf" -F "pincode=dsfdf" -F "time=16:59:06" -F "latitude=234.5656565" -F "longitude=234.5656565" -F "address=kahin toh hogi woh" http://localhost:8000/api/v1/order/
+
+
+curl -F "img=@a.jpg" -F "order=5" http://localhost:8000/api/v2/shipment/
+
+
+
+curl -F "user=8879006197" -F "code=qwe" http://localhost:8000/api/v2/order/
+
+
+for pincode check 
+
+
+curl -F "pincode=400076" http://localhost:8000/api/v2/pincodecheck/
+
+
+For shipment
+
+
+
+
+
+
+For order 
+
+curl -F "user=8879006197" -F "date=2015-03-02" -F "time=16:59:06" -F "pickup_flat_no=flat" -F "pickup_locality=flat" -F "pickup_city=flat" -F "pickup_state=flat" -F "pickup_country=flat"  -F "pickup_pincode=453443" http://localhost:8000/api/v1/order/
+
+curl -F "user=8879006197" -F "date=2015-03-02" -F "time=16:59:06" -F "pickup_flat_no=flat" -F "pickup_locality=flat" -F "pickup_city=flat" -F "pickup_state=flat" -F "pickup_country=flat"  -F "pickup_pincode=453443" http://128.199.159.90:80/api/v1/order/
+
+
+
+
+
+login 
+
+curl -F "phone=1" -F "password=q" http://128.199.159.90:80/api/v1/loginsession/
+
+curl -F "phone=9920899602" -F "password=90" http://localhost:8000/api/v1/loginsession/
+
+
+curl -F "phone=1" -F "password=q" http://localhost:8000/api/v1/loginsession/
+
+curl --dump-header - -H "Content-Type: application/json" -X POST --data '{ "user": "/api/v1/user/8879006197" }' http://localhost:8000/api/v1/loginsession/
+
+
+curl --dump-header - -H "Content-Type: application/json" -X POST --data '{ "item_details": "tatti" , "pickup_location": "tatti" , "number": "123" , "pincode": "213213" }' http://localhost:8000/api/v1/weborder/
+
+
+curl --dump-header - -H "Content-Type: application/json" -X POST --data '{ "pincode": "400076" ,"weight":"6" ,"l":"5" ,"b":"1", "h":"1" }' http://localhost:8000/api/v1/priceapp/
+
+
+curl --dump-header - -H "Content-Type: application/json" -X POST --data '{ "user": "8879006197" }' http://localhost:8000/api/v1/forgotpass/
+
+
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'django',
+        'USER': 'django',
+        'PASSWORD': '1e2wbA6pal',
+        'HOST': 'localhost',
+        'PORT': '',
+    }
+}
+
+
+
+UX9cFcEOVCEvw32QgFjXBg
+
+curl -X POST https://api.easypost.com/v2/trackers     -u UX9cFcEOVCEvw32QgFjXBg:     -d 'tracker[tracking_code]=1Z204E38YW95204424'     -d 'tracker[carrier]=UPS'
+
+
+http://enterprise.smsgupshup.com/GatewayAPI/rest?me
+thod=SendMessage&send_to=918879006197&msg=hi...123..here&msg_type=TEXT&userid=2000142364&auth_scheme=plain&password=h0s6jgB4N&v=1.1&format=text
+
+
+Welcome+to+Sendd.+Your+OTP+is+123.This+message+is+for+automated+verification+purpose.+No+action+required.
+
+
+http://enterprise.smsgupshup.com/GatewayAPI/rest?me
+thod=SendMessage&send_to=918879006197&msg=Welcome+to+Sendd.+Your+OTP+is+123.This+message+is+for+automated+verification+purpose.+No+action+required.&msg_type=TEXT&userid=2000142364&auth_scheme=plain&password=h0s6jgB4N&v=1.1&format=text
+
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        #'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'NAME':'myapp',
+        'USER':'newuser',
+        'PASSWORD':'dmroot',
+    }
+}
+
+
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+    }
+}
+
+
+"Dear "+str(bundle.data['name'])+",\n\nWe are excited to have you join us and start shipping in a hassle free and convenient manner.\n\nOur team is always there to ensure that you have the best possible experience with us. Some of the questions that are frequently asked can be seen on the website as well as the app.\n\nIf you have any other query, you can get in touch with us at +91-8080028081 or mail us at help@sendd.co\n\n\n<b>Regards,\nTeam Sendd</b>"
+
+
+
+"Dear "+x +",\n\nWe have successfully received your booking.\n\nYou will receive details of the pick up representative who will come to collect your parcel shortly.\n\nIf you have any query, you can get in touch with us at +91-8080028081 or mail us at help@sendd.co\n\n\n<b>Regards,\nTeam Sendd</b>"
+
+
+
+
+
+
+name
+address
+date
+orderno
+mailto
+des0
+
+x=time.strftime("%d:%m:%Y")
+
+
+http://128.199.210.166/test1.php?name=adfs@da&address=119,nehru%20park,%20sardarpura%20,%20behind%20sabji%20mandi%20,%20in%20front%20of%20gali%20no%20123,%20jodhpur%20-342003&date=12%2F12%2F12&orderno=378	&mailto=sargun@sendd.co&des0=ghgf
+
+
+
+http://128.199.210.166/test1.php?name=adfs@da&address=119,nehru%20park,%20sardarpura%20,%20behind%20sabji%20mandi%20,%20in%20front%20of%20gali%20no%20123,%20jodhpur%20-342003&date=12%2F12%2F12&orderno=378&mailto=sargun@sendd.co&Des0=ghgf
+
+
+
+
+
+
+
+
+
+
+
+
+
+

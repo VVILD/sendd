@@ -290,6 +290,11 @@ class OrderResource(CORSModelResource):
 		return base_object_list
 
 
+	def hydrate(self,bundle):
+		if bundle.request.META['REQUEST_METHOD'] == 'POST' and override_method=='PATCH':
+			print "patch"
+			return bundle
+
 	def dehydrate(self,bundle):
 		try:
 			pk=bundle.data['resource_uri'].split('/')[4]
@@ -324,8 +329,8 @@ class OrderResource(CORSModelResource):
 			#bundle.data['products']=data
 			bundle.data['products']=l
 			
-			# bundle.data['status']=order.status
-			# bundle.data['date']=order.book_time.date()
+			bundle.data['status']=order.status
+			bundle.data['date']=order.book_time.date()
 			# bundle.data['time']=order.book_time.time()
 			
 			# bundle.data['order_no']=436+int(bundle.data['id'])
