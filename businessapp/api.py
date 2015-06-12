@@ -162,8 +162,14 @@ class BusinessResource(CORSModelResource):
 		queryset = Business.objects.all()
 		resource_name = 'business'
 		authorization= Authorization()
-		always_return_data = True
+		always_return_data = False
 	
+	def dehydrate(self,bundle):
+		bundle.data['manager']='sargun gulati'
+		bundle.data['manager_number']='8879006197'
+		bundle.data['password']=''
+
+		return bundle
 	# def hydrate(self,bundle):
 	# 	try:
 	# 		business=Business.objects.get(pk=bundle.data['username'])
@@ -259,7 +265,7 @@ class OrderResource(CORSModelResource):
 	products = ListField(attribute='products',null=True)
 	class Meta:
 		queryset = Order.objects.all()
-		resource_name = 'order'
+		resourcese_name = 'order'
 		authorization= Authorization()
 		always_return_data = True
 
