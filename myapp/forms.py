@@ -89,9 +89,9 @@ class OrderForm(ModelForm):
 		shipment=Shipment.objects.create(item_name=item_details,order=order,drop_name=drop_name,drop_phone=drop_phone,drop_address=address)
 
 
-		mail="Dear "+str(name) +",\n\nWe have successfully received your booking.\n\nYou will shortly receive details of the pick up representative who will come to collect your parcel at your designated time.\n\nIf you have any query, you can get in touch with us at +91-8080028081 or mail us at help@sendd.co\n\n\nRegards,\nTeam Sendd"
+		mail="Dear "+str(name) +",\n\nWe have successfully received your booking.\n\nOur Pickup representative will contact you as per your scheduled pickup time.\n\nIf you have any query, you can get in touch with us at +91-8080028081 or mail us at help@sendd.co\n\n\nHappy Sendd-ing!\n\nRegards,\nTeam Sendd"
 		subject=str(name) + ", We have received your parcel booking."
-		send_mail(subject, mail, "Team Sendd <hello@sendd.co>", [str(bundle.data["email"]),"Team Sendd <hello@sendd.co>"])
+		send_mail(subject, mail, "Team Sendd <hello@sendd.co>", [email,"Team Sendd <hello@sendd.co>"])
 
 		return instance
 

@@ -226,7 +226,7 @@ class WeborderResource2(MultipartResource,ModelResource):
 
 
 		try:	
-			mail="Dear "+str(bundle.data["name"]) +",\n\nWe have successfully received your booking.\n\nYou will shortly receive details of the pick up representative who will come to collect your parcel at your designated time.\n\nIf you have any query, you can get in touch with us at +91-8080028081 or mail us at help@sendd.co\n\n\nRegards,\nTeam Sendd"
+			mail="Dear "+str(bundle.data["name"]) +",\n\nWe have successfully received your booking.\n\nOur Pickup representative will contact you as per your scheduled pickup time.\n\nIf you have any query, you can get in touch with us at +91-8080028081 or mail us at help@sendd.co\n\n\nHappy Sendd-ing!\n\nRegards,\nTeam Sendd"
 			subject=str(bundle.data["name"]) + ", We have received your parcel booking."
 			send_mail(subject, mail, "Team Sendd <hello@sendd.co>", [str(bundle.data["email"]),"Team Sendd <hello@sendd.co>"])
 		except:
@@ -416,7 +416,7 @@ class ShipmentResource2(MultipartResource,ModelResource):
 			#bundle.data['query']=query
 			urllib2.urlopen(query)
 			try:	
-				mail="Dear "+str(name) +",\n\nWe have successfully received your booking.\n\nYou will shortly receive details of the pick up representative who will come to collect your parcel at your designated time.\n\nIf you have any query, you can get in touch with us at +91-8080028081 or mail us at help@sendd.co\n\n\nRegards,\nTeam Sendd"
+				mail="Dear "+str(name) +",\n\nWe have successfully received your booking.\n\nOur Pickup representative will contact you as per your scheduled pickup time.\n\nIf you have any query, you can get in touch with us at +91-8080028081 or mail us at help@sendd.co\n\n\nHappy Sendd-ing!\n\nRegards,\nTeam Sendd"
 				subject=str(name) + ", We have received your parcel booking."
 				send_mail(subject, mail, "Team Sendd <hello@sendd.co>", [str(email),"Team Sendd <hello@sendd.co>"])
 			except:
