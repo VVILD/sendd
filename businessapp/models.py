@@ -65,7 +65,8 @@ class Order(models.Model):
 	email = models.EmailField(max_length = 75,null=True,blank =True)
 	#address=models.CharField(max_length = 300)
 	#flat_no=models.CharField(max_length = 100,null=True,blank =True)
-	street_address=models.CharField(max_length = 300,null=True,blank =True)
+	address1=models.CharField(max_length = 300,null=True,blank =True)
+	address2=models.CharField(max_length = 300,null=True,blank =True)
 	city=models.CharField(max_length = 50,null=True,blank =True)
 	state=models.CharField(max_length = 50,null=True,blank =True)
 	pincode=models.CharField(max_length =30,null=True,blank =True)
@@ -73,6 +74,7 @@ class Order(models.Model):
 	payment_method=models.CharField(max_length=1,choices=(('F','free checkout') ,('C','cod'),),)
 	book_time=models.DateTimeField(null=True,blank=True)
 	status=models.CharField(max_length=1,choices=(('P','pending') ,('C','complete'),('N','cancelled'),('D','delivered'),),default='P')
+	
 	business=models.ForeignKey(Business)
 
 
