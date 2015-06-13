@@ -374,7 +374,7 @@ class ProductResource(CORSModelResource):
 		base_object_list = super(ProductResource, self).apply_filters(request, {})
 		print orm_filters
 		if 'q' in orm_filters:
-			return base_object_list.filter(order__business__username=orm_filters['q'])
+			return base_object_list.filter(order__business__username=orm_filters['q']).exclude(status='N')
 		print base_object_list
 		return base_object_list
 	
