@@ -91,7 +91,7 @@ class OrderForm(ModelForm):
 
 		mail="Dear "+str(name) +",\n\nWe have successfully received your booking.\n\nOur Pickup representative will contact you as per your scheduled pickup time.\n\nIf you have any query, you can get in touch with us at +91-8080028081 or mail us at help@sendd.co\n\n\nHappy Sendd-ing!\n\nRegards,\nTeam Sendd"
 		subject=str(name) + ", We have received your parcel booking."
-		send_mail(subject, mail, "Team Sendd <hello@sendd.co>", [email,"Team Sendd <hello@sendd.co>"])
+		send_mail(subject, mail, "Team Sendd <order@sendd.co>", [email,"Team Sendd <order@sendd.co>"])
 
 		return instance
 

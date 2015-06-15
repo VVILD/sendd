@@ -259,6 +259,13 @@ class LoginSessionResource(CORSModelResource):
 		#print bundle.data['password']
 		return bundle
 
+	def dehydrate(self,bundle):
+	#	bundle.data['manager']='sargun gulati'
+	#	bundle.data['manager_number']='8879006197'
+		bundle.data['password']=''
+
+		return bundle
+
 
 class OrderResource(CORSModelResource):
 	business = fields.ForeignKey(BusinessResource, 'business' ,null=True)
