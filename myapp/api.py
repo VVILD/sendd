@@ -200,7 +200,7 @@ class UserResource(ModelResource):
 					urllib2.urlopen(query).read()
 					mail="Dear "+str(bundle.data['name'])+",\n\nWe are excited to have you join us and start shipping in a hassle free and convenient manner.\n\nOur team is always there to ensure that you have the best possible experience with us. Some of the questions that are frequently asked can be seen on the website as well as the app.\n\nIf you have any other query, you can get in touch with us at +91-8080028081 or mail us at help@sendd.co\n\n\nRegards,\nTeam Sendd"
 					subject=str(bundle.data["name"])+", Thanks for signing up with sendd."
-					send_mail(subject, mail, "Team Sendd <hello@sendd.co>", [str(bundle.data["email"])])
+					send_mail(subject, mail, "Team Sendd <order@sendd.co>", [str(bundle.data["email"])])
 
 			return bundle
 		if bundle.request.META['REQUEST_METHOD'] == 'PUT':
