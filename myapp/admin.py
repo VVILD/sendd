@@ -294,14 +294,14 @@ class ShipmentAdmin(admin.ModelAdmin):
 			valid=0
 
 		try:
-			address=obj.order.address
+			address=str(obj.order.user.phone) +','+ str(obj.order.flat_no)+ str(obj.order.address) + str(obj.order.pincode ) + '| Pickup Time :-' + 	 str(obj.order.date) +': '+ str(obj.order.time)
 			invoice_dict['address']=address
 		except:
 			e_string=e_string+'address not set <br>'
 			valid=0
 
 		try:
-			name2=obj.drop_name
+			name2=str(obj.drop_name) + str(obj.drop_phone)
 			invoice_dict['name2']=name2
 		except:
 			e_string=e_string+'drop_name not set <br>'			

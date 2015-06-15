@@ -20,6 +20,7 @@ class BusinessManager(User):
 class Business(models.Model):
 	#phone_regex = RegexValidator(regex=r'^[0-9]*$', message="Phone number must be entered in the format: '999999999'. Up to 12 digits allowed.")
 	username=models.CharField(max_length = 20,primary_key=True)
+	apikey=models.CharField(max_length = 100)
 	business_name = models.CharField(max_length = 100)
 	password=models.CharField(max_length = 300)
 	email = models.EmailField(max_length = 75)	
@@ -35,7 +36,16 @@ class Business(models.Model):
 	website =models.CharField(max_length = 100,null=True,blank =True)
 	#key=models.CharField(max_length = 100,null=True,blank =True)
 	businessmanager=models.ForeignKey(User,null=True,blank =True) 
-	
+
+
+	def save(self, *args, **kwargs):
+		#print self.tracking_no
+		#print self.pk
+		#print "jkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkj"
+		if not self.pk:
+			self.apikey=hashlib.sha1( str(random.getrandbits(256)) ).hexdigest();
+		super(Business, self).save(*args, **kwargs)
+		
 
 	def __unicode__(self):
 		return str(self.username)	

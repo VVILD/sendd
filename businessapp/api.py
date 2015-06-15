@@ -19,6 +19,12 @@ import ast
 import json
 from tastypie.resources import Resource
 from tastypie.fields import ListField
+
+
+from tastypie.models import create_api_key
+
+models.signals.post_save.connect(create_api_key, sender=Business)
+
 '''
 Add CORS headers for tastypie APIs
 
@@ -161,13 +167,13 @@ class BusinessResource(CORSModelResource):
 	class Meta:
 		queryset = Business.objects.all()
 		resource_name = 'business'
+		excludes = ['password']
 		authorization= Authorization()
-		always_return_data = False
+		always_return_data = True
 	
 	def dehydrate(self,bundle):
 		bundle.data['manager']='sargun gulati'
 		bundle.data['manager_number']='8879006197'
-		bundle.data['password']=''
 
 		return bundle
 	# def hydrate(self,bundle):
