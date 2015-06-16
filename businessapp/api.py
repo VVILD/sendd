@@ -621,7 +621,7 @@ class ForgotpassResource(CORSModelResource):
 		mail="www.sendd.co/?auth="+bundle.data['auth']+"&username="+bundle.data['username']
 		subject="Reset password with sendd."
 		send_mail(subject, mail, "Team Sendd <sargun@sendd.co>", [email])
-		
+		bundle.data["msg"]='success'
 		return bundle
 
 
@@ -633,6 +633,27 @@ class ChangepassResource(CORSModelResource):
 		resource_name = 'forgotpass'
 		authorization= Authorization()
 		always_return_data = True
+
+	def hydrate(self,bundle):
+		try:
+			business=Business.objects.get(pk=bundle.data['username'])
+			bundle.data['business']="/bapi/v1/business/"+str(bundle.data['username'])+"/"
+			print "user identified"
+		except:
+				#print "fuck"
+			bundle.data['business']="/bapi/v1/business/0/"
+			bundle.data["msg"]='notregistered'
+			print "user not identified"
+			return bundle
+
+		if (business.password==bundle.data['old_password']):
+			business.password=bundle.data['new_password']
+			business.save()
+			bundle.data["msg"]="password changed"
+		else:
+			bundle.data["msg"]="wrong password"
+
+		return bundle
 
 
 '''
