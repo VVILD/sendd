@@ -504,7 +504,7 @@ class ProductResource(CORSModelResource):
 				bundle.data['weight']=str(bundle.data['pweight'])
 				bundle.data['price']=str(bundle.data['pprice'])
 	#			bundle.data['method']=str(bundle.data['pmethod'])
-				bundle.data['sku']=str(bundle.data['ppsku'])
+				bundle.data['sku']=str(bundle.data['psku'])
 				bundle.data['quantity']=str(bundle.data['pquantity'])
 
 
