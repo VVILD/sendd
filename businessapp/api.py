@@ -21,9 +21,62 @@ from tastypie.resources import Resource
 from tastypie.fields import ListField
 
 
-from tastypie.models import create_api_key
+from tastypie.authentication import Authentication
 
-models.signals.post_save.connect(create_api_key, sender=Business)
+
+# class SillyAuthentication(Authentication):
+#     def is_authenticated(self, request, **kwargs):
+        
+#         print self.__dict__
+#         print request.__dict__
+#         if 'daniel' in request.user.username:
+#           return True
+
+#         return False
+
+
+from tastypie.authorization import Authorization
+from tastypie.exceptions import Unauthorized
+
+
+class OnlyAuthorization(Authorization):
+
+    def read_detail(self, object_list, bundle):
+        # Is the requested object owned by the user?
+        print "0kkkkkkkkkkkkkkkk"
+        print bundle.request.META["HTTP_AUTHORIZATION"]
+        print bundle.obj.business.apikey
+        return bundle.request.META["HTTP_AUTHORIZATION"]==bundle.obj.business.apikey
+
+    def create_list(self, object_list, bundle):
+        # Assuming they're auto-assigned to ``user``.
+        print '1kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk'
+        return object_list
+
+    def create_detail(self, object_list, bundle):
+    	print '2kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk'
+        return bundle.obj.user == bundle.request.user
+
+    def update_list(self, object_list, bundle):
+        allowed = []
+
+        # Since they may not all be saved, iterate over them.
+        for obj in object_list:
+            if obj.user == bundle.request.user:
+                allowed.append(obj)
+
+        return allowed
+
+    def update_detail(self, object_list, bundle):
+        return bundle.obj.user == bundle.request.user
+
+    def delete_list(self, object_list, bundle):
+        # Sorry user, no deletes for you!
+        raise Unauthorized("Sorry, no deletes.")
+
+    def delete_detail(self, object_list, bundle):
+        raise Unauthorized("Sorry, no deletes.")
+
 
 '''
 Add CORS headers for tastypie APIs
@@ -279,7 +332,8 @@ class OrderResource(CORSModelResource):
 	class Meta:
 		queryset = Order.objects.all()
 		resourcese_name = 'order'
-		authorization= Authorization()
+		authorization=OnlyAuthorization()
+	#	authentication=Authentication()
 		always_return_data = True
 
 
@@ -415,7 +469,7 @@ class ProductResource(CORSModelResource):
 			#create order
 	#curl --dump-header - -H "Content-Type: application/json" -X POST --data '{ "username": "newuser3", "name": "asd" , "phone":"8879006197","street_address":"office no 307, powai plaza","city":"mumbai","state":"maharashtra" ,"pincode":"400076","country":"india" , "payment_method":"F" ,"pname":"['clothes','books']","pprice":"['50','60']" ,"pweight":"['2','7']" }' http://127.0.0.1:8000/bapi/v1/order/		
 			try:
-				order =Order.objects.create(business=business,name=bundle.data['name'],phone=bundle.data['phone'],address1=bundle.data['address1'],address2=bundle.data['address2'],city=bundle.data['city'],state=bundle.data['state'],pincode=bundle.data['pincode'],country=bundle.data['country'],payment_method=bundle.data['payment_method'],reference_id=bundle.data['reference_id'],email=bundle.data['email'])
+				order =Order.objects.create(business=business,name=bundle.data['name'],phone=bundle.data['phone'],address1=bundle.data['address1'],address2=bundle.data['address2'],city=bundle.data['city'],state=bundle.data['state'],pincode=bundle.data['pincode'],country=bundle.data['country'],payment_method=bundle.data['payment_method'],reference_id=bundle.data['reference_id'],email=bundle.data['email'],method=bundle.data['method'])
 				print "order created	"
 
 				print "check here"				
@@ -428,11 +482,11 @@ class ProductResource(CORSModelResource):
 						#print len(bundle.data['array'])
 
 						for x in range (0,len(bundle.data['pname'])-1):
-							product =Product.objects.create(order=order,name=bundle.data['pname'][x],weight=bundle.data['pweight'][x],price=bundle.data['pprice'][x],method=bundle.data['pmethod'][x],sku=bundle.data['psku'][x],quantity=bundle.data['pquantity'][x])
+							product =Product.objects.create(order=order,name=bundle.data['pname'][x],weight=bundle.data['pweight'][x],price=bundle.data['pprice'][x],sku=bundle.data['psku'][x],quantity=bundle.data['pquantity'][x])
 					except:
 						bundle.data['errormsg']='error creating product'
-			
-			except:
+			except Exception,e:
+				print str(e)
 				print "error"
 				bundle.data['errormsg']='error creating order'
 
@@ -441,14 +495,14 @@ class ProductResource(CORSModelResource):
 				bundle.data['name']=str(bundle.data['pname'][x])
 				bundle.data['weight']=str(bundle.data['pweight'][x])
 				bundle.data['price']=str(bundle.data['pprice'][x])
-				bundle.data['method']=str(bundle.data['pmethod'][x])
+	#			bundle.data['method']=str(bundle.data['pmethod'][x])
 				bundle.data['sku']=str(bundle.data['psku'][x])
 				bundle.data['quantity']=str(bundle.data['pquantity'][x])
 			else:
 				bundle.data['name']=str(bundle.data['pname'])
 				bundle.data['weight']=str(bundle.data['pweight'])
 				bundle.data['price']=str(bundle.data['pprice'])
-				bundle.data['method']=str(bundle.data['pmethod'])
+	#			bundle.data['method']=str(bundle.data['pmethod'])
 				bundle.data['sku']=str(bundle.data['ppsku'])
 				bundle.data['quantity']=str(bundle.data['pquantity'])
 

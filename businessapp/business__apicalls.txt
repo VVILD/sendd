@@ -224,7 +224,35 @@ Added reference_id, email ,
 Added arrays of psku,pquantity
 
 
-curl --dump-header - -H "Content-Type: application/json" -X POST --data '{ "username": "cloudesign", "name": "asd" , "phone":"8879006197","reference_id":"SE487","email":"sargungu@gmail.com","address1":"office no 307, powai plaza","address2":"office no 307, powai plaza","city":"mumbai","state":"maharashtra" ,"pincode":"400076","country":"india" , "payment_method":"F" ,"pname":["clothes","books"],"pprice":["50","60"] ,"pweight":["2","7"],"pmethod":["N","B"],"psku":["100000","100001"],"pquantity":["2","1"] }' http://127.0.0.1:8000/bapi/v1/product/
+
+-H "Authorization: ApiKey test_user:12345678907a9cb56b7290223165e0a7c23623df"
+
+curl --dump-header - -H "Content-Type: application/json" -H "Authorization:12345678907a9cb56b7290223165e0a7c23623df" -X POST --data '{ "username": "cloudesign", "name": "asd" , "phone":"8879006197","reference_id":"SE487","email":"sargungu@gmail.com","address1":"office no 307, powai plaza","address2":"office no 307, powai plaza","city":"mumbai","state":"maharashtra" ,"pincode":"400076","country":"india" , "payment_method":"F" ,"pname":["clothes","books"],"pprice":["50","60"] ,"pweight":["2","7"],"method":"N","psku":["100000","100001"],"pquantity":["2","1"] }' http://127.0.0.1:8000/bapi/v1/product/
+
+
+
+reference_id=models.CharField(max_length=100)
+	order_no=models.AutoField(primary_key=True)
+	name = models.CharField(max_length = 100,null=True,blank =True)
+	phone = models.CharField(max_length = 12)
+	email = models.EmailField(max_length = 75,null=True,blank =True)
+	#address=models.CharField(max_length = 300)
+	#flat_no=models.CharField(max_length = 100,null=True,blank =True)
+	address1=models.CharField(max_length = 300,null=True,blank =True)
+	address2=models.CharField(max_length = 300,null=True,blank =True)
+	city=models.CharField(max_length = 50,null=True,blank =True)
+	state=models.CharField(max_length = 50,null=True,blank =True)
+	pincode=models.CharField(max_length =30,null=True,blank =True)
+	country=models.CharField(max_length =30,null=True,blank =True)
+	payment_method=models.CharField(max_length=1,choices=(('F','free checkout') ,('C','cod'),),)
+	book_time=models.DateTimeField(null=True,blank=True)
+	status=models.CharField(max_length=1,choices=(('P','pending') ,('C','complete'),('N','cancelled'),('D','delivered'),),default='P')
+	
+	business=models.ForeignKey(Business)
+
+
+order =Order.objects.create(business=business,name=bundle.data['name'],phone=bundle.data['phone'],address1=bundle.data['address1'],address2=bundle.data['address2'],city=bundle.data['city'],state=bundle.data['state'],pincode=bundle.data['pincode'],country=bundle.data['country'],payment_method=bundle.data['payment_method'],reference_id=bundle.data['reference_id'],email=bundle.data['email'])
+				
 
 
 

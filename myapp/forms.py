@@ -71,13 +71,8 @@ class OrderForm(ModelForm):
 	# country=models.CharField(max_length =30,null=True,blank =True)
 
 		print "shit"
-		print self.cleaned_data["flat_no"]
-		self.cleaned_data["flat_no"]='45555'
-		print self.cleaned_data["flat_no"]
-		print self.cleaned_data
 		print commit
 		instance = super(OrderForm, self).save(commit=False)
-		instance.flat_no='dasdsa'
 		instance.namemail=namemail
 		instance.user=user
 		instance.way='C'

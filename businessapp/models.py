@@ -5,6 +5,7 @@ from datetime import datetime,timedelta
 from pytz import timezone
 import pytz
 
+import hashlib
 import random
 # Create your models here.
 
@@ -20,7 +21,7 @@ class BusinessManager(User):
 class Business(models.Model):
 	#phone_regex = RegexValidator(regex=r'^[0-9]*$', message="Phone number must be entered in the format: '999999999'. Up to 12 digits allowed.")
 	username=models.CharField(max_length = 20,primary_key=True)
-	apikey=models.CharField(max_length = 100)
+	apikey=models.CharField(max_length = 100,null=True,blank =True)
 	business_name = models.CharField(max_length = 100)
 	password=models.CharField(max_length = 300)
 	email = models.EmailField(max_length = 75)	
@@ -42,7 +43,8 @@ class Business(models.Model):
 		#print self.tracking_no
 		#print self.pk
 		#print "jkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkj"
-		if not self.pk:
+		if not self.apikey:
+			print "wkwkwkwkwkwkwkwkwk"
 			self.apikey=hashlib.sha1( str(random.getrandbits(256)) ).hexdigest();
 		super(Business, self).save(*args, **kwargs)
 		
@@ -84,7 +86,10 @@ class Order(models.Model):
 	payment_method=models.CharField(max_length=1,choices=(('F','free checkout') ,('C','cod'),),)
 	book_time=models.DateTimeField(null=True,blank=True)
 	status=models.CharField(max_length=1,choices=(('P','pending') ,('C','complete'),('N','cancelled'),('D','delivered'),),default='P')
-	
+	method=models.CharField(max_length=1,
+									  choices=(('B','Bulk') ,('N','Normal'),),
+									  blank=True , null = True)
+
 	business=models.ForeignKey(Business)
 
 
@@ -112,9 +117,7 @@ class Product(models.Model):
 	mapped_tracking_no=models.CharField(max_length = 50,null=True,blank=True)
 	tracking_data=models.CharField(max_length = 8000,null=True,blank=True)
 	
-	method=models.CharField(max_length=1,
-									  choices=(('B','Bulk') ,('N','Normal'),),
-									  blank=True , null = True)
+	
 	
 	company=models.CharField(max_length=1,
 									  choices=(('F','FedEx') ,('D','Delhivery'),),
