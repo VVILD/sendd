@@ -653,6 +653,7 @@ class ChangepassResource(CORSModelResource):
 				bundle.data["msg"]="wrongauth"
 				bundle.data["changed"]="N"
 			else:
+				print "kjkjkjkj"
 				business.password=bundle.data['password']
 				business.save()
 				bundle.data["msg"]="password changed"
