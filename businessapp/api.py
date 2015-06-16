@@ -223,7 +223,7 @@ class BusinessResource(CORSModelResource):
 		excludes = ['password']
 		authorization= Authorization()
 		always_return_data = True
-	
+
 	def dehydrate(self,bundle):
 		bundle.data['manager']='sargun gulati'
 		bundle.data['manager_number']='8879006197'
@@ -245,6 +245,8 @@ class PaymentResource(CORSModelResource):
 	business = fields.ForeignKey(BusinessResource, 'business' ,null=True)
 	class Meta:
 		queryset = Payment.objects.all()
+		list_allowed_methods = ['get']
+		detail_allowed_methods = ['get']
 		resource_name = 'payment'
 		authorization= Authorization()
 		always_return_data = True
@@ -384,20 +386,19 @@ class OrderResource(CORSModelResource):
 				product_applied_weight=p.applied_weight
 				product_price=p.price
 				product_shipping_cost=p.shipping_cost
+				product_sku=p.sku
+				
 				print '2'
-				if p.method=='B':
-					product_method='Bulk'
-				else:
-					product_method='Premium'
+
 				tracking_json=json.loads(p.tracking_data)
 				print '3'
 				product_status=tracking_json[-1]['status'].encode('ascii','ignore')
 				product_date=tracking_json[-1]['date'].encode('ascii','ignore')
 				product_location=tracking_json[-1]['location'].encode('ascii','ignore')
 
-
-				l.append({"product_name":product_name,"product_quantity":product_quantity,"product_weight":product_weight,"product_applied_weight":product_applied_weight,"product_price":product_price,"product_shipping_cost":product_shipping_cost,"product_method":product_method,"product_status":product_status,"product_date":product_date,"product_location":product_location,})
-
+				print '3.5'
+				l.append({"product_name":product_name,"product_quantity":product_quantity,"product_weight":product_weight,"product_applied_weight":product_applied_weight,"product_price":product_price,"product_shipping_cost":product_shipping_cost,"product_status":product_status,"product_date":product_date,"product_location":product_location,"product_sku":product_sku,})
+				print '4'
 			data= json.dumps(l)
 
 			#bundle.data['products']=data
@@ -592,6 +593,46 @@ class PricingResource(CORSModelResource):
 		bundle.data['city']="asd"
 		return bundle
 
+
+
+class ForgotpassResource(CORSModelResource):
+	business = fields.ForeignKey(BusinessResource, 'business' ,null=True)
+	class Meta:
+		queryset = Forgotpass.objects.all()
+		resource_name = 'forgotpass'
+		authorization= Authorization()
+		excludes = ['auth']
+		always_return_data = True
+
+	def hydrate(self,bundle):
+		try:
+			business=Business.objects.get(pk=bundle.data['username'])
+			bundle.data['business']="/bapi/v1/business/"+str(bundle.data['username'])+"/"
+			print "user identified"
+		except:
+				#print "fuck"
+			bundle.data['business']="/bapi/v1/business/0/"
+			bundle.data["msg"]='notregistered'
+			print "user not identified"
+			return bundle
+
+		bundle.data['auth']=hashlib.sha224( str(random.getrandbits(256))).hexdigest();
+		email=business.email
+		mail="www.sendd.co/?auth="+bundle.data['auth']+"&username="+bundle.data['username']
+		subject="Reset password with sendd."
+		send_mail(subject, mail, "Team Sendd <sargun@sendd.co>", [email])
+		
+		return bundle
+
+
+
+class ChangepassResource(CORSModelResource):
+	business = fields.ForeignKey(BusinessResource, 'business' ,null=True)
+	class Meta:
+		queryset = Forgotpass.objects.all()
+		resource_name = 'forgotpass'
+		authorization= Authorization()
+		always_return_data = True
 
 
 '''

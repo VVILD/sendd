@@ -205,3 +205,33 @@ class Pricing(models.Model):
 	bulk_zone_d=models.IntegerField(default=20)
 	bulk_zone_e=models.IntegerField(default=22)
 
+class Forgotpass(models.Model):
+	business=models.ForeignKey(Business)
+	auth=models.CharField(max_length = 80,null=True,blank=True)
+	time=models.DateTimeField(null=True,blank=True)
+	
+	def save(self, *args, **kwargs):
+		''' On save, update timestamps '''
+		z=timezone('Asia/Kolkata')
+		fmt='%Y-%m-%d %H:%M:%S'
+		ind_time=datetime.now(z)
+		if not self.pk:
+			self.time = ind_time.strftime(fmt)
+		super(Forgotpass, self).save(*args, **kwargs)
+
+
+class Changepass(models.Model):
+	business=models.ForeignKey(Business)
+	changed=models.CharField(max_length=1,
+									  choices=(('Y','yes') ,('N','no'),),
+									  default='N')
+	time=models.DateTimeField(null=True,blank=True)
+	
+	def save(self, *args, **kwargs):
+		''' On save, update timestamps '''
+		z=timezone('Asia/Kolkata')
+		fmt='%Y-%m-%d %H:%M:%S'
+		ind_time=datetime.now(z)
+		if not self.pk:
+			self.time = ind_time.strftime(fmt)
+		super(Forgotpass, self).save(*args, **kwargs)	

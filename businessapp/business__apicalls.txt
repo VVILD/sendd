@@ -227,7 +227,7 @@ Added arrays of psku,pquantity
 
 -H "Authorization: ApiKey test_user:12345678907a9cb56b7290223165e0a7c23623df"
 
-curl --dump-header - -H "Content-Type: application/json" -H "Authorization:12345678907a9cb56b7290223165e0a7c23623df" -X POST --data '{ "username": "cloudesign", "name": "asd" , "phone":"8879006197","reference_id":"SE487","email":"sargungu@gmail.com","address1":"office no 307, powai plaza","address2":"office no 307, powai plaza","city":"mumbai","state":"maharashtra" ,"pincode":"400076","country":"india" , "payment_method":"F" ,"pname":["clothes","books"],"pprice":["50","60"] ,"pweight":["2","7"],"method":"N","psku":["100000","100001"],"pquantity":["2","1"] }' http://127.0.0.1:8000/bapi/v1/product/
+curl --dump-header - -H "Content-Type: application/json" -H "Authorization:4085fae8e087ae2616b940367358dd9486f3d1be" -X POST --data '{ "username": "cloudesign", "name": "asd" , "phone":"8879006197","reference_id":"SE487","email":"sargungu@gmail.com","address1":"office no 307, powai plaza","address2":"office no 307, powai plaza","city":"mumbai","state":"maharashtra" ,"pincode":"400076","country":"india" , "payment_method":"F" ,"pname":["clothes","books"],"pprice":["50","60"] ,"pweight":["2","7"],"method":"N","psku":["100000","100001"],"pquantity":["2","1"] }' http://127.0.0.1:8000/bapi/v1/product/
 
 
 
@@ -272,3 +272,22 @@ RESPONSE={"meta": {"limit": 20, "next": null, "offset": 0, "previous": null, "to
 
 
 curl --dump-header - -H "Content-Type: application/json" -H "X-HTTP-Method-Override: PATCH" -X POST --data '{ "status": "N" }' http://127.0.0.1:8000/bapi/v1/order/5/
+
+
+
+Forgot pass
+
+curl --dump-header - -H "Content-Type: application/json" -X POST --data '{ "username": "cloudesign" }' http://127.0.0.1:8000/bapi/v1/forgotpass/
+
+
+Change pass
+
+
+curl --dump-header - -H "Content-Type: application/json" -X POST --data '{ "username": "cloudesign","auth": "12345678907a9cb56b7290223165e0a7c23623df", "new_password": "cloudesign" }' http://127.0.0.1:8000/bapi/v1/changepass/
+
+Auth
+
+
+curl --dump-header - -H "Content-Type: application/json" -X POST --data '{ "username": "cloudesign","old_password": "asdrr", "new_password": "cloudesign" }' http://127.0.0.1:8000/bapi/v1/changepass/
+
+
