@@ -629,8 +629,8 @@ class ForgotpassResource(CORSModelResource):
 class ChangepassResource(CORSModelResource):
 	business = fields.ForeignKey(BusinessResource, 'business' ,null=True)
 	class Meta:
-		queryset = Forgotpass.objects.all()
-		resource_name = 'forgotpass'
+		queryset = Changepass.objects.all()
+		resource_name = 'changepass'
 		authorization= Authorization()
 		always_return_data = True
 
@@ -646,14 +646,31 @@ class ChangepassResource(CORSModelResource):
 			print "user not identified"
 			return bundle
 
-		if (business.password==bundle.data['old_password']):
-			business.password=bundle.data['new_password']
-			business.save()
-			bundle.data["msg"]="password changed"
-		else:
-			bundle.data["msg"]="wrong password"
+		try:
+			auth=bundle.data['auth']
+			forgotpass=Forgotpass.objects.filter(business=business,auth=auth)
+			if (forgotpass.count()==0) :
+				bundle.data["msg"]="wrongauth"
+				bundle.data["changed"]="N"
+			else:
+				business.password=bundle.data['password']
+				business.save()
+				bundle.data["msg"]="password changed"
+				bundle.data["changed"]="Y"
+		except:
+			if (business.password==bundle.data['old_password']):
+				business.password=bundle.data['new_password']
+				business.save()
+				bundle.data["msg"]="password changed"
+				bundle.data["changed"]="Y"
+
+			else:
+				bundle.data["msg"]="wrong password"
+				bundle.data["changed"]="N"
 
 		return bundle
+
+
 
 
 '''

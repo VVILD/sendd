@@ -234,4 +234,4 @@ class Changepass(models.Model):
 		ind_time=datetime.now(z)
 		if not self.pk:
 			self.time = ind_time.strftime(fmt)
-		super(Forgotpass, self).save(*args, **kwargs)	
+		super(Changepass, self).save(*args, **kwargs)	
