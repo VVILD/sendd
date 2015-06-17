@@ -422,7 +422,7 @@ class OrderResource(CORSModelResource):
 				print "asd"
 				raw_data=' '
 				for x in range (0,len(tracking_json)):
-					raw_data=raw_data+ tracking_json[-1]['status'].encode('ascii','ignore') +"&nbsp; &nbsp;"+ tracking_json[-1]['date'].encode('ascii','ignore')+"&nbsp; &nbsp;"+ tracking_json[-1]['location'].encode('ascii','ignore')+"<br>"
+					raw_data=raw_data+ tracking_json[x]['status'].encode('ascii','ignore') +"&nbsp; &nbsp;"+ tracking_json[x]['date'].encode('ascii','ignore')+"&nbsp; &nbsp;"+ tracking_json[x]['location'].encode('ascii','ignore')+"<br>"
 				
 				print raw_data
 				print '3.5'
