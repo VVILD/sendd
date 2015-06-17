@@ -425,7 +425,7 @@ class OrderResource(CORSModelResource):
 					raw_data=raw_data+ tracking_json[-1]['status'].encode('ascii','ignore') +"    "+ tracking_json[-1]['date'].encode('ascii','ignore')+"    "+ tracking_json[-1]['location'].encode('ascii','ignore')+"<br>"
 				
 				print raw_data
-				print '3.5'product_trackingid
+				print '3.5'
 				l.append({"product_name":product_name,"product_quantity":product_quantity,"product_weight":product_weight,"product_applied_weight":product_applied_weight,"product_price":product_price,"product_shipping_cost":product_shipping_cost,"product_status":raw_data,"product_date":product_date,"product_location":product_location,"product_sku":product_sku,"product_trackingid":product_trackingid,})
 				print '4'
 			data= json.dumps(l)
