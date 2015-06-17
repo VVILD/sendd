@@ -66,8 +66,8 @@ class OrderAdmin(admin.ModelAdmin):
 	#inlines=(ShipmentInline,)
 	list_per_page = 10
 	form=OrderForm
-	search_fields=['user__phone','name','namemail__name','namemail__email']
-	list_display = ('order_no','book_time','code','date','time','full_address','name_email','status','way','shipments','send_invoice')
+	search_fields=['user__phone','name','namemail__name','namemail__email','promocode__code']
+	list_display = ('order_no','book_time','promocode','date','time','full_address','name_email','status','way','shipments','send_invoice')
 	list_editable = ('date','time','status',)
 	list_filter=['book_time','status']
 	readonly_fields = ('code','send_invoice',)
