@@ -38,7 +38,7 @@ v2_api.register(PincodecheckResource2())
 v2_api.register(InvoicesentResource2())
 
 
-from businessapp.api import BusinessResource,LoginSessionResource,OrderResource,ProductResource,XResource,UsernamecheckResource,PaymentResource,PricingResource,ForgotpassResource,ChangepassResource
+from businessapp.api import BusinessResource,LoginSessionResource,OrderResource,ProductResource,XResource,UsernamecheckResource,PaymentResource,PricingResource,ForgotpassResource,ChangepassResource,BillingResource
 bv1_api = Api(api_name='v1')
 bv1_api.register(BusinessResource())
 bv1_api.register(LoginSessionResource())
@@ -50,7 +50,7 @@ bv1_api.register(PaymentResource())
 bv1_api.register(PricingResource())
 bv1_api.register(ChangepassResource())
 bv1_api.register(ForgotpassResource())
-
+bv1_api.register(BillingResource())
 
 
 

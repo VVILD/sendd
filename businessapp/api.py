@@ -241,6 +241,27 @@ class BusinessResource(CORSModelResource):
 	# 		return bundle
 
 
+
+
+
+class BillingResource(CORSModelResource):
+	business = fields.ForeignKey(BusinessResource, 'business' ,null=True)
+	class Meta:
+		queryset = Billing.objects.all()
+		resource_name = 'billing'
+		authorization= Authorization()
+		always_return_data = True
+
+	def hydrate(self,bundle):
+
+		bundle.data["cost"]='200'
+		bundle.data["paid"]='100'
+		bundle.data["due"]='100'
+				
+
+		return bundle
+
+
 class PaymentResource(CORSModelResource):
 	business = fields.ForeignKey(BusinessResource, 'business' ,null=True)
 	class Meta:

@@ -175,6 +175,12 @@ class Payment(models.Model):
 		super(Payment, self).save(*args, **kwargs)
 	
 
+
+class Billing(models.Model):
+	business=models.ForeignKey(Business,null=True,blank=True)
+
+
+
 class X(models.Model):
 	name=models.CharField(max_length=100,null=True,blank=True)
 
