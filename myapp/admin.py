@@ -299,11 +299,18 @@ class ShipmentAdmin(admin.ModelAdmin):
 			invoice_dict['address']=address
 			invoice_dict['time']=str(obj.order.date) +': '+ str(obj.order.time)
 			invoice_dict['phone']=str(obj.order.user.phone)
-			invoice_dict['code']=str(obj.order.promocode.code)
+			#invoice_dict['code']=str(obj.order.promocode.code)
 
 		except:
 			e_string=e_string+'address not set <br>'
 			valid=0
+
+
+		try:
+			invoice_dict['code']=str(obj.order.promocode.code)
+		except:
+			invoice_dict['code']="No promocode"
+
 
 		try:
 			name2=str(obj.drop_name)
