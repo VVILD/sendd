@@ -322,7 +322,7 @@ class ShipmentAdmin(admin.ModelAdmin):
 
 		try:
 			address2=obj.drop_address
-			if (str(address2)='None,None,None,None,None,None'):
+			if (str(address2)=='None,None,None,None,None,None'):
 				invoice_dict['address2']=" "
 			else:
 				invoice_dict['address2']=address2
