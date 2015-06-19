@@ -511,7 +511,7 @@ class ShipmentAdmin(admin.ModelAdmin):
 			print 's'
 
 		if (valid):
-			return '<a href="http://order.sendmates.com/?%s" target="_blank" >All good! Create Order</a>' % (string)
+			return 'All good!<br><a href="http://order.sendmates.com/?%s" target="_blank" >Create Normal Order</a> <br> <a href="http://order.sendmates.com/cod/?%s" target="_blank" >Create Cod Order</a>' % (string,string)
 		else:
 			return '<div style="color:red">'+ error_string + '</div>'
 	generate_order.allow_tags = True
