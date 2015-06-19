@@ -64,9 +64,9 @@ class ProductInline(admin.TabularInline):
 	form=ProductForm
 	exclude = ['name','quantity','sku','price','weight','real_tracking_no','tracking_data']
 	readonly_fields=('tatti',)
-
+	fields = ('tatti', 'applied_weight' ,'mapped_tracking_no', 'company' ,'shipping_cost')
 	def tatti(self,obj):
-		return 'asd'
+		return str(obj.name) + '<br>' + str(obj.quantity) + '<br>' +str(obj.sku )+ '<br>' +str(obj.price )+ '<br>' +str(obj.weight )+ '<br>' +str(obj.real_tracking_no )
 	# fieldsets=(
 	# ('Basic Information', {'fields':['real_tracking_no','print_invoice',], 'classes':('suit-tab','suit-tab-general')}),
 	# 	#('Address', {'fields':['flat_no','address','pincode',], 'classes':('suit-tab','suit-tab-general')}),

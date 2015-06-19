@@ -17,6 +17,15 @@ class UserAdmin(admin.ModelAdmin):
 admin.site.register(User,UserAdmin)
 
 
+def make_complete(modeladmin, request, queryset):
+    queryset.update(status='C')
+make_complete.short_description = "Mark selected orders as Complete"
+
+def make_pending(modeladmin, request, queryset):
+    queryset.update(status='P')
+make_pending.short_description = "Mark selected orders as Pending"
+
+
 class AddressAdmin(admin.ModelAdmin):
 	def response_change(self, request, obj):
 		print self
@@ -64,7 +73,7 @@ class ShipmentInline(admin.TabularInline):
 
 class OrderAdmin(admin.ModelAdmin):
 	#inlines=(ShipmentInline,)
-	list_per_page = 10
+	list_per_page = 25
 	form=OrderForm
 	search_fields=['user__phone','name','namemail__name','namemail__email','promocode__code']
 	list_display = ('order_no','book_time','promocode','date','time','full_address','name_email','status','way','shipments','send_invoice')
@@ -78,6 +87,7 @@ class OrderAdmin(admin.ModelAdmin):
 		#('Invoices',{'fields':['send_invoice'], 'classes':('suit-tab','suit-tab-invoices')})
 		)
 
+	actions = [make_pending,make_complete]
 	def full_address(self,obj):
 		return str(obj.flat_no)+' '+str(obj.address)+' '+str(obj.pincode)
 
