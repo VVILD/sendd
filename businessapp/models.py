@@ -50,7 +50,7 @@ class Business(models.Model):
 		
 
 	def __unicode__(self):
-		return str(self.username)	
+		return str(self.name)	
 
 class LoginSession(models.Model):
 	Business=models.ForeignKey(Business,null=True,blank=True)
@@ -116,8 +116,6 @@ class Product(models.Model):
 	real_tracking_no=models.CharField(max_length=10,blank=True,null=True)
 	mapped_tracking_no=models.CharField(max_length = 50,null=True,blank=True)
 	tracking_data=models.CharField(max_length = 8000,null=True,blank=True)
-	
-	
 	
 	company=models.CharField(max_length=1,
 									  choices=(('F','FedEx') ,('D','Delhivery'),),

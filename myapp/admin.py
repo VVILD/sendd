@@ -76,8 +76,8 @@ class OrderAdmin(admin.ModelAdmin):
 	list_per_page = 25
 	form=OrderForm
 	search_fields=['user__phone','name','namemail__name','namemail__email','promocode__code']
-	list_display = ('order_no','book_time','promocode','date','time','full_address','name_email','status','way','shipments','send_invoice')
-	list_editable = ('date','time','status',)
+	list_display = ('order_no','book_time','promocode','date','time','full_address','name_email','status','way','comment','shipments','send_invoice')
+	list_editable = ('date','time','status','comment',)
 	list_filter=['book_time','status']
 	readonly_fields = ('code','send_invoice',)
 	fieldsets=(

@@ -81,6 +81,7 @@ class Order(models.Model):
 									  choices=(('P','pending') ,('C','complete'),('N','cancelled'),('F','fake'),),
 									  default='P')
 
+	comment=models.TextField(null=True,blank=True)
 	way=models.CharField(max_length=1,
 									  choices=(('A','app') ,('W','web'),('C','call'),),
 									  default='A')

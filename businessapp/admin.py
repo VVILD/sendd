@@ -65,6 +65,7 @@ class ProductInline(admin.TabularInline):
 	exclude = ['name','quantity','sku','price','weight','real_tracking_no','tracking_data']
 	readonly_fields=('tatti',)
 	fields = ('tatti', 'applied_weight' ,'mapped_tracking_no', 'company' ,'shipping_cost')
+	extra = 0
 	def tatti(self,obj):
 		return str(obj.name) + '<br>' + str(obj.quantity) + '<br>' +str(obj.sku )+ '<br>' +str(obj.price )+ '<br>' +str(obj.weight )+ '<br>' +str(obj.real_tracking_no )
 	# fieldsets=(
@@ -80,9 +81,34 @@ class ProductInline(admin.TabularInline):
 
 class OrderAdmin(admin.ModelAdmin):
 	inlines=(ProductInline,)
+	#search_fields=['user__phone','name','namemail__name','namemail__email','promocode__code']
+	list_display = ('order_no','book_time','business','name','status','method')
+	list_editable = ('status',)
+	#list_filter=['book_time','status']
+	
+'''
+reference_id=models.CharField(max_length=100)
+	order_no=models.AutoField(primary_key=True)
+	name = models.CharField(max_length = 100,null=True,blank =True)
+	phone = models.CharField(max_length = 12)
+	email = models.EmailField(max_length = 75,null=True,blank =True)
+	#address=models.CharField(max_length = 300)
+	#flat_no=models.CharField(max_length = 100,null=True,blank =True)
+	address1=models.CharField(max_length = 300,null=True,blank =True)
+	address2=models.CharField(max_length = 300,null=True,blank =True)
+	city=models.CharField(max_length = 50,null=True,blank =True)
+	state=models.CharField(max_length = 50,null=True,blank =True)
+	pincode=models.CharField(max_length =30,null=True,blank =True)
+	country=models.CharField(max_length =30,null=True,blank =True)
+	payment_method=models.CharField(max_length=1,choices=(('F','free checkout') ,('C','cod'),),)
+	book_time=models.DateTimeField(null=True,blank=True)
+	status=models.CharField(max_length=1,choices=(('P','pending') ,('C','complete'),('N','cancelled'),('D','delivered'),),default='P')
+	method=models.CharField(max_length=1,
+									  choices=(('B','Bulk') ,('N','Normal'),),
+									  blank=True , null = True)
 
-
-
+	business=models.ForeignKey(Business)
+	'''
 
 
 admin.site.register(Order,OrderAdmin)
