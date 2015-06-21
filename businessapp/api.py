@@ -60,6 +60,7 @@ class OnlyAuthorization(Authorization):
     def update_list(self, object_list, bundle):
         allowed = []
 
+        print "fgd"
         # Since they may not all be saved, iterate over them.
         for obj in object_list:
             if obj.user == bundle.request.user:
@@ -68,7 +69,9 @@ class OnlyAuthorization(Authorization):
         return allowed
 
     def update_detail(self, object_list, bundle):
-        return bundle.obj.user == bundle.request.user
+    	print "dfd"
+        return bundle.request.META["HTTP_AUTHORIZATION"]==bundle.obj.business.apikey
+
 
     def delete_list(self, object_list, bundle):
         # Sorry user, no deletes for you!
