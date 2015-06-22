@@ -61,7 +61,7 @@ class Business(models.Model):
 		
 
 	def __unicode__(self):
-		return str(self.name)	
+		return str(self.business_name)	
 
 class LoginSession(models.Model):
 	Business=models.ForeignKey(Business,null=True,blank=True)

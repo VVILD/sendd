@@ -99,10 +99,10 @@ class ProductInline(admin.TabularInline):
 
 class OrderAdmin(admin.ModelAdmin):
 	inlines=(ProductInline,)
-	#search_fields=['user__phone','name','namemail__name','namemail__email','promocode__code']
+	search_fields=['business__business_name','name']
 	list_display = ('order_no','book_time','business_details','name','status','method')
 	list_editable = ('status',)
-	#list_filter=['book_time','status']
+	list_filter=['business','status']
 
 
 	def business_details(self,obj):
