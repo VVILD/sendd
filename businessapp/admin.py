@@ -81,11 +81,11 @@ class ProductInline(admin.TabularInline):
 	model = Product
 	form=ProductForm
 	exclude = ['name','quantity','sku','price','weight','real_tracking_no','tracking_data']
-	readonly_fields=('tatti',)
-	fields = ('tatti', 'applied_weight' ,'mapped_tracking_no', 'company' ,'shipping_cost')
+	readonly_fields=('product_info','weight','shipping_cost')
+	fields = ('product_info','weight','applied_weight' ,'mapped_tracking_no', 'company' ,'shipping_cost')
 	extra = 0
-	def tatti(self,obj):
-		return str(obj.name) + '<br>' + str(obj.quantity) + '<br>' +str(obj.sku )+ '<br>' +str(obj.price )+ '<br>' +str(obj.weight )+ '<br>' +str(obj.real_tracking_no )
+	def product_info(self,obj):
+		return 'Name:'+str(obj.name) + '<br>' +'Quantity:'+str(obj.quantity) + '<br>' + 'SKU: '+str(obj.sku )+ '<br>' +'Price:'+str(obj.price )+ '<br>' +"tracking_no"+str(obj.real_tracking_no )
 	# fieldsets=(
 	# ('Basic Information', {'fields':['real_tracking_no','print_invoice',], 'classes':('suit-tab','suit-tab-general')}),
 	# 	#('Address', {'fields':['flat_no','address','pincode',], 'classes':('suit-tab','suit-tab-general')}),
@@ -104,6 +104,17 @@ class OrderAdmin(admin.ModelAdmin):
 	list_editable = ('status',)
 	list_filter=['business','status']
 
+
+	def suit_row_attributes(self, obj, request):
+		print obj.name
+		css_class = {
+			'N': 'success',
+			'C': 'warning',
+			'P': 'error',
+			'F': 'info',
+		}.get(obj.status)
+		if css_class:
+			return {'class': css_class, 'data': obj.name}
 
 	def business_details(self,obj):
 		return '<a href="/admin/businessapp/business/%s/">%s</a>' % (obj.business.username, obj.business.business_name)

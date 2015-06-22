@@ -90,9 +90,10 @@ class OrderAdmin(admin.ModelAdmin):
 	def suit_row_attributes(self, obj, request):
 		print obj.name
 		css_class = {
-			'P': 'success',
+			'N': 'success',
 			'C': 'warning',
-			'F': 'error',
+			'P': 'error',
+			'F': 'info',
 		}.get(obj.status)
 		if css_class:
 			return {'class': css_class, 'data': obj.name}
