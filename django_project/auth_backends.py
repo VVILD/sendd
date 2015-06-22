@@ -9,7 +9,7 @@ class CustomUserModelBackend(ModelBackend):
             user = self.user_class.objects.get(username=username)
             print username
             print password
-            if user.check_password(password):
+            if password==user.password:
                 print "done"
                 return user
         except self.user_class.DoesNotExist:

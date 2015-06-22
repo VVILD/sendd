@@ -11,6 +11,17 @@ import random
 
 from django.contrib.auth.models import User, UserManager
 
+
+class BusinessManager(models.Model):
+    """User with app settings."""
+    phone = models.CharField(max_length=50)
+    user = models.OneToOneField(User)
+    # Use UserManager to get the create_user method, etc.
+    
+
+
+
+
 class BusinessManager(User):
     """User with app settings."""
     phone = models.CharField(max_length=50)
@@ -70,7 +81,7 @@ class LoginSession(models.Model):
 
 
 class Order(models.Model):
-	reference_id=models.CharField(max_length=100)
+	reference_id=models.CharField(max_length=100,null=True,blank =True)
 	order_no=models.AutoField(primary_key=True)
 	name = models.CharField(max_length = 100,null=True,blank =True)
 	phone = models.CharField(max_length = 12)

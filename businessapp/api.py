@@ -231,6 +231,33 @@ class BusinessResource(CORSModelResource):
 		bundle.data['manager']='sargun gulati'
 		bundle.data['manager_number']='8879006197'
 		bundle.data['password']=' '
+
+		pk=bundle.data['resource_uri'].split('/')[4]
+
+		try:
+			business=Business.objects.get(pk=pk)
+		except:
+			print "fuck"
+			bundle.data["msg"]='notregistered'
+			return bundle
+
+
+		#pk=bundle.data['resource_uri'].split('/')[4]
+
+		try:
+			u = User.objects.get(username=business.businessmanager.username)
+			bundle.data['manager']=u.businessmanager.first_name 
+			bundle.data['manager_number']=u.businessmanager.phone
+		
+		except:
+
+			bundle.data['manager']='sargun gulati'
+			bundle.data['manager_number']='8879006197'
+			#u = User.objects.get(username='ankit')
+			#print u.businessmanager.phone
+
+
+
 		return bundle
 	# def hydrate(self,bundle):
 	# 	try:
@@ -335,8 +362,6 @@ class LoginSessionResource(CORSModelResource):
 		if (bundle.data['password']== password):
 			bundle.data["msg"]='success'
 			bundle.data['name']=business.name
-			bundle.data['manager']='sargun gulati'
-			bundle.data['manager_number']='8879006197'
 
 
 

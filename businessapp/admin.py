@@ -6,11 +6,29 @@ class BusinessAdmin(admin.ModelAdmin):
 	list_display = ('username','business_name','username')
 	#list_editable = ('name',)
 
+from django.contrib.auth.admin import UserAdmin
+from django.contrib.auth.models import User
+
 
 
 from django.forms import ModelForm, Textarea ,HiddenInput
 from django import forms
 from businessapp.models import Product,Order
+
+
+class BmInline(admin.StackedInline):
+    model = BusinessManager
+    can_delete = False
+    verbose_name_plural = 'businessmanager'
+
+# Define a new User admin
+class UserAdmin(UserAdmin):
+    inlines = (BmInline, )
+
+# Re-register UserAdmin
+admin.site.unregister(User)
+admin.site.register(User, UserAdmin)
+
 
 class ProductForm(ModelForm):
 	class Meta:
@@ -82,9 +100,14 @@ class ProductInline(admin.TabularInline):
 class OrderAdmin(admin.ModelAdmin):
 	inlines=(ProductInline,)
 	#search_fields=['user__phone','name','namemail__name','namemail__email','promocode__code']
-	list_display = ('order_no','book_time','business','name','status','method')
+	list_display = ('order_no','book_time','business_details','name','status','method')
 	list_editable = ('status',)
 	#list_filter=['book_time','status']
+
+
+	def business_details(self,obj):
+		return '<a href="/admin/businessapp/business/%s/">%s</a>' % (obj.business.username, obj.business.business_name)
+	business_details.allow_tags = True
 	
 '''
 reference_id=models.CharField(max_length=100)
