@@ -18,11 +18,11 @@ admin.site.register(User,UserAdmin)
 
 
 def make_complete(modeladmin, request, queryset):
-    queryset.update(status='C')
+	queryset.update(status='C')
 make_complete.short_description = "Mark selected orders as Complete"
 
 def make_pending(modeladmin, request, queryset):
-    queryset.update(status='P')
+	queryset.update(status='P')
 make_pending.short_description = "Mark selected orders as Pending"
 
 
@@ -86,6 +86,17 @@ class OrderAdmin(admin.ModelAdmin):
 		('Destination Address', {'fields':[('drop_name','drop_phone'),'drop_flat_no','locality',('city','state'),('drop_pincode','country')] ,})
 		#('Invoices',{'fields':['send_invoice'], 'classes':('suit-tab','suit-tab-invoices')})
 		)
+
+	def suit_row_attributes(self, obj, request):
+		print obj.name
+		css_class = {
+			'P': 'success',
+			'C': 'warning',
+			'F': 'error',
+		}.get(obj.status)
+		if css_class:
+			return {'class': css_class, 'data': obj.name}
+
 
 	actions = [make_pending,make_complete]
 	def full_address(self,obj):
