@@ -201,6 +201,10 @@ class Usernamecheck(models.Model):
 									  choices=(('Y','yes') ,('N','no'),),
 									  default='N')
 
+class Pincodecheck(models.Model):
+	pincode=models.CharField(max_length=6)
+	def __unicode__(self):
+		return str(self.pincode)
 
 class Pricing(models.Model):
 	business=models.OneToOneField(Business,primary_key=True)
