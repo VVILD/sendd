@@ -228,8 +228,8 @@ class BusinessResource(CORSModelResource):
 		always_return_data = True
 
 	def dehydrate(self,bundle):
-		bundle.data['manager']='sargun gulati'
-		bundle.data['manager_number']='8879006197'
+		bundle.data['manager']='ankush sharma'
+		bundle.data['manager_number']='8080772210'
 		bundle.data['password']=' '
 
 		pk=bundle.data['resource_uri'].split('/')[4]
@@ -284,9 +284,9 @@ class BillingResource(CORSModelResource):
 
 	def hydrate(self,bundle):
 
-		bundle.data["cost"]='200'
-		bundle.data["paid"]='100'
-		bundle.data["due"]='100'
+		bundle.data["cost"]='N/A'
+		bundle.data["paid"]='N/A'
+		bundle.data["due"]='N/A'
 				
 
 		return bundle
@@ -1439,6 +1439,7 @@ class PromocheckResource2(MultipartResource,ModelResource):
 
 
 '''
+
 
 class PincodecheckResource(CORSModelResource):
 	class Meta:
