@@ -153,7 +153,7 @@ class Shipment(models.Model):
 	pricing=models.ForeignKey(Pricing,null=True,blank=True)
 	cost_of_courier= models.CharField(verbose_name='item cost',max_length = 100,null=True,blank=True)
 	item_name=models.CharField(max_length = 100,null=True,blank=True)
-	
+	kartrocket_order=models.CharField(max_length = 100,null=True,blank=True)
 
 
 	def save(self, *args, **kwargs):

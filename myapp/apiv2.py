@@ -391,7 +391,16 @@ class ShipmentResource2(MultipartResource,ModelResource):
 
 	def hydrate(self,bundle):
 
-
+		try:
+			override_method=bundle.request.META['HTTP_X_HTTP_METHOD_OVERRIDE']
+			print "changed to PATCH"
+		except:
+			override_method='none'
+			print "hello"
+			
+		if bundle.request.META['REQUEST_METHOD'] == 'POST' and override_method=='PATCH':
+			print "patch"
+			return bundle
 
 #sending mail and sms
 		try:
@@ -455,6 +464,17 @@ class ShipmentResource2(MultipartResource,ModelResource):
 
 	def dehydrate(self,bundle):
 		try:
+			override_method=bundle.request.META['HTTP_X_HTTP_METHOD_OVERRIDE']
+			print "changed to PATCH"
+		except:
+			override_method='none'
+			print "hello"
+			
+		if bundle.request.META['REQUEST_METHOD'] == 'POST' and override_method=='PATCH':
+			print "patch"
+			return bundle
+
+		try:
 			print 'dfd'
 			print bundle.data['drop_address']
 			pk=bundle.data['drop_address'].split('/')[4]
@@ -463,7 +483,7 @@ class ShipmentResource2(MultipartResource,ModelResource):
 			bundle.data['drop_address']=address
 			print address
 			bundle.data['pincode']=address.pincode
-
+			print "shit"
 		except:
 			print "df"
 

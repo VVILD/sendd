@@ -266,7 +266,7 @@ class ShipmentAdmin(admin.ModelAdmin):
 		('Basic Information', {'fields':['real_tracking_no','parcel_details',('category','status')],'classes':('suit-tab','suit-tab-general')}),
 		('Parcel Information', {'fields':[('name','weight','cost_of_courier'),],'classes':('suit-tab','suit-tab-general')}),
 		('Amount paid', {'fields':['price',],'classes':('suit-tab','suit-tab-general')}),
-		('Tracking Information', {'fields':[('mapped_tracking_no','company'),],'classes':('suit-tab','suit-tab-general')}),
+		('Tracking Information', {'fields':[('mapped_tracking_no','company'),'kartrocket_order'],'classes':('suit-tab','suit-tab-general')}),
 		#('Destination Address', {'fields':['drop_name','drop_phone','drop_flat_no','locality','city','state','drop_pincode','country'] , 'classes':['collapse',]})
 		('Destination Address', {'fields':[('drop_name','drop_phone'),'address',] ,'classes':('suit-tab','suit-tab-general')}),
 		('Actions',{'fields':['print_invoice','generate_order'],'classes':('suit-tab','suit-tab-general')}),
@@ -412,6 +412,13 @@ class ShipmentAdmin(admin.ModelAdmin):
 			except:
 				valid=0
 				error_string=error_string + 'orderid not set <br>'
+
+			try:
+				shipmentid=shipment.real_tracking_no
+				string=string+'shipmentid='+ str(shipmentid)+ '&'
+			except:
+				valid=0
+				error_string=error_string + 'shipmentid not set <br>'
 
 				
 			try:
