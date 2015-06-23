@@ -1440,7 +1440,7 @@ class PromocheckResource2(MultipartResource,ModelResource):
 
 '''
 
-class PincodecheckResource(MultipartResource,ModelResource):
+class PincodecheckResource(CORSModelResource):
 	class Meta:
 		queryset = Pincodecheck.objects.all()
 		resource_name = 'pincodecheck'
