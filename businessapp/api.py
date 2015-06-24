@@ -223,12 +223,12 @@ class BusinessResource(CORSModelResource):
 	class Meta:
 		queryset = Business.objects.all()
 		resource_name = 'business'
-	
 	#	excludes = ['password']
 		authorization= Authorization()
-		always_return_data = False
+		always_return_data = True
 
 	def dehydrate(self,bundle):
+
 
 		pk=bundle.data['resource_uri'].split('/')[4]
 
@@ -248,8 +248,7 @@ class BusinessResource(CORSModelResource):
 			bundle.data['manager_number']=u.businessmanager.phone
 		
 		except:
-
-			bundle.data['manager']='ankush sharma'
+			bundle.data['manager']='Ankush Sharma'
 			bundle.data['manager_number']='8080772210'
 			#u = User.objects.get(username='ankit')
 			#print u.businessmanager.phone
