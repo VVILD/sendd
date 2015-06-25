@@ -308,6 +308,17 @@ class Pincodecheck(models.Model):
 
 '''
 
+class Pincode(models.Model):
+	pincode=models.CharField(max_length=6)
+	fedex=models.BooleanField(default=False)
+	aramex=models.BooleanField(default=False)
+	delhivery=models.BooleanField(default=False)
+	ecom=models.BooleanField(default=False)
+	firstflight=models.BooleanField(default=False)
+	def __unicode__(self):
+		return str(self.pincode)
+
+
 
 class Invoicesent(models.Model):
 	order=models.ForeignKey(Order)

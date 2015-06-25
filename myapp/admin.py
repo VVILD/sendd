@@ -538,6 +538,18 @@ class ShipmentAdmin(admin.ModelAdmin):
 
 admin.site.register(Shipment,ShipmentAdmin)
 
+
+class PincodeAdmin(admin.ModelAdmin):
+	list_display = ('pincode','fedex','aramex','delhivery','ecom','firstflight')
+	search_fields=['pincode']
+
+
+
+admin.site.register(Pincode,PincodeAdmin)
+
+
+
+
 class XAdmin(admin.ModelAdmin):
 	list_display = ('Name','C','thumbnail')
 
