@@ -39,6 +39,27 @@ from tastypie.authorization import Authorization
 from tastypie.exceptions import Unauthorized
 
 
+class urlencodeSerializer(Serializer):
+    formats = ['json', 'jsonp', 'xml', 'yaml', 'html', 'plist', 'urlencode']
+    content_types = {
+        'json': 'application/json',
+        'jsonp': 'text/javascript',
+        'xml': 'application/xml',
+        'yaml': 'text/yaml',
+        'html': 'text/html',
+        'plist': 'application/x-plist',
+        'urlencode': 'application/x-www-form-urlencoded',
+        }
+    def from_urlencode(self, data,options=None):
+        """ handles basic formencoded url posts """
+        qs = dict((k, v if len(v)>1 else v[0] )
+            for k, v in urlparse.parse_qs(data).iteritems())
+        return qs
+
+    def to_urlencode(self,content): 
+        pass
+
+
 class OnlyAuthorization(Authorization):
 
     def read_detail(self, object_list, bundle):
@@ -484,6 +505,7 @@ class ProductResource(CORSModelResource):
 		authorization=Authorization()
 		authentication=Authentication()
 		always_return_data = True
+		serializer = urlencodeSerializer()
 		ordering = ['date']
 
 	def prepend_urls(self):
