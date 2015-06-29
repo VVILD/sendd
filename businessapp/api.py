@@ -20,7 +20,7 @@ import json
 from tastypie.resources import Resource
 from tastypie.fields import ListField
 
-
+import urlparse
 from tastypie.authentication import Authentication
 
 
