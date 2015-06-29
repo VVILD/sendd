@@ -88,7 +88,7 @@ class ProductInline(admin.TabularInline):
 	fields = ('product_info','weight','applied_weight' ,'mapped_tracking_no', 'company' ,'shipping_cost','generate_order')
 	extra = 0
 	def product_info(self,obj):
-		return '<b>Name:</b>'+str(obj.name) + '<br>' +'<b>Quantity:</b>'+str(obj.quantity) + '<br>' + 'SKU: '+str(obj.sku )+ '<br>' +'<b>Price:</b>'+str(obj.price )+ '<br>' +"<b>tracking_no:</b>"+str(obj.real_tracking_no )
+		return '<b>Name:</b>'+str(obj.name) + '<br>' +'<b>Quantity:</b>'+str(obj.quantity) + '<br>' + 'SKU: '+str(obj.sku )+ '<br>' +'<b>Price:</b>'+str(obj.price )+ '<br>' +"<b>tracking_no:</b>"+str(obj.real_tracking_no )+ '<br>' +"<b>kartrocket_order:</b>"+str(obj.kartrocket_order)
 	product_info.allow_tags = True
 
 
@@ -267,7 +267,7 @@ class OrderAdmin(admin.ModelAdmin):
 		#print obj.pk
 		print "sdddddddddddddddddddddddddddd"
 		#return super(UserAdmin, self).response_change(request, obj)
-		return HttpResponseRedirect('http://sendmates.com/admin/myapp/order/'+str(obj.pk) + '/' )
+		return HttpResponseRedirect('http://sendmates.com/admin/businessapp/order/'+str(obj.pk) + '/' )
 
 	def suit_row_attributes(self, obj, request):
 		print obj.name
