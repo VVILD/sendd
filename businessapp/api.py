@@ -44,8 +44,11 @@ class OnlyAuthorization(Authorization):
     def read_detail(self, object_list, bundle):
         # Is the requested object owned by the user?
         print "0kkkkkkkkkkkkkkkk"
-        print bundle.request.META["HTTP_AUTHORIZATION"]
-        print bundle.obj.business.apikey
+        
+        #these 2 lines due to product wanting to use this authorisation
+        if (bundle.request.META["HTTP_AUTHORIZATION"]=='A'):
+        	return True
+
         return bundle.request.META["HTTP_AUTHORIZATION"]==bundle.obj.business.apikey
 
     def create_list(self, object_list, bundle):
@@ -478,9 +481,16 @@ class ProductResource(CORSModelResource):
 	class Meta:
 		queryset = Product.objects.all()
 		resource_name = 'product'
-		authorization= Authorization()
+		authorization=Authorization()
+		authentication=Authentication()
 		always_return_data = True
 		ordering = ['date']
+
+	def prepend_urls(self):
+		return [
+            url(r"^(?P<resource_name>%s)/(?P<real_tracking_no>[\w\d_.-]+)/$" % self._meta.resource_name, self.wrap_view('dispatch_detail'), name="api_dispatch_detail"),
+        ]
+
 
 	def build_filters(self, filters=None):
 		print "shit"
