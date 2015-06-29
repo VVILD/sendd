@@ -296,17 +296,14 @@ class Pincodecheck(models.Model):
 		return str(self.pincode)
 
 
-'''
 	def send_update(sender, instance, created, **kwargs):
-	    if instance.real_tracking_no:
-
-		super(Gcmmessage, self).save(*args, **kwargs)
-
-
+		print "shittt>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+		print instance.pk
+		#quersyset.filter(pk=instance.pk).update(....)
 
 	post_save.connect(send_update, sender=Shipment)
 
-'''
+
 
 class Pincode(models.Model):
 	pincode=models.CharField(max_length=6)

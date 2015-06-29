@@ -4,11 +4,11 @@ from django.core.validators import RegexValidator
 from datetime import datetime,timedelta
 from pytz import timezone
 import pytz
-
+from django.db.models.signals import post_save
 import hashlib
 import random
 # Create your models here.
-
+import math
 from django.contrib.auth.models import User, UserManager
 
 
@@ -167,6 +167,89 @@ class Product(models.Model):
 		super(Product, self).save(*args, **kwargs)
 		print "L"
 
+
+
+
+
+
+def send_update(sender, instance, created, **kwargs):
+	
+	if instance.applied_weight:
+		print "shittt>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+		print instance.order.business.pk
+		method=instance.order.method
+
+
+		pincode=instance.order.pincode
+		print pincode
+
+		t=pincode[:2]
+
+		pricing=Pricing.objects.get(pk=instance.order.business.pk)
+		
+		if (method=='N'):
+			if (t=='40'):
+				price1=pricing.normal_zone_a_0
+				price2=pricing.normal_zone_a_1
+				price3=pricing.normal_zone_a_2
+			
+			elif (t=='41' or t=='42' or t=='43' or t=='44'):
+				price1=pricing.normal_zone_b_0
+				price2=pricing.normal_zone_b_1
+				price3=pricing.normal_zone_b_2
+			elif (t=='56' or t=='11' or t=='60' or t=='70'):
+				price1=pricing.normal_zone_c_0
+				price2=pricing.normal_zone_c_1
+				price3=pricing.normal_zone_c_2
+
+			elif (t=='78' or t=='79' or t=='18' or t=='19'):
+				price1=pricing.normal_zone_e_0
+				price2=pricing.normal_zone_e_1
+				price3=pricing.normal_zone_e_2
+			else:
+				price1=pricing.normal_zone_d_0
+				price2=pricing.normal_zone_d_1
+				price3=pricing.normal_zone_d_2
+
+			if (instance.applied_weight<=0.25):
+				price=price1
+			elif(instance.applied_weight<=0.50):
+				price=price2
+			else:
+				price=price2 + math.ceil((instance.applied_weight*2 - 1))* price3
+
+		if (method=='B'):
+			if (t=='40'):
+				price1=pricing.bulk_zone_a
+			
+			elif (t=='41' or t=='42' or t=='43' or t=='44'):
+				price1=pricing.bulk_zone_b
+			elif (t=='56' or t=='11' or t=='60' or t=='70'):
+				price1=pricing.bulk_zone_c
+
+			elif (t=='78' or t=='79' or t=='18' or t=='19'):
+				price1=pricing.bulk_zone_e
+			else:
+				price1=pricing.bulk_zone_d
+
+
+			if (instance.applied_weight<=10):
+				price=price1*10
+			else:
+				price=price1*instance.applied_weight 
+
+
+
+
+		print "prrriiiceee"
+
+
+		Product.objects.filter(pk=instance.pk).update(shipping_cost=price)
+		print "Done"
+			#MyModel.objects.filter(pk=some_value).update(field1='some value')
+
+
+post_save.connect(send_update, sender=Product)
 
 class Payment(models.Model):
 	amount= models.IntegerField()
