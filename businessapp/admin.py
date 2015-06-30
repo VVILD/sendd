@@ -13,6 +13,19 @@ from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import User
 
 
+def make_complete(modeladmin, request, queryset):
+	queryset.update(status='C')
+make_complete.short_description = "Mark selected orders as Complete"
+
+def make_pending(modeladmin, request, queryset):
+	queryset.update(status='P')
+make_pending.short_description = "Mark selected orders as Pending"
+
+
+def make_cancelled(modeladmin, request, queryset):
+	queryset.update(status='N')
+make_cancelled.short_description = "Mark selected orders as Cancelled"
+
 
 from django.forms import ModelForm, Textarea ,HiddenInput
 from django import forms
@@ -259,6 +272,7 @@ class OrderAdmin(admin.ModelAdmin):
 	list_display = ('order_no','book_time','business_details','name','status','method')
 	list_editable = ('status',)
 	list_filter=['business','status']
+	actions = [make_pending,make_complete,make_cancelled]
 
 	def response_change(self, request, obj):
 		
