@@ -1,7 +1,4 @@
 
-
-
-
 import MySQLdb as mdb
 import easypost
 import json
@@ -10,60 +7,78 @@ import datetime
 import json
 import time
 import dateutil.parser
-
 import urllib
+str1=" FedEx"
+
+str2=" to FedEx"
+
+
+easypost.api_key = 'UX9cFcEOVCEvw32QgFjXBg'
 
 
 while(1):
-	
-	try:
+	time.sleep(10)
+	con = mdb.connect('localhost', 'root', 'followshyp', 'myapp')
+	cur=con.cursor()
+	cur.execute("SELECT s.mapped_tracking_no,s.company,s.tracking_data,s.tracking_no from myapp_shipment as s where s.status = 'P' and s.company='D'")
+	y= cur.fetchall()
+
+	for row in y:
 		time.sleep(10)
-		con = mdb.connect('localhost', 'root', 'followshyp', 'myapp')
-		cur=con.cursor()
-		cur.execute("select kartrocket_order,mapped_tracking_no,tracking_no from myapp_shipment where kartrocket_order is NOT NULL AND kartrocket_order<>'' AND (mapped_tracking_no is NULL or mapped_tracking_no='')")
-		y= cur.fetchall()
+		awbno=row[0]
+		comp=row[1]
+		completed=False
+		if(awbno!=""):
+			if (comp=="D"):
 
-		for row in y:
-			time.sleep(10)
-			kartrocket_order=row[0]
-			pk=row[2]
+				l=[]
+				
+				link = "http://track.delhivery.com/p/"+ awbno
+				f = urllib.urlopen(link)
+				myfile = f.read()
+				
+				from BeautifulSoup import BeautifulSoup as BSHTML
+				string=''
+				count=-1
+				BS=BSHTML(myfile)
+				for definition in BS.findAll('td'):
+					count=count+1
+					if (count%5==1):
+						print count
+						y1=unicode.join(u'\n',map(unicode,definition))
+						#string=stri
+
+					if (count%5==2):
+						print count
+						y2=unicode.join(u'\n',map(unicode,definition))
+						#string=string+y+'/'
+
+					if (count%5==4):
+						print count
+						y3=unicode.join(u'\n',map(unicode,definition))
+						#string=string+y+'|'
+						print 
+						l.insert(0,{"status":y1,"date":y2,"location":y3})
+						if (y1=='Delivered'):
+							completed=True
 
 
-			link = "http://crazymindtechnologies.kartrocket.co/index.php?route=feed/web_api/orders&version=2&key=c20ad4d76fe97759aa27a0c99bff6710&order_id="+kartrocket_order
-			f = urllib.urlopen(link)
-			myfile = f.read()
-			myfiles=json.loads(myfile)
-			try:
-				for detail in myfiles['orders'][0]['order_history']:
-					if detail['awb_code'] is not None:
-						print detail['awb_code']
-						
-						print detail['courier']
-						awb=detail['awb_code']
-						courier=detail['courier'][0]
-						print courier
-						
-						cur.execute ("UPDATE myapp_shipment SET mapped_tracking_no='%s',company='%s' WHERE tracking_no=%s" % (awb,courier,pk))
-						con.commit()
-						break
-						
-			except:
-				print "fail"
+				print json.dumps(l)
 
-		con.close()
-	except:
-		print "major fail"
+				cur.execute ("UPDATE myapp_shipment SET tracking_data='%s' WHERE tracking_no=%s" % (json.dumps(l),row[3]))
+				con.commit()
+
+				if (completed):
+					print "fuck"
+					C="C"
+					cur.execute ("UPDATE myapp_shipment SET status='C' WHERE tracking_no=%s" % (row[3]))
+					con.commit()	
+	con.close()
+
+
+
 
 '''
-		if(awbno!=""):
-			if (comp=="F"):
-				tracker = easypost.Tracker.create(
-				      tracking_code=awbno,
-				      carrier="FEDEX"
-				  )
-				l=[]
-				l.append({"status":"Booking Received","date":str(row[3])+ " " + str(row[4]),"location":"Mumbai (Maharashtra)"})		
-
 				for x in tracker['tracking_details']:
 					time.sleep(1)
 					msg=str(x['message'])
@@ -80,17 +95,15 @@ while(1):
 						loc=str(city)+", " +str(state) + ", "+ str(country) + " -" +str(zip)
 					msg=re.sub(str2,"",msg)
 					msg=re.sub(str1,"",msg)
+
+
 					l.append({"status":msg,"date":date,"location":loc})
+					'''
+'''
 					if (msg=='Delivered'):
 						print "fuck"
 						C="C"
 						print row[5]
 						cur.execute ("UPDATE myapp_shipment SET status='C' WHERE tracking_no=%s" % (row[5]))
 						con.commit()	
-
-
-				cur.execute ("UPDATE myapp_shipment SET tracking_data='%s' WHERE tracking_no=%s" % (json.dumps(l),row[5]))
-				con.commit()	
-	con.close()
-
 '''

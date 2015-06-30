@@ -452,7 +452,7 @@ class ShipmentResource2(MultipartResource,CORSModelResource):
 		queryset = Shipment.objects.all()
 		resource_name = 'shipment'
 		detail_uri_name = 'real_tracking_no'
-		authorization= Authorization()
+		authorization=Authorization()
 		always_return_data = True
 		filtering = {
 			"drop_address": ALL,
@@ -587,10 +587,8 @@ class ShipmentResource2(MultipartResource,CORSModelResource):
 		except:
 			print "df"
 
-		try:
-			bundle.data['img']='http://128.199.159.90/static'+str(bundle.data['img'])[15:]
-		except:
-			print 'img'
+
+
 
 
 		try:
