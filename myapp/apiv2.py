@@ -590,6 +590,13 @@ class ShipmentResource2(MultipartResource,CORSModelResource):
 
 
 
+		try:
+			img_name=bundle.data['img'].split('/')[2]
+
+			bundle.data['img']='http://128.199.159.90/static/'+ img_name
+		except:
+			print 'img'
+
 
 		try:
 			order_pk=pk=bundle.data['order'].split('/')[4]
