@@ -132,10 +132,12 @@ class Product(models.Model):
 									  choices=(('F','FedEx') ,('D','Delhivery'),),
 									  blank=True , null = True)
 	shipping_cost=models.IntegerField(null=True,blank=True)
+	cod_cost=models.IntegerField(default=0,null=True,blank=True)
+
 	date=models.DateTimeField(null=True,blank=True)
 
 	def save(self, *args, **kwargs):
-		#print self.tracking_no
+			#print self.tracking_no
 		#print self.pk
 		#print "jkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkj"
 		if not self.pk:
@@ -155,7 +157,7 @@ class Product(models.Model):
 			no1=random.choice('1234567890')
 			no2=random.choice('1234567890')
 			no=int(self.pk)+ 134528
-			trackingno='S'+str(no) + str(alphabet)+str(no1)+str(no2)
+			trackingno='B'+str(no) + str(alphabet)+str(no1)+str(no2)
 			print trackingno
 			self.real_tracking_no=trackingno
 			#p = Pricing.objects.create(amount_charged_by_courier=0, amount_spent_in_packingpickup=0,amount_paid=0)
@@ -179,6 +181,15 @@ def send_update(sender, instance, created, **kwargs):
 		print instance.order.business.pk
 		method=instance.order.method
 
+		if (instance.order.payment_method=='C'):
+			cod_price1=(1.5/100)*instance.price
+			if (cod_price1<40):
+				cod_price=40
+			else:
+				cod_price=cod_price1
+
+		else:
+			cod_price=0
 
 		pincode=instance.order.pincode
 		print pincode
@@ -243,8 +254,9 @@ def send_update(sender, instance, created, **kwargs):
 
 		print "prrriiiceee"
 
+		price=math.ceil(1.20*price)
 
-		Product.objects.filter(pk=instance.pk).update(shipping_cost=price)
+		Product.objects.filter(pk=instance.pk).update(shipping_cost=price,cod_cost=cod_price)
 		print "Done"
 			#MyModel.objects.filter(pk=some_value).update(field1='some value')
 

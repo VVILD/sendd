@@ -96,14 +96,15 @@ admin.site.register(BusinessManager)
 class ProductInline(admin.TabularInline):
 	model = Product
 	form=ProductForm
-	exclude = ['name','quantity','sku','price','weight','real_tracking_no','tracking_data']
+	exclude = ['sku','weight','real_tracking_no','tracking_data']
 	readonly_fields=('product_info','weight','shipping_cost','generate_order')
-	fields = ('product_info','weight','applied_weight' ,'mapped_tracking_no', 'company' ,'shipping_cost','generate_order')
+	fields = ('product_info','name','quantity','price','weight','applied_weight' ,'generate_order')
 	extra = 0
 	def product_info(self,obj):
-		return '<b>Name:</b>'+str(obj.name) + '<br>' +'<b>Quantity:</b>'+str(obj.quantity) + '<br>' + 'SKU: '+str(obj.sku )+ '<br>' +'<b>Price:</b>'+str(obj.price )+ '<br>' +"<b>tracking_no:</b>"+str(obj.real_tracking_no )+ '<br>' +"<b>kartrocket_order:</b>"+str(obj.kartrocket_order)
+		return '<b>Name:</b>'+str(obj.name) + '<br>' +'<b>Quantity:</b>'+str(obj.quantity) + '<br>' + 'SKU: '+str(obj.sku )+ '<br>' +'<b>Price:</b>'+str(obj.price )+ '<br>' +"<b>tracking_no:</b>"+str(obj.real_tracking_no )+ '<br>' +"<b>kartrocket_order:</b>"+str(obj.kartrocket_order)+ '<br>' +"<b>Mapped_tracking_no:</b>"+str(obj.mapped_tracking_no)+ '<br>' +"<b>company:</b>"+str(obj.company)+ '<br>' +"<b>Shipping cost:</b>"+str(obj.shipping_cost)+ '<br>' +"<b>Cod cost:</b>"+str(obj.cod_cost)
 	product_info.allow_tags = True
-
+#'cod_cost'
+#'mapped_tracking_no', 'company' ,'shipping_cost',
 
 
 	def generate_order(self, obj):
