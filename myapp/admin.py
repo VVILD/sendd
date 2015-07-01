@@ -143,7 +143,7 @@ class OrderAdmin(admin.ModelAdmin):
 
 	actions = [make_pending,make_complete]
 	def full_address(self,obj):
-		return str(obj.flat_no)+' '+str(obj.address)+' '+str(obj.pincode) + '  <a href="http://127.0.0.1:8000/admin/myapp/order/%s/">edit address</a>' % (obj.pk)
+		return str(obj.flat_no)+' '+str(obj.address)+' '+str(obj.pincode) + '  <a href="http://sendmates.com/admin/myapp/order/%s/">edit address</a>' % (obj.pk)
 	full_address.allow_tags = True
 
 	def code(self,obj):
