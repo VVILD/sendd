@@ -12,11 +12,16 @@ class ShipmentForm(ModelForm):
 		}
 
 
+class OrderEditForm(ModelForm):
+	class Meta:
+		model=Order
+
+
 class OrderForm(ModelForm):
 
 
 	item_details=forms.CharField()
-	contact_number=forms.CharField()
+	contact_number=forms.CharField(required=False)
 	name=forms.CharField()
 	email=forms.CharField()
 	drop_name=forms.CharField(required=False)

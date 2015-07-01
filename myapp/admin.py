@@ -2,7 +2,7 @@ from django.contrib import admin
 from .models import *
 import pdb
 import hashlib
-from myapp.forms import ShipmentForm,OrderForm
+from myapp.forms import ShipmentForm,OrderForm,OrderEditForm
 # Register your models here.
 from django.http import HttpResponse,HttpResponseRedirect
 from push_notifications.models import APNSDevice, GCMDevice
@@ -15,7 +15,6 @@ class UserAdmin(admin.ModelAdmin):
 	list_editable = ('name',)
 
 admin.site.register(User,UserAdmin)
-
 
 def make_complete(modeladmin, request, queryset):
 	queryset.update(status='C')
@@ -68,25 +67,68 @@ class ShipmentInline(admin.TabularInline):
 	)
 	suit_form_tabs = (('general', 'General'))
 '''
-	
+
 
 
 class OrderAdmin(admin.ModelAdmin):
 	#inlines=(ShipmentInline,)
 	list_per_page = 25
-	form=OrderForm
 	search_fields=['user__phone','name','namemail__name','namemail__email','promocode__code']
 	list_display = ('order_no','book_time','promocode','date','time','full_address','name_email','status','way','comment','shipments','send_invoice')
 	list_editable = ('date','time','status','comment',)
 	list_filter=['book_time','status']
 	readonly_fields = ('code','send_invoice',)
+	'''
 	fieldsets=(
-		('Basic Information', {'fields':['contact_number',('name','email'),'item_details',('date','time'),'code',],}),
-		('Address', {'fields':['flat_no','address','pincode',],}),
-		('Destination Address', {'fields':[('drop_name','drop_phone'),'drop_flat_no','locality',('city','state'),('drop_pincode','country')] ,})
-		#('Invoices',{'fields':['send_invoice'], 'classes':('suit-tab','suit-tab-invoices')})
-		)
+	('Basic Information', {'fields':['contact_number',('name','email'),'item_details',('date','time'),'code',],}),
+	('Address', {'fields':['flat_no','address','pincode',],}),
+	('Destination Address', {'fields':[('drop_name','drop_phone'),'drop_flat_no','locality',('city','state'),('drop_pincode','country')] ,})
+			#('Invoices',{'fields':['send_invoice'], 'classes':('suit-tab','suit-tab-invoices')})
+	)
+	'''
 
+			
+
+	def get_fieldsets(self, request, obj=None):
+		# Add 'item_type' on add forms and remove it on changeforms.
+		if not obj: # this is an add form
+			fieldsets=(
+			('Basic Information', {'fields':['contact_number',('name','email'),'item_details',('date','time'),'code',],}),
+			('Address', {'fields':['flat_no','address','pincode',],}),
+			('Destination Address', {'fields':[('drop_name','drop_phone'),'drop_flat_no','locality',('city','state'),('drop_pincode','country')] ,})
+			#('Invoices',{'fields':['send_invoice'], 'classes':('suit-tab','suit-tab-invoices')})
+			)
+				
+		else: # this is a change form
+			fieldsets = super(OrderAdmin, self).get_fieldsets(request, obj)
+			
+
+		return fieldsets
+	
+
+	def get_form(self, request, obj=None, **kwargs):
+		if obj: # obj is not None, so this is a change page
+			#kwargs['exclude'] = ['owner']
+			#print "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+			#print self.__dict__
+			#fieldsets=(
+			#('Address', {'fields':['flat_no','address','pincode',],}),
+			#)
+			self.form=OrderEditForm
+			
+			self.fields = ['pincode', 'flat_no', 'address']
+		else: # obj is None, so this is an add page
+			#kwargs['fields'] = ['id', 'family_name', 'status']
+			#self.fields = ['id', 'family_name', 'status']
+			#print "bbbbbbbbbbbbbbbbb"
+			self.form=OrderForm
+			#self.fields = ['pincode', 'flat_no']
+
+
+			
+		return super(OrderAdmin, self).get_form(request, obj, **kwargs)
+
+	
 	def suit_row_attributes(self, obj, request):
 		print obj.name
 		css_class = {
@@ -101,7 +143,8 @@ class OrderAdmin(admin.ModelAdmin):
 
 	actions = [make_pending,make_complete]
 	def full_address(self,obj):
-		return str(obj.flat_no)+' '+str(obj.address)+' '+str(obj.pincode)
+		return str(obj.flat_no)+' '+str(obj.address)+' '+str(obj.pincode) + '  <a href="http://127.0.0.1:8000/admin/myapp/order/%s/">edit address</a>' % (obj.pk)
+	full_address.allow_tags = True
 
 	def code(self,obj):
 		try:
