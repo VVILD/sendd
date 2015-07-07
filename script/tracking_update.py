@@ -7,9 +7,9 @@ import datetime
 import json
 import time
 import dateutil.parser
-
+import datetime
 import urllib	
-
+format='%Y-%m-%d %H:%M:%S'
 str1=" FedEx"
 
 str2=" to FedEx"
@@ -25,6 +25,7 @@ while(1):
 	cur.execute("SELECT s.mapped_tracking_no,s.company,s.tracking_data,o.date,o.time,s.tracking_no from myapp_shipment as s join myapp_order as o on o.order_no=s.order_id where s.status = 'P' AND s.company='F'")
 	y= cur.fetchall()
 	print "fedex myapp"
+	
 	for row in y:
 		time.sleep(1)
 		awbno=row[0]
@@ -44,8 +45,11 @@ while(1):
 					msg=str(x['message'])
 					date=str(x['datetime'])
 					ur = dateutil.parser.parse(date)
-					date= str(ur)[:-6]
-					print date
+					datestr= str(ur)[:-6]
+					print datestr
+					date=datetime.datetime.strptime(datestr,format)
+					date=date+ datetime.timedelta(hours=5,minutes=30)
+					date=str(date)
 					city=x['tracking_location']['city']
 					state=x['tracking_location']['state']
 					country=x['tracking_location']['country']
@@ -69,10 +73,69 @@ while(1):
 				con.commit()	
 	con.close()
 
+#businessapp fedex
+	print "fedex bapp"
 	time.sleep(1)
 	con = mdb.connect('localhost', 'root', 'followshyp', 'myapp')
 	cur=con.cursor()
-	cur.execute("SELECT s.mapped_tracking_no,s.company,s.tracking_data,s.tracking_no from myapp_shipment as s where s.status = 'P'")
+	cur.execute("SELECT s.mapped_tracking_no,s.company,s.tracking_data,o.book_time,s.id from businessapp_product as s join businessapp_order as o on o.order_no=s.order_id where s.status = 'P' AND s.company='F'")
+	y= cur.fetchall()
+
+	for row in y:
+		time.sleep(1)
+		awbno=row[0]
+		comp=row[1]
+		#print "F"
+		if(awbno!=""):
+			if (comp=="F"):
+				tracker = easypost.Tracker.create(
+				      tracking_code=awbno,
+				      carrier="FEDEX"
+				  )
+				l=[]
+
+				l.append({"status":"Booking Received","date":"asd","location":"Mumbai (Maharashtra)"})		
+
+				for x in tracker['tracking_details']:
+					time.sleep(1)
+					msg=str(x['message'])
+					date=str(x['datetime'])
+
+					ur = dateutil.parser.parse(date)
+					datestr= str(ur)[:-6]
+					#print datestr
+					date=datetime.datetime.strptime(datestr,format)
+					date=date+ datetime.timedelta(hours=5,minutes=30)
+					date=str(date)
+					city=x['tracking_location']['city']
+					state=x['tracking_location']['state']
+					country=x['tracking_location']['country']
+					zip=x['tracking_location']['zip']
+					if (str(city)=='None'):
+						loc="---"
+					else:
+						loc=str(city)+", " +str(state) + ", "+ str(country) + " -" +str(zip)
+					msg=re.sub(str2,"",msg)
+					msg=re.sub(str1,"",msg)
+					l.append({"status":msg,"date":date,"location":loc})
+					if (msg=='Delivered'):
+						print "fuck"
+						C="C"
+						print row[5]
+						cur.execute ("UPDATE businessapp_product SET status='C' WHERE id=%s" % (row[4]))
+						con.commit()	
+
+
+				cur.execute ("UPDATE businessapp_product SET tracking_data='%s' WHERE id=%s" % (json.dumps(l),row[4]))
+				con.commit()	
+	con.close()
+
+
+
+	time.sleep(1)
+	con = mdb.connect('localhost', 'root', 'followshyp', 'myapp')
+	cur=con.cursor()
+	cur.execute("SELECT s.mapped_tracking_no,s.company,s.tracking_data,s.tracking_no from myapp_shipment as s where s.status = 'P' AND s.company='D'")
 	y= cur.fetchall()
 	print "delivery myapp"
 	for row in y:
@@ -136,7 +199,7 @@ while(1):
 
 
 	y= cur.fetchall()
-	print "fedex bapp"
+	print "delivery bapp"
 	for row in y:
 		time.sleep(1)
 		awbno=row[0]
@@ -177,7 +240,7 @@ while(1):
 							completed=True
 
 
-				print json.dumps(l)
+				#print json.dumps(l)
 
 				cur.execute ("UPDATE myapp_shipment SET tracking_data='%s' WHERE tracking_no=%s" % (json.dumps(l),row[3]))
 				con.commit()
@@ -188,3 +251,4 @@ while(1):
 					cur.execute ("UPDATE myapp_shipment SET status='C' WHERE tracking_no=%s" % (row[3]))
 					con.commit()	
 	con.close()
+

@@ -337,6 +337,7 @@ class WeborderResource2(MultipartResource,ModelResource):
 		except:
 			print "haw"
 
+		bundle.data['tracking_id']=shipment.real_tracking_no
 
 		try:	
 			mail="Dear "+str(bundle.data["sender_name"]) +",\n\nWe have successfully received your booking.\n\nOur Pickup representative will contact you as per your scheduled pickup time.\n\nIf you have any query, you can get in touch with us at +91-8080028081 or mail us at help@sendd.co\n\n\nHappy Sendd-ing!\n\nRegards,\nTeam Sendd"
