@@ -17,14 +17,14 @@ import urllib
 while(1):
 	
 	try:
-		time.sleep(10)
+		time.sleep(1)
 		con = mdb.connect('localhost', 'root', 'followshyp', 'myapp')
 		cur=con.cursor()
 		cur.execute("select kartrocket_order,mapped_tracking_no,tracking_no from myapp_shipment where kartrocket_order is NOT NULL AND kartrocket_order<>'' AND (mapped_tracking_no is NULL or mapped_tracking_no='')")
 		y= cur.fetchall()
 
 		for row in y:
-			time.sleep(10)
+			time.sleep(1)
 			kartrocket_order=row[0]
 			pk=row[2]
 
@@ -49,6 +49,37 @@ while(1):
 						
 			except:
 				print "fail"
+
+		cur.execute("select kartrocket_order,mapped_tracking_no,id from businessapp_product where kartrocket_order is NOT NULL AND kartrocket_order<>'' AND (mapped_tracking_no is NULL or mapped_tracking_no='')")
+		y= cur.fetchall()
+
+		for row in y:
+			time.sleep(1)
+			kartrocket_order=row[0]
+			pk=row[2]
+
+
+			link = "http://crazymindtechnologies.kartrocket.co/index.php?route=feed/web_api/orders&version=2&key=c20ad4d76fe97759aa27a0c99bff6710&order_id="+kartrocket_order
+			f = urllib.urlopen(link)
+			myfile = f.read()
+			myfiles=json.loads(myfile)
+			try:
+				for detail in myfiles['orders'][0]['order_history']:
+					if detail['awb_code'] is not None:
+						print detail['awb_code']
+						
+						print detail['courier']
+						awb=detail['awb_code']
+						courier=detail['courier'][0]
+						print courier
+						
+						cur.execute ("UPDATE businessapp_product SET mapped_tracking_no='%s',company='%s' WHERE id=%s" % (awb,courier,pk))
+						con.commit()
+						break
+						
+			except:
+				print "fail"
+
 
 		con.close()
 	except:

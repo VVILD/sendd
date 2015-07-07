@@ -279,25 +279,37 @@ class WeborderResource2(MultipartResource,ModelResource):
 		
 		#creating user if doesnt exist
 		try:
-			newuser=User.objects.get(pk=bundle.data['number'])
+			newuser=User.objects.get(pk=bundle.data['sender_number'])
 		except:
-			newuser= User.objects.create(phone=bundle.data['number'])
+			newuser= User.objects.create(phone=bundle.data['sender_number'])
 			#newuser.save()
 			pk=newuser.pk
+
+			print "try"
 
 			
 		
 		#create nameemail
 		try:
-			newnamemail=Namemail.objects.filter(user=newuser,name=bundle.data['name'],email=bundle.data['email'])
+			newnamemail=Namemail.objects.filter(user=newuser,name=bundle.data['sender_name'],email=bundle.data['sender_email'])
+			print newnamemail.count()
+
 			if (newnamemail.count()==0) :
-				newnamemail = Namemail.objects.create(user=newuser,name=bundle.data['name'],email=bundle.data['email'])
+				print "hi"
+				newnamemail = Namemail.objects.create(user=newuser,name=bundle.data['sender_name'],email=bundle.data['sender_email'])
 				newnamemail.save()
 				pk=newnamemail.pk
 			#bundle.obj = Address(address="nick", locality = "", password,timezone.now(),"od_test")
-			else :
+			else:
+				print "here"
 				for x in newnamemail:
-					pk= x.id
+					print "there"
+					print x.__dict__
+					pk= x.pk
+					print "pk"
+					print pk
+					newnamemail=x
+					break
 
 		except:	
 			print "cool shit"
@@ -305,30 +317,31 @@ class WeborderResource2(MultipartResource,ModelResource):
 
 		#create order
 		try:
-			neworder=Order.objects.create(namemail=newnamemail,user=newuser,address=bundle.data['pickup_location'],way='W',pick_now='N',pincode=bundle.data['pincode'])
+			neworder=Order.objects.create(namemail=newnamemail,user=newuser,address=bundle.data['pickup_location'],way='W',pick_now='N',pincode=bundle.data['pickup_pincode'])
 		#neworder.save()
+			print "here2"
 			order_pk=neworder.pk
 		except:
 			print "cool shit"
 		
 		#create address
 		try:
-			address=Address.objects.create()
+			address=Address.objects.create(flat_no=bundle.data['destination_address1'],locality=bundle.data['destination_address2'],city=bundle.data['destination_city'],state=bundle.data['destination_state'],pincode=bundle.data['destination_pincode'],country=bundle.data['destination_country'])
 		except:
 			print "haw"
 			
 
 		#create shipment
 		try:
-			shipment=Shipment.objects.create(order=neworder,item_name=bundle.data['item_details'],drop_address=address)
+			shipment=Shipment.objects.create(order=neworder,item_name=bundle.data['item_details'],drop_address=address,drop_phone=bundle.data['recipient_phone'],drop_name=bundle.data['recipient_name'])
 		except:
 			print "haw"
 
 
 		try:	
-			mail="Dear "+str(bundle.data["name"]) +",\n\nWe have successfully received your booking.\n\nOur Pickup representative will contact you as per your scheduled pickup time.\n\nIf you have any query, you can get in touch with us at +91-8080028081 or mail us at help@sendd.co\n\n\nHappy Sendd-ing!\n\nRegards,\nTeam Sendd"
-			subject=str(bundle.data["name"]) + ", We have received your parcel booking."
-			send_mail(subject, mail, "Team Sendd <order@sendd.co>", [str(bundle.data["email"]),"Team Sendd <order@sendd.co>"])
+			mail="Dear "+str(bundle.data["sender_name"]) +",\n\nWe have successfully received your booking.\n\nOur Pickup representative will contact you as per your scheduled pickup time.\n\nIf you have any query, you can get in touch with us at +91-8080028081 or mail us at help@sendd.co\n\n\nHappy Sendd-ing!\n\nRegards,\nTeam Sendd"
+			subject=str(bundle.data["sender_name"]) + ", We have received your parcel booking."
+			send_mail(subject, mail, "Team Sendd <order@sendd.co>", [str(bundle.data["sender_email"]),"Team Sendd <order@sendd.co>"])
 		except:
 			print "mail not sent"
 		

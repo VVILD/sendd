@@ -133,7 +133,11 @@ class Product(models.Model):
 									  blank=True , null = True)
 	shipping_cost=models.IntegerField(null=True,blank=True)
 	cod_cost=models.IntegerField(default=0,null=True,blank=True)
-
+	#tracking_no=models.AutoField(primary_key=True)
+	status=models.CharField(max_length=1,
+									  choices=(('P','pending') ,('C','complete'),),
+									  default='P',null=True,blank=True)
+	
 	date=models.DateTimeField(null=True,blank=True)
 
 	def save(self, *args, **kwargs):
