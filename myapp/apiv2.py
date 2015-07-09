@@ -474,7 +474,7 @@ class ShipmentResource2(MultipartResource,CORSModelResource):
 
 	def prepend_urls(self):
 		return [
-            url(r"^(?P<resource_name>%s)/(?P<real_tracking_no>)/$" % 'shipment', self.wrap_view('dispatch_detail'), name="api_dispatch_detail"),
+            url(r"^(?P<resource_name>%s)/(?P<real_tracking_no>)/$" % self._meta.resource_name, self.wrap_view('dispatch_detail'), name="api_dispatch_detail"),
         ]
 
 
@@ -916,7 +916,7 @@ class PincodecheckResource2(MultipartResource,ModelResource):
 
 	def hydrate(self,bundle):
 
-		goodpincodes=['400076','400072','400078','400077','400080','400079']
+		goodpincodes=['400076','400072','400078','400077','400080','400079','400069','400086']
 
 		if bundle.data['pincode'] in goodpincodes:
 			bundle.data['valid']=1
@@ -924,8 +924,14 @@ class PincodecheckResource2(MultipartResource,ModelResource):
 			bundle.data['valid']=0
 			bundle.data['msg']='we dont have pickup service available in your desired pickup location.'
 
-		bundle.data['valid']=1
 
 		return bundle
 
 
+class ZipcodeResource2(MultipartResource,ModelResource):
+
+	class Meta:
+		queryset =Zipcode.objects.all()
+		resource_name = 'zipcode'
+		authorization= Authorization()
+		always_return_data = True
