@@ -669,6 +669,21 @@ class PriceappResource2(MultipartResource,ModelResource):
 		standard=[(30,28),(60,42),(80,47),(100,57),(105,62)]
 		economy=[(240,15,30),(260,15,32),(280,15,34),(290,15,35),(290,15,35)]
 
+		try:
+			zipcode=Zipcode.objects.get(pincode=bundle.data['pincode'])
+		except:
+			bundle.data['msg']='invalid pin'
+			return bundle
+
+		print "count"
+
+#		print zipcode.count()==0
+
+		print "count"
+
+#		if (zipcode.count()==0):
+			
+		bundle.data['msg']='ok'
 		zone=3
 		pin=bundle.data['pincode']
 		if(pin.isdigit()):
@@ -756,6 +771,17 @@ class DateappResource2(MultipartResource,ModelResource):
 		standard=[('2 Days'),('2-3 Days'),('2-3 Days'),('3-4 Days'),('3-4 Days')]
 		economy=[('2-3 Days'),('3-4 Days'),('5-6 Days'),('5-6 Days'),('7-8 Days')]
 		pin=bundle.data['pincode']
+	
+		try:
+			zipcode=Zipcode.objects.get(pincode=bundle.data['pincode'])
+		except:
+			bundle.data['msg']='invalid pin'
+			return bundle
+
+
+		bundle.data['msg']='ok'
+
+
 		#getting zone
 		zone=3
 		pin=bundle.data['pincode']
