@@ -582,13 +582,13 @@ class ShipmentAdmin(admin.ModelAdmin):
 admin.site.register(Shipment,ShipmentAdmin)
 
 
-class PincodeAdmin(admin.ModelAdmin):
-	list_display = ('pincode','fedex','aramex','delhivery','ecom','firstflight')
+class ZipcodeAdmin(admin.ModelAdmin):
+	list_display = ('pincode','city','state','zone','cod','fedex','aramex','delhivery','ecom','firstflight')
 	search_fields=['pincode']
 
 
 
-admin.site.register(Pincode,PincodeAdmin)
+admin.site.register(Zipcode,ZipcodeAdmin)
 
 
 

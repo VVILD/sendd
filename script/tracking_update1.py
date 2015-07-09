@@ -68,7 +68,7 @@ while(1):
 					if (msg=='Delivered'):
 						print "fuck"
 						C="C"
-						#print row[5]
+						print row[5]
 						cur.execute ("UPDATE businessapp_product SET status='C' WHERE id=%s" % (row[4]))
 						con.commit()	
 

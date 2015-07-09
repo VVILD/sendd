@@ -300,13 +300,19 @@ class Pincodecheck(models.Model):
 		print "shittt>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 		print instance.pk
 		#quersyset.filter(pk=instance.pk).update(....)
+		#MyModel.objects.filter(pk=some_value).update(field1='some value')
+
 
 	post_save.connect(send_update, sender=Shipment)
 
 
 
-class Pincode(models.Model):
-	pincode=models.CharField(max_length=6)
+class Zipcode(models.Model):
+	pincode=models.CharField(max_length=6,primary_key=True)
+	zone=models.CharField(max_length=1)
+	city=models.CharField(max_length=56)
+	state=models.CharField(max_length=56)
+	cod=models.BooleanField(default=False)
 	fedex=models.BooleanField(default=False)
 	aramex=models.BooleanField(default=False)
 	delhivery=models.BooleanField(default=False)

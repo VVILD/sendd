@@ -474,7 +474,7 @@ class ShipmentResource2(MultipartResource,CORSModelResource):
 
 	def prepend_urls(self):
 		return [
-            url(r"^(?P<resource_name>%s)/(?P<real_tracking_no>[\w\d_.-]+)/$" % self._meta.resource_name, self.wrap_view('dispatch_detail'), name="api_dispatch_detail"),
+            url(r"^(?P<resource_name>%s)/(?P<real_tracking_no>)/$" % 'shipment', self.wrap_view('dispatch_detail'), name="api_dispatch_detail"),
         ]
 
 
