@@ -96,7 +96,7 @@ class Order(models.Model):
 	country=models.CharField(max_length =30,null=True,blank =True)
 	payment_method=models.CharField(max_length=1,choices=(('F','free checkout') ,('C','cod'),),)
 	book_time=models.DateTimeField(null=True,blank=True)
-	status=models.CharField(max_length=1,choices=(('P','pending') ,('C','complete'),('N','cancelled'),('D','delivered'),),default='P')
+	status=models.CharField(max_length=1,choices=(('P','pending') ,('C','complete'),('N','cancelled'),('D','in transit'),),default='P')
 	method=models.CharField(max_length=1,
 									  choices=(('B','Bulk') ,('N','Normal'),),
 									  blank=True , null = True)
