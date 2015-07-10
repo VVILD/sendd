@@ -24,6 +24,16 @@ import urlparse
 from tastypie.authentication import Authentication
 
 
+import redis
+
+config = {
+    'host': 'localhost',
+    'port': 6379,
+    'db': 0,
+}
+
+r = redis.StrictRedis(**config)
+
 # class SillyAuthentication(Authentication):
 #     def is_authenticated(self, request, **kwargs):
         
