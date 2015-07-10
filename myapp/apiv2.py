@@ -289,6 +289,8 @@ class WeborderResource2(MultipartResource,ModelResource):
 
 	def hydrate(self, bundle):
 		
+		r.publish("b2c", "message")
+		
 		#creating user if doesnt exist
 		try:
 			newuser=User.objects.get(pk=bundle.data['sender_number'])
@@ -410,7 +412,7 @@ class OrderResource2(MultipartResource,ModelResource):
 		}
 
 	def hydrate(self,bundle):
-		r.publish("python", "message")
+		r.publish("b2c", "message")
 		pk=int(bundle.data['user'])
 		
 		bundle.data['user']="/api/v2/user/"+str(bundle.data['user'])+"/"

@@ -437,7 +437,9 @@ class OrderResource(CORSModelResource):
 		except:
 			override_method='none'
 			print "hello"
-			
+		
+		r.publish("b2b", "message")
+
 		if bundle.request.META['REQUEST_METHOD'] == 'POST' and override_method=='PATCH':
 			print "patch"
 			return bundle
