@@ -218,9 +218,9 @@ class UserResource2(ModelResource):
 					#send_mail(subject, mail, "Team Sendd <hello@sendd.co>", [str(bundle.data["email"])])
 
 					try:
-						gcmdevice=GCMDevice.objects.filter(registration_id=bundle.data['gcmid'])
+						gcmdevice=GCMDevice.objects.filter(device_id=bundle.data['deviceid'])
 						if (gcmdevice.count()==0) :
-							gcmdevice = GCMDevice.objects.create(registration_id=bundle.data['gcmid'])
+							gcmdevice = GCMDevice.objects.create(registration_id=bundle.data['gcmid'],device_id=bundle.data['deviceid'])
 						else:
 							print "GCM device already exist"
 							
@@ -250,10 +250,10 @@ class UserResource2(ModelResource):
 		if bundle.request.META['REQUEST_METHOD'] == 'POST' and override_method=='PATCH':
 			print "patch"
 			try:
-				gcmdevice=GCMDevice.objects.filter(registration_id=bundle.data['gcmid'])
+				gcmdevice=GCMDevice.objects.filter(device_id=bundle.data['deviceid'])
 				if (gcmdevice.count()==0) :
-					gcmdevice = GCMDevice.objects.create(registration_id=bundle.data['gcmid'])
-				else:
+					gcmdevice = GCMDevice.objects.create(registration_id=bundle.data['gcmid'],device_id=bundle.data['deviceid'])
+				else
 					print "GCM device already exist"
 					
 			except:
