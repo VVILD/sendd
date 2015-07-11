@@ -253,7 +253,7 @@ class UserResource2(ModelResource):
 				gcmdevice=GCMDevice.objects.filter(device_id=bundle.data['deviceid'])
 				if (gcmdevice.count()==0) :
 					gcmdevice = GCMDevice.objects.create(registration_id=bundle.data['gcmid'],device_id=bundle.data['deviceid'])
-				else
+				else:
 					print "GCM device already exist"
 					
 			except:
