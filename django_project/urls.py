@@ -66,5 +66,6 @@ urlpatterns = patterns('',
     url(r'^admin/', include(admin.site.urls)),
     url(r'^api/', include(v1_api.urls)),
  	url(r'^api/', include(v2_api.urls)),
- 	url(r'^bapi/', include(bv1_api.urls)),       
+ 	url(r'^bapi/', include(bv1_api.urls)),
+ 	url(r'^polls/', include('myapp.urls')),       
 )

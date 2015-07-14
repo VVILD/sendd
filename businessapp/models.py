@@ -128,8 +128,8 @@ class Product(models.Model):
 	mapped_tracking_no=models.CharField(max_length = 50,null=True,blank=True)
 	tracking_data=models.CharField(max_length = 8000,null=True,blank=True)
 	kartrocket_order=models.CharField(max_length = 100,null=True,blank=True)
-	company=models.CharField(max_length=1,
-									  choices=(('F','FedEx') ,('D','Delhivery'),),
+	company=models.CharField(max_length=2,
+									  choices=(('F','FedEx') ,('D','Delhivery'),('P','Professional'),('G','Gati'),('A','Aramex'),('E','Ecomexpress'),('DT','dtdc'),('F','First Flight'),),
 									  blank=True , null = True)
 	shipping_cost=models.IntegerField(null=True,blank=True)
 	cod_cost=models.IntegerField(default=0,null=True,blank=True)
@@ -198,26 +198,27 @@ def send_update(sender, instance, created, **kwargs):
 		pincode=instance.order.pincode
 		print pincode
 
-		t=pincode[:2]
+		two_digits=pincode[:2]
+		three_digits=pincode[:3]
 
 		pricing=Pricing.objects.get(pk=instance.order.business.pk)
 		
 		if (method=='N'):
-			if (t=='40'):
+			if (three_digits=='400'):
 				price1=pricing.normal_zone_a_0
 				price2=pricing.normal_zone_a_1
 				price3=pricing.normal_zone_a_2
 			
-			elif (t=='41' or t=='42' or t=='43' or t=='44'):
+			elif (two_digits=='41' or two_digits=='42' or two_digits=='43' or two_digits=='44' or three_digits=='403' or two_digits=='36' or two_digits=='37' or two_digits=='38' or two_digits=='39'):
 				price1=pricing.normal_zone_b_0
 				price2=pricing.normal_zone_b_1
 				price3=pricing.normal_zone_b_2
-			elif (t=='56' or t=='11' or t=='60' or t=='70'):
+			elif (two_digits=='56' or two_digits=='11' or three_digits=='600' or three_digits=='700'):
 				price1=pricing.normal_zone_c_0
 				price2=pricing.normal_zone_c_1
 				price3=pricing.normal_zone_c_2
 
-			elif (t=='78' or t=='79' or t=='18' or t=='19'):
+			elif (two_digits=='78' or two_digits=='79' or two_digits=='18' or two_digits=='19'):
 				price1=pricing.normal_zone_e_0
 				price2=pricing.normal_zone_e_1
 				price3=pricing.normal_zone_e_2
@@ -234,15 +235,15 @@ def send_update(sender, instance, created, **kwargs):
 				price=price2 + math.ceil((instance.applied_weight*2 - 1))* price3
 
 		if (method=='B'):
-			if (t=='40'):
+			if (three_digits=='400'):
 				price1=pricing.bulk_zone_a
 			
-			elif (t=='41' or t=='42' or t=='43' or t=='44'):
+			elif (two_digits=='41' or two_digits=='42' or two_digits=='43' or two_digits=='44' or three_digits=='403' or two_digits=='36' or two_digits=='37' or two_digits=='38' or two_digits=='39'):
 				price1=pricing.bulk_zone_b
-			elif (t=='56' or t=='11' or t=='60' or t=='70'):
+			elif (two_digits=='56' or two_digits=='11' or three_digits=='600' or three_digits=='700'):
 				price1=pricing.bulk_zone_c
 
-			elif (t=='78' or t=='79' or t=='18' or t=='19'):
+			elif (two_digits=='78' or two_digits=='79' or two_digits=='18' or two_digits=='19'):
 				price1=pricing.bulk_zone_e
 			else:
 				price1=pricing.bulk_zone_d
@@ -255,7 +256,7 @@ def send_update(sender, instance, created, **kwargs):
 
 
 
-
+		Order.objects.filter(pk=instance.order.pk).update(status='D')
 		print "prrriiiceee"
 
 		price=math.ceil(1.20*price)

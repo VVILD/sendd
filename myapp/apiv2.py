@@ -191,9 +191,9 @@ class UserResource2(ModelResource):
 					print "hjhjhjhj"
 
 					try:
-						gcmdevice=GCMDevice.objects.filter(registration_id=bundle.data['gcmid'])
+						gcmdevice=GCMDevice.objects.filter(device_id=bundle.data['deviceid'])
 						if (gcmdevice.count()==0) :
-							gcmdevice = GCMDevice.objects.create(registration_id=bundle.data['gcmid'])
+							gcmdevice = GCMDevice.objects.create(registration_id=bundle.data['gcmid'],device_id=bundle.data['deviceid'])
 						else:
 							print "GCM device already exist"
 							
@@ -216,6 +216,7 @@ class UserResource2(ModelResource):
 					#mail="Dear "+str(bundle.data['name'])+",\n\nWe are excited to have you join us and start shipping in a hassle free and convenient manner.\n\nOur team is always there to ensure that you have the best possible experience with us. Some of the questions that are frequently asked can be seen on the website as well as the app.\n\nIf you have any other query, you can get in touch with us at +91-8080028081 or mail us at help@sendd.co\n\n\nRegards,\nTeam Sendd"
 					#subject=str(bundle.data["name"])+", Thanks for signing up with sendd."
 					#send_mail(subject, mail, "Team Sendd <hello@sendd.co>", [str(bundle.data["email"])])
+
 
 					try:
 						gcmdevice=GCMDevice.objects.filter(device_id=bundle.data['deviceid'])
