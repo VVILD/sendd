@@ -9,6 +9,9 @@ class BusinessAdmin(admin.ModelAdmin):
 	list_display = ('username','business_name','username')
 	#list_editable = ('name',)
 
+
+
+
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import User
 
@@ -16,6 +19,12 @@ from django.contrib.auth.models import User
 def make_complete(modeladmin, request, queryset):
 	queryset.update(status='C')
 make_complete.short_description = "Mark selected orders as Complete"
+
+
+def make_transit(modeladmin, request, queryset):
+	queryset.update(status='D')
+make_complete.short_description = "Mark selected orders as In Transit"
+
 
 def make_pending(modeladmin, request, queryset):
 	queryset.update(status='P')
@@ -273,7 +282,7 @@ class OrderAdmin(admin.ModelAdmin):
 	list_display = ('order_no','book_time','business_details','name','status','method')
 	list_editable = ('status',)
 	list_filter=['business','status']
-	actions = [make_pending,make_complete,make_cancelled]
+	actions = [make_pending,make_complete,make_cancelled,make_transit]
 
 	def response_change(self, request, obj):
 		
