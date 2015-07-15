@@ -3,6 +3,9 @@ from django import forms
 from myapp.models import Shipment,Order,User,Namemail,Address
 from suit.widgets import AutosizedTextarea
 from django.core.mail import send_mail
+from django.core.validators import RegexValidator
+
+
 
 class ShipmentForm(ModelForm):
 	class Meta:
@@ -18,10 +21,12 @@ class OrderEditForm(ModelForm):
 
 
 class OrderForm(ModelForm):
+	phone_regex2 = RegexValidator(regex=r'^[0-9]{10,11}$', message="Phone number must be entered in the format: '999999999'. And be of 10 digits.")
+
 
 
 	item_details=forms.CharField()
-	contact_number=forms.CharField(required=False)
+	contact_number=forms.CharField(validators=[phone_regex2])
 	name=forms.CharField()
 	email=forms.CharField()
 	drop_name=forms.CharField(required=False)
@@ -48,6 +53,8 @@ class OrderForm(ModelForm):
 		country=self.cleaned_data.get('country', None)
 		drop_name=self.cleaned_data.get('drop_name', None)
 		drop_phone=self.cleaned_data.get('drop_phone', None)
+
+
 		try:
 			user=User.objects.get(pk=number)
 		except:

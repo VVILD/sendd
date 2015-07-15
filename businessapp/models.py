@@ -48,7 +48,7 @@ class Business(models.Model):
 	website =models.CharField(max_length = 100,null=True,blank =True)
 	#key=models.CharField(max_length = 100,null=True,blank =True)
 	businessmanager=models.ForeignKey(User,null=True,blank =True) 
-
+	show_tracking_company=models.CharField(max_length=1,choices=(('Y','yes') ,('N','no'),),null=True,blank =True,default='N')
 
 	def save(self, *args, **kwargs):
 		#print self.tracking_no
@@ -129,7 +129,7 @@ class Product(models.Model):
 	tracking_data=models.CharField(max_length = 8000,null=True,blank=True)
 	kartrocket_order=models.CharField(max_length = 100,null=True,blank=True)
 	company=models.CharField(max_length=2,
-									  choices=(('F','FedEx') ,('D','Delhivery'),('P','Professional'),('G','Gati'),('A','Aramex'),('E','Ecomexpress'),('DT','dtdc'),('F','First Flight'),),
+									  choices=(('F','FedEx') ,('D','Delhivery'),('P','Professional'),('G','Gati'),('A','Aramex'),('E','Ecomexpress'),('DT','dtdc'),('FF','First Flight'),),
 									  blank=True , null = True)
 	shipping_cost=models.IntegerField(null=True,blank=True)
 	cod_cost=models.IntegerField(default=0,null=True,blank=True)

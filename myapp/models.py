@@ -125,9 +125,12 @@ class Order(models.Model):
 
 
 class Shipment(models.Model):
+	
 	weight=models.CharField(verbose_name='item weight',max_length=10,null=True,blank=True)
 	price=models.CharField(max_length=10,null=True,blank=True)
+	
 	name=models.CharField(verbose_name='item name',max_length=50,null=True,blank=True)
+	
 	tracking_no=models.AutoField(primary_key=True)
 	real_tracking_no=models.CharField(max_length=10,blank=True,null=True)
 	mapped_tracking_no=models.CharField(max_length = 50,null=True,blank=True)
@@ -137,12 +140,20 @@ class Shipment(models.Model):
 									  choices=(('P','premium') ,('S','standard'),('E','economy'),),
 									  default='P',blank=True , null = True)
 	drop_name=models.CharField(max_length = 100,null=True,blank=True)
-	drop_phone = models.CharField(max_length =16,null=True,blank=True)
+	
+	phone_regex2 = RegexValidator(regex=r'^[0-9]{10,11}$', message="Phone number must be entered in the format: '999999999'. And be of 10 digits.")
+
+	drop_phone = models.CharField(validators=[phone_regex2],max_length =16,null=True,blank=True)
 	drop_address=models.ForeignKey(Address,null=True,blank=True)
 	order=models.ForeignKey(Order,null=True,blank=True)
+	
+
+
+
 	status=models.CharField(max_length=1,
 									  choices=(('P','pending') ,('C','complete'),),
 									  default='P',null=True,blank=True)
+	
 	paid=models.CharField(max_length=10,
 									  choices=(('Paid','Paid') ,('Not Paid','Not Paid'),),
 									  blank=True , null = True ,default='Not Paid')

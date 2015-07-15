@@ -457,6 +457,10 @@ class OrderResource(CORSModelResource):
 		try:
 			pk=bundle.data['resource_uri'].split('/')[4]
 			order=Order.objects.get(pk=pk)
+			show_tracking_company=False
+			if (order.business.show_tracking_company=='Y'):
+				show_tracking_company=True
+
 			product=Product.objects.filter(order=order)
 			print product
 			l=[]
@@ -482,6 +486,34 @@ class OrderResource(CORSModelResource):
 				print len(tracking_json)
 				print "asd"
 				raw_data=' '
+				try:
+					if (show_tracking_company):
+						raw_data=raw_data+ str(p.mapped_tracking_no) + "&nbsp; &nbsp; &nbsp; "
+						if (p.company=="F"):
+							raw_data=raw_data+ "FEDEX"
+						elif(p.company=="D"):
+							raw_data=raw_data+ "DELHIVERY"
+						elif(p.company=="P"):
+							raw_data=raw_data+ "Professional"
+						elif(p.company=="G"):
+							raw_data=raw_data+ "gati"
+						elif(p.company=="A"):
+							raw_data=raw_data+ "ARAMEX"
+						elif(p.company=="E"):
+							raw_data=raw_data+ "Ecomexpress"
+						elif(p.company=="DT"):
+							raw_data=raw_data+ "DTDC"
+						elif(p.company=="FF"):
+							raw_data=raw_data+ "First Flight"
+						else:
+							raw_data=raw_data+ "ERROR"	
+
+						raw_data=raw_data+ "<br>"
+
+						
+				except:
+					print "shit"
+
 				for x in range (0,len(tracking_json)):
 					raw_data=raw_data+ tracking_json[x]['status'].encode('ascii','ignore') +"&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;"+ tracking_json[x]['date'].encode('ascii','ignore')+"&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;"+ tracking_json[x]['location'].encode('ascii','ignore')+"<br>"
 				
