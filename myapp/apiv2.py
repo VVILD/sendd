@@ -281,7 +281,7 @@ class NamemailResource2(MultipartResource,ModelResource):
 		always_return_data = True
 
 
-class WeborderResource2(MultipartResource,ModelResource):
+class WeborderResource2(CORSModelResource):
 	class Meta:
 		queryset = Weborder.objects.all()
 		resource_name = 'weborder'
@@ -673,7 +673,7 @@ class XResource2(MultipartResource,ModelResource):
 
 
 
-class PriceappResource2(MultipartResource,ModelResource):
+class PriceappResource2(CORSModelResource):
 	class Meta:
 		queryset = Priceapp.objects.all()
 		resource_name = 'priceapp'
@@ -775,7 +775,7 @@ class PriceappResource2(MultipartResource,ModelResource):
 		return bundle			
 
 
-class DateappResource2(MultipartResource,ModelResource):
+class DateappResource2(CORSModelResource):
 	class Meta:
 		queryset = Dateapp.objects.all()
 		resource_name = 'dateapp'
