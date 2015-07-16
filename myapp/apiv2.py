@@ -970,7 +970,7 @@ class PincodecheckResource2(MultipartResource,ModelResource):
 		return bundle
 
 
-class ZipcodeResource2(MultipartResource,ModelResource):
+class ZipcodeResource2(MultipartResource,CORSModelResource):
 
 	class Meta:
 		queryset =Zipcode.objects.all()
