@@ -71,8 +71,8 @@ admin.site.register(Business,BusinessAdmin)
 admin.site.register(LoginSession)
 class ProductAdmin(admin.ModelAdmin):
 	search_fields=['name','real_tracking_no']
-	list_display = ('name','price','weight')
-	#list_editable = ('name',)
+	list_display = ('name','price','weight','status','real_tracking_no')
+	list_editable = ('status','real_tracking_no')
 
 admin.site.register(Product,ProductAdmin)
 
