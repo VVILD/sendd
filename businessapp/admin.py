@@ -1,7 +1,13 @@
+
+business_product_url='http://sendmates.com/admin/businessapp/product/'
+
 from django.contrib import admin
 from .models import *
 
 from django.http import HttpResponse,HttpResponseRedirect
+
+
+
 
 # Register your models here.
 class BusinessAdmin(admin.ModelAdmin):
@@ -72,7 +78,8 @@ admin.site.register(LoginSession)
 class ProductAdmin(admin.ModelAdmin):
 	search_fields=['name','real_tracking_no']
 	list_display = ('name','price','weight','status','real_tracking_no')
-	list_editable = ('status','real_tracking_no')
+	list_editable = ('status',)
+	readonly_fields=('name','quantity','sku','price','weight','applied_weight','order','real_tracking_no','tracking_data','kartrocket_order','shipping_cost','cod_cost','status','date')
 
 admin.site.register(Product,ProductAdmin)
 
@@ -110,7 +117,7 @@ class ProductInline(admin.TabularInline):
 	fields = ('product_info','name','quantity','price','weight','applied_weight' ,'generate_order')
 	extra = 0
 	def product_info(self,obj):
-		return '<b>Name:</b>'+str(obj.name) + '<br>' +'<b>Quantity:</b>'+str(obj.quantity) + '<br>' + 'SKU: '+str(obj.sku )+ '<br>' +'<b>Price:</b>'+str(obj.price )+ '<br>' +"<b>tracking_no:</b>"+str(obj.real_tracking_no )+ '<br>' +"<b>kartrocket_order:</b>"+str(obj.kartrocket_order)+ '<br>' +"<b>Mapped_tracking_no:</b>"+str(obj.mapped_tracking_no)+ '<br>' +"<b>company:</b>"+str(obj.company)+ '<br>' +"<b>Shipping cost:</b>"+str(obj.shipping_cost)+ '<br>' +"<b>Cod cost:</b>"+str(obj.cod_cost)
+		return '<b>Name:</b>'+str(obj.name) + '<br>' +'<b>Quantity:</b>'+str(obj.quantity) + '<br>' + 'SKU: '+str(obj.sku )+ '<br>' +'<b>Price:</b>'+str(obj.price )+ '<br>' +"<b>tracking_no:</b>"+str(obj.real_tracking_no )+ '<br>' +"<b>kartrocket_order:</b>"+str(obj.kartrocket_order)+ '<br>' +"<b>Mapped_tracking_no:</b>"+str(obj.mapped_tracking_no)+ '<br>' +"<b>company:</b>"+str(obj.company)+ '<br>' +"<b>Shipping cost:</b>"+str(obj.shipping_cost)+ '<br>' +"<b>Cod cost:</b>"+str(obj.cod_cost) +  '<br>' +"<b><a href='%s%s/' target='_blank' >Product link (use this only when parcel is not sent via KARTROCKET):</b></a>"% (business_product_url,obj.pk)
 	product_info.allow_tags = True
 #'cod_cost'
 #'mapped_tracking_no', 'company' ,'shipping_cost',

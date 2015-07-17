@@ -250,7 +250,7 @@ class OrderAdmin(admin.ModelAdmin):
 #			mail_subject="a"
 #			mail_content="ggh"
 		if (valid):
-			return '%s <br> <a target="_blank" href="http://128.199.210.166/payment_invoices.php?%s">generate  and send invoice to %s</a>' % (times_count,urllib.urlencode(invoice_dict),invoice_dict['mailto'])
+			return '%s <br> <a target="_blank" href="http://128.199.210.166/payment_invoice.php?%s">generate  and send invoice to %s</a>' % (times_count,urllib.urlencode(invoice_dict),invoice_dict['mailto'])
 		else:
 			return e_string
 	send_invoice.allow_tags = True
