@@ -2,21 +2,93 @@ from django.shortcuts import render
 
 from myapp.models import *
 # Create your views here.
+from django.db.models import Avg, Count, F, Max, Min, Sum, Q, Prefetch
+from businessapp.models import Order as BOrder
+from businessapp.models import Product
 
 from django.http import HttpResponse
 
 import datetime
 
 from datetime import date
-
+import datetime
+from django.db.models import Avg
+from pprint import pprint
+from itertools import groupby
 
 def index(request):
-	today_min = datetime.datetime.combine(datetime.date.today(), datetime.time.min)
-	today_max = datetime.datetime.combine(datetime.date.today(), datetime.time.max)
-	today_min = datetime.datetime.combine(datetime.datetime(2015,7,7), datetime.time.min)
-	today_max = datetime.datetime.combine(datetime.datetime(2015,7,7), datetime.time.max)
-	latest_question_list =Order.objects.filter(book_time__range=(today_min,today_max))
-	context = {'latest_question_list': latest_question_list}
+	todays_date=date.today()-datetime.timedelta(days=1)
+	week_before=date.today()-datetime.timedelta(days=7)
+
+# today min/max
+	today_min = datetime.datetime.combine(todays_date, datetime.time.min)
+	today_max = datetime.datetime.combine(todays_date, datetime.time.max)
+	
+#week min/max	
+	date_min = datetime.datetime.combine(week_before, datetime.time.min)
+	date_max = datetime.datetime.combine(datetime.date.today(), datetime.time.max)
+	
+#customer stats today
+
+
+	today_orders =Order.objects.filter(Q(book_time__range=(today_min,today_max))&(Q(status='P') | Q(status='C')))
+	today_shipments_correct=Shipment.objects.filter(order=today_orders).exclude(price__isnull=True).exclude(price__exact='')
+	today_shipments=Shipment.objects.filter(order=today_orders)
+	average_b2c=today_shipments_correct.aggregate(Avg('price'))
+	sum_b2c=today_shipments_correct.aggregate(Sum('price'))
+	count_b2c=today_shipments_correct.count()
+
+	
+#customer stats week
+	week_orders =Order.objects.filter(Q(book_time__range=(date_min,date_max))&(Q(status='P') | Q(status='C')))
+	week_shipments=Shipment.objects.filter(order=week_orders).values('order__book_time','price').exclude(price__isnull=True).exclude(price__exact='')
+
+	b2c_stats=[]
+	for key, values in groupby(week_shipments, key=lambda row: row['order__book_time'].date()):
+	    print('-')
+	    #pprint(key)
+	    x=list(values)
+	    print len(x)
+	    sum=0
+	    for y in x:
+	        sum=sum+int(y['price'])
+	    print sum
+	    b2c_stats.append([str(key),len(x),sum])
+
+#business stats today
+	today_orders_b2b=BOrder.objects.filter(Q(book_time__range=(today_min,today_max))&(Q(status='P') | Q(status='C')| Q(status='D')))
+	today_products_correct=Product.objects.filter(order=today_orders_b2b).exclude(shipping_cost__isnull=True)
+	average_b2b=today_products_correct.aggregate(total=Sum('shipping_cost', field="shipping_cost+cod_cost"))['total']
+	sum_b2b=today_products_correct.aggregate(total=Sum('shipping_cost', field="shipping_cost+cod_cost"))['total']
+	count_b2b=today_products_correct.count()
+
+	
+#b2b week
+	week_orders_b2b =BOrder.objects.filter(Q(book_time__range=(date_min,date_max))&(Q(status='P') | Q(status='C')| Q(status='D')))
+	week_products_b2b=Product.objects.filter(order=week_orders_b2b).values('order__book_time','shipping_cost','cod_cost').exclude(shipping_cost__isnull=True)
+	b2b_stats=[]
+	for key, values in groupby(week_products_b2b, key=lambda row: row['order__book_time'].date()):
+	    print('-')
+	    pprint(key)
+	    x=list(values)
+	    print len(x)
+	    sum=0
+	    for y in x:
+	        sum=sum+int(y['shipping_cost']+y['cod_cost'])
+	    print sum
+	    b2b_stats.append([str(key),len(x),sum])
+
+
+
+
+
+	b2b_stats=[['2015-07-12', 2, 1940], ['2015-07-13', 11, 5139], ['2015-07-14', 15, 2594], ['2015-07-15', 6, 639], ['2015-07-16', 5, 3206], ['2015-07-17', 7, 740], ['2015-07-18', 7, 1710]]
+	b2c_stats=[['2015-07-12', 2, 1940], ['2015-07-13', 11, 5139], ['2015-07-14', 15, 2594], ['2015-07-15', 6, 639], ['2015-07-16', 5, 3206], ['2015-07-17', 7, 740], ['2015-07-18', 7, 1710]]
+# business stats grouped by businesses
+	product_groupedby_business=Product.objects.filter(order=today_orders_b2b).exclude(shipping_cost__isnull=True).values('order__business').annotate(total_revenue=Sum('shipping_cost', field="shipping_cost+cod_cost"), total_no=Count('order'))
+
+
+	context = {'product_groupedby_business':product_groupedby_business,'average_b2c':average_b2c,'sum_b2c':sum_b2c,'count_b2c':count_b2c,'average_b2b':average_b2b,'sum_b2b':sum_b2b,'count_b2b':count_b2b,'b2c_stats':b2c_stats,'b2b_stats':b2b_stats}
 	return render(request, 'polls/index.html', context)
 
 	
