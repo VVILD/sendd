@@ -53,13 +53,13 @@ def index(request):
 	    for y in x:
 	        sum=sum+int(y['price'])
 	    print sum
-	    b2c_stats.append([str(key),len(x),sum])
+	    b2c_stats.append([str(key),len(x),sum,sum/len(x)])
 
 #business stats today
 	today_orders_b2b=BOrder.objects.filter(Q(book_time__range=(today_min,today_max))&(Q(status='P') | Q(status='C')| Q(status='D')))
 	today_products_correct=Product.objects.filter(order=today_orders_b2b).exclude(shipping_cost__isnull=True)
 	today_products=Product.objects.filter(order=today_orders_b2b)
-	average_b2b=today_products_correct.aggregate(total=Sum('shipping_cost', field="shipping_cost+cod_cost"))['total']
+	average_b2b=today_products_correct.aggregate(total=Avg('shipping_cost', field="shipping_cost+cod_cost"))['total']
 	sum_b2b=today_products_correct.aggregate(total=Sum('shipping_cost', field="shipping_cost+cod_cost"))['total']
 	count_b2b=today_products_correct.count()
 	action_b2b=today_products.count()-today_products_correct.count()
@@ -78,14 +78,13 @@ def index(request):
 	    for y in x:
 	        sum=sum+int(y['shipping_cost']+y['cod_cost'])
 	    print sum
-	    b2b_stats.append([str(key),len(x),sum])
+	    b2b_stats.append([str(key),len(x),sum,sum/len(x)])
 
 
 
 
 
-	b2b_stats=[['2015-07-12', 2, 1940], ['2015-07-13', 11, 5139], ['2015-07-14', 15, 2594], ['2015-07-15', 6, 639], ['2015-07-16', 5, 3206], ['2015-07-17', 7, 740], ['2015-07-18', 7, 1710]]
-	b2c_stats=[['2015-07-12', 2, 1940], ['2015-07-13', 11, 5139], ['2015-07-14', 15, 2594], ['2015-07-15', 6, 639], ['2015-07-16', 5, 3206], ['2015-07-17', 7, 740], ['2015-07-18', 7, 1710]]
+	
 # business stats grouped by businesses
 	product_groupedby_business=Product.objects.filter(order=today_orders_b2b).exclude(shipping_cost__isnull=True).values('order__business').annotate(total_revenue=Sum('shipping_cost', field="shipping_cost+cod_cost"), total_no=Count('order'))
 
