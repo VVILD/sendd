@@ -34,10 +34,10 @@ def index(request):
 	today_orders =Order.objects.filter(Q(book_time__range=(today_min,today_max))&(Q(status='P') | Q(status='C')))
 	today_shipments_correct=Shipment.objects.filter(order=today_orders).exclude(price__isnull=True).exclude(price__exact='')
 	today_shipments=Shipment.objects.filter(order=today_orders)
-	average_b2c=today_shipments_correct.aggregate(Avg('price'))
-	sum_b2c=today_shipments_correct.aggregate(Sum('price'))
+	average_b2c=today_shipments_correct.aggregate(Avg('price'))['price__avg']
+	sum_b2c=today_shipments_correct.aggregate(Sum('price'))['price__sum']
 	count_b2c=today_shipments_correct.count()
-
+	action_b2c=today_shipments.count()-today_shipments_correct.count()
 	
 #customer stats week
 	week_orders =Order.objects.filter(Q(book_time__range=(date_min,date_max))&(Q(status='P') | Q(status='C')))
@@ -58,9 +58,11 @@ def index(request):
 #business stats today
 	today_orders_b2b=BOrder.objects.filter(Q(book_time__range=(today_min,today_max))&(Q(status='P') | Q(status='C')| Q(status='D')))
 	today_products_correct=Product.objects.filter(order=today_orders_b2b).exclude(shipping_cost__isnull=True)
+	today_products=Product.objects.filter(order=today_orders_b2b)
 	average_b2b=today_products_correct.aggregate(total=Sum('shipping_cost', field="shipping_cost+cod_cost"))['total']
 	sum_b2b=today_products_correct.aggregate(total=Sum('shipping_cost', field="shipping_cost+cod_cost"))['total']
 	count_b2b=today_products_correct.count()
+	action_b2b=today_products.count()-today_products_correct.count()
 
 	
 #b2b week
@@ -88,7 +90,7 @@ def index(request):
 	product_groupedby_business=Product.objects.filter(order=today_orders_b2b).exclude(shipping_cost__isnull=True).values('order__business').annotate(total_revenue=Sum('shipping_cost', field="shipping_cost+cod_cost"), total_no=Count('order'))
 
 
-	context = {'product_groupedby_business':product_groupedby_business,'average_b2c':average_b2c,'sum_b2c':sum_b2c,'count_b2c':count_b2c,'average_b2b':average_b2b,'sum_b2b':sum_b2b,'count_b2b':count_b2b,'b2c_stats':b2c_stats,'b2b_stats':b2b_stats}
+	context = {'product_groupedby_business':product_groupedby_business,'average_b2c':average_b2c,'sum_b2c':sum_b2c,'count_b2c':count_b2c,'average_b2b':average_b2b,'sum_b2b':sum_b2b,'count_b2b':count_b2b,'b2c_stats':b2c_stats,'b2b_stats':b2b_stats,'action_b2b':action_b2b,'action_b2c':action_b2c}
 	return render(request, 'polls/index.html', context)
 
 	
