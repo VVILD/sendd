@@ -80,7 +80,7 @@ class OrderAdmin(admin.ModelAdmin):
 	list_per_page = 25
 	search_fields=['user__phone','name','namemail__name','namemail__email','promocode__code']
 	list_display = ('order_no','book_time','promocode','date','time','full_address','name_email','order_status','way','pickupboy','comment','shipments','send_invoice')
-	list_editable = ('date','time','order_status','pickupboy','comment','user',)
+	list_editable = ('date','time','order_status','pickupboy','comment',)
 	list_filter=['book_time','status']
 	readonly_fields = ('code','send_invoice',)
 	'''
