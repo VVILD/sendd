@@ -17,7 +17,7 @@ from pprint import pprint
 from itertools import groupby
 
 def index(request):
-	todays_date=date.today()-datetime.timedelta(days=1)
+	todays_date=date.today()
 	week_before=date.today()-datetime.timedelta(days=7)
 
 # today min/max

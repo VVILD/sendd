@@ -10,6 +10,7 @@ import urllib
 from django.shortcuts import redirect
 from datetime import date
 import datetime
+from django.db.models import Avg, Count, F, Max, Min, Sum, Q, Prefetch
 
 class UserAdmin(admin.ModelAdmin):
 	search_fields=['phone','name']
@@ -18,13 +19,7 @@ class UserAdmin(admin.ModelAdmin):
 
 admin.site.register(User,UserAdmin)
 
-def make_complete(modeladmin, request, queryset):
-	queryset.update(status='C')
-make_complete.short_description = "Mark selected orders as Complete"
 
-def make_pending(modeladmin, request, queryset):
-	queryset.update(status='P')
-make_pending.short_description = "Mark selected orders as Pending"
 
 
 class AddressAdmin(admin.ModelAdmin):
@@ -108,8 +103,35 @@ class OrderAdmin(admin.ModelAdmin):
 		today_max = datetime.datetime.combine(todays_date, datetime.time.max)
 	
 
-		count=Order.objects.filter(order_status='O').count()
-		context = {'p':count}
+		o=Order.objects.filter(order_status='O').count()
+		a=Order.objects.filter(order_status='A').count()
+		p=Order.objects.filter(order_status='P').count()
+		pa=Order.objects.filter(order_status='Pa').count()
+		c=Order.objects.filter(order_status='C').count()	
+
+		todays_date=date.today()
+	#	week_before=date.today()-datetime.timedelta(days=7)	
+
+	# today min/max
+		today_min = datetime.datetime.combine(todays_date, datetime.time.min)
+		today_max = datetime.datetime.combine(todays_date, datetime.time.max)
+		
+	#week min/max	
+	#	date_min = datetime.datetime.combine(week_before, datetime.time.min)
+	#	date_max = datetime.datetime.combine(datetime.date.today(), datetime.time.max)
+		
+	#customer stats today	
+	
+		today_orders =Order.objects.filter(Q(book_time__range=(today_min,today_max)))
+		today_shipments_correct=Shipment.objects.filter(order=today_orders).exclude(price__isnull=True).exclude(price__exact='')
+		today_shipments=Shipment.objects.filter(order=today_orders)
+		average_b2c=today_shipments_correct.aggregate(Avg('price'))['price__avg']
+		sum_b2c=today_shipments_correct.aggregate(Sum('price'))['price__sum']
+		count_b2c=today_shipments.count()
+		action_b2c=today_shipments.count()-today_shipments_correct.count()
+
+
+		context = {'o':o,'a':a,'p':p,'c':c,'pa':pa,'count_b2c':count_b2c,'sum_b2c':sum_b2c}
 		return super(OrderAdmin, self).changelist_view(request, extra_context=context)
 
 			
@@ -166,7 +188,7 @@ class OrderAdmin(admin.ModelAdmin):
 			return {'class': css_class, 'data': obj.name}
 
 
-	actions = [make_pending,make_complete]
+	#actions = [make_pending,make_complete]
 	def full_address(self,obj):
 		return str(obj.flat_no)+' '+str(obj.address)+' '+str(obj.pincode) + '  <a href="http://sendmates.com/admin/myapp/order/%s/">edit address</a>' % (obj.pk)
 	full_address.allow_tags = True
@@ -321,7 +343,7 @@ admin.site.register(Promocheck,PromocheckAdmin)
 
 
 def make_alloted(modeladmin, request, queryset):
-	queryset.update(status='A')
+	queryset.update(order_status='A')
 make_alloted.short_description = "Mark selected orders as alloted"
 
 
@@ -329,13 +351,14 @@ class ReceivedOrderAdmin(OrderAdmin):
 
 	actions = [make_alloted]
 
+
 	def queryset(self,request):
 		return self.model.objects.filter(order_status='O')
 
 admin.site.register(ReceivedOrder,ReceivedOrderAdmin)
 
 def make_pickedup(modeladmin, request, queryset):
-	queryset.update(status='P')
+	queryset.update(order_status='P')
 make_alloted.short_description = "Mark selected orders as picked up"
 
 
@@ -347,7 +370,7 @@ class AllotedOrderAdmin(OrderAdmin):
 admin.site.register(AllotedOrder,AllotedOrderAdmin)
 
 def make_packed(modeladmin, request, queryset):
-	queryset.update(status='Pa')
+	queryset.update(order_status='Pa')
 make_alloted.short_description = "Mark selected orders as packed"
 
 
@@ -360,7 +383,7 @@ admin.site.register(PickedupOrder,PickedupOrderAdmin)
 
 def make_complete(modeladmin, request, queryset):
 	
-	queryset.update(status='C')
+	queryset.update(order_status='C')
 make_alloted.short_description = "Mark selected orders as complete"
 
 class PackedOrderAdmin(OrderAdmin):
