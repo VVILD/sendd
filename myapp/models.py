@@ -87,7 +87,7 @@ class Order(models.Model):
 									  default='P')
 
 	order_status=models.CharField(max_length=2,
-									  choices=(('O','order_recieved') ,('A','Alloted'),('P','picked up'),('Pa','packed'),('C','completed'),('N','cancelled'),('F','fake'),('Q','query'),),null=True,blank=True)
+									  choices=(('O','order_recieved') ,('A','Alloted'),('P','picked up'),('Pa','packed'),('C','completed'),('N','cancelled'),('F','fake'),('Q','query'),),null=True,blank=True,default='O')
 
 
 	comment=models.TextField(null=True,blank=True)
