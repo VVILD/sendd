@@ -1,0 +1,20 @@
+{% extends "admin/change_list.html" %}
+
+
+{% block extra %}
+<center>
+   <a class="btn btn-info" href="/admin/myapp/receivedorder/">Recieved Orders<br> Allot Someone</a>
+   <a class="btn btn-info" href="/admin/myapp/allotedorder/">On the way to pickup <br> Check if picked up</a>
+   <a class="btn btn-info" href="/admin/myapp/pickeduporder/">Picked up <br> Now Pack</a>
+   <a class="btn btn-info" href="/admin/myapp/packedorder/">Packed<br>Do data entry/send invoice</a>
+<br>
+{{p}}fg
+<br>
+   <a class="btn btn-info" href="/admin/myapp/completedorder/">Completed orders</a>
+<a class="btn btn-info" href="/admin/myapp/fakeorder/">Fake orders</a>
+<a class="btn btn-info" href="/admin/myapp/queryorder/">Query Orders</a>
+<br>
+<br>
+</center>
+
+{% endblock %}

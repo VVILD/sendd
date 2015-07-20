@@ -66,6 +66,11 @@ class Promocode(models.Model):
 		return str(self.code)
 
 
+class Pickupboy(models.Model):
+	name=models.CharField(max_length=40)
+	phone=models.CharField(max_length=10,primary_key=True)
+	def __unicode__(self):
+		return str(self.name)
 
 class Order(models.Model):
 	order_no=models.AutoField(primary_key=True)
@@ -80,6 +85,10 @@ class Order(models.Model):
 	status=models.CharField(max_length=1,
 									  choices=(('P','pending') ,('C','complete'),('N','cancelled'),('F','fake'),),
 									  default='P')
+
+	order_status=models.CharField(max_length=2,
+									  choices=(('O','order_recieved') ,('A','Alloted'),('P','picked up'),('Pa','packed'),('C','completed'),('N','cancelled'),('F','fake'),('Q','query'),),null=True,blank=True)
+
 
 	comment=models.TextField(null=True,blank=True)
 	way=models.CharField(max_length=1,
@@ -99,7 +108,7 @@ class Order(models.Model):
 	#cancelled=models.CharField(max_length=1,
 	#								  choices=(('Y','yes') ,('N','no'),),
 	#								  default='N')
-
+	pickupboy=models.ForeignKey(Pickupboy,null=True,blank=True)
 	latitude = models.DecimalField(max_digits=25, decimal_places=20,null=True ,blank=True)
 	longitude = models.DecimalField(max_digits=25, decimal_places=20,null=True ,blank=True)
 	address=models.CharField(max_length = 200,null=True ,blank=True)	
@@ -122,6 +131,32 @@ class Order(models.Model):
 			self.book_time = ind_time.strftime(fmt)
 		super(Order, self).save(*args, **kwargs)
 
+
+class ReceivedOrder(Order):
+	class Meta:
+		proxy=True
+
+
+class AllotedOrder(Order):
+	class Meta:
+		proxy=True
+class PickedupOrder(Order):
+	class Meta:
+		proxy=True
+class PackedOrder(Order):
+	class Meta:
+		proxy=True
+class CompletedOrder(Order):
+	class Meta:
+		proxy=True
+class FakeOrder(Order):
+	class Meta:
+		proxy=True
+
+
+class QueryOrder(Order):
+	class Meta:
+		proxy=True		
 
 
 class Shipment(models.Model):

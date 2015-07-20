@@ -88,6 +88,7 @@ class OrderForm(ModelForm):
 		instance.namemail=namemail
 		instance.user=user
 		instance.way='C'
+		instance.order_status='O'
 		instance.save()
 
 		print instance.pk

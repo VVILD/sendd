@@ -285,7 +285,7 @@ class ProductInline(admin.TabularInline):
 
 class OrderAdmin(admin.ModelAdmin):
 	inlines=(ProductInline,)
-	search_fields=['business__business_name','name']
+	search_fields=['business__business_name','name','product__real_tracking_no']
 	list_display = ('order_no','book_time','business_details','name','status','method')
 	list_editable = ('status',)
 	list_filter=['business','status']

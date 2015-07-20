@@ -8,6 +8,8 @@ from django.http import HttpResponse,HttpResponseRedirect
 from push_notifications.models import APNSDevice, GCMDevice
 import urllib
 from django.shortcuts import redirect
+from datetime import date
+import datetime
 
 class UserAdmin(admin.ModelAdmin):
 	search_fields=['phone','name']
@@ -68,6 +70,13 @@ class ShipmentInline(admin.TabularInline):
 	suit_form_tabs = (('general', 'General'))
 '''
 
+class PickupboyAdmin(admin.ModelAdmin):
+	pass
+
+
+admin.site.register(Pickupboy,PickupboyAdmin)
+
+
 
 
 class OrderAdmin(admin.ModelAdmin):
@@ -75,8 +84,8 @@ class OrderAdmin(admin.ModelAdmin):
 	save_as = True
 	list_per_page = 25
 	search_fields=['user__phone','name','namemail__name','namemail__email','promocode__code']
-	list_display = ('order_no','book_time','promocode','date','time','full_address','name_email','status','way','comment','shipments','send_invoice')
-	list_editable = ('date','time','status','comment',)
+	list_display = ('order_no','book_time','promocode','date','time','full_address','name_email','order_status','way','pickupboy','comment','shipments','send_invoice','user')
+	list_editable = ('date','time','order_status','pickupboy','comment','user',)
 	list_filter=['book_time','status']
 	readonly_fields = ('code','send_invoice',)
 	'''
@@ -87,6 +96,21 @@ class OrderAdmin(admin.ModelAdmin):
 			#('Invoices',{'fields':['send_invoice'], 'classes':('suit-tab','suit-tab-invoices')})
 	)
 	'''
+
+
+	# passing variables to change_list view
+
+	def changelist_view(self, request, extra_context=None):
+		extra_context = extra_context or {}
+		todays_date=date.today()
+
+		today_min = datetime.datetime.combine(todays_date, datetime.time.min)
+		today_max = datetime.datetime.combine(todays_date, datetime.time.max)
+	
+
+		count=Order.objects.filter(order_status='O').count()
+		context = {'p':count}
+		return super(OrderAdmin, self).changelist_view(request, extra_context=context)
 
 			
 
@@ -293,6 +317,78 @@ class PromocheckAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Promocheck,PromocheckAdmin)
+
+
+
+def make_alloted(modeladmin, request, queryset):
+	queryset.update(status='A')
+make_alloted.short_description = "Mark selected orders as alloted"
+
+
+class ReceivedOrderAdmin(OrderAdmin):
+
+	actions = [make_alloted]
+
+	def queryset(self,request):
+		return self.model.objects.filter(order_status='O')
+
+admin.site.register(ReceivedOrder,ReceivedOrderAdmin)
+
+def make_pickedup(modeladmin, request, queryset):
+	queryset.update(status='P')
+make_alloted.short_description = "Mark selected orders as picked up"
+
+
+class AllotedOrderAdmin(OrderAdmin):
+	actions = [make_pickedup]
+	def queryset(self,request):
+		return self.model.objects.filter(order_status='A')
+
+admin.site.register(AllotedOrder,AllotedOrderAdmin)
+
+def make_packed(modeladmin, request, queryset):
+	queryset.update(status='Pa')
+make_alloted.short_description = "Mark selected orders as packed"
+
+
+class PickedupOrderAdmin(OrderAdmin):
+	actions = [make_packed]
+	def queryset(self,request):
+		return self.model.objects.filter(order_status='P')
+
+admin.site.register(PickedupOrder,PickedupOrderAdmin)
+
+def make_complete(modeladmin, request, queryset):
+	
+	queryset.update(status='C')
+make_alloted.short_description = "Mark selected orders as complete"
+
+class PackedOrderAdmin(OrderAdmin):
+	actions = [make_complete]
+	def queryset(self,request):
+		return self.model.objects.filter(order_status='Pa')
+
+admin.site.register(PackedOrder,PackedOrderAdmin)
+
+class CompletedOrderAdmin(OrderAdmin):
+	def queryset(self,request):
+		return self.model.objects.filter(order_status='C')
+
+admin.site.register(CompletedOrder,CompletedOrderAdmin)
+
+class FakeOrderAdmin(OrderAdmin):
+	def queryset(self,request):
+		return self.model.objects.filter(order_status='F')
+
+admin.site.register(FakeOrder,FakeOrderAdmin)
+
+class QueryOrderAdmin(OrderAdmin):
+	def queryset(self,request):
+		return self.model.objects.filter(order_status='Q')
+
+admin.site.register(QueryOrder,QueryOrderAdmin)
+
+
 
 
 class ShipmentAdmin(admin.ModelAdmin):
