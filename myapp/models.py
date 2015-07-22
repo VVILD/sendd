@@ -69,6 +69,7 @@ class Promocode(models.Model):
 class Pickupboy(models.Model):
 	name=models.CharField(max_length=40)
 	phone=models.CharField(max_length=10,primary_key=True)
+
 	def __unicode__(self):
 		return str(self.name)
 
@@ -87,7 +88,7 @@ class Order(models.Model):
 									  default='P')
 
 	order_status=models.CharField(max_length=2,
-									  choices=(('O','order_recieved') ,('A','Alloted'),('P','picked up'),('Pa','packed'),('C','completed'),('N','cancelled'),('F','fake'),('Q','query'),),null=True,blank=True,default='O')
+									  choices=(('O','order_recieved') ,('A','Alloted'),('P','picked up'),('Pa','packed'),('C','completed'),('D','delivered'),('N','cancelled'),('F','fake'),('Q','query'),),null=True,blank=True,default='O')
 
 
 	comment=models.TextField(null=True,blank=True)
@@ -194,6 +195,10 @@ class Shipment(models.Model):
 									  blank=True , null = True ,default='Not Paid')
 	company=models.CharField(max_length=1,
 									  choices=(('F','FedEx') ,('D','Delhivery'),),
+									  blank=True , null = True)
+
+	company=models.CharField(max_length=2,
+									  choices=[('F','FedEx') ,('D','Delhivery'),('P','Professional'),('G','Gati'),('A','Aramex'),('E','Ecomexpress'),('DT','dtdc'),('FF','First Flight'),('M','Maruti courier')],
 									  blank=True , null = True)
 
 	pricing=models.ForeignKey(Pricing,null=True,blank=True)

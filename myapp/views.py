@@ -93,8 +93,40 @@ def index(request):
 	return render(request, 'polls/index.html', context)
 
 	
-def detail(request, question_id):
-	return HttpResponse("You're looking at question %s." % question_id)
+def detail(request):
+
+
+	todays_date=date.today()
+	week_before=date.today()-datetime.timedelta(days=7)
+
+# today min/max
+	
+#week min/max	
+	date_min = datetime.datetime.combine(week_before, datetime.time.min)
+	date_max = datetime.datetime.combine(datetime.date.today(), datetime.time.max)
+	
+#customer stats today
+
+	
+#customer stats week
+	week_orders =Order.objects.filter(Q(book_time__range=(date_min,date_max))&(Q(order_status='O') | Q(order_status='A')| Q(order_status='P')| Q(order_status='Pa')| Q(order_status='C')| Q(order_status='D') | Q(order_status='Q')))
+	week_shipments=Shipment.objects.filter(Q(order=week_orders)&(Q(mapped_tracking_no__isnull=True)|Q(mapped_tracking_no__exact='')))
+
+
+#business stats today
+
+	
+#b2b week
+	week_orders_b2b =BOrder.objects.filter(Q(book_time__range=(date_min,date_max))&(Q(status='P') | Q(status='C')| Q(status='D')))
+	week_products_b2b=Product.objects.filter(Q(order=week_orders_b2b)&(Q(mapped_tracking_no__isnull=True)|Q(mapped_tracking_no__exact='')))
+
+	
+# business stats grouped by businesses
+
+
+	context = {'week_shipments':week_shipments,'week_products_b2b':week_products_b2b}
+	return render(request, 'polls/index1.html', context)
+
 
 def results(request, question_id):
 	response = "You're looking at the results of question %s."

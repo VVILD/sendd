@@ -1,0 +1,86 @@
+
+<head>
+<style>
+table, th, td {
+    border: 1px solid black;
+    border-collapse: collapse;
+}
+th, td {
+    padding: 5px;
+    text-align: left;
+}
+</style>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+
+<!-- Optional theme -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
+
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+</head>
+
+<h1>Customers orders for past week without mapped tracking id</h1>
+
+<table style="width:100%">
+  <tr>
+    <td><b>shipment_id<b></td>
+    <td><b>order_id</b></td>		
+  </tr>
+
+
+
+{% if week_shipments %}
+    
+    {% for shipment in week_shipments %}
+    	<tr>
+        
+        <td>
+        <a href="/myapp/shipment/{{ shipment.pk }}/">{{ shipment.order.namemail.name }}  </a>
+        </td>
+
+        <td>
+        <a href="/myapp/order/{{ shipment.order.pk }}/">{{ shipment.order.namemail.name }}  </a>
+        </td>
+
+    	</tr>
+        	
+    {% endfor %}
+    
+{% else %}
+    <p>No polls are available.</p>
+{% endif %}
+
+</table>
+
+<h1>Business orders for past week without mapped tracking id</h1>
+
+<table style="width:100%">
+  <tr>
+    <td><b>Date<b></td>
+    <td><b># orders</b></td>		
+    <td><b>Revenue</b></td>
+    <td><b>Ticket_size</b></td>
+  </tr>
+
+
+
+{% if b2b_stats %}
+    
+    {% for stat in b2b_stats %}
+    	<tr>
+        {% for s in stat %}
+        	<td>{{ s }}</td>
+    	{% endfor %}
+
+    	</tr>
+        	
+    {% endfor %}
+    
+{% else %}
+    <p>No polls are available.</p>
+{% endif %}
+
+</table>
+
+
+

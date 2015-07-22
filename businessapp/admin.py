@@ -85,10 +85,10 @@ admin.site.register(LoginSession)
 
 class ProductAdmin(admin.ModelAdmin):
     search_fields = ['name', 'real_tracking_no']
-    list_display = ('name', 'price', 'weight', 'status', 'real_tracking_no')
+    list_display = ('name', 'price', 'weight', 'status', 'real_tracking_no','order')
     list_editable = ('status',)
     readonly_fields = (
-        'name', 'quantity', 'sku', 'price', 'weight', 'applied_weight', 'order', 'real_tracking_no', 'tracking_data',
+        'name', 'quantity', 'sku', 'price', 'weight', 'applied_weight', 'real_tracking_no', 'tracking_data',
         'kartrocket_order', 'shipping_cost', 'cod_cost', 'status', 'date')
 
 
