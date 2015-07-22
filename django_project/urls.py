@@ -1,7 +1,10 @@
 from django.conf.urls import patterns, include, url
 from django.contrib import admin
-from myapp.api import UserResource,AddressResource,OrderResource,ShipmentResource,XResource,LoginSessionResource,WeborderResource,PriceappResource,DateappResource,ForgotpassResource
 from tastypie.api import Api
+
+from myapp.api import UserResource, AddressResource, ShipmentResource, WeborderResource, PriceappResource, \
+    DateappResource
+from pickupboyapp.api import PickupboyResource
 
 
 v1_api = Api(api_name='v1')
@@ -55,8 +58,8 @@ bv1_api.register(ForgotpassResource())
 bv1_api.register(BillingResource())
 bv1_api.register(PincodecheckResource())
 
-
-
+pbv1_api = Api(api_name='v1')
+pbv1_api.register(PickupboyResource())
 
 urlpatterns = patterns('',
     # Examples:
@@ -67,5 +70,6 @@ urlpatterns = patterns('',
     url(r'^api/', include(v1_api.urls)),
  	url(r'^api/', include(v2_api.urls)),
  	url(r'^bapi/', include(bv1_api.urls)),
- 	url(r'^stats/', include('myapp.urls')),       
+    url(r'^stats/', include('myapp.urls')),
+    url(r'^pb_api/', include(pbv1_api.urls)),
 )

@@ -1,9 +1,10 @@
 business_product_url = 'http://sendmates.com/admin/businessapp/product/'
 
 from django.contrib import admin
+from django.http import HttpResponseRedirect
+
 from .models import *
 
-from django.http import HttpResponse, HttpResponseRedirect
 
 
 
@@ -16,7 +17,6 @@ class BusinessAdmin(admin.ModelAdmin):
 # list_editable = ('name',)
 
 
-from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import User
 
 
@@ -47,24 +47,23 @@ def make_cancelled(modeladmin, request, queryset):
 
 make_cancelled.short_description = "Mark selected orders as Cancelled"
 
-from django.forms import ModelForm, Textarea, HiddenInput
-from django import forms
+from django.forms import ModelForm, HiddenInput
 from businessapp.models import Product, Order
 
 
-class BmInline(admin.StackedInline):
-    model = BusinessManager
-    can_delete = False
-    verbose_name_plural = 'businessmanager'
+# class BmInline(admin.StackedInline):
+# model = BusinessManager
+#     can_delete = False
+#     verbose_name_plural = 'businessmanager'
 
 
 # Define a new User admin
-class UserAdmin(UserAdmin):
-    inlines = (BmInline, )
+# class UserAdmin(UserAdmin):
+# inlines = (BmInline, )
 
 # Re-register UserAdmin
 admin.site.unregister(User)
-admin.site.register(User, UserAdmin)
+# admin.site.register(User, UserAdmin)
 
 
 class ProductForm(ModelForm):
