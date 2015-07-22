@@ -66,6 +66,8 @@ class ShipmentInline(admin.TabularInline):
 '''
 
 class PickupboyAdmin(admin.ModelAdmin):
+	search_fields=['name','phone']
+	list_display=['name','phone']
 	pass
 
 

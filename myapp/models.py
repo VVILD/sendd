@@ -198,7 +198,7 @@ class Shipment(models.Model):
 									  blank=True , null = True)
 
 	company=models.CharField(max_length=2,
-									  choices=[('F','FedEx') ,('D','Delhivery'),('P','Professional'),('G','Gati'),('A','Aramex'),('E','Ecomexpress'),('DT','dtdc'),('FF','First Flight'),('M','Maruti courier')],
+									  choices=[('F','FedEx') ,('D','Delhivery'),('P','Professional'),('G','Gati'),('A','Aramex'),('E','Ecomexpress'),('DT','dtdc'),('FF','First Flight'),('M','Maruti courier'),('I','India Post')],
 									  blank=True , null = True)
 
 	pricing=models.ForeignKey(Pricing,null=True,blank=True)
