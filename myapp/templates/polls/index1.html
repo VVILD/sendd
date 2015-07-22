@@ -23,8 +23,8 @@ th, td {
 
 <table style="width:100%">
   <tr>
-    <td><b>shipment_id<b></td>
-    <td><b>order_id</b></td>		
+    <td><b>shipment_link<b></td>
+    <td><b>order_link</b></td>		
   </tr>
 
 
@@ -35,11 +35,11 @@ th, td {
     	<tr>
         
         <td>
-        <a href="/myapp/shipment/{{ shipment.pk }}/">{{ shipment.order.namemail.name }}  </a>
+        <a href="/admin/myapp/shipment/{{ shipment.pk }}/">{{ shipment.order.namemail.name }}  </a>
         </td>
 
         <td>
-        <a href="/myapp/order/{{ shipment.order.pk }}/">{{ shipment.order.namemail.name }}  </a>
+        <a href="/admin/myapp/order/{{ shipment.order.pk }}/">{{ shipment.order.book_time }}  </a>
         </td>
 
     	</tr>
@@ -56,24 +56,27 @@ th, td {
 
 <table style="width:100%">
   <tr>
-    <td><b>Date<b></td>
-    <td><b># orders</b></td>		
-    <td><b>Revenue</b></td>
-    <td><b>Ticket_size</b></td>
-  </tr>
+    <td><b>product_link<b></td>
+    <td><b>order_link</b></td>		
+ </tr>
 
 
 
-{% if b2b_stats %}
+{% if week_products_b2b %}
     
-    {% for stat in b2b_stats %}
-    	<tr>
-        {% for s in stat %}
-        	<td>{{ s }}</td>
-    	{% endfor %}
+    {% for product in week_products_b2b %}
+        <tr>
+        
+        <td>
+        <a href="/admin/businessapp/shipment/{{ product.pk }}/">{{ product.order.business }}  </a>
+        </td>
 
-    	</tr>
-        	
+        <td>
+        <a href="/admin/businessapp/order/{{ product.order.pk }}/">{{ product.order.book_time }}</a>
+        </td>
+
+        </tr>
+            
     {% endfor %}
     
 {% else %}
