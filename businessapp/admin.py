@@ -1,6 +1,7 @@
 business_product_url = 'http://sendmates.com/admin/businessapp/product/'
 
 from django.contrib import admin
+
 from django.http import HttpResponseRedirect
 
 from .models import *
@@ -53,7 +54,7 @@ from businessapp.models import Product, Order
 
 # class BmInline(admin.StackedInline):
 # model = BusinessManager
-#     can_delete = False
+# can_delete = False
 #     verbose_name_plural = 'businessmanager'
 
 
@@ -97,7 +98,7 @@ admin.site.register(Payment)
 admin.site.register(Forgotpass)
 admin.site.register(Pricing)
 
-admin.site.register(BusinessManager)
+# admin.site.register(BusinessManager)
 
 
 # name = models.CharField(max_length = 100,null=True,blank =True)

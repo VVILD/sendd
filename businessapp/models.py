@@ -10,11 +10,11 @@ import math
 from django.contrib.auth.models import User
 
 
-class BusinessManager(models.Model):
-    """User with app settings."""
-    phone = models.CharField(max_length=50)
-    user = models.OneToOneField(User)
-    # Use UserManager to get the create_user method, etc.
+# class BusinessManager(models.Model):
+# """User with app settings."""
+#     phone = models.CharField(max_length=50)
+#     user = models.OneToOneField(User)
+#     # Use UserManager to get the create_user method, etc.
 
 
 # class BusinessManager(User):

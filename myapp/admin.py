@@ -78,10 +78,10 @@ class OrderAdmin(admin.ModelAdmin):
                      'pickupboy__pincodes__pincode']
     list_display = (
         'order_no', 'book_time', 'promocode', 'date', 'time', 'full_address', 'name_email', 'order_status', 'way',
-        'pickupboy', 'comment', 'shipments', 'send_invoice')
-    list_editable = ('date', 'time', 'order_status', 'pickupboy', 'comment',)
-    list_filter = ['book_time', 'status', 'pickupboy']
-    raw_id_fields = ('pickupboy',)
+        'pb', 'comment', 'shipments', 'send_invoice')
+    list_editable = ('date', 'time', 'order_status', 'pb', 'comment',)
+    list_filter = ['book_time', 'status', 'pb']
+    raw_id_fields = ('pb',)
     readonly_fields = ('code', 'send_invoice',)
     '''
 	fieldsets=(
@@ -173,7 +173,7 @@ class OrderAdmin(admin.ModelAdmin):
         return super(OrderAdmin, self).get_form(request, obj, **kwargs)
 
     # def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
-    # if db_field.name == 'pickupboy':
+    # if db_field.name == 'pb':
     #         # set the query set to whatever you like
     #         kwargs['queryset'] = request._obj.client.clienturls.all()
     #     return super(OrderAdmin,
@@ -463,7 +463,7 @@ class ShipmentAdmin(admin.ModelAdmin):
     readonly_fields = ('real_tracking_no', 'print_invoice', 'generate_order', 'parcel_details', 'address')
 
     fieldsets = (
-        ('Basic Information', {'fields': ['real_tracking_no', 'parcel_details', ('category', 'status')],
+        ('Basic Information', {'fields': ['real_tracking_no', 'parcel_details', 'order', ('category', 'status')],
                                'classes': ('suit-tab', 'suit-tab-general')}),
         ('Parcel Information',
          {'fields': [('name', 'weight', 'cost_of_courier'), ], 'classes': ('suit-tab', 'suit-tab-general')}),

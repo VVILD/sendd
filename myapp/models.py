@@ -122,7 +122,7 @@ class Order(models.Model):
     #cancelled=models.CharField(max_length=1,
     # choices=(('Y','yes') ,('N','no'),),
     #								  default='N')
-    pickupboy = models.ForeignKey(PBUser, null=True, blank=True, limit_choices_to={})
+    pb = models.ForeignKey(PBUser, null=True, blank=True)
     latitude = models.DecimalField(max_digits=25, decimal_places=20, null=True, blank=True)
     longitude = models.DecimalField(max_digits=25, decimal_places=20, null=True, blank=True)
     address = models.CharField(max_length=200, null=True, blank=True)
