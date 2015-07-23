@@ -75,12 +75,12 @@ class Promocode(models.Model):
         return str(self.code)
 
 
-class Pickupboy(models.Model):
-    name = models.CharField(max_length=40)
-    phone = models.CharField(max_length=10, primary_key=True)
-
-    def __unicode__(self):
-        return str(self.name)
+# class Pickupboy(models.Model):
+# name = models.CharField(max_length=40)
+#     phone = models.CharField(max_length=10, primary_key=True)
+#
+#     def __unicode__(self):
+#         return str(self.name)
 
 
 class Order(models.Model):
