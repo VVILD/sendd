@@ -3,16 +3,42 @@ import json
 
 from django.conf.urls import url
 from django.core import serializers
+from tastypie import fields
 from tastypie.authorization import Authorization
 from tastypie.authentication import Authentication
-from tastypie.resources import Resource
+from tastypie.resources import Resource, QUERY_TERMS, ModelResource
 from tastypie.utils import trailing_slash
 
 from pickupboyapp.exceptions import CustomBadRequest
 from myapp.models import Order, Shipment
+from .models import PBLocations, PBUser
 
 
 __author__ = 'vatsalshah'
+
+
+class PBUserResource(ModelResource):
+    class Meta:
+        resource_name = 'pb_users'
+        object_class = PBUser
+        queryset = PBUser.objects.all()
+        allowed_methods = ['get']
+        authorization = Authorization()
+
+
+class PBLocationsResource(ModelResource):
+    pbuser = fields.ForeignKey(PBUserResource, 'pbuser', full=True)
+
+    class Meta:
+        resource_name = 'pb_locations'
+        object_class = PBLocations
+        queryset = PBLocations.objects.all()
+        allowed_methods = ['get', 'post', 'delete', 'put']
+        authorization = Authorization()
+        filtering = {
+            'updated_at': QUERY_TERMS,
+            'pbuser': QUERY_TERMS
+        }
 
 
 class PickupboyResource(Resource):
