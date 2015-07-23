@@ -56,6 +56,10 @@ bv1_api.register(BillingResource())
 bv1_api.register(PincodecheckResource())
 
 
+from businessapp.apiv2 import ProductResource2
+bv2_api = Api(api_name='v2')
+bv2_api.register(ProductResource2())
+
 
 
 urlpatterns = patterns('',
@@ -67,5 +71,6 @@ urlpatterns = patterns('',
     url(r'^api/', include(v1_api.urls)),
  	url(r'^api/', include(v2_api.urls)),
  	url(r'^bapi/', include(bv1_api.urls)),
+ 	url(r'^bapi/', include(bv2_api.urls)),
  	url(r'^stats/', include('myapp.urls')),       
 )

@@ -228,6 +228,9 @@ def send_update(sender, instance, created, **kwargs):
 				price2=pricing.normal_zone_d_1
 				price3=pricing.normal_zone_d_2
 
+			print "see type"
+			print type(instance.applied_weight)
+			print "see type"
 			if (instance.applied_weight<=0.25):
 				price=price1
 			elif(instance.applied_weight<=0.50):

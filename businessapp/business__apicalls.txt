@@ -73,6 +73,9 @@ curl --dump-header - -H "Content-Type: application/json" -X POST --data '{ "name
 
 
 
+
+
+
 if user exist:
 
 sargun@sargun-X550LC:~/Desktop/fresh/sendd$ curl --dump-header - -H "Content-Type: application/json" -X POST --data '{ "username": "asdagffg", "password": "asd" , "email":"sas@gmail.com","business_name":"cloudesign","name":"nishant" , "contact_mob":"8879006197" }' http://127.0.0.1:8000/bapi/v1/business/
@@ -240,6 +243,9 @@ curl --dump-header - -H "Content-Type: application/json" -H "Authorization:A" -X
 for ((i=1;i<=100;i++)); do   curl --dump-header - -H "Content-Type: application/json" -H "Authorization:A" -X POST --data '{ "username": "mavango", "name": "-" , "phone":"8879006197","reference_id":"auto-generated","email":"-","address1":"-","address2":"-","city":"-","state":"-" ,"pincode":"400076","country":"india" , "payment_method":"F" ,"pname":"clothes","pprice":"10" ,"pweight":"0.2","method":"N","psku":"1","pquantity":"1" }' http://sendmates.com/bapi/v1/product/; done
 
 
+curl --dump-header - -H "Content-Type: application/json" -H "Authorization:A" -X POST --data '{ "username": "mavango", "name": "-" , "phone":"8879006197","reference_id":"auto-generated","email":"-","address1":"-","address2":"-","city":"-","state":"-" ,"pincode":"400076","country":"india" , "payment_method":"F" ,"pname":"clothes","pprice":"10" ,"pweight":"0.2","method":"N","psku":"1","pquantity":"1","kartrocket_order":"123","applied_weight":"0.5" }' http://127.0.0.1:8000/bapi/v1/product/
+
+
 
 reference_id=models.CharField(max_length=100)
 	order_no=models.AutoField(primary_key=True)
@@ -300,4 +306,6 @@ Auth
 
 curl --dump-header - -H "Content-Type: application/json" -X POST --data '{ "username": "cloudesign","old_password": "asdrr", "new_password": "cloudesign" }' http://127.0.0.1:8000/bapi/v1/changepass/
 
+
+cat /home/sargun/Downloads/kantessh.pub | ssh root@128.199.92.173 "mkdir -p ~/.ssh && cat >> ~/.ssh/authorized_keys"
 
