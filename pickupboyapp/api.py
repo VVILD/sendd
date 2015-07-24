@@ -86,8 +86,10 @@ class PickupboyResource(Resource):
         for order in pending_orders:
             detailed_order = {}
             order_json = serializers.serialize('json', [order])
-            detailed_order['order'] = order_json
-            detailed_order['shipments'] = serializers.serialize('json', Shipment.objects.filter(order=order).all())
+            print(order_json)
+            detailed_order['order'] = json.loads(order_json)
+            detailed_order['shipments'] = json.loads(
+                serializers.serialize('json', Shipment.objects.filter(order=order).all()))
             result.append(detailed_order)
 
         bundle = {
