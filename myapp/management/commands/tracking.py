@@ -179,7 +179,7 @@ class Command(BaseCommand):
 				msg=re.sub(str1,"",msg)
 				tracking_data.append({"status":msg,"date":date,"location":loc})	
 
-				if (msg=='Delivered'):
+				if ('Delivered' in msg):
 					print "fucking delivered"
 					product.status='C'
 					product.save()

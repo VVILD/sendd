@@ -12,22 +12,22 @@ import math
 from django.contrib.auth.models import User, UserManager
 
 
-class BusinessManager(models.Model):
-    """User with app settings."""
-    phone = models.CharField(max_length=50)
-    user = models.OneToOneField(User)
-    # Use UserManager to get the create_user method, etc.
+# class BusinessManager(models.Model):
+#     """User with app settings."""
+#     phone = models.CharField(max_length=50)
+#     user = models.OneToOneField(User,null=True,blank=True)
+#     # Use UserManager to get the create_user method, etc.
     
 
 
 
 
-class BusinessManager(User):
-    """User with app settings."""
-    phone = models.CharField(max_length=50)
+# class BusinessManager(User):
+#     """User with app settings."""
+#     phone = models.CharField(max_length=50)
 
-    # Use UserManager to get the create_user method, etc.
-    objects = UserManager()
+#     # Use UserManager to get the create_user method, etc.
+#     objects = UserManager()
 
 class Business(models.Model):
 	#phone_regex = RegexValidator(regex=r'^[0-9]*$', message="Phone number must be entered in the format: '999999999'. Up to 12 digits allowed.")
@@ -47,7 +47,7 @@ class Business(models.Model):
 	company_name = models.CharField(max_length = 100,null=True,blank =True)
 	website =models.CharField(max_length = 100,null=True,blank =True)
 	#key=models.CharField(max_length = 100,null=True,blank =True)
-	businessmanager=models.ForeignKey(User,null=True,blank =True) 
+	#businessmanager=models.ForeignKey(User,null=True,blank =True) 
 	show_tracking_company=models.CharField(max_length=1,choices=(('Y','yes') ,('N','no'),),null=True,blank =True,default='N')
 
 	def save(self, *args, **kwargs):
@@ -130,14 +130,14 @@ class Product(models.Model):
 	tracking_data=models.CharField(max_length = 8000,null=True,blank=True)
 	kartrocket_order=models.CharField(max_length = 100,null=True,blank=True)
 	company=models.CharField(max_length=2,
-									  choices=[('F','FedEx') ,('D','Delhivery'),('P','Professional'),('G','Gati'),('A','Aramex'),('E','Ecomexpress'),('DT','dtdc'),('FF','First Flight'),('M','Maruti courier'),('I','India Post')],
+									  choices=[('F','FedEx') ,('D','Delhivery'),('P','Professional'),('G','Gati'),('A','Aramex'),('E','Ecomexpress'),('DT','dtdc'),('FF','First Flight'),('M','Maruti courier'),('I','India Post'),('S','Sendd')],
 									  blank=True , null = True)
 	shipping_cost=models.IntegerField(null=True,blank=True)
 	cod_cost=models.IntegerField(default=0,null=True,blank=True)
 	#tracking_no=models.AutoField(primary_key=True)
 	status=models.CharField(max_length=1,
 									  choices=(('P','pending') ,('C','complete'),),
-									  default='P',null=True,blank=True)
+									  default='P')
 	
 	date=models.DateTimeField(null=True,blank=True)
 

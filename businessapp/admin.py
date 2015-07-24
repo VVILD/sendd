@@ -52,15 +52,16 @@ from django import forms
 from businessapp.models import Product, Order
 
 
-class BmInline(admin.StackedInline):
-    model = BusinessManager
-    can_delete = False
-    verbose_name_plural = 'businessmanager'
+# class BmInline(admin.StackedInline):
+#     model = BusinessManager
+#     can_delete = False
+#     verbose_name_plural = 'businessmanager'
 
 
-# Define a new User admin
-class UserAdmin(UserAdmin):
-    inlines = (BmInline, )
+# # Define a new User admin
+# class UserAdmin(UserAdmin):
+#     pass
+#     #inlines = (BmInline, )
 
 # Re-register UserAdmin
 admin.site.unregister(User)
@@ -98,7 +99,7 @@ admin.site.register(Payment)
 admin.site.register(Forgotpass)
 admin.site.register(Pricing)
 
-admin.site.register(BusinessManager)
+#maadmin.site.register(BusinessManager)ma
 
 
 # name = models.CharField(max_length = 100,null=True,blank =True)
