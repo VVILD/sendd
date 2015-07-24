@@ -7,13 +7,19 @@ from django.http import HttpResponseRedirect
 from .models import *
 
 
-
-
-
 # Register your models here.
 class BusinessAdmin(admin.ModelAdmin):
     # search_fields=['name']
-    list_display = ('username', 'business_name', 'username')
+    list_display = ('username', 'business_name', 'pb', 'pending_orders',)
+    list_editable = ('pb',)
+    raw_id_fields = ('pb',)
+
+    def pending_orders(self, obj):
+        po_count = Order.objects.filter(status='P', business__username=obj.username).count()
+        return '<a href="/admin/businessapp/order/?q=&business__username__exact=%s&status__exact=P"> %s </a>' % (
+        obj.username, po_count)
+
+    pending_orders.allow_tags = True
 
 # list_editable = ('name',)
 

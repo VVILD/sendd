@@ -23,6 +23,7 @@ from django.contrib.auth.models import User
 #
 #     # Use UserManager to get the create_user method, etc.
 #     objects = UserManager()
+from pickupboyapp.models import PBUser
 
 
 class Business(models.Model):
@@ -47,6 +48,7 @@ class Business(models.Model):
     # businessmanager = models.ForeignKey(User, null=True, blank=True)
     show_tracking_company = models.CharField(max_length=1, choices=(('Y', 'yes'), ('N', 'no'),), null=True, blank=True,
                                              default='N')
+    pb = models.ForeignKey(PBUser, null=True, blank=True)
 
     def save(self, *args, **kwargs):
         # print self.tracking_no
@@ -105,7 +107,6 @@ class Order(models.Model):
                               blank=True, null=True)
 
     business = models.ForeignKey(Business)
-
 
     def __unicode__(self):
         return str(self.order_no)

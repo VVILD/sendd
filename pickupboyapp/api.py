@@ -12,7 +12,10 @@ from tastypie.resources import Resource, QUERY_TERMS, ModelResource
 from tastypie.utils import trailing_slash
 
 from pickupboyapp.exceptions import CustomBadRequest
-from myapp.models import Order, Shipment
+from myapp.models import Shipment
+from myapp.models import Order as CustomerOrder
+from businessapp.models import Order as BusinessOrder
+from businessapp.models import Product, Business
 from .models import PBLocations, PBUser
 
 
@@ -36,9 +39,7 @@ class PBUserResource(ModelResource):
         msg3 = ".This+message+is+for+automated+verification+purpose.+No+action+required.&msg_type=TEXT&userid=2000142364&auth_scheme=plain&password=h0s6jgB4N&v=1.1&format=text"
         # url1="http://49.50.69.90//api/smsapi.aspx?username=doormint&password=naman123&to="+ str(bundle.data['phone']) +"&from=DORMNT&message="
         query = ''.join([msg0, msga, msg1, msg2, msg3])
-        print query
-        x = urllib2.urlopen(query).read()
-        print x
+        urllib2.urlopen(query).read()
         return bundle
 
 
@@ -75,18 +76,29 @@ class PickupboyResource(Resource):
         self.throttle_check(request)
 
         pb_ph = request.GET.get('pb_ph', '')
-        print(pb_ph)
         if not pb_ph:
             raise CustomBadRequest(
                 code="request_invalid",
                 message="No user id found. Please supply uid as a GET parameter")
         result = []
-        pending_orders = Order.objects.filter(pb__phone=pb_ph, order_status='A', date=datetime.date.today()).order_by(
+        customer_pending_orders = CustomerOrder.objects.filter(pb__phone=pb_ph, order_status='A',
+                                                               date=datetime.date.today()).order_by(
             "time")
-        for order in pending_orders:
+        business_pending_orders = BusinessOrder.objects.filter(business__pb__phone=pb_ph, status='P')
+
+        for order in business_pending_orders:
+            detailed_order = {}
+            business_json = serializers.serialize('json', Business.objects.filter(business_name=order.business))
+            order_json = serializers.serialize('json', [order])
+            detailed_order['order'] = json.loads(order_json)
+            detailed_order['business'] = json.loads(business_json)
+            detailed_order['shipments'] = json.loads(
+                serializers.serialize('json', Product.objects.filter(order=order).all()))
+            result.append(detailed_order)
+
+        for order in customer_pending_orders:
             detailed_order = {}
             order_json = serializers.serialize('json', [order])
-            print(order_json)
             detailed_order['order'] = json.loads(order_json)
             detailed_order['shipments'] = json.loads(
                 serializers.serialize('json', Shipment.objects.filter(order=order).all()))
