@@ -115,6 +115,7 @@ class PickupboyResource(Resource):
                 })
             order_transformed = {
                 "b_business_name": business.business_name,
+                "b_username": business.username,
                 "b_address": business.address,
                 "b_contact_mob": business.contact_mob,
                 "b_contact_office": business.contact_office,
