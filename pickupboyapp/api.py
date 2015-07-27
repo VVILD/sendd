@@ -12,7 +12,7 @@ from tastypie.resources import Resource, QUERY_TERMS, ModelResource
 from tastypie.utils import trailing_slash
 
 from pickupboyapp.exceptions import CustomBadRequest
-from myapp.models import Shipment
+from myapp.models import Shipment, Namemail
 from myapp.models import Order as CustomerOrder
 from businessapp.models import Order as BusinessOrder
 from businessapp.models import Product, Business
@@ -87,21 +87,76 @@ class PickupboyResource(Resource):
         business_pending_orders = BusinessOrder.objects.filter(business__pb__phone=pb_ph, status='P')
 
         for order in business_pending_orders:
-            detailed_order = {}
-            business_json = serializers.serialize('json', Business.objects.filter(business_name=order.business))
-            order_json = serializers.serialize('json', [order])
-            detailed_order['order'] = json.loads(order_json)
-            detailed_order['business'] = json.loads(business_json)
-            detailed_order['shipments'] = json.loads(
-                serializers.serialize('json', Product.objects.filter(order=order).all()))
+            business = Business.objects.get(business_name=order.business)
+            shipments = []
+            for product in Product.objects.filter(order=order).all():
+                shipments.append({
+                    "name": product.name,
+                    "quantity": product.quantity,
+                    "sku": product.sku,
+                    "price": product.price,
+                    "weight": product.weight,
+                    "applied_weight": product.applied_weight,
+                    "real_tracking_no": product.real_tracking_no,
+                    "mapped_tracking_no": product.mapped_tracking_no,
+                    "tracking_data": product.tracking_data,
+                    "kartrocket_order": product.kartrocket_order,
+                    "company": product.company,
+                    "shipping_cost": product.shipping_cost,
+                    "cod_cost": product.cod_cost,
+                    "status": product.status,
+                    "date": product.date
+                })
+            order_transformed = {
+                "b_business_name": business.business_name,
+                "b_address": business.address,
+                "b_contact_mob": business.contact_mob,
+                "b_contact_office": business.contact_office,
+                "b_name": business.name,
+                "b_pickup_time": business.pickup_time,
+                "b_pincode": business.pincode,
+                "b_city": business.city,
+                "b_state": business.state,
+                "address1": order.address1,
+                "address2": order.address2,
+                "name": order.name,
+                "phone": order.phone,
+                "pincode": order.pincode
+            }
+            detailed_order = {
+                "type": "b2b",
+                "order": order_transformed,
+                "shipments": shipments
+            }
             result.append(detailed_order)
 
         for order in customer_pending_orders:
-            detailed_order = {}
-            order_json = serializers.serialize('json', [order])
-            detailed_order['order'] = json.loads(order_json)
-            detailed_order['shipments'] = json.loads(
-                serializers.serialize('json', Shipment.objects.filter(order=order).all()))
+            shipments = []
+            for shipment in Shipment.objects.filter(order=order).all():
+                shipments.append({
+                    "cost_of_courier": shipment.cost_of_courier,
+                    "category": shipment.category,
+                    "drop_address": shipment.drop_address,
+                    "drop_name": shipment.drop_name,
+                    "drop_phone": shipment.drop_phone,
+                    "img": shipment.img,
+                    "item_name": shipment.item_name,
+                    "weight": shipment.weight,
+                    "price": shipment.price
+                })
+            order_repr = {
+                "address": order.address,
+                "flat_no": order.flat_no,
+                "name": Namemail.objects.get(pk=order.namemail.pk).name,
+                "pincode": order.pincode,
+                "time": order.time,
+                "user": order.user
+            }
+            detailed_order = {
+                "type": "b2c",
+                "order": order_repr,
+                "shipments": shipments
+            }
             result.append(detailed_order)
 
         bundle = {
