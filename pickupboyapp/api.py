@@ -143,7 +143,8 @@ class PickupboyResource(Resource):
                     "img": shipment.img,
                     "item_name": shipment.item_name,
                     "weight": shipment.weight,
-                    "price": shipment.price
+                    "price": shipment.price,
+                    "barcode": shipment.barcode
                 })
             order_repr = {
                 "address": order.address,
