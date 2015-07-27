@@ -21,6 +21,12 @@ from .models import PBLocations, PBUser
 
 __author__ = 'vatsalshah'
 
+time_map = {
+    'M': (datetime.time(hour=10, minute=0, second=0), "10:00 - 12:00"),
+    'A': (datetime.time(hour=14, minute=0, second=0), "13:00 - 15:00"),
+    'E': (datetime.time(hour=14, minute=0, second=0), "16:00 - 18:00")
+}
+
 
 class PBUserResource(ModelResource):
     class Meta:
@@ -82,8 +88,7 @@ class PickupboyResource(Resource):
                 message="No pickupboy found. Please supply pb_ph as a GET parameter")
         result = []
         customer_pending_orders = CustomerOrder.objects.filter(pb__phone=pb_ph, order_status='A',
-                                                               date=datetime.date.today()).order_by(
-            "time")
+                                                               date=datetime.date.today()).order_by("time")
         business_pending_orders = BusinessOrder.objects.filter(business__pb__phone=pb_ph, status='P')
 
         for order in business_pending_orders:
@@ -114,7 +119,8 @@ class PickupboyResource(Resource):
                 "b_contact_mob": business.contact_mob,
                 "b_contact_office": business.contact_office,
                 "b_name": business.name,
-                "b_pickup_time": business.pickup_time,
+                "pickup_time": time_map[business.pickup_time][0],
+                "pickup_time_range": time_map[business.pickup_time][1],
                 "b_pincode": business.pincode,
                 "b_city": business.city,
                 "b_state": business.state,
@@ -151,7 +157,7 @@ class PickupboyResource(Resource):
                 "flat_no": order.flat_no,
                 "name": Namemail.objects.get(pk=order.namemail.pk).name,
                 "pincode": order.pincode,
-                "time": order.time,
+                "pickup_time": order.time,
                 "user": order.user
             }
             detailed_order = {
@@ -160,6 +166,8 @@ class PickupboyResource(Resource):
                 "shipments": shipments
             }
             result.append(detailed_order)
+
+        result.sort(key=lambda item: (item['order']['pickup_time']))
 
         bundle = {
             "pending_orders": result
