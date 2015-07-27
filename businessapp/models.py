@@ -143,7 +143,7 @@ class Product(models.Model):
     status = models.CharField(max_length=1,
                               choices=(('P', 'pending'), ('C', 'complete'),),
                               default='P', null=True, blank=True)
-
+    barcode = models.CharField(null=True, blank=True, max_length=255, unique=True)
     date = models.DateTimeField(null=True, blank=True)
 
     def save(self, *args, **kwargs):

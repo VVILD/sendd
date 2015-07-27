@@ -79,7 +79,7 @@ class PickupboyResource(Resource):
         if not pb_ph:
             raise CustomBadRequest(
                 code="request_invalid",
-                message="No user id found. Please supply uid as a GET parameter")
+                message="No pickupboy found. Please supply pb_ph as a GET parameter")
         result = []
         customer_pending_orders = CustomerOrder.objects.filter(pb__phone=pb_ph, order_status='A',
                                                                date=datetime.date.today()).order_by(
@@ -105,7 +105,8 @@ class PickupboyResource(Resource):
                     "shipping_cost": product.shipping_cost,
                     "cod_cost": product.cod_cost,
                     "status": product.status,
-                    "date": product.date
+                    "date": product.date,
+                    "barcode": product.barcode
                 })
             order_transformed = {
                 "b_business_name": business.business_name,
@@ -161,6 +162,74 @@ class PickupboyResource(Resource):
 
         bundle = {
             "pending_orders": result
+        }
+        self.log_throttled_access(request)
+        return self.create_response(request, bundle)
+
+
+class BarcodeResource(Resource):
+    class Meta:
+        resource_name = 'barcode_scan'
+        authentication = Authentication()
+        authorization = Authorization()
+
+    def prepend_urls(self):
+        return [
+            url(r"^(?P<resource_name>%s)%s$" % (self._meta.resource_name, trailing_slash()),
+                self.wrap_view('barcode_scan'), name="api_barcode_scan"),
+        ]
+
+    def barcode_scan(self, request, **kwargs):
+        self.method_check(request, allowed=['get'])
+        self.is_authenticated(request)
+        self.throttle_check(request)
+
+        bid = request.GET.get('bid', '')
+        if not bid:
+            raise CustomBadRequest(
+                code="request_invalid",
+                message="No orders found. Please supply bid as a GET parameter")
+
+        product = Product.objects.get(barcode=bid)
+        order = BusinessOrder.objects.get(pk=product.order.pk)
+        business = Business.objects.get(business_name=order.business)
+        shipment = {
+            "name": product.name,
+            "quantity": product.quantity,
+            "sku": product.sku,
+            "price": product.price,
+            "weight": product.weight,
+            "applied_weight": product.applied_weight,
+            "real_tracking_no": product.real_tracking_no,
+            "mapped_tracking_no": product.mapped_tracking_no,
+            "tracking_data": product.tracking_data,
+            "kartrocket_order": product.kartrocket_order,
+            "company": product.company,
+            "shipping_cost": product.shipping_cost,
+            "cod_cost": product.cod_cost,
+            "status": product.status,
+            "date": product.date,
+            "barcode": product.barcode
+        }
+        order_transformed = {
+            "b_business_name": business.business_name,
+            "b_address": business.address,
+            "b_contact_mob": business.contact_mob,
+            "b_contact_office": business.contact_office,
+            "b_name": business.name,
+            "b_pickup_time": business.pickup_time,
+            "b_pincode": business.pincode,
+            "b_city": business.city,
+            "b_state": business.state,
+            "address1": order.address1,
+            "address2": order.address2,
+            "name": order.name,
+            "phone": order.phone,
+            "pincode": order.pincode
+        }
+        bundle = {
+            "order": order_transformed,
+            "shipment": shipment
         }
         self.log_throttled_access(request)
         return self.create_response(request, bundle)

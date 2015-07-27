@@ -3,7 +3,7 @@ from django.contrib import admin
 from tastypie.api import Api
 
 from myapp.api import *
-from pickupboyapp.api import PickupboyResource, PBLocationsResource, PBUserResource
+from pickupboyapp.api import PickupboyResource, PBLocationsResource, PBUserResource, BarcodeResource
 
 
 v1_api = Api(api_name='v1')
@@ -64,6 +64,7 @@ pbv1_api = Api(api_name='v1')
 pbv1_api.register(PickupboyResource())
 pbv1_api.register(PBLocationsResource())
 pbv1_api.register(PBUserResource())
+pbv1_api.register(BarcodeResource())
 
 urlpatterns = patterns('',
                        # Examples:
