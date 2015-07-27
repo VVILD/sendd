@@ -101,16 +101,9 @@ class PickupboyResource(Resource):
                     "sku": product.sku,
                     "price": product.price,
                     "weight": product.weight,
-                    "applied_weight": product.applied_weight,
                     "real_tracking_no": product.real_tracking_no,
-                    "mapped_tracking_no": product.mapped_tracking_no,
-                    "tracking_data": product.tracking_data,
-                    "kartrocket_order": product.kartrocket_order,
                     "company": product.company,
                     "shipping_cost": product.shipping_cost,
-                    "cod_cost": product.cod_cost,
-                    "status": product.status,
-                    "date": product.date,
                     "barcode": product.barcode
                 })
             order_transformed = {
@@ -163,6 +156,7 @@ class PickupboyResource(Resource):
                     "weight": shipment.weight,
                     "price": shipment.price,
                     "barcode": shipment.barcode,
+                    "real_tracking_no": shipment.real_tracking_no
                 })
             order_repr = {
                 "address": order.address,
