@@ -12,7 +12,7 @@ from tastypie.resources import Resource, QUERY_TERMS, ModelResource
 from tastypie.utils import trailing_slash
 
 from pickupboyapp.exceptions import CustomBadRequest
-from myapp.models import Shipment, Namemail
+from myapp.models import Shipment, Namemail, Address
 from myapp.models import Order as CustomerOrder
 from businessapp.models import Order as BusinessOrder
 from businessapp.models import Product, Business
@@ -139,18 +139,29 @@ class PickupboyResource(Resource):
 
         for order in customer_pending_orders:
             shipments = []
-            for shipment in Shipment.objects.filter(order=order).all():
+            for shipment in Shipment.objects.filter(order=order):
+                # drop_address = Address.objects.filter(pk=shipment.drop_address.pk)
+                drop_address = None
+                if shipment.drop_address is not None:
+                    drop_address = {
+                        "drop_address_flat_no": shipment.drop_address.flat_no,
+                        "drop_address_locality": shipment.drop_address.locality,
+                        "drop_address_city": shipment.drop_address.city,
+                        "drop_address_state": shipment.drop_address.state,
+                        "drop_address_pincode": shipment.drop_address.pincode,
+                        "drop_address_country": shipment.drop_address.country
+                    }
                 shipments.append({
                     "cost_of_courier": shipment.cost_of_courier,
                     "category": shipment.category,
-                    "drop_address": shipment.drop_address,
+                    "drop_address": drop_address,
                     "drop_name": shipment.drop_name,
                     "drop_phone": shipment.drop_phone,
                     "img": shipment.img,
                     "item_name": shipment.item_name,
                     "weight": shipment.weight,
                     "price": shipment.price,
-                    "barcode": shipment.barcode
+                    "barcode": shipment.barcode,
                 })
             order_repr = {
                 "address": order.address,
