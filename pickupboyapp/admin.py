@@ -61,9 +61,9 @@ class PickupboyAdmin(admin.ModelAdmin):
         location_map = []
         pb_users = PBUser.objects.all()
         for pb_user in pb_users:
-            pb_location = PBLocations.objects.filter(pbuser=pb_user).order_by('-updated_at')[0]
+            pb_location = PBLocations.objects.filter(pbuser=pb_user).order_by('-updated_at')
             if pb_location is not None:
-                location_map.append([pb_user.name, pb_location.lat, pb_location.lon])
+                location_map.append([pb_user.name, pb_location[0].lat, pb_location[0].lon])
         location_map_json = json.dumps(location_map)
         return super(PickupboyAdmin, self).changelist_view(request, extra_context={"location_map": location_map_json})
 
