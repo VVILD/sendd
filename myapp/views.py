@@ -150,7 +150,7 @@ def results(request):
 	
 #b2b week
 	late_orders_b2b =BOrder.objects.filter(Q(book_time__range=(start_date,date_max))&(Q(status='P') | Q(status='PU')| Q(status='D')))
-	late_products_b2b=Product.objects.filter(Q(order=week_orders_b2b))
+	late_products_b2b=Product.objects.filter(Q(order=late_orders_b2b))
 	context = {'late_shipments':late_shipments,'late_products_b2b':late_products_b2b}
 
 
