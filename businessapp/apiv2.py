@@ -23,7 +23,7 @@ from tastypie.fields import ListField
 
 import urlparse
 from tastypie.authentication import Authentication
-
+from tastypie.http import HttpBadRequest
 from tastypie.authorization import Authorization
 from tastypie.exceptions import Unauthorized
 
@@ -58,8 +58,10 @@ class OnlyAuthorization(Authorization):
         #these 2 lines due to product wanting to use this authorisation
         if (bundle.request.META["HTTP_AUTHORIZATION"]=='A'):
         	return True
-
-        return bundle.request.META["HTTP_AUTHORIZATION"]==bundle.obj.business.apikey
+        try:	
+        	return bundle.request.META["HTTP_AUTHORIZATION"]==bundle.obj.business.apikey
+        except:
+        	return False
 
     def create_list(self, object_list, bundle):
         # Assuming they're auto-assigned to ``user``.
@@ -187,7 +189,7 @@ class BaseCorsResource(Resource):
 			response = HttpResponse(allows)
 			response['Access-Control-Allow-Origin'] = '*'
 			response['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-Requested-With, X-CSRFToken, X-HTTP-Method-Override'
-			response['Access-Control-Allow-Methods'] = "GET, PUT, POST, PATCH"
+			response['Access-Control-Allow-Methods'] = "POST"
 			response['Allow'] = allows
 			raise ImmediateHttpResponse(response=response)
 
@@ -247,9 +249,6 @@ class BusinessResource(CORSModelResource):
 			bundle.data['manager_number']='8080772210'
 			#u = User.objects.get(username='ankit')
 			#print u.businessmanager.phone
-
-
-
 		return bundle
 
 class OrderResource(CORSModelResource):
@@ -385,7 +384,7 @@ class OrderResource(CORSModelResource):
 
 
 
-class ProductResource2(CORSModelResource):
+class ProductResource2(ModelResource):
 	order = fields.ForeignKey(OrderResource, 'order' ,null=True)
 	class Meta:
 		queryset = Product.objects.all()
@@ -395,6 +394,7 @@ class ProductResource2(CORSModelResource):
 		always_return_data = True
 		serializer = urlencodeSerializer()
 		ordering = ['date']
+		allowed_methods=['post']
 
 	def prepend_urls(self):
 		return [
@@ -444,49 +444,32 @@ class ProductResource2(CORSModelResource):
 				print "user not identified"
 				return bundle
 
+			try:
+				if not bundle.data['reference_id']:
+					bundle.data['reference_id']=None
+			except:
+				bundle.data['reference_id']=None
+
+			try:
+				if not bundle.data['email']:
+					bundle.data['email']=None
+			except:
+				bundle.data['email']=None
+
+			if len(bundle.data['phone']) is not 10:
+				raise ImmediateHttpResponse(HttpBadRequest("Enter valid phone number = 10 digits"))
+
+
+
 			#create order
 	#curl --dump-header - -H "Content-Type: application/json" -X POST --data '{ "username": "newuser3", "name": "asd" , "phone":"8879006197","street_address":"office no 307, powai plaza","city":"mumbai","state":"maharashtra" ,"pincode":"400076","country":"india" , "payment_method":"F" ,"pname":"['clothes','books']","pprice":"['50','60']" ,"pweight":"['2','7']" }' http://127.0.0.1:8000/bapi/v1/order/		
 			try:
-				order =Order.objects.create(business=business,name=bundle.data['name'],phone=bundle.data['phone'],address1=bundle.data['address1'],address2=bundle.data['address2'],city=bundle.data['city'],state=bundle.data['state'],pincode=bundle.data['pincode'],country=bundle.data['country'],payment_method=bundle.data['payment_method'],reference_id=bundle.data['reference_id'],email=bundle.data['email'],method=bundle.data['method'])
+				order =Order.objects.create(business=business,name=bundle.data['name'],phone=bundle.data['phone'],address1=bundle.data['address1'],address2=bundle.data['address2'],city=bundle.data['city'],state=bundle.data['state'],pincode=bundle.data['pincode'],country=bundle.data['country'],payment_method=bundle.data['payment_method'],reference_id=bundle.data['reference_id'],email=bundle.data['email'],method=bundle.data['shipping_method'])
 				print "order created	"
 
-				print "check here"				
-				print isinstance(bundle.data['pname'], list)
-				print "check here"
-				
-				if (isinstance(bundle.data['pname'], list)):
-					try:
-						#print bundle.data['array'][0]
-						#print len(bundle.data['array'])
-
-						for x in range (0,len(bundle.data['pname'])-1):
-							product =Product.objects.create(order=order,name=bundle.data['pname'][x],weight=bundle.data['pweight'][x],price=bundle.data['pprice'][x],sku=bundle.data['psku'][x],quantity=bundle.data['pquantity'][x])
-					except:
-						bundle.data['errormsg']='error creating product'
-			except Exception,e:
-				print str(e)
-				print "error"
+			except:
+				print "aaaaassssssssssssss"
 				bundle.data['errormsg']='error creating order'
-
-			if (isinstance(bundle.data['pname'], list)):	
-				x=x+1
-				bundle.data['name']=str(bundle.data['pname'][x])
-				bundle.data['weight']=str(bundle.data['pweight'][x])
-				bundle.data['price']=str(bundle.data['pprice'][x])
-	#			bundle.data['method']=str(bundle.data['pmethod'][x])
-				bundle.data['sku']=str(bundle.data['psku'][x])
-				bundle.data['quantity']=str(bundle.data['pquantity'][x])
-			else:
-				bundle.data['name']=str(bundle.data['pname'])
-				bundle.data['weight']=str(bundle.data['pweight'])
-				bundle.data['price']=str(bundle.data['pprice'])
-	#			bundle.data['method']=str(bundle.data['pmethod'])
-				bundle.data['sku']=str(bundle.data['psku'])
-				bundle.data['quantity']=str(bundle.data['pquantity'])
-				bundle.data['applied_weight']=float(bundle.data['applied_weight'])
-				bundle.data['kartrocket_order']=str(bundle.data['kartrocket_order'])
-
-
 
 
 			bundle.data['order']="/bapi/v1/order/"+ str(order.pk) + "/"
@@ -495,5 +478,18 @@ class ProductResource2(CORSModelResource):
 
 
 		if bundle.request.META['REQUEST_METHOD'] == 'POST' and override_method=='PATCH':
-			print "patch"
+			
+			print "patch ho rha hai"
 			return bundle
+
+
+	def dehydrate(self,bundle):
+		
+
+		temp=bundle.data['real_tracking_no']
+
+		bundle={}
+		bundle['tracking_no']=temp
+
+		return bundle
+	

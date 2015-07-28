@@ -4,7 +4,7 @@ from myapp.models import *
 # Create your views here.
 from django.db.models import Avg, Count, F, Max, Min, Sum, Q, Prefetch
 from businessapp.models import Order as BOrder
-from businessapp.models import Product
+from businessapp.models import Product,Business
 
 from django.http import HttpResponse
 
@@ -95,7 +95,6 @@ def index(request):
 	
 def detail(request):
 
-
 	todays_date=date.today()
 	week_before=date.today()-datetime.timedelta(days=7)
 
@@ -120,6 +119,7 @@ def detail(request):
 	week_orders_b2b =BOrder.objects.filter(Q(book_time__range=(date_min,date_max))&(Q(status='P') | Q(status='C')| Q(status='D')))
 	week_products_b2b=Product.objects.filter(Q(order=week_orders_b2b)&(Q(mapped_tracking_no__isnull=True)|Q(mapped_tracking_no__exact='')))
 
+	week_products_b2b=Product.objects.filter(Q(order=week_orders_b2b)&Q(applied_weight__isnull=True))
 	
 # business stats grouped by businesses
 
@@ -128,9 +128,35 @@ def detail(request):
 	return render(request, 'polls/index1.html', context)
 
 
-def results(request, question_id):
-	response = "You're looking at the results of question %s."
-	return HttpResponse(response % question_id)
+def results(request):
+	todays_date=date.today()
+	threshold_days_before=date.today()-datetime.timedelta(days=3)
+
+# today min/max
+	
+#week min/max	
+	date_max = datetime.datetime.combine(threshold_days_before, datetime.time.max)
+	start_date = datetime.datetime(2015, 7, 10, 0, 0)
+
+#customer stats today
+	
+#customer stats week
+	week_orders =Order.objects.filter(Q(book_time__range=(start_date,date_max))&(Q(order_status='C')))
+	late_shipments=Shipment.objects.filter(Q(order=week_orders)&Q(status='P'))
+
+
+#business stats today
+
+	
+#b2b week
+	late_orders_b2b =BOrder.objects.filter(Q(book_time__range=(start_date,date_max))&(Q(status='P') | Q(status='PU')| Q(status='D')))
+	late_products_b2b=Product.objects.filter(Q(order=week_orders_b2b))
+	context = {'late_shipments':late_shipments,'late_products_b2b':late_products_b2b}
+
+
+	return render(request, 'polls/index2.html', context)
+
+
 
 def vote(request, question_id):
 	return HttpResponse("You're voting on question %s." % question_id)

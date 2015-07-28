@@ -183,11 +183,11 @@ class Shipment(models.Model):
 	drop_address=models.ForeignKey(Address,null=True,blank=True)
 	order=models.ForeignKey(Order,null=True,blank=True)
 	
+	qrcode=models.CharField(max_length =255,null=True,blank=True)
 
 
-
-	status=models.CharField(max_length=1,
-									  choices=(('P','pending') ,('C','complete'),),
+	status=models.CharField(max_length=2,
+									  choices=(('P','pending') ,('C','complete'),('PU','pickedup'),),
 									  default='P',null=True,blank=True)
 	
 	paid=models.CharField(max_length=10,

@@ -89,7 +89,7 @@ class ProductAdmin(admin.ModelAdmin):
     list_display = ('name', 'price', 'weight', 'status', 'real_tracking_no','order')
     list_editable = ('status',)
     readonly_fields = (
-        'name', 'quantity', 'sku', 'price', 'weight', 'applied_weight', 'real_tracking_no',	'order',
+        'name', 'quantity', 'sku', 'price', 'weight', 'applied_weight', 'real_tracking_no',	'order','tracking_data',
         'kartrocket_order', 'shipping_cost', 'cod_cost', 'status', 'date')
 
 

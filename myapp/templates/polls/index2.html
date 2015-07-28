@@ -1,0 +1,127 @@
+
+<head>
+<style>
+table, th, td {
+    border: 1px solid black;
+    border-collapse: collapse;
+}
+th, td {
+    padding: 5px;
+    text-align: left;
+}
+</style>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+
+<!-- Optional theme -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
+
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+</head>
+
+<h1>Customers orders not delivered in 3 days</h1>
+
+<table style="width:100%">
+  <tr></tr>
+
+<td><b>Sender's Name</b></td>
+<td><b>Sendd Order ID</b></td>
+<td><b>Receiver's Name</b></td>
+<td><b>Complete Address</b></td>
+<td><b>Courier Company</b></td>
+<td><b>Tracking No.</b></td>
+
+  </tr>
+
+
+
+{% if late_shipments %}
+    
+    {% for shipment in late_shipments %}
+    	<tr>
+        
+        <td>
+        <a href="/admin/myapp/order/{{ shipment.order.pk }}/">{{ shipment.order.namemail.name }}  </a>
+        </td>
+
+        <td>
+        <a href="/admin/myapp/order/{{ shipment.order.pk }}/">{{ shipment.order.pk }}  </a>
+        </td>
+
+
+        <td>
+        <a href="/admin/myapp/shipment/{{ shipment.pk }}/">{{ shipment.drop_name }}  </a>
+        </td>
+
+        <td>
+        <a href="/admin/myapp/shipment/{{ shipment.pk }}/">{{ shipment.drop_address }}  </a>
+        </td>
+
+        <td>
+        <a href="/admin/myapp/order/{{ shipment.order.pk }}/">{{ shipment.company }}  </a>
+        </td>
+
+        <td>
+        <a href="/admin/myapp/order/{{ shipment.order.pk }}/">{{ shipment.mapped_tracking_no }}  </a>
+        </td>
+
+    	</tr>
+        	
+    {% endfor %}
+    
+{% else %}
+    <p>No polls are available.</p>
+{% endif %}
+
+</table>
+
+<h1>Business orders not delivered in 3 days</h1>
+
+<table style="width:100%">
+  <tr>
+<td><b>Business Name</b></td>
+<td><b>Sendd Order ID</b></td>
+<td><b>Customer Name</b></td>
+<td><b>Destination - City or Complete Address</b></td>
+<td><b>Courier Company</b></td>
+<td><b>Tracking No.</b></td>
+<td><b>Order Type (Prepaid/COD)</b></td>		
+ </tr>
+
+
+
+{% if late_products_b2b %}
+    
+    {% for product in late_products_b2b %}
+        <tr>
+        <td>
+        <a href="/admin/businessapp/order/{{ product.order.pk }}/">{{ product.order.business.business_name }}</a>
+        </td>
+
+        <td>
+        <a href="/admin/businessapp/order/{{ product.order.pk }}/">{{ product.order.pk}}</a>
+        </td>
+        <td>
+        <a href="/admin/businessapp/order/{{ product.order.pk }}/">{{ product.order.name }}</a>
+        </td>
+        <td>
+        <a href="/admin/businessapp/order/{{ product.order.pk }}/">{{ product.order.city}}{{ product.order.pincode}}</a>
+        </td>
+        <td>
+        <a href="/admin/businessapp/order/{{ product.order.pk }}/">{{ product.company}}</a>
+        </td>
+        <td>
+        <a href="/admin/businessapp/order/{{ product.order.pk }}/">{{ product.order.payment_method }}</a>
+        </td>
+        </tr>
+            
+    {% endfor %}
+    
+{% else %}
+    <p>No polls are available.</p>
+{% endif %}
+
+</table>
+
+
+

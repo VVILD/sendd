@@ -24,7 +24,7 @@ th, td {
 <table style="width:100%">
   <tr>
     <td><b>shipment_link<b></td>
-    <td><b>order_link</b></td>		
+    <td><b>order_link</b></td>      
   </tr>
 
 
@@ -32,7 +32,7 @@ th, td {
 {% if week_shipments %}
     
     {% for shipment in week_shipments %}
-    	<tr>
+        <tr>
         
         <td>
         <a href="/admin/myapp/shipment/{{ shipment.pk }}/">{{ shipment.order.namemail.name }}  </a>
@@ -42,8 +42,8 @@ th, td {
         <a href="/admin/myapp/order/{{ shipment.order.pk }}/">{{ shipment.order.book_time }}  </a>
         </td>
 
-    	</tr>
-        	
+        </tr>
+            
     {% endfor %}
     
 {% else %}
@@ -57,7 +57,7 @@ th, td {
 <table style="width:100%">
   <tr>
     <td><b>product_link<b></td>
-    <td><b>order_link</b></td>		
+    <td><b>order_link</b></td>      
  </tr>
 
 
@@ -68,7 +68,7 @@ th, td {
         <tr>
         
         <td>
-        <a href="/admin/businessapp/shipment/{{ product.pk }}/">{{ product.order.business }}  </a>
+        <a href="/admin/businessapp/product/{{ product.pk }}/">{{ product.order.business }}  </a>
         </td>
 
         <td>

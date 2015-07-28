@@ -96,7 +96,7 @@ class Order(models.Model):
 	country=models.CharField(max_length =30,null=True,blank =True)
 	payment_method=models.CharField(max_length=1,choices=(('F','free checkout') ,('C','cod'),),)
 	book_time=models.DateTimeField(null=True,blank=True)
-	status=models.CharField(max_length=1,choices=(('P','pending') ,('C','complete'),('N','cancelled'),('D','in transit'),),default='P')
+	status=models.CharField(max_length=2,choices=(('P','pending') ,('C','complete'),('N','cancelled'),('D','in transit'),('PU','pickedup'),),default='P')
 
 	method=models.CharField(max_length=1,
 									  choices=(('B','Bulk') ,('N','Normal'),),
@@ -135,8 +135,9 @@ class Product(models.Model):
 	shipping_cost=models.IntegerField(null=True,blank=True)
 	cod_cost=models.IntegerField(default=0,null=True,blank=True)
 	#tracking_no=models.AutoField(primary_key=True)
-	status=models.CharField(max_length=1,
-									  choices=(('P','pending') ,('C','complete'),),
+	qrcode=models.CharField(max_length =255,null=True,blank=True)
+	status=models.CharField(max_length=2,
+									  choices=(('P','pending') ,('C','complete'),('PU','pickedup'),),
 									  default='P')
 	
 	date=models.DateTimeField(null=True,blank=True)
@@ -181,6 +182,22 @@ class Product(models.Model):
 
 def send_update(sender, instance, created, **kwargs):
 	
+	if instance.status=='PU':
+		child_products=Product.objects.filter(order=instance.order)
+		picked=True
+		print child_products.count()
+
+		for product in child_products:
+			if(product.status!='PU'):
+				picked=False
+
+		if (picked):
+			instance.order.status='PU'
+			instance.order.save()
+
+
+
+
 	if instance.applied_weight:
 		print "shittt>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 		print instance.order.business.pk

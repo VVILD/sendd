@@ -395,3 +395,113 @@ class Command(BaseCommand):
 		shipment.save()
 
 		#print tracking_data
+
+
+	self.stdout.write("starting india Post api for india Post product")
+	required_product = Product.objects.filter(company='I',status='P')
+	slug='india-post'
+	
+	for product in required_product:
+		print product.mapped_tracking_no
+		number=product.mapped_tracking_no
+
+		#to add tracking no
+		tracking_data=[]
+
+		try:
+			y=api.trackings.post(tracking=dict(slug=slug, tracking_number=number, title="Title"))
+
+			time.sleep(0.5)
+			data=api.trackings.get(slug, number, fields=['checkpoints'])
+			#print data
+		except:#tracking number already exist
+			data=api.trackings.get(slug, number, fields=['checkpoints'])
+			#print data
+
+		print data
+
+		for x in data['tracking']['checkpoints']:
+			#print x['message']
+			#print x['location']
+			y1=str(x['checkpoint_time'])
+			str1 = y1.decode("windows-1252")
+			str0=remove_non_ascii_1(x['message'])
+			str3=x['location'].encode('utf8')
+			tracking_data.append({"status":str(str0),"date":str(str1),"location":str(str3)})
+			if (str0=='Delivered'):
+				print "fucking delivered"
+				product.status='C'
+				product.save()
+				order=product.order
+				#getting all products of that order
+
+				specific_products=Product.objects.filter(order=order)
+				order_complete=True
+				for specific_product in specific_products:
+					if specific_product.status=='P':
+						order_complete=False
+
+				if (order_complete):
+					order.status='C'
+					order.save()
+
+
+				break;
+		if (json.dumps(tracking_data)!='[]'):
+			product.tracking_data=json.dumps(tracking_data)
+			product.save()
+
+
+
+	self.stdout.write("starting India Post api for India Post shipment")
+	required_shipment = Shipment.objects.filter(company='I',status='P')
+	slug='india-post'
+	
+	for shipment in required_shipment:
+		print shipment.mapped_tracking_no
+		number=shipment.mapped_tracking_no
+
+		#to add tracking no
+		tracking_data=[]
+
+		try:
+			y=api.trackings.post(tracking=dict(slug=slug, tracking_number=number, title="Title"))
+			time.sleep(0.5)
+			data=api.trackings.get(slug, number, fields=['checkpoints'])
+			#print data
+		except:#tracking number already exist
+			data=api.trackings.get(slug, number, fields=['checkpoints'])
+			#print data
+
+
+		for x in data['tracking']['checkpoints']:
+			#print x['message']
+			#print x['location']
+			y1=str(x['checkpoint_time'])
+			str1 = y1.decode("windows-1252")
+			str0=remove_non_ascii_1(x['message'])
+			str3=x['location'].encode('utf8')
+			tracking_data.append({"status":str(str0),"date":str(str1),"location":str(str3)})
+			if (str0=='DELIVERED'):
+				print "fucking delivered"
+				shipment.status='C'
+				shipment.save()
+				myapp_order=shipment.order
+				#getting all products of that order
+
+				specific_shipments=Shipment.objects.filter(order=myapp_order)
+				order_complete=True
+				for specific_product in specific_shipments:
+					if specific_product.status=='P':
+						order_complete=False
+
+				if (order_complete):
+					myapp_order.order_status='D'
+					myapp_order.save()
+
+
+				break;
+
+		if (json.dumps(tracking_data)!='[]'):
+			product.tracking_data=json.dumps(tracking_data)
+			product.save()

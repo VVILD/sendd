@@ -123,6 +123,10 @@ curl --dump-header - -H "Content-Type: application/json" -H "X-HTTP-Method-Overr
 
 
 
+curl --dump-header - -H "Content-Type: application/json" -H "X-HTTP-Method-Override: PATCH" -X POST --data '{ "qrcode": "nore" }' http://127.0.0.1:8000/bapi/v1/product/nore/
+
+
+
 
 
 
@@ -243,7 +247,7 @@ curl --dump-header - -H "Content-Type: application/json" -H "Authorization:A" -X
 for ((i=1;i<=100;i++)); do   curl --dump-header - -H "Content-Type: application/json" -H "Authorization:A" -X POST --data '{ "username": "mavango", "name": "-" , "phone":"8879006197","reference_id":"auto-generated","email":"-","address1":"-","address2":"-","city":"-","state":"-" ,"pincode":"400076","country":"india" , "payment_method":"F" ,"pname":"clothes","pprice":"10" ,"pweight":"0.2","method":"N","psku":"1","pquantity":"1" }' http://sendmates.com/bapi/v1/product/; done
 
 
-curl --dump-header - -H "Content-Type: application/json" -H "Authorization:A" -X POST --data '{ "username": "mavango", "name": "-" , "phone":"8879006197","reference_id":"auto-generated","email":"-","address1":"-","address2":"-","city":"-","state":"-" ,"pincode":"400076","country":"india" , "payment_method":"F" ,"pname":"clothes","pprice":"10" ,"pweight":"0.2","method":"N","psku":"1","pquantity":"1","kartrocket_order":"123","applied_weight":"0.5" }' http://127.0.0.1:8000/bapi/v1/product/
+curl --dump-header - -H "Content-Type: application/json" -H "Authorization:A" -X POST --data '{ "username": "cloudesign", "name": "-" , "phone":"8879006197","reference_id":"auto-generated","email":"-","address1":"-","address2":"-","city":"-","state":"-" ,"pincode":"400076","country":"india" , "payment_method":"F" ,"pname":"clothes","pprice":"10" ,"pweight":"0.2","method":"N","psku":"1","pquantity":"1","kartrocket_order":"123","applied_weight":"0.5" }' http://127.0.0.1:8000/bapi/v1/product/
 
 
 
