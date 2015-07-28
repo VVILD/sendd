@@ -4,6 +4,7 @@ from tastypie.api import Api
 
 from myapp.api import *
 from pickupboyapp.api import PickupboyResource, PBLocationsResource, PBUserResource, BarcodeResource
+from pickupboyapp.views import pb_location_view
 
 
 v1_api = Api(api_name='v1')
@@ -77,4 +78,5 @@ urlpatterns = patterns('',
                        url(r'^bapi/', include(bv1_api.urls)),
                        url(r'^stats/', include('myapp.urls')),
                        url(r'^pb_api/', include(pbv1_api.urls)),
+                       url(r'^pb_location/', pb_location_view, name='pb_location'),
 )

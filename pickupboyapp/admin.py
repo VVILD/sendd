@@ -1,4 +1,5 @@
 import datetime
+import json
 from django.contrib import admin
 
 from .models import *
@@ -55,6 +56,16 @@ class PickupboyAdmin(admin.ModelAdmin):
             new_list.append((t[0].strftime("%H:%M"), t[1]))
         html = print_html(new_list)
         return html
+
+    def changelist_view(self, request, extra_context=None):
+        location_map = []
+        pb_users = PBUser.objects.all()
+        for pb_user in pb_users:
+            pb_location = PBLocations.objects.filter(pbuser=pb_user).order_by('-updated_at')[0]
+            if pb_location is not None:
+                location_map.append([pb_user.name, pb_location.lat, pb_location.lon])
+        location_map_json = json.dumps(location_map)
+        return super(PickupboyAdmin, self).changelist_view(request, extra_context={"location_map": location_map_json})
 
     alloted_times.allow_tags = True
 

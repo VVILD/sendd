@@ -37,15 +37,16 @@ class PBUserResource(ModelResource):
         authorization = Authorization()
 
     def dehydrate(self, bundle):
-        bundle.data['otp'] = randint(1000, 9999)
-        msg0 = "http://enterprise.smsgupshup.com/GatewayAPI/rest?method=SendMessage&send_to="
-        msga = str(bundle.data['phone'])
-        msg1 = "&msg=Welcome+to+Sendd.+Your+OTP+is+"
-        msg2 = str(bundle.data['otp'])
-        msg3 = ".This+message+is+for+automated+verification+purpose.+No+action+required.&msg_type=TEXT&userid=2000142364&auth_scheme=plain&password=h0s6jgB4N&v=1.1&format=text"
-        # url1="http://49.50.69.90//api/smsapi.aspx?username=doormint&password=naman123&to="+ str(bundle.data['phone']) +"&from=DORMNT&message="
-        query = ''.join([msg0, msga, msg1, msg2, msg3])
-        urllib2.urlopen(query).read()
+        if bundle.request.method == 'GET':
+            bundle.data['otp'] = randint(1000, 9999)
+            msg0 = "http://enterprise.smsgupshup.com/GatewayAPI/rest?method=SendMessage&send_to="
+            msga = str(bundle.data['phone'])
+            msg1 = "&msg=Welcome+to+Sendd.+Your+OTP+is+"
+            msg2 = str(bundle.data['otp'])
+            msg3 = ".This+message+is+for+automated+verification+purpose.+No+action+required.&msg_type=TEXT&userid=2000142364&auth_scheme=plain&password=h0s6jgB4N&v=1.1&format=text"
+            # url1="http://49.50.69.90//api/smsapi.aspx?username=doormint&password=naman123&to="+ str(bundle.data['phone']) +"&from=DORMNT&message="
+            query = ''.join([msg0, msga, msg1, msg2, msg3])
+            urllib2.urlopen(query).read()
         return bundle
 
 
