@@ -455,11 +455,11 @@ class ShipmentAdmin(admin.ModelAdmin):
     list_display = (
         'real_tracking_no', 'name', 'cost_of_courier', 'weight', 'mapped_tracking_no', 'company', 'parcel_details',
         'price',
-        'category', 'drop_phone', 'drop_name', 'status', 'address', 'print_invoice', 'generate_order')
+        'category', 'drop_phone', 'drop_name', 'status', 'address', 'print_invoice', 'generate_order', 'img', )
     list_filter = ['category']
     list_editable = (
         'name', 'cost_of_courier', 'weight', 'mapped_tracking_no', 'company', 'price', 'category', 'drop_phone',
-        'drop_name',)
+        'drop_name', 'img',)
     readonly_fields = ('real_tracking_no', 'print_invoice', 'generate_order', 'parcel_details', 'address')
 
     fieldsets = (

@@ -146,13 +146,16 @@ class PickupboyResource(Resource):
                         "drop_address_pincode": shipment.drop_address.pincode,
                         "drop_address_country": shipment.drop_address.country
                     }
+                full_img_uri = None
+                if shipment.img:
+                    full_img_uri = request.build_absolute_uri(shipment.img.url)
                 shipments.append({
                     "cost_of_courier": shipment.cost_of_courier,
                     "category": shipment.category,
                     "drop_address": drop_address,
                     "drop_name": shipment.drop_name,
                     "drop_phone": shipment.drop_phone,
-                    "img": shipment.img,
+                    "img": full_img_uri,
                     "item_name": shipment.item_name,
                     "weight": shipment.weight,
                     "price": shipment.price,
