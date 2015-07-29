@@ -138,7 +138,7 @@ class Command(BaseCommand):
 
 
 	self.stdout.write("starting fedex api for fedex product")
-	required_product = Product.objects.filter(company='F',status='P')
+	required_product = Product.objects.filter(company='F',status='P').order_by("-order__book_time")
 	#slug='aramex'
 	str1=" FedEx"
 	str2=" to FedEx"
