@@ -1,21 +1,19 @@
 from django.contrib import admin
 from .models import *
-import pdb
-import hashlib
-from myapp.forms import ShipmentForm,OrderForm,OrderEditForm
+from myapp.forms import ShipmentForm, OrderForm, OrderEditForm
+
 # Register your models here.
-from django.http import HttpResponse,HttpResponseRedirect
-from push_notifications.models import APNSDevice, GCMDevice
+from django.http import HttpResponse, HttpResponseRedirect
 import urllib
 from django.shortcuts import redirect
 from datetime import date
 import datetime
-from django.db.models import Avg, Count, F, Max, Min, Sum, Q, Prefetch
+from django.db.models import Avg, Sum, Q
 
 class UserAdmin(admin.ModelAdmin):
-	search_fields=['phone','name']
-	list_display = ('phone','name','otp','apikey','email','time')
-	list_editable = ('name',)
+    search_fields = ['phone', 'name']
+    list_display = ('phone', 'name', 'otp', 'apikey', 'email', 'time')
+    list_editable = ('name',)
 
 admin.site.register(User,UserAdmin)
 
@@ -23,32 +21,32 @@ admin.site.register(User,UserAdmin)
 
 
 class AddressAdmin(admin.ModelAdmin):
-	def response_change(self, request, obj):
-		print self
-		print "sdddddddddddddddddddddddddddd"
-		#return super(UserAdmin, self).response_change(request, obj)
-		return HttpResponse('''
+    def response_change(self, request, obj):
+        print self
+        print "sdddddddddddddddddddddddddddd"
+        # return super(UserAdmin, self).response_change(request, obj)
+        return HttpResponse('''
    <script type="text/javascript">
 	  opener.dismissAddAnotherPopup(window);
    </script>''')
 
 
-admin.site.register(Address,AddressAdmin)
+admin.site.register(Address, AddressAdmin)
 
 
 
 class NamemailAdmin(admin.ModelAdmin):
-	def response_change(self, request, obj):
-		print self
-		print "sdddddddddddddddddddddddddddd"
-		#return super(UserAdmin, self).response_change(request, obj)
-		return HttpResponse('''
+    def response_change(self, request, obj):
+        print self
+        print "sdddddddddddddddddddddddddddd"
+        # return super(UserAdmin, self).response_change(request, obj)
+        return HttpResponse('''
    <script type="text/javascript">
 	  opener.dismissAddAnotherPopup(window);
    </script>''')
 
 
-admin.site.register(Namemail,NamemailAdmin)
+admin.site.register(Namemail, NamemailAdmin)
 '''
 
 class ShipmentInline(admin.TabularInline):
@@ -77,15 +75,19 @@ admin.site.register(Pickupboy,PickupboyAdmin)
 
 
 class OrderAdmin(admin.ModelAdmin):
-	#inlines=(ShipmentInline,)
-	save_as = True
-	list_per_page = 25
-	search_fields=['user__phone','name','namemail__name','namemail__email','promocode__code']
-	list_display = ('order_no','book_time','promocode','date','time','full_address','name_email','order_status','way','pickupboy','comment','shipments','send_invoice')
-	list_editable = ('date','time','order_status','pickupboy','comment',)
-	list_filter=['book_time','status']
-	readonly_fields = ('code','send_invoice',)
-	'''
+    # inlines=(ShipmentInline,)
+    save_as = True
+    list_per_page = 25
+    search_fields = ['user__phone', 'name', 'namemail__name', 'namemail__email', 'promocode__code',
+                     'pickupboy__pincodes__pincode']
+    list_display = (
+        'order_no', 'book_time', 'promocode', 'date', 'time', 'full_address', 'name_email', 'order_status', 'way',
+        'pb', 'comment', 'shipments', 'send_invoice')
+    list_editable = ('date', 'time', 'order_status', 'pb', 'comment',)
+    list_filter = ['book_time', 'status', 'pb']
+    raw_id_fields = ('pb',)
+    readonly_fields = ('code', 'send_invoice',)
+    '''
 	fieldsets=(
 	('Basic Information', {'fields':['contact_number',('name','email'),'item_details',('date','time'),'code',],}),
 	('Address', {'fields':['flat_no','address','pincode',],}),
@@ -340,12 +342,14 @@ class PromocheckAdmin(admin.ModelAdmin):
 	list_display = ('code','user')
 
 
-admin.site.register(Promocheck,PromocheckAdmin)
+admin.site.register(Promocheck, PromocheckAdmin)
 
 
 
 def make_alloted(modeladmin, request, queryset):
-	queryset.update(order_status='A')
+    queryset.update(order_status='A')
+
+
 make_alloted.short_description = "Mark selected orders as alloted"
 
 

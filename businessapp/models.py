@@ -1,23 +1,20 @@
 from django.db import models
-#from django.contrib.auth.models import User
-from django.core.validators import RegexValidator
-from datetime import datetime,timedelta
+# from django.contrib.auth.models import User
+from datetime import datetime
 from pytz import timezone
-import pytz
 from django.db.models.signals import post_save
 import hashlib
 import random
 # Create your models here.
 import math
-from django.contrib.auth.models import User, UserManager
+from django.contrib.auth.models import User
 
 
 # class BusinessManager(models.Model):
-#     """User with app settings."""
+# """User with app settings."""
 #     phone = models.CharField(max_length=50)
-#     user = models.OneToOneField(User,null=True,blank=True)
+#     user = models.OneToOneField(User)
 #     # Use UserManager to get the create_user method, etc.
-    
 
 
 
@@ -25,30 +22,32 @@ from django.contrib.auth.models import User, UserManager
 # class BusinessManager(User):
 #     """User with app settings."""
 #     phone = models.CharField(max_length=50)
+class Business(models.Model):
+    # phone_regex = RegexValidator(regex=r'^[0-9]*$', message="Phone number must be entered in the format: '999999999'. Up to 12 digits allowed.")
+    username = models.CharField(max_length=20, primary_key=True)
+    apikey = models.CharField(max_length=100, null=True, blank=True)
+    business_name = models.CharField(max_length=100)
+    password = models.CharField(max_length=300)
+    email = models.EmailField(max_length=75)
+    name = models.CharField(max_length=100)
+    contact_mob = models.CharField(max_length=15)
+    contact_office = models.CharField(max_length=15, null=True, blank=True)
+    pickup_time = models.CharField(max_length=1, choices=(('M', 'morning'), ('N', 'noon'), ('E', 'evening'),),
+                                   null=True, blank=True)
+    address = models.CharField(max_length=315, null=True, blank=True)
+    city = models.CharField(max_length=50, null=True, blank=True)
+    state = models.CharField(max_length=50, null=True, blank=True)
+    pincode = models.CharField(max_length=50, null=True, blank=True)
+    company_name = models.CharField(max_length=100, null=True, blank=True)
+    website = models.CharField(max_length=100, null=True, blank=True)
+    #key=models.CharField(max_length = 100,null=True,blank =True)
+    # businessmanager = models.ForeignKey(User, null=True, blank=True)
+    show_tracking_company = models.CharField(max_length=1, choices=(('Y', 'yes'), ('N', 'no'),), null=True, blank=True,
+                                             default='N')
+    pb = models.ForeignKey(PBUser, null=True, blank=True)
 
 #     # Use UserManager to get the create_user method, etc.
 #     objects = UserManager()
-
-class Business(models.Model):
-	#phone_regex = RegexValidator(regex=r'^[0-9]*$', message="Phone number must be entered in the format: '999999999'. Up to 12 digits allowed.")
-	username=models.CharField(max_length = 20,primary_key=True)
-	apikey=models.CharField(max_length = 100,null=True,blank =True)
-	business_name = models.CharField(max_length = 100)
-	password=models.CharField(max_length = 300)
-	email = models.EmailField(max_length = 75)	
-	name = models.CharField(max_length = 100)
-	contact_mob = models.CharField(max_length = 15)
-	contact_office= models.CharField(max_length = 15,null=True,blank =True)
-	pickup_time=models.CharField(max_length=1,choices=(('M','morning') ,('N','noon'),('E','evening'),),null=True,blank =True)
-	address=models.CharField(max_length = 315,null=True,blank =True)
-	city=models.CharField(max_length = 50,null=True,blank =True)
-	state=models.CharField(max_length = 50,null=True,blank =True)
-	pincode=models.CharField(max_length = 50,null=True,blank =True)
-	company_name = models.CharField(max_length = 100,null=True,blank =True)
-	website =models.CharField(max_length = 100,null=True,blank =True)
-	#key=models.CharField(max_length = 100,null=True,blank =True)
-	#businessmanager=models.ForeignKey(User,null=True,blank =True) 
-	show_tracking_company=models.CharField(max_length=1,choices=(('Y','yes') ,('N','no'),),null=True,blank =True,default='N')
 
 	def save(self, *args, **kwargs):
 		#print self.tracking_no
@@ -102,7 +101,7 @@ class Order(models.Model):
 									  choices=(('B','Bulk') ,('N','Normal'),),
 									  blank=True , null = True)
 
-	business=models.ForeignKey(Business)
+    business = models.ForeignKey(Business)
 
 
 	def __unicode__(self):
@@ -135,7 +134,7 @@ class Product(models.Model):
 	shipping_cost=models.IntegerField(null=True,blank=True)
 	cod_cost=models.IntegerField(default=0,null=True,blank=True)
 	#tracking_no=models.AutoField(primary_key=True)
-	qrcode=models.CharField(max_length =255,null=True,blank=True)
+	barcode = models.CharField(null=True, blank=True, max_length=255, unique=True)
 	status=models.CharField(max_length=2,
 									  choices=(('P','pending') ,('C','complete'),('PU','pickedup'),),
 									  default='P')
@@ -245,9 +244,6 @@ def send_update(sender, instance, created, **kwargs):
 				price2=pricing.normal_zone_d_1
 				price3=pricing.normal_zone_d_2
 
-			print "see type"
-			print type(instance.applied_weight)
-			print "see type"
 			if (instance.applied_weight<=0.25):
 				price=price1
 			elif(instance.applied_weight<=0.50):

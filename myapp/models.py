@@ -4,10 +4,8 @@ from django.core.validators import RegexValidator
 import hashlib
 from datetime import datetime,timedelta
 from pytz import timezone
-import pytz
-import random
-from push_notifications.models import APNSDevice, GCMDevice
-from django.utils.encoding import force_bytes
+from push_notifications.models import GCMDevice
+from pickupboyapp.models import PBUser
 
 
 class Pricing(models.Model):
@@ -65,14 +63,6 @@ class Promocode(models.Model):
 	def __unicode__(self):
 		return str(self.code)
 
-
-class Pickupboy(models.Model):
-	name=models.CharField(max_length=40)
-	phone=models.CharField(max_length=10,primary_key=True)
-
-	def __unicode__(self):
-		return str(self.name)
-
 class Order(models.Model):
 	order_no=models.AutoField(primary_key=True)
 	date=models.DateField(verbose_name='pickup date',null=True,blank =True)
@@ -107,18 +97,17 @@ class Order(models.Model):
 	#								  blank=True , null = True)
 
 	#cancelled=models.CharField(max_length=1,
-	#								  choices=(('Y','yes') ,('N','no'),),
+	# choices=(('Y','yes') ,('N','no'),),
 	#								  default='N')
-	pickupboy=models.ForeignKey(Pickupboy,null=True,blank=True)
-	latitude = models.DecimalField(max_digits=25, decimal_places=20,null=True ,blank=True)
-	longitude = models.DecimalField(max_digits=25, decimal_places=20,null=True ,blank=True)
-	address=models.CharField(max_length = 200,null=True ,blank=True)	
-	pincode=models.CharField(max_length =30,null=True ,blank=True)
-	flat_no=models.CharField(max_length =100,null=True ,blank=True)
+	pb = models.ForeignKey(PBUser, null=True, blank=True)
+	latitude = models.DecimalField(max_digits=25, decimal_places=20, null=True, blank=True)
+	longitude = models.DecimalField(max_digits=25, decimal_places=20, null=True, blank=True)
+	address = models.CharField(max_length=200, null=True, blank=True)
+	pincode = models.CharField(max_length=30, null=True, blank=True)
+	flat_no = models.CharField(max_length=100, null=True, blank=True)
 	#picked_up=models.BooleanField(default=False
 
-	book_time=models.DateTimeField(null=True,blank=True)
-	
+	book_time = models.DateTimeField(null=True, blank=True)
 
 	def __unicode__(self):
 		return str(self.order_no)
@@ -183,7 +172,6 @@ class Shipment(models.Model):
 	drop_address=models.ForeignKey(Address,null=True,blank=True)
 	order=models.ForeignKey(Order,null=True,blank=True)
 	
-	qrcode=models.CharField(max_length =255,null=True,blank=True)
 
 
 	status=models.CharField(max_length=2,
@@ -193,9 +181,6 @@ class Shipment(models.Model):
 	paid=models.CharField(max_length=10,
 									  choices=(('Paid','Paid') ,('Not Paid','Not Paid'),),
 									  blank=True , null = True ,default='Not Paid')
-	company=models.CharField(max_length=1,
-									  choices=(('F','FedEx') ,('D','Delhivery'),),
-									  blank=True , null = True)
 
 	company=models.CharField(max_length=2,
 									  choices=[('F','FedEx') ,('D','Delhivery'),('P','Professional'),('G','Gati'),('A','Aramex'),('E','Ecomexpress'),('DT','dtdc'),('FF','First Flight'),('M','Maruti courier'),('I','India Post'),('S','Sendd')],
@@ -205,7 +190,7 @@ class Shipment(models.Model):
 	cost_of_courier= models.CharField(verbose_name='item cost',max_length = 100,null=True,blank=True)
 	item_name=models.CharField(max_length = 100,null=True,blank=True)
 	kartrocket_order=models.CharField(max_length = 100,null=True,blank=True)
-
+    barcode = models.CharField(null=True, blank=True, max_length=255, unique=True)
 
 	def save(self, *args, **kwargs):
 		#print self.tracking_no
