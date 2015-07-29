@@ -109,18 +109,18 @@ class Order(models.Model):
     business = models.ForeignKey(Business)
 
 
-def __unicode__(self):
-    return str(self.order_no)
+    def __unicode__(self):
+        return str(self.order_no)
 
 
-def save(self, *args, **kwargs):
-    ''' On save, update timestamps '''
-    z = timezone('Asia/Kolkata')
-    fmt = '%Y-%m-%d %H:%M:%S'
-    ind_time = datetime.now(z)
-    if not self.pk:
-        self.book_time = ind_time.strftime(fmt)
-    super(Order, self).save(*args, **kwargs)
+    def save(self, *args, **kwargs):
+        ''' On save, update timestamps '''
+        z = timezone('Asia/Kolkata')
+        fmt = '%Y-%m-%d %H:%M:%S'
+        ind_time = datetime.now(z)
+        if not self.pk:
+            self.book_time = ind_time.strftime(fmt)
+        super(Order, self).save(*args, **kwargs)
 
 
 class Product(models.Model):
