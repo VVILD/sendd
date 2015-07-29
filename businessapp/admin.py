@@ -11,9 +11,16 @@ from django.http import HttpResponse, HttpResponseRedirect
 # Register your models here.
 class BusinessAdmin(admin.ModelAdmin):
     # search_fields=['name']
-    list_display = ('username', 'business_name', 'username')
+    list_display = ('username', 'business_name', 'pb', 'pending_orders',)
+    list_editable = ('pb',)
+    raw_id_fields = ('pb',)
 
-# list_editable = ('name',)
+    def pending_orders(self, obj):
+        po_count = Order.objects.filter(status='P', business__username=obj.username).count()
+        return '<a href="/admin/businessapp/order/?q=&business__username__exact=%s&status__exact=P"> %s </a>' % (
+            obj.username, po_count)
+
+    pending_orders.allow_tags = True
 
 
 from django.contrib.auth.admin import UserAdmin
@@ -53,19 +60,17 @@ from businessapp.models import Product, Order
 
 
 # class BmInline(admin.StackedInline):
-#     model = BusinessManager
+# model = BusinessManager
 #     can_delete = False
 #     verbose_name_plural = 'businessmanager'
 
-
-# # Define a new User admin
+# Define a new User admin
 # class UserAdmin(UserAdmin):
-#     pass
-#     #inlines = (BmInline, )
+# inlines = (BmInline, )
 
 # Re-register UserAdmin
-admin.site.unregister(User)
-admin.site.register(User, UserAdmin)
+# admin.site.unregister(User)
+# admin.site.register(User, UserAdmin)
 
 
 class ProductForm(ModelForm):
@@ -86,10 +91,10 @@ admin.site.register(LoginSession)
 
 class ProductAdmin(admin.ModelAdmin):
     search_fields = ['name', 'real_tracking_no']
-    list_display = ('name', 'price', 'weight', 'status', 'real_tracking_no','order')
+    list_display = ('name', 'price', 'weight', 'status', 'real_tracking_no', 'order')
     list_editable = ('status',)
     readonly_fields = (
-        'name', 'quantity', 'sku', 'price', 'weight', 'applied_weight', 'real_tracking_no',	'order','tracking_data',
+        'name', 'quantity', 'sku', 'price', 'weight', 'applied_weight', 'real_tracking_no', 'order', 'tracking_data',
         'kartrocket_order', 'shipping_cost', 'cod_cost', 'status', 'date')
 
 
@@ -99,7 +104,7 @@ admin.site.register(Payment)
 admin.site.register(Forgotpass)
 admin.site.register(Pricing)
 
-#maadmin.site.register(BusinessManager)ma
+# admin.site.register(BusinessManager)
 
 
 # name = models.CharField(max_length = 100,null=True,blank =True)
@@ -114,8 +119,8 @@ admin.site.register(Pricing)
 # tracking_data=models.CharField(max_length = 8000,null=True,blank=True)
 
 # company=models.CharField(max_length=1,
-# choices=(('F','FedEx') ,('D','Delhivery'),),
-# blank=True , null = True)
+# 								  choices=(('F','FedEx') ,('D','Delhivery'),),
+# 								  blank=True , null = True)
 # shipping_cost=models.IntegerField(null=True,blank=True)
 # date=models.DateTimeField(null=True,blank=True)
 
@@ -141,12 +146,12 @@ class ProductInline(admin.TabularInline):
             business_product_url, obj.pk)
 
     product_info.allow_tags = True
-    # 'cod_cost'
+    #'cod_cost'
     #'mapped_tracking_no', 'company' ,'shipping_cost',
 
 
     def generate_order(self, obj):
-        # neworder=GCMDevice.objects.create(registration_id='fdgfdgfdsgfsfdg')
+        #neworder=GCMDevice.objects.create(registration_id='fdgfdgfdsgfsfdg')
         #device = GCMDevice.objects.get(registration_id='APA91bGKEsBkDFeODXaS0coILc__0qPaWA6etPbK3fiWad2vluI_Q_EQVw9wocFgqCufbJy43PPXxhr7TB2QMx4QSHCgvBoq2l9dzxGRGX0Mnx6V9pPH2p2lAP93XZKyKjVWRu1PIvwd')
         #print "dsa"
         #devicorder.e.send_message("wadhwsdfdsa")
@@ -160,8 +165,7 @@ class ProductInline(admin.TabularInline):
             string = ''
             product = Product.objects.get(pk=obj.pk)
             order = product.order
-            print
-            order
+            print order
             error_string = ''
             try:
                 shipmentid = product.real_tracking_no
@@ -190,8 +194,7 @@ class ProductInline(admin.TabularInline):
                     error_string = error_string + 'item_name not set<br>'
                     valid = 0
             except:
-                print
-                's'
+                print 's'
                 error_string = error_string + 'item_name not set<br>'
                 valid = 0
 
@@ -200,18 +203,14 @@ class ProductInline(admin.TabularInline):
 
                 if (str(price) != '' and str(price) != 'None'):
                     string = string + 'price=' + str(price) + '&'
-                    print
-                    "jkjkjkjkjkjkjkjkjkjk"
-                    print
-                    price
-                    print
-                    "jkjkjkjkjkjkjkjkjkjk"
+                    print "jkjkjkjkjkjkjkjkjkjk"
+                    print price
+                    print "jkjkjkjkjkjkjkjkjkjk"
                 else:
                     error_string = error_string + 'item_cost not set<br>'
                     valid = 0
             except:
-                print
-                's'
+                print 's'
                 error_string = error_string + 'item_cost not set<br>'
                 valid = 0
 
@@ -224,8 +223,7 @@ class ProductInline(admin.TabularInline):
                     valid = 0
 
             except:
-                print
-                's'
+                print 's'
                 error_string = error_string + 'item_weight not set<br>'
                 valid = 0
 
@@ -237,8 +235,7 @@ class ProductInline(admin.TabularInline):
                     error_string = error_string + 'drop_phone not set<br>'
                     valid = 0
             except:
-                print
-                's'
+                print 's'
                 error_string = error_string + 'drop_phone not set<br>'
                 valid = 0
 
@@ -246,8 +243,7 @@ class ProductInline(admin.TabularInline):
                 address1 = str(order.address1)
                 string = string + 'address=' + str(address1) + '&'
             except:
-                print
-                's'
+                print 's'
                 error_string = error_string + 'address 1 not set<br>'
                 valid = 0
 
@@ -255,8 +251,7 @@ class ProductInline(admin.TabularInline):
                 address2 = str(order.address2)
                 string = string + 'address1=' + str(address2) + '&'
             except:
-                print
-                's'
+                print 's'
                 error_string = error_string + 'address 2 not set<br>'
                 valid = 0
 
@@ -266,8 +261,7 @@ class ProductInline(admin.TabularInline):
             except:
                 error_string = error_string + 'city not set<br>'
                 valid = 0
-                print
-                'k'
+                print 'k'
 
             try:
                 state = order.state
@@ -275,8 +269,7 @@ class ProductInline(admin.TabularInline):
             except:
                 error_string = error_string + 'state not set<br>'
                 valid = 0
-                print
-                's'
+                print 's'
 
             try:
                 pincode = order.pincode
@@ -284,17 +277,15 @@ class ProductInline(admin.TabularInline):
             except:
                 error_string = error_string + 'pincode not set<br>'
                 valid = 0
-                print
-                's'
+                print 's'
 
 
 
-                # message="Hi " + user.name +", \n Greetings from DoorMint!,Our service provider ' "  + serviceprovider_name + "' (" + serviceprovider_number +") will reach you on "+book_date +" at "+str_time+" for "+ service1_name + "( "+service2_name+"). Call 9022662244, if you need help . Thanks for choosing us!"
-                #message=urllib.quote(message)
+            #message="Hi " + user.name +", \n Greetings from DoorMint!,Our service provider ' "  + serviceprovider_name + "' (" + serviceprovider_number +") will reach you on "+book_date +" at "+str_time+" for "+ service1_name + "( "+service2_name+"). Call 9022662244, if you need help . Thanks for choosing us!"
+            #message=urllib.quote(message)
 
         except:
-            print
-            's'
+            print 's'
 
         if (valid):
             return 'All good!<br><a href="http://order.sendmates.com/baindex.php?%s" target="_blank" >Create Normal Order</a> <br> <a href="http://order.sendmates.com/cod/?%s" target="_blank" >Create Cod Order</a>' % (
@@ -304,10 +295,9 @@ class ProductInline(admin.TabularInline):
 
     generate_order.allow_tags = True
 
-
 # fieldsets=(
 # ('Basic Information', {'fields':['real_tracking_no','print_invoice',], 'classes':('suit-tab','suit-tab-general')}),
-# #('Address', {'fields':['flat_no','address','pincode',], 'classes':('suit-tab','suit-tab-general')}),
+# 	#('Address', {'fields':['flat_no','address','pincode',], 'classes':('suit-tab','suit-tab-general')}),
 # 	#('Destination Address', {'fields':['drop_name','drop_phone','drop_flat_no','locality','city','state','drop_pincode','country'] , 'classes':['collapse',]})
 # 	#('Invoices',{'fields':['send_invoice',], 'classes':('suit-tab','suit-tab-invoices')})
 # )
@@ -323,17 +313,15 @@ class OrderAdmin(admin.ModelAdmin):
     actions = [make_pending, make_complete, make_cancelled, make_transit]
 
     def response_change(self, request, obj):
-        # print self.__dict__
+        #print self.__dict__
         #print request.__dict__
         #print obj.pk
-        print
-        "sdddddddddddddddddddddddddddd"
+        print "sdddddddddddddddddddddddddddd"
         #return super(UserAdmin, self).response_change(request, obj)
         return HttpResponseRedirect('http://sendmates.com/admin/businessapp/order/' + str(obj.pk) + '/')
 
     def suit_row_attributes(self, obj, request):
-        print
-        obj.name
+        print obj.name
         css_class = {
             'N': 'success',
             'C': 'warning',

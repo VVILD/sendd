@@ -604,9 +604,6 @@ class ShipmentResource2(MultipartResource,CORSModelResource):
 			print "patch"
 			return bundle
 
-
-
-
 		try:
 			print 'dfd'
 			print bundle.data['drop_address']
