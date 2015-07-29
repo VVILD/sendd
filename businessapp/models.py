@@ -109,18 +109,18 @@ class Order(models.Model):
     business = models.ForeignKey(Business)
 
 
-def __unicode__(self):
-    return str(self.order_no)
+    def __unicode__(self):
+        return str(self.order_no)
 
 
-def save(self, *args, **kwargs):
-    ''' On save, update timestamps '''
-    z = timezone('Asia/Kolkata')
-    fmt = '%Y-%m-%d %H:%M:%S'
-    ind_time = datetime.now(z)
-    if not self.pk:
-        self.book_time = ind_time.strftime(fmt)
-    super(Order, self).save(*args, **kwargs)
+    def save(self, *args, **kwargs):
+        ''' On save, update timestamps '''
+        z = timezone('Asia/Kolkata')
+        fmt = '%Y-%m-%d %H:%M:%S'
+        ind_time = datetime.now(z)
+        if not self.pk:
+            self.book_time = ind_time.strftime(fmt)
+        super(Order, self).save(*args, **kwargs)
 
 
 class Product(models.Model):
@@ -143,7 +143,7 @@ class Product(models.Model):
     shipping_cost = models.IntegerField(null=True, blank=True)
     cod_cost = models.IntegerField(default=0, null=True, blank=True)
     #tracking_no=models.AutoField(primary_key=True)
-    barcode = models.CharField(null=True, blank=True, max_length=255, unique=True)
+    barcode = models.CharField(null=True, blank=True, max_length=255)
     status = models.CharField(max_length=2,
                               choices=(('P', 'pending'), ('C', 'complete'), ('PU', 'pickedup'), ('CA', 'cancelled')),
                               default='P')
@@ -258,7 +258,7 @@ def send_update(sender, instance, created, **kwargs):
                 price1 = pricing.bulk_zone_a
 
             elif (
-                                                        two_digits == '41' or two_digits == '42' or two_digits == '43' or two_digits == '44' or three_digits == '403' or two_digits == '36' or two_digits == '37' or two_digits == '38' or two_digits == '39'):
+                                                two_digits == '41' or two_digits == '42' or two_digits == '43' or two_digits == '44' or three_digits == '403' or two_digits == '36' or two_digits == '37' or two_digits == '38' or two_digits == '39'):
                 price1 = pricing.bulk_zone_b
             elif (two_digits == '56' or two_digits == '11' or three_digits == '600' or three_digits == '700'):
                 price1 = pricing.bulk_zone_c

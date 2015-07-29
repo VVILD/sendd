@@ -211,40 +211,40 @@ class Shipment(models.Model):
     cost_of_courier = models.CharField(verbose_name='item cost', max_length=100, null=True, blank=True)
     item_name = models.CharField(max_length=100, null=True, blank=True)
     kartrocket_order = models.CharField(max_length=100, null=True, blank=True)
-    barcode = models.CharField(null=True, blank=True, max_length=255, unique=True)
+    barcode = models.CharField(null=True, blank=True, max_length=255)
 
 
-def save(self, *args, **kwargs):
-    # print self.tracking_no
-    #print self.pk
-    #print "jkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkj"
-    if not self.pk:
-        print self.pk
-        z = timezone('Asia/Kolkata')
-        fmt = '%Y-%m-%d %H:%M:%S'
-        ind_time = datetime.now(z)
-        time = ind_time.strftime(fmt)
-        time = str(time)
-        self.tracking_data = "[{\"status\": \"Booking Received\", \"date\"	: \"" + time + " \", \"location\": \"Mumbai (Maharashtra)\"}]"
-        print self.tracking_data
-        print self.status
+    def save(self, *args, **kwargs):
+        # print self.tracking_no
+        # print self.pk
+        #print "jkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkj"
+        if not self.pk:
+            print self.pk
+            z = timezone('Asia/Kolkata')
+            fmt = '%Y-%m-%d %H:%M:%S'
+            ind_time = datetime.now(z)
+            time = ind_time.strftime(fmt)
+            time = str(time)
+            self.tracking_data = "[{\"status\": \"Booking Received\", \"date\"	: \"" + time + " \", \"location\": \"Mumbai (Maharashtra)\"}]"
+            print self.tracking_data
+            print self.status
+            super(Shipment, self).save(*args, **kwargs)
+            print self.pk
+            alphabet = random.choice('BDQP')
+            no1 = random.choice('1234567890')
+            no2 = random.choice('1234567890')
+            no = int(self.pk) + 134528
+            trackingno = 'S' + str(no) + str(alphabet) + str(no1) + str(no2)
+            print trackingno
+            self.real_tracking_no = trackingno
+            p = Pricing.objects.create(amount_charged_by_courier=0, amount_spent_in_packingpickup=0, amount_paid=0)
+            self.pricing = p
+            kwargs['force_update'] = True
+            kwargs['force_insert'] = False
+
+            print "H"
         super(Shipment, self).save(*args, **kwargs)
-        print self.pk
-        alphabet = random.choice('BDQP')
-        no1 = random.choice('1234567890')
-        no2 = random.choice('1234567890')
-        no = int(self.pk) + 134528
-        trackingno = 'S' + str(no) + str(alphabet) + str(no1) + str(no2)
-        print trackingno
-        self.real_tracking_no = trackingno
-        p = Pricing.objects.create(amount_charged_by_courier=0, amount_spent_in_packingpickup=0, amount_paid=0)
-        self.pricing = p
-        kwargs['force_update'] = True
-        kwargs['force_insert'] = False
-
-        print "H"
-    super(Shipment, self).save(*args, **kwargs)
-    print "L"
+        print "L"
 
 
 class Forgotpass(models.Model):
