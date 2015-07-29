@@ -145,7 +145,7 @@ class Product(models.Model):
     #tracking_no=models.AutoField(primary_key=True)
     barcode = models.CharField(null=True, blank=True, max_length=255, unique=True)
     status = models.CharField(max_length=2,
-                              choices=(('P', 'pending'), ('C', 'complete'), ('PU', 'pickedup'),),
+                              choices=(('P', 'pending'), ('C', 'complete'), ('PU', 'pickedup'), ('CA', 'cancelled')),
                               default='P')
 
     date = models.DateTimeField(null=True, blank=True)

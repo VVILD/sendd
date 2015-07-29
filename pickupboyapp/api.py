@@ -95,7 +95,7 @@ class PickupboyResource(Resource):
         for order in business_pending_orders:
             business = Business.objects.get(business_name=order.business)
             shipments = []
-            for product in Product.objects.filter(order=order).all():
+            for product in Product.objects.filter(order=order, status='P').all():
                 shipments.append({
                     "name": product.name,
                     "quantity": product.quantity,
@@ -134,7 +134,7 @@ class PickupboyResource(Resource):
 
         for order in customer_pending_orders:
             shipments = []
-            for shipment in Shipment.objects.filter(order=order):
+            for shipment in Shipment.objects.filter(order=order, status='P'):
                 # drop_address = Address.objects.filter(pk=shipment.drop_address.pk)
                 drop_address = None
                 if shipment.drop_address is not None:
