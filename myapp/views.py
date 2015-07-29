@@ -119,7 +119,6 @@ def detail(request):
 	week_orders_b2b =BOrder.objects.filter(Q(book_time__range=(date_min,date_max))&(Q(status='P') | Q(status='C')| Q(status='D')))
 	week_products_b2b=Product.objects.filter(Q(order=week_orders_b2b)&(Q(mapped_tracking_no__isnull=True)|Q(mapped_tracking_no__exact='')))
 
-	week_products_b2b=Product.objects.filter(Q(order=week_orders_b2b)&Q(applied_weight__isnull=True))
 	
 # business stats grouped by businesses
 
