@@ -211,9 +211,7 @@ class Shipment(models.Model):
     cost_of_courier = models.CharField(verbose_name='item cost', max_length=100, null=True, blank=True)
     item_name = models.CharField(max_length=100, null=True, blank=True)
     kartrocket_order = models.CharField(max_length=100, null=True, blank=True)
-
-
-barcode = models.CharField(null=True, blank=True, max_length=255, unique=True)
+    barcode = models.CharField(null=True, blank=True, max_length=255, unique=True)
 
 
 def save(self, *args, **kwargs):
