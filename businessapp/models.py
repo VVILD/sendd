@@ -185,6 +185,7 @@ class Product(models.Model):
 
 
 def send_update(sender, instance, created, **kwargs):
+    global price
     if instance.status == 'PU':
         child_products = Product.objects.filter(order=instance.order)
         picked = True
