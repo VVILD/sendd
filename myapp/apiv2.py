@@ -530,6 +530,15 @@ class ShipmentResource2(MultipartResource,CORSModelResource):
 			
 		if bundle.request.META['REQUEST_METHOD'] == 'POST' and override_method=='PATCH':
 			print "patch"
+			try:
+				address=Address.objects.create(flat_no=bundle.data['flat_no'],locality=bundle.data['locality'],city=bundle.data['city'],state=bundle.data['state'],pincode=bundle.data['pincode'],country=bundle.data['country'])
+				address.save()
+
+				bundle.data['drop_address']="/api/v2/order/"+str(address.pk)+"/"
+			except:
+				pass
+			
+			
 			return bundle
 
 #sending mail and sms
