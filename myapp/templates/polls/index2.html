@@ -111,6 +111,10 @@ th, td {
         <a href="/admin/businessapp/order/{{ product.order.pk }}/">{{ product.company}}</a>
         </td>
         <td>
+        <a href="/admin/businessapp/order/{{ product.order.pk }}/">{{ product.mapped_tracking_id }}</a>
+        </td>
+
+        <td>
         <a href="/admin/businessapp/order/{{ product.order.pk }}/">{{ product.order.payment_method }}</a>
         </td>
         </tr>
