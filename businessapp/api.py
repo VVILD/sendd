@@ -593,6 +593,8 @@ class ProductResource(CORSModelResource):
 			print "hhhhhhhhhhhh"
 			r.publish("b2b", "message")
 
+
+
 			try:
 				business=Business.objects.get(pk=bundle.data['username'])
 				bundle.data['business']="/bapi/v1/business/"+str(bundle.data['username'])+"/"
