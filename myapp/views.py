@@ -157,5 +157,18 @@ def results(request):
 
 
 
-def vote(request, question_id):
-	return HttpResponse("You're voting on question %s." % question_id)
+def vote(request):
+	
+	#for july
+
+	start_date = datetime.datetime(2015, 7, 1, 0, 0)
+	end_date= datetime.datetime(2015, 7, 31, 23, 59)
+	orders_b2b =BOrder.objects.filter(Q(book_time__range=(start_date,end_date))&(Q(status='C') | Q(status='PU')| Q(status='D')))
+	
+	products=Product.objects.filter(order=orders_b2b).values('order__business').annotate(total_shipping_cost=Sum('shipping_cost'),total_cod_cost=Sum('cod_cost'),total_no=Count('shipping_cost'))
+
+	cod_products=Product.objects.filter(order=orders_b2b,order__payment_method='C').values('order__business').annotate(remittance=Sum('price'),total_no=Count('price'))
+
+	context = {'products':products,'cod_products':cod_products}
+
+	return render(request, 'polls/index3.html', context)
