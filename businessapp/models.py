@@ -13,7 +13,7 @@ from django.contrib.auth.models import User
 # class BusinessManager(models.Model):
 # """User with app settings."""
 # phone = models.CharField(max_length=50)
-#     user = models.OneToOneField(User)
+# user = models.OneToOneField(User)
 #     # Use UserManager to get the create_user method, etc.
 
 
@@ -185,7 +185,6 @@ class Product(models.Model):
 
 
 def send_update(sender, instance, created, **kwargs):
-    global price
     if instance.status == 'PU':
         child_products = Product.objects.filter(order=instance.order)
         picked = True
@@ -259,7 +258,7 @@ def send_update(sender, instance, created, **kwargs):
                 price1 = pricing.bulk_zone_a
 
             elif (
-                                                two_digits == '41' or two_digits == '42' or two_digits == '43' or two_digits == '44' or three_digits == '403' or two_digits == '36' or two_digits == '37' or two_digits == '38' or two_digits == '39'):
+                                                        two_digits == '41' or two_digits == '42' or two_digits == '43' or two_digits == '44' or three_digits == '403' or two_digits == '36' or two_digits == '37' or two_digits == '38' or two_digits == '39'):
                 price1 = pricing.bulk_zone_b
             elif (two_digits == '56' or two_digits == '11' or three_digits == '600' or three_digits == '700'):
                 price1 = pricing.bulk_zone_c
@@ -281,7 +280,7 @@ def send_update(sender, instance, created, **kwargs):
 
         Product.objects.filter(pk=instance.pk).update(shipping_cost=price, cod_cost=cod_price)
         print "Done"
-    #MyModel.objects.filter(pk=some_value).update(field1='some value')
+        #MyModel.objects.filter(pk=some_value).update(field1='some value')
 
 
 post_save.connect(send_update, sender=Product)
