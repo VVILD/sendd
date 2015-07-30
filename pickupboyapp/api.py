@@ -130,7 +130,8 @@ class PickupboyResource(Resource):
                 "order": order_transformed,
                 "shipments": shipments
             }
-            result.append(detailed_order)
+            if len(detailed_order['shipments']) > 0:
+                result.append(detailed_order)
 
         for order in customer_pending_orders:
             shipments = []
@@ -148,7 +149,8 @@ class PickupboyResource(Resource):
                     }
                 full_img_uri = None
                 if shipment.img:
-                    full_img_uri = request.build_absolute_uri(shipment.img.url)
+                    shipment_name = str(shipment.img.name)
+                    full_img_uri = request.build_absolute_uri('/static/' + shipment_name.split('/')[1])
                 shipments.append({
                     "cost_of_courier": shipment.cost_of_courier,
                     "category": shipment.category,
@@ -175,7 +177,8 @@ class PickupboyResource(Resource):
                 "order": order_repr,
                 "shipments": shipments
             }
-            result.append(detailed_order)
+            if len(detailed_order['shipments']) > 0:
+                result.append(detailed_order)
 
         result.sort(key=lambda item: (item['order']['pickup_time']))
 
