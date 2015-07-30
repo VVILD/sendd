@@ -78,8 +78,7 @@ class OrderAdmin(admin.ModelAdmin):
     # inlines=(ShipmentInline,)
     save_as = True
     list_per_page = 25
-    search_fields = ['user__phone', 'name', 'namemail__name', 'namemail__email', 'promocode__code',
-                     'pickupboy__pincodes__pincode']
+    search_fields = ['user__phone', 'name', 'namemail__name', 'namemail__email', 'promocode__code', ]
     list_display = (
         'order_no', 'book_time', 'promocode', 'date', 'time', 'full_address', 'name_email', 'order_status', 'way',
         'pb', 'comment', 'shipments', 'send_invoice')
