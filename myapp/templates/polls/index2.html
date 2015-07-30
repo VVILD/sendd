@@ -80,6 +80,8 @@ th, td {
 <table style="width:100%">
   <tr>
 <td><b>Business Name</b></td>
+<td><b>Order Date</b></td>
+<td><b>Product status</b></td>
 <td><b>Sendd Order ID</b></td>
 <td><b>Customer Name</b></td>
 <td><b>Destination - City or Complete Address</b></td>
@@ -96,6 +98,13 @@ th, td {
         <tr>
         <td>
         <a href="/admin/businessapp/order/{{ product.order.pk }}/">{{ product.order.business.business_name }}</a>
+        </td>
+
+        <td>
+        <a href="/admin/businessapp/order/{{ product.order.pk }}/">{{ product.order.book_time }}</a>
+        </td>
+        <td>
+        <a href="/admin/businessapp/order/{{ product.order.pk }}/">{{ product.status }}</a>
         </td>
 
         <td>
