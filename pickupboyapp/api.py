@@ -151,7 +151,7 @@ class PickupboyResource(Resource):
                 full_img_uri = None
                 if shipment.img:
                     shipment_name = str(shipment.img.name)
-                    full_img_uri = request.build_absolute_uri('/static/' + shipment_name.split('/')[1])
+                    full_img_uri = request.build_absolute_uri('/static/' + shipment_name.split('/')[-1])
                 shipments.append({
                     "cost_of_courier": shipment.cost_of_courier,
                     "category": shipment.category,
@@ -246,9 +246,9 @@ class BarcodeResource(Resource):
             "pincode": order.pincode,
             "order_id": order.pk,
         }
+        result = [{"order": order_transformed, "shipments": [shipment]}]
         bundle = {
-            "order": order_transformed,
-            "shipment": shipment
+            "pending_orders": result
         }
         self.log_throttled_access(request)
         return self.create_response(request, bundle)
