@@ -105,7 +105,8 @@ class PickupboyResource(Resource):
                     "real_tracking_no": product.real_tracking_no,
                     "company": product.company,
                     "shipping_cost": product.shipping_cost,
-                    "barcode": product.barcode
+                    "barcode": product.barcode,
+                    "order_id": product.order,
                 })
             order_transformed = {
                 "b_business_name": business.business_name,
