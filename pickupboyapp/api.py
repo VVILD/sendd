@@ -105,8 +105,7 @@ class PickupboyResource(Resource):
                     "real_tracking_no": product.real_tracking_no,
                     "company": product.company,
                     "shipping_cost": product.shipping_cost,
-                    "barcode": product.barcode,
-                    "order_id": product.order,
+                    "barcode": product.barcode
                 })
             order_transformed = {
                 "b_business_name": business.business_name,
@@ -124,7 +123,8 @@ class PickupboyResource(Resource):
                 "address2": order.address2,
                 "name": order.name,
                 "phone": order.phone,
-                "pincode": order.pincode
+                "pincode": order.pincode,
+                "order_id": order.pk,
             }
             detailed_order = {
                 "type": "b2b",
@@ -222,25 +222,20 @@ class BarcodeResource(Resource):
             "sku": product.sku,
             "price": product.price,
             "weight": product.weight,
-            "applied_weight": product.applied_weight,
             "real_tracking_no": product.real_tracking_no,
-            "mapped_tracking_no": product.mapped_tracking_no,
-            "tracking_data": product.tracking_data,
-            "kartrocket_order": product.kartrocket_order,
             "company": product.company,
             "shipping_cost": product.shipping_cost,
-            "cod_cost": product.cod_cost,
-            "status": product.status,
-            "date": product.date,
             "barcode": product.barcode
         }
         order_transformed = {
             "b_business_name": business.business_name,
+            "b_username": business.username,
             "b_address": business.address,
             "b_contact_mob": business.contact_mob,
             "b_contact_office": business.contact_office,
             "b_name": business.name,
-            "b_pickup_time": business.pickup_time,
+            "pickup_time": time_map[business.pickup_time][0],
+            "pickup_time_range": time_map[business.pickup_time][1],
             "b_pincode": business.pincode,
             "b_city": business.city,
             "b_state": business.state,
@@ -248,7 +243,8 @@ class BarcodeResource(Resource):
             "address2": order.address2,
             "name": order.name,
             "phone": order.phone,
-            "pincode": order.pincode
+            "pincode": order.pincode,
+            "order_id": order.pk,
         }
         bundle = {
             "order": order_transformed,
