@@ -93,7 +93,7 @@ class PickupboyResource(Resource):
         business_pending_orders = BusinessOrder.objects.filter(business__pb__phone=pb_ph, status='P')
 
         for order in business_pending_orders:
-            business = Business.objects.get(business_name=order.business)
+            business = Business.objects.get(pk=order.business.pk)
             shipments = []
             for product in Product.objects.filter(order=order, status='P').all():
                 shipments.append({
