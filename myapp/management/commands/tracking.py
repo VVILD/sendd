@@ -179,25 +179,20 @@ class Command(BaseCommand):
 				msg=re.sub(str1,"",msg)
 				tracking_data.append({"status":msg,"date":date,"location":loc})	
 
-				if ('Delivered' in msg):
+				if ('Returning package to shipper'.lower() in msg.lower()):
+					print "fucking returned"
+					product.status='R'
+					print product.shipping_cost
+					product.return_cost=product.shipping_cost
+					product.save()
+
+
+				
+
+				if ('Delivered'.lower() in msg.lower()):
 					print "fucking delivered"
 					product.status='C'
 					product.save()
-					order=product.order
-					#getting all products of that order	
-
-					specific_products=Product.objects.filter(order=order)
-					order_complete=True
-					for specific_product in specific_products:
-						if specific_product.status=='P':
-							order_complete=False	
-
-					if (order_complete):
-						order.status='C'
-						order.save()	
-	
-
-					break;	
 
 			product.tracking_data=json.dumps(tracking_data)
 			product.save()
@@ -260,7 +255,7 @@ class Command(BaseCommand):
 				msg=re.sub(str1,"",msg)
 				tracking_data.append({"status":msg,"date":date,"location":loc})	
 
-				if (msg=='DELIVERED'):
+				if ('delivered' in msg.lower()):
 					print "fucking delivered"
 					shipment.status='C'
 					shipment.save()
