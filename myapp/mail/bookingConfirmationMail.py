@@ -57,18 +57,27 @@ class SendConfirmationMail:
 
 
         if self.recipientName is not None:
-            recipientDetailsHTML = """<table border="0" cellpadding="0" cellspacing="0" class="kmTextBlock" width="100%" style="border-collapse:collapse;mso-table-lspace:0;mso-table-rspace:0"><tbody class="kmTextBlockOuter"><tr><td class="kmTextBlockInner" valign="top" style="border-collapse:collapse;mso-table-lspace:0;mso-table-rspace:0;"><table align="left" border="0" cellpadding="0" cellspacing="0" class="kmTextContentContainer" width="100%" style="border-collapse:collapse;mso-table-lspace:0;mso-table-rspace:0"><tbody><tr><td class="kmTextContent" valign="top" style='border-collapse:collapse;mso-table-lspace:0;mso-table-rspace:0;color:#222;font-family:"Helvetica Neue", Arial;font-size:14px;line-height:130%;text-align:left;padding-top:9px;padding-bottom:18px;padding-left:18px;padding-right:18px;'><h3 style='color:#222;display:block;font-family:"Helvetica Neue", Arial;font-size:24px;font-style:normal;font-weight:bold;line-height:110%;letter-spacing:normal;margin:0;margin-bottom:12px;text-align:left'>Recipient Details:</h3><p style="margin:0;padding-bottom:1em"><strong>Name:</strong> """ + self.recipientName + """<br /><strong>Contact:&nbsp;</strong>""" + self.recipientContact + """<br /><strong>Address:&nbsp;</strong>""" + self.recipientAddress + """</p></td></tr></tbody></table></td></tr></tbody></table>"""
+            recipientDetailsHTML = """<table border="0" cellpadding="0" cellspacing="0" class="kmTextBlock" width="100%" style="border-collapse:collapse;mso-table-lspace:0;mso-table-rspace:0"><tbody class="kmTextBlockOuter"><tr><td class="kmTextBlockInner" valign="top" style="border-collapse:collapse;mso-table-lspace:0;mso-table-rspace:0;"><table align="left" border="0" cellpadding="0" cellspacing="0" class="kmTextContentContainer" width="100%" style="border-collapse:collapse;mso-table-lspace:0;mso-table-rspace:0"><tbody><tr><td class="kmTextContent" valign="top" style='border-collapse:collapse;mso-table-lspace:0;mso-table-rspace:0;color:#222;font-family:"Helvetica Neue", Arial;font-size:14px;line-height:130%;text-align:left;padding-top:9px;padding-bottom:18px;padding-left:18px;padding-right:18px;'><h3 style='color:#222;display:block;font-family:"Helvetica Neue", Arial;font-size:24px;font-style:normal;font-weight:bold;line-height:110%;letter-spacing:normal;margin:0;margin-bottom:12px;text-align:left'>Recipient Details:</h3><p style="margin:0;padding-bottom:1em"><strong>Name: </strong>""" + self.recipientName + """<br/><strong>Contact:&nbsp;</strong>""" + self.recipientContact + """<br /><strong>Address:&nbsp;</strong>""" + self.recipientAddress + """</p></td></tr></tbody></table></td></tr></tbody></table>"""
         else:
             recipientDetailsHTML = ""
 
+        if self.recipientAddress is None:
+            self.recipientAddress = ""
+
+        if self.recipientContact is None:
+            self.recipientContact = ""
+
+        if self.itemName is None:
+            self.itemName = ""
+
         # Set this for HTML mailing. Code sample taken from https://docs.python.org/2/library/email-examples.html
         msg = MIMEMultipart('alternative')
-        msg['Subject'] = "Link"
+        msg['Subject'] = "Sendd: Your booking with tracking # " + self.trackingID + " is confirmed"
         msg['From'] = self.sender
         msg['To'] = self.receiver
 
         # If HTML is not loaded, this text will be shown
-        text = "Tracking ID: " + self.trackingID + "\n\nBooking Details:\nItem: " + self.itemName + "Name: " + self.senderName + "\nContact: " + self.senderContact + \
+        text = "Tracking ID: &nbsp" + self.trackingID + "\n\nBooking Details:\nItem: " + self.itemName + "Name: " + self.senderName + "\nContact: " + self.senderContact + \
                "\nPickup Address: " + self.pickupAddress + "\nPickup Time: " + self.pickupTime + "\nBooking Time: " + self.bookingTime + "\n\nRecipient Details:" + \
                "\nName: " + self.recipientName + "\nContact: " + self.recipientContact + "\nAddress: " + self.recipientAddress
 
@@ -155,7 +164,7 @@ class SendConfirmationMail:
         <tbody>
         <tr>
         <td class="kmTextContent" valign="top" style='border-collapse:collapse;mso-table-lspace:0;mso-table-rspace:0;color:#222;font-family:"Helvetica Neue", Arial;font-size:14px;line-height:130%;text-align:left;padding-top:25px;padding-bottom:9px;padding-left:18px;padding-right:18px;'>
-        <span style="font-size:20px;"><strong>Tracking ID:</strong>""" + self.trackingID + """</span>
+        <span style="font-size:20px;"><strong>Tracking ID: </strong>""" + self.trackingID + """</span>
         </td>
         </tr>
         </tbody>
@@ -182,7 +191,7 @@ class SendConfirmationMail:
         <td valign="top" class="kmTextContent" style='border-collapse:collapse;mso-table-lspace:0;mso-table-rspace:0;color:#222;font-family:"Helvetica Neue", Arial;font-size:14px;line-height:130%;text-align:left;border-bottom:none;text-align:left;;border-top-style:none;padding-bottom:4px;padding-right:0px;padding-left:0px;padding-top:4px;border-top-color:#d9d9d9;border-top-width:1px;'>
         <h3 style='color:#222;display:block;font-family:"Helvetica Neue", Arial;font-size:24px;font-style:normal;font-weight:bold;line-height:110%;letter-spacing:normal;margin:0;margin-bottom:12px;text-align:left'><strong></strong>Booking Details:</h3>
         <p style="margin:0;padding-bottom:0">""" + itemHTML + """
-        <strong>Name:</strong> """ + self.senderName + """<br />
+        <strong>Name: </strong> """ + self.senderName + """<br />
         <strong>Contact:</strong> """ + self.senderContact + """<br />
         <strong>Pickup&nbsp;Address:&nbsp;</strong>""" + self.pickupAddress + """<br />
         """ + pickupTimeHTML + """

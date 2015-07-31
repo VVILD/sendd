@@ -1595,7 +1595,7 @@ class UserResource2(ModelResource):
                     urllib2.urlopen(query).read()
                     # mail="Dear "+str(bundle.data['name'])+",\n\nWe are excited to have you join us and start shipping in a hassle free and convenient manner.\n\nOur team is always there to ensure that you have the best possible experience with us. Some of the questions that are frequently asked can be seen on the website as well as the app.\n\nIf you have any other query, you can get in touch with us at +91-8080028081 or mail us at help@sendd.co\n\n\nRegards,\nTeam Sendd"
                     # subject=str(bundle.data["name"])+", Thanks for signing up with sendd."
-                    #send_mail(subject, mail, "Team Sendd <hello@sendd.co>", [str(bundle.data["email"])])
+                    # send_mail(subject, mail, "Team Sendd <hello@sendd.co>", [str(bundle.data["email"])])
 
 
                     try:
@@ -1856,7 +1856,7 @@ class OrderResource2(MultipartResource, ModelResource):
                 newnamemail = Namemail.objects.create(user=cust, name=bundle.data['name'], email=bundle.data['email'])
                 newnamemail.save()
                 nm_pk = newnamemail.pk
-            #bundle.obj = Address(address="nick", locality = "", password,timezone.now(),"od_test")
+            # bundle.obj = Address(address="nick", locality = "", password,timezone.now(),"od_test")
             else:
                 for x in newnamemail:
                     nm_pk = x.pk
@@ -1937,29 +1937,6 @@ class ShipmentResource2(MultipartResource, CORSModelResource):
 
             return bundle
 
-        # sending mail and sms
-        try:
-            order = Order.objects.get(pk=bundle.data['order'])
-            email = order.namemail.email
-            name = order.namemail.name
-            phone = order.user.phone
-
-            msg0 = "http://enterprise.smsgupshup.com/GatewayAPI/rest?method=SendMessage&send_to="
-            msga = urllib.quote(str(phone))
-            msg1 = "&msg=Hi+"
-            msg2 = urllib.quote(str(name))
-            msg3 = "%2C+your+booking+for+parcel+has+been+received.+You+will+shortly+receive+the+contact+of+our+authorized+pickup+boy+and+a+call+on+"
-            # url1="http://49.50.69.90//api/smsapi.aspx?username=doormint&password=naman123&to="+ str(bundle.data['phone']) +"&from=DORMNT&message="
-            msg4 = urllib.quote(str(phone))
-            msg5 = "+for+details.&msg_type=TEXT&userid=2000142364&auth_scheme=plain&password=h0s6jgB4N&v=1.1&format=text"
-            query = ''.join([msg0, msga, msg1, msg2, msg3, msg4, msg5])
-            print query
-            #bundle.data['query']=query
-            urllib2.urlopen(query)
-
-        except:
-            print "error"
-
         #
         try:
             bundle.data['order'] = "/api/v2/order/" + str(bundle.data['order']) + "/"
@@ -1995,6 +1972,10 @@ class ShipmentResource2(MultipartResource, CORSModelResource):
         return bundle
 
     def dehydrate(self, bundle):
+        pk = bundle.data['order'].split('/')[-1]
+        address_pk = bundle.data['drop_address'].split('/')[-1]
+        order = Order.objects.get(pk=pk)
+        address = Address.objects.get(pk=address_pk)
         try:
             override_method = bundle.request.META['HTTP_X_HTTP_METHOD_OVERRIDE']
             print "changed to PATCH"
@@ -2007,33 +1988,53 @@ class ShipmentResource2(MultipartResource, CORSModelResource):
             return bundle
 
         if bundle.request.META['REQUEST_METHOD'] == 'POST' and override_method != 'PATCH':
-            order = Order.objects.get(pk=bundle.data['order'])
-            receiver = order.namemail.email
-            trackingID = bundle.data['real_tracking_no']
-            senderName = order.namemail.name
-            senderContact = order.user.phone
-            pickupAddress = order.address
-            bookingTime = order.book_time
+            # # sending mail and sms
+            try:
+                email = order.namemail.email
+                name = order.namemail.name
+                phone = order.user.phone
+                msg0 = "http://enterprise.smsgupshup.com/GatewayAPI/rest?method=SendMessage&send_to="
+                msga = urllib.quote(str(phone))
+                msg1 = "&msg=Hi+"
+                msg2 = urllib.quote(str(name))
+                msg3 = "%2C+your+booking+for+parcel+has+been+received.+You+will+shortly+receive+the+contact+of+our+authorized+pickup+boy+and+a+call+on+"
+                # url1="http://49.50.69.90//api/smsapi.aspx?username=doormint&password=naman123&to="+ str(bundle.data['phone']) +"&from=DORMNT&message="
+                msg4 = urllib.quote(str(phone))
+                msg5 = "+for+details.&msg_type=TEXT&userid=2000142364&auth_scheme=plain&password=h0s6jgB4N&v=1.1&format=text"
+                query = ''.join([msg0, msga, msg1, msg2, msg3, msg4, msg5])
+                print query
+                # bundle.data['query']=query
+                urllib2.urlopen(query)
+
+            except:
+                print "error"
+            receiver = str(order.namemail.email)
+            trackingID = str(bundle.data['real_tracking_no'])
+            senderName = str(order.namemail.name)
+            senderContact = str(order.user.phone)
+            pickupAddress = str(order.address)
+            bookingTime = str(order.book_time)
             pickupTime = None
             if order.time:
-                pickupTime = order.time
+                pickupTime = str(order.time)
             itemName = None
-            if bundle.data['item_name']:
-                itemName = bundle.data['item_name']
+            if bundle.data['item_name'] is not None:
+                itemName = str(bundle.data['item_name'])
             itemImageURL = None
-            if bundle.data['img'].img:
-                shipment_name = str(bundle.data['img'].img.name)
+            if bundle.data['img'] is not None:
+                shipment_name = str(bundle.data['img'].name)
                 full_img_uri = bundle.request.build_absolute_uri('/static/' + shipment_name.split('/')[1])
-                itemImageURL = full_img_uri
+                itemImageURL = str(full_img_uri)
+                print(itemImageURL)
             recipientName = None
-            if bundle.data['drop_name']:
-                recipientName = bundle.data['drop_name']
+            if bundle.data['drop_name'] is not None:
+                recipientName = str(bundle.data['drop_name'])
             recipientContact = None
-            if bundle.data['drop_phone']:
-                recipientContact = bundle.data['drop_phone']
+            if bundle.data['drop_phone'] is not None:
+                recipientContact = str(bundle.data['drop_phone'])
             recipientAddress = None
-            if bundle.data['drop_address']:
-                recipientAddress = bundle.data['drop_address']
+            if bundle.data['drop_address'] is not None:
+                recipientAddress = str(address)
             mailer = SendConfirmationMail(receiver=receiver, trackingID=trackingID, senderName=senderName,
                                           senderContact=senderContact, pickupAddress=pickupAddress,
                                           bookingTime=bookingTime, pickupTime=pickupTime, itemName=itemName,
@@ -2061,8 +2062,6 @@ class ShipmentResource2(MultipartResource, CORSModelResource):
             print 'img'
 
         try:
-            order_pk = pk = bundle.data['order'].split('/')[4]
-            order = Order.objects.get(pk=pk)
             bundle.data['date'] = order.date
             bundle.data['time'] = order.time
             bundle.data['address'] = order.address
@@ -2072,7 +2071,7 @@ class ShipmentResource2(MultipartResource, CORSModelResource):
             user = order.user
             bundle.data['name'] = order.name
             bundle.data['phone'] = user.phone
-            bundle.data['order'] = bundle.data['order'].split('/')[4]
+            bundle.data['order'] = bundle.data['order'].split('/')[-1]
 
 
         except:
@@ -2133,7 +2132,7 @@ class PriceappResource2(CORSModelResource):
         zone = 3
         pin = bundle.data['pincode']
         if (pin.isdigit()):
-            #getting zone
+            # getting zone
 
             t = pin[:2]
             z = pin[:3]
@@ -2204,7 +2203,7 @@ class PriceappResource2(CORSModelResource):
         # premium
 
         # print bundle.request
-        #print bundle.data['Name']
+        # print bundle.data['Name']
         return bundle
 
 
@@ -2374,7 +2373,7 @@ class InvoicesentResource2(MultipartResource, ModelResource):
         always_return_data = True
 
     def hydrate(self, bundle):
-        order_pk = bundle.data['order'].split('/')[4]
+        order_pk = bundle.data['order'].split('/')[-1]
         order = Order.objects.get(pk=order_pk)
         order.status = "C"
         order.save()
