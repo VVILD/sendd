@@ -1594,7 +1594,7 @@ class UserResource2(ModelResource):
                     print query
                     urllib2.urlopen(query).read()
                     # mail="Dear "+str(bundle.data['name'])+",\n\nWe are excited to have you join us and start shipping in a hassle free and convenient manner.\n\nOur team is always there to ensure that you have the best possible experience with us. Some of the questions that are frequently asked can be seen on the website as well as the app.\n\nIf you have any other query, you can get in touch with us at +91-8080028081 or mail us at help@sendd.co\n\n\nRegards,\nTeam Sendd"
-                    #subject=str(bundle.data["name"])+", Thanks for signing up with sendd."
+                    # subject=str(bundle.data["name"])+", Thanks for signing up with sendd."
                     #send_mail(subject, mail, "Team Sendd <hello@sendd.co>", [str(bundle.data["email"])])
 
 
@@ -1716,7 +1716,7 @@ class WeborderResource2(CORSModelResource):
         try:
             neworder = Order.objects.create(namemail=newnamemail, user=newuser, address=bundle.data['pickup_location'],
                                             way='W', pick_now='N', pincode=bundle.data['pickup_pincode'])
-            #neworder.save()
+            # neworder.save()
             print "here2"
             order_pk = neworder.pk
         except:
@@ -1847,7 +1847,7 @@ class OrderResource2(MultipartResource, ModelResource):
             bundle.data['promomsg'] = "Wrong promo code"
             # bundle.data['valid']='N'
             print '2'
-        #print bundle.data['promocode']
+        # print bundle.data['promocode']
 
         # create nameemail
         try:
@@ -1892,7 +1892,7 @@ class ShipmentResource2(MultipartResource, CORSModelResource):
 
     # def over_urls(self):
     # return [
-    #   	url(r'^(?P<resource_name>%s)/(?P<track>[\w\.-]+)/$' % self._meta.resource_name, self.wrap_view('dispatch_detail'), name='api_dispatch_detail_track'),
+    # url(r'^(?P<resource_name>%s)/(?P<track>[\w\.-]+)/$' % self._meta.resource_name, self.wrap_view('dispatch_detail'), name='api_dispatch_detail_track'),
     # ]
 
     def build_filters(self, filters=None):
@@ -1956,15 +1956,6 @@ class ShipmentResource2(MultipartResource, CORSModelResource):
             print query
             #bundle.data['query']=query
             urllib2.urlopen(query)
-            try:
-                mail = "Dear " + str(
-                    name) + ",\n\nWe have successfully received your booking.\n\nOur Pickup representative will contact you as per your scheduled pickup time.\n\nIf you have any query, you can get in touch with us at +91-8080028081 or mail us at help@sendd.co\n\n\nHappy Sendd-ing!\n\nRegards,\nTeam Sendd"
-                subject = str(name) + ", We have received your parcel booking."
-                send_mail(subject, mail, "Team Sendd <order@sendd.co>", [str(email), "Team Sendd <order@sendd.co>"])
-            except:
-                print "mail not sent"
-
-
 
         except:
             print "error"
@@ -2136,7 +2127,7 @@ class PriceappResource2(CORSModelResource):
 
         print "count"
 
-        #		if (zipcode.count()==0):
+        # if (zipcode.count()==0):
 
         bundle.data['msg'] = 'ok'
         zone = 3
@@ -2243,7 +2234,7 @@ class DateappResource2(CORSModelResource):
         zone = 3
         pin = bundle.data['pincode']
         if (pin.isdigit()):
-            #getting zone
+            # getting zone
 
             t = pin[:2]
             bundle.data['zone'] = zone
@@ -2294,7 +2285,7 @@ class DateappResource2(CORSModelResource):
         # premium
 
         # print bundle.request
-        #print bundle.data['Name']
+        # print bundle.data['Name']
         return bundle
 
 
