@@ -1957,8 +1957,12 @@ class ShipmentResource2(MultipartResource, CORSModelResource):
             return bundle
 
     def dehydrate(self, bundle):
+        try:
+            override_method = bundle.request.META['HTTP_X_HTTP_METHOD_OVERRIDE']
+        except:
+            override_method = 'none'
 
-        if bundle.request.META['REQUEST_METHOD'] == 'POST' and bundle.request.META['HTTP_X_HTTP_METHOD_OVERRIDE'] !='PATCH':
+        if bundle.request.META['REQUEST_METHOD'] == 'POST' and override_method !='PATCH':
             order_pk = str(bundle.data['order']).split('/')[-1]
             address_pk = str(bundle.data['drop_address']).split('/')[-1]
             order = Order.objects.get(pk=order_pk)
