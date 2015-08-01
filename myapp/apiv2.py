@@ -1938,7 +1938,7 @@ class ShipmentResource2(MultipartResource, CORSModelResource):
                                                          locality=bundle.data['drop_locality'],
                                                          city=bundle.data['drop_city'], state=bundle.data['drop_state'],
                                                          country=bundle.data['drop_country'],
-                                                         pincode=bundle.data['drop_pincode']).limit(1)
+                                                         pincode=bundle.data['drop_pincode'])
             pk = 0
             if len(address_on_database) is 0:
                 address_on_database = Address.objects.create(flat_no=bundle.data['drop_flat_no'],
