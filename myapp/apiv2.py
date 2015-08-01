@@ -1921,9 +1921,9 @@ class ShipmentResource2(MultipartResource, CORSModelResource):
             override_method = 'none'
         if bundle.request.META['REQUEST_METHOD'] == 'POST' and override_method == 'PATCH':
 
-            address = Address.objects.create(flat_no=bundle.data['flat_no'], locality=bundle.data['locality'],
-                                             city=bundle.data['city'], state=bundle.data['state'],
-                                             pincode=bundle.data['pincode'], country=bundle.data['country'])
+            address = Address(pk=bundle.data['address_pk'], flat_no=bundle.data['flat_no'], locality=bundle.data['locality'],
+                              city=bundle.data['city'], state=bundle.data['state'],
+                              pincode=bundle.data['pincode'], country=bundle.data['country'])
             address.save()
             bundle.data['drop_address'] = "/api/v2/address/" + str(address.pk) + "/"
 
