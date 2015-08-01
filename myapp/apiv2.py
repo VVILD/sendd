@@ -1995,7 +1995,7 @@ class ShipmentResource2(MultipartResource, CORSModelResource):
                 itemName = str(bundle.data['item_name'])
             itemImageURL = None
             if bundle.data['img'] is not None:
-                shipment_name = str(bundle.data['img'].name)
+                shipment_name = str(bundle.data['img'])
                 full_img_uri = bundle.request.build_absolute_uri('/static/' + shipment_name.split('/')[-1])
                 itemImageURL = str(full_img_uri)
             recipientName = None
