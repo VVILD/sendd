@@ -1915,42 +1915,32 @@ class ShipmentResource2(MultipartResource, CORSModelResource):
         return base_object_list
 
     def hydrate(self, bundle):
-
         try:
             override_method = bundle.request.META['HTTP_X_HTTP_METHOD_OVERRIDE']
-            print "changed to PATCH"
         except:
             override_method = 'none'
-            print "hello"
-
         if bundle.request.META['REQUEST_METHOD'] == 'POST' and override_method == 'PATCH':
-            print "patch"
-            try:
-                address = Address.objects.create(flat_no=bundle.data['flat_no'], locality=bundle.data['locality'],
-                                                 city=bundle.data['city'], state=bundle.data['state'],
-                                                 pincode=bundle.data['pincode'], country=bundle.data['country'])
-                address.save()
 
-                bundle.data['drop_address'] = "/api/v2/order/" + str(address.pk) + "/"
-            except:
-                pass
+            address = Address.objects.create(flat_no=bundle.data['flat_no'], locality=bundle.data['locality'],
+                                             city=bundle.data['city'], state=bundle.data['state'],
+                                             pincode=bundle.data['pincode'], country=bundle.data['country'])
+            address.save()
+            bundle.data['drop_address'] = "/api/v2/address/" + str(address.pk) + "/"
 
             return bundle
+        else:
+            print(bundle.request.META['REQUEST_METHOD'] == 'POST' and override_method != 'PATCH')
+            print(bundle.data)
+            order_t = "/api/v2/order/" + str(bundle.data['order']) + "/"
+            bundle.data['order'] = order_t
 
-        #
-        try:
-            bundle.data['order'] = "/api/v2/order/" + str(bundle.data['order']) + "/"
-        except:
-            print "sd"
-
-        try:
             address_on_database = Address.objects.filter(flat_no=bundle.data['drop_flat_no'],
                                                          locality=bundle.data['drop_locality'],
                                                          city=bundle.data['drop_city'], state=bundle.data['drop_state'],
                                                          country=bundle.data['drop_country'],
-                                                         pincode=bundle.data['drop_pincode'])
-
-            if (address_on_database.count() == 0):
+                                                         pincode=bundle.data['drop_pincode']).limit(1)
+            pk = 0
+            if len(address_on_database) is 0:
                 address_on_database = Address.objects.create(flat_no=bundle.data['drop_flat_no'],
                                                              locality=bundle.data['drop_locality'],
                                                              city=bundle.data['drop_city'],
@@ -1959,61 +1949,43 @@ class ShipmentResource2(MultipartResource, CORSModelResource):
                                                              pincode=bundle.data['drop_pincode'])
                 address_on_database.save()
                 pk = address_on_database.pk
-            # bundle.obj = Address(address="nick", locality = "", password,timezone.now(),"od_test")
             else:
                 for x in address_on_database:
                     pk = x.id
-            # queryset= Address.objects.get(number=bundle.data['number'])
             bundle.data['drop_address'] = "/api/v2/address/" + str(pk) + "/"
-
-        except:
-            print "fu"
-
-        return bundle
-
-    def dehydrate(self, bundle):
-        pk = bundle.data['order'].split('/')[-1]
-        address_pk = bundle.data['drop_address'].split('/')[-1]
-        order = Order.objects.get(pk=pk)
-        address = Address.objects.get(pk=address_pk)
-        try:
-            override_method = bundle.request.META['HTTP_X_HTTP_METHOD_OVERRIDE']
-            print "changed to PATCH"
-        except:
-            override_method = 'none'
-            print "hello"
-
-        if bundle.request.META['REQUEST_METHOD'] == 'POST' and override_method == 'PATCH':
-            print "patch"
+            print("Hydrate:", bundle.data)
             return bundle
 
-        if bundle.request.META['REQUEST_METHOD'] == 'POST' and override_method != 'PATCH':
-            # # sending mail and sms
-            try:
-                email = order.namemail.email
-                name = order.namemail.name
-                phone = order.user.phone
-                msg0 = "http://enterprise.smsgupshup.com/GatewayAPI/rest?method=SendMessage&send_to="
-                msga = urllib.quote(str(phone))
-                msg1 = "&msg=Hi+"
-                msg2 = urllib.quote(str(name))
-                msg3 = "%2C+your+booking+for+parcel+has+been+received.+You+will+shortly+receive+the+contact+of+our+authorized+pickup+boy+and+a+call+on+"
-                # url1="http://49.50.69.90//api/smsapi.aspx?username=doormint&password=naman123&to="+ str(bundle.data['phone']) +"&from=DORMNT&message="
-                msg4 = urllib.quote(str(phone))
-                msg5 = "+for+details.&msg_type=TEXT&userid=2000142364&auth_scheme=plain&password=h0s6jgB4N&v=1.1&format=text"
-                query = ''.join([msg0, msga, msg1, msg2, msg3, msg4, msg5])
-                print query
-                # bundle.data['query']=query
-                urllib2.urlopen(query)
+    def dehydrate(self, bundle):
 
-            except:
-                print "error"
+        if bundle.request.META['REQUEST_METHOD'] is 'POST' and bundle.request.META['HTTP_X_HTTP_METHOD_OVERRIDE'] is not 'PATCH':
+            order_pk = str(bundle.data['order']).split('/')[-1]
+            address_pk = str(bundle.data['drop_address']).split('/')[-1]
+            order = Order.objects.get(pk=order_pk)
+            address = Address.objects.get(pk=address_pk)
+            # # sending mail and sms
+            email = order.namemail.email
+            name = order.namemail.name
+            phone = order.user.phone
+            msg0 = "http://enterprise.smsgupshup.com/GatewayAPI/rest?method=SendMessage&send_to="
+            msga = urllib.quote(str(phone))
+            msg1 = "&msg=Hi+"
+            msg2 = urllib.quote(str(name))
+            msg3 = "%2C+your+booking+for+parcel+has+been+received.+You+will+shortly+receive+the+contact+of+our+authorized+pickup+boy+and+a+call+on+"
+            # url1="http://49.50.69.90//api/smsapi.aspx?username=doormint&password=naman123&to="+ str(bundle.data['phone']) +"&from=DORMNT&message="
+            msg4 = urllib.quote(str(phone))
+            msg5 = "+for+details.&msg_type=TEXT&userid=2000142364&auth_scheme=plain&password=h0s6jgB4N&v=1.1&format=text"
+            query = ''.join([msg0, msga, msg1, msg2, msg3, msg4, msg5])
+            print query
+            # bundle.data['query']=query
+            urllib2.urlopen(query)
+
             receiver = str(order.namemail.email)
             trackingID = str(bundle.data['real_tracking_no'])
             senderName = str(order.namemail.name)
             senderContact = str(order.user.phone)
             pickupAddress = str(order.address)
-            bookingTime = str(order.book_time)
+            bookingTime = str(order.book_time.strftime("%H:%M:%S"))
             pickupTime = None
             if order.time:
                 pickupTime = str(order.time)
@@ -2023,9 +1995,8 @@ class ShipmentResource2(MultipartResource, CORSModelResource):
             itemImageURL = None
             if bundle.data['img'] is not None:
                 shipment_name = str(bundle.data['img'].name)
-                full_img_uri = bundle.request.build_absolute_uri('/static/' + shipment_name.split('/')[1])
+                full_img_uri = bundle.request.build_absolute_uri('/static/' + shipment_name.split('/')[-1])
                 itemImageURL = str(full_img_uri)
-                print(itemImageURL)
             recipientName = None
             if bundle.data['drop_name'] is not None:
                 recipientName = str(bundle.data['drop_name'])
@@ -2041,48 +2012,25 @@ class ShipmentResource2(MultipartResource, CORSModelResource):
                                           recipientName=recipientName, itemImageURL=itemImageURL,
                                           recipientContact=recipientContact, recipientAddress=recipientAddress)
             mailer.send()
-        try:
-            print 'dfd'
-            print bundle.data['drop_address']
-            pk = bundle.data['drop_address'].split('/')[4]
-            print pk
-            address = Address.objects.get(pk=pk)
-            bundle.data['drop_address'] = address
-            print address
-            bundle.data['pincode'] = address.pincode
-            print "shit"
-        except:
-            print "df"
 
-        try:
-            img_name = bundle.data['img'].split('/')[2]
+            bundle.data['drop_address'] = address
+            bundle.data['pincode'] = address.pincode
+
+            img_name = bundle.data['img'].split('/')[-1]
 
             bundle.data['img'] = 'http://128.199.159.90/static/' + img_name
-        except:
-            print 'img'
-
-        try:
             bundle.data['date'] = order.date
             bundle.data['time'] = order.time
             bundle.data['address'] = order.address
-
-            bundle.data['name'] = order.name
-            bundle.data['email'] = order.email
-            user = order.user
-            bundle.data['name'] = order.name
-            bundle.data['phone'] = user.phone
-            bundle.data['order'] = bundle.data['order'].split('/')[-1]
-
-
-        except:
-            print "sad"
-
-        try:
-            bundle.data['tracking_no'], bundle.data['real_tracking_no'] = bundle.data['real_tracking_no'], bundle.data[
-                'tracking_no']
-        except:
-            'tracking number failed'
-        return bundle
+            bundle.data['name'] = order.namemail.name
+            bundle.data['email'] = order.namemail.email
+            bundle.data['phone'] = order.user.phone
+            order_pk = bundle.data['order'].split('/')[-1]
+            bundle.data['order'] = order_pk
+            bundle.data['tracking_no'], bundle.data['real_tracking_no'] = bundle.data['real_tracking_no'], bundle.data['tracking_no']
+            return bundle
+        else:
+            return bundle
 
 
 class XResource2(MultipartResource, ModelResource):
