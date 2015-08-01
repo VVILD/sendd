@@ -146,7 +146,8 @@ class PickupboyResource(Resource):
                         "drop_address_city": shipment.drop_address.city,
                         "drop_address_state": shipment.drop_address.state,
                         "drop_address_pincode": shipment.drop_address.pincode,
-                        "drop_address_country": shipment.drop_address.country
+                        "drop_address_country": shipment.drop_address.country,
+                        "drop_address_pk": shipment.drop_address.pk
                     }
                 full_img_uri = None
                 if shipment.img:
