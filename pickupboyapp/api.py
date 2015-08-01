@@ -93,7 +93,7 @@ class PickupboyResource(Resource):
         business_pending_orders = BusinessOrder.objects.filter(business__pb__phone=pb_ph, status='P')
 
         for order in business_pending_orders:
-            business = Business.objects.get(business_name=order.business)
+            business = Business.objects.get(pk=order.business.pk)
             shipments = []
             for product in Product.objects.filter(order=order, status='P').all():
                 shipments.append({
@@ -123,7 +123,8 @@ class PickupboyResource(Resource):
                 "address2": order.address2,
                 "name": order.name,
                 "phone": order.phone,
-                "pincode": order.pincode
+                "pincode": order.pincode,
+                "order_id": order.pk,
             }
             detailed_order = {
                 "type": "b2b",
@@ -145,12 +146,13 @@ class PickupboyResource(Resource):
                         "drop_address_city": shipment.drop_address.city,
                         "drop_address_state": shipment.drop_address.state,
                         "drop_address_pincode": shipment.drop_address.pincode,
-                        "drop_address_country": shipment.drop_address.country
+                        "drop_address_country": shipment.drop_address.country,
+                        "drop_address_pk": shipment.drop_address.pk
                     }
                 full_img_uri = None
                 if shipment.img:
                     shipment_name = str(shipment.img.name)
-                    full_img_uri = request.build_absolute_uri('/static/' + shipment_name.split('/')[1])
+                    full_img_uri = request.build_absolute_uri('/static/' + shipment_name.split('/')[-1])
                 shipments.append({
                     "cost_of_courier": shipment.cost_of_courier,
                     "category": shipment.category,
@@ -221,25 +223,20 @@ class BarcodeResource(Resource):
             "sku": product.sku,
             "price": product.price,
             "weight": product.weight,
-            "applied_weight": product.applied_weight,
             "real_tracking_no": product.real_tracking_no,
-            "mapped_tracking_no": product.mapped_tracking_no,
-            "tracking_data": product.tracking_data,
-            "kartrocket_order": product.kartrocket_order,
             "company": product.company,
             "shipping_cost": product.shipping_cost,
-            "cod_cost": product.cod_cost,
-            "status": product.status,
-            "date": product.date,
             "barcode": product.barcode
         }
         order_transformed = {
             "b_business_name": business.business_name,
+            "b_username": business.username,
             "b_address": business.address,
             "b_contact_mob": business.contact_mob,
             "b_contact_office": business.contact_office,
             "b_name": business.name,
-            "b_pickup_time": business.pickup_time,
+            "pickup_time": time_map[business.pickup_time][0],
+            "pickup_time_range": time_map[business.pickup_time][1],
             "b_pincode": business.pincode,
             "b_city": business.city,
             "b_state": business.state,
@@ -247,11 +244,12 @@ class BarcodeResource(Resource):
             "address2": order.address2,
             "name": order.name,
             "phone": order.phone,
-            "pincode": order.pincode
+            "pincode": order.pincode,
+            "order_id": order.pk,
         }
+        result = [{"order": order_transformed, "shipments": [shipment]}]
         bundle = {
-            "order": order_transformed,
-            "shipment": shipment
+            "pending_orders": result
         }
         self.log_throttled_access(request)
         return self.create_response(request, bundle)

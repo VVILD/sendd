@@ -1,5 +1,7 @@
-*settings.py
+django_project/settings.py
 *.pyc
 myapp/migrations
 businessapp/migrations
 pickupboyapp/migrations
+.idea
+django_project/media/shipment
