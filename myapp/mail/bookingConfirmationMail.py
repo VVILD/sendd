@@ -336,7 +336,6 @@ class SendConfirmationMail:
         </center>
         </body>
         </html>"""
-        print(html)
         # Attach HTML and plain text
         part1 = MIMEText(text, 'plain')
         part2 = MIMEText(html, 'html')
