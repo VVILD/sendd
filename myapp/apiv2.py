@@ -1929,8 +1929,6 @@ class ShipmentResource2(MultipartResource, CORSModelResource):
 
             return bundle
         else:
-            print(bundle.request.META['REQUEST_METHOD'] == 'POST' and override_method != 'PATCH')
-            print(bundle.data)
             order_t = "/api/v2/order/" + str(bundle.data['order']) + "/"
             bundle.data['order'] = order_t
 
@@ -1953,7 +1951,6 @@ class ShipmentResource2(MultipartResource, CORSModelResource):
                 for x in address_on_database:
                     pk = x.id
             bundle.data['drop_address'] = "/api/v2/address/" + str(pk) + "/"
-            print("Hydrate:", bundle.data)
             return bundle
 
     def dehydrate(self, bundle):
@@ -1963,8 +1960,8 @@ class ShipmentResource2(MultipartResource, CORSModelResource):
             override_method = 'none'
 
         if bundle.request.META['REQUEST_METHOD'] == 'POST' and override_method !='PATCH':
-            order_pk = str(bundle.data['order']).split('/')[-1]
-            address_pk = str(bundle.data['drop_address']).split('/')[-1]
+            order_pk = str(bundle.data['order']).split('/')[-2]
+            address_pk = str(bundle.data['drop_address']).split('/')[-2]
             order = Order.objects.get(pk=order_pk)
             address = Address.objects.get(pk=address_pk)
             # # sending mail and sms
@@ -2019,17 +2016,16 @@ class ShipmentResource2(MultipartResource, CORSModelResource):
 
             bundle.data['drop_address'] = address
             bundle.data['pincode'] = address.pincode
-
-            img_name = bundle.data['img'].split('/')[-1]
-
-            bundle.data['img'] = 'http://128.199.159.90/static/' + img_name
+            if bundle.data['img'] is not None:
+                img_name = bundle.data['img'].split('/')[-1]
+                bundle.data['img'] = 'http://128.199.159.90/static/' + img_name
             bundle.data['date'] = order.date
             bundle.data['time'] = order.time
             bundle.data['address'] = order.address
             bundle.data['name'] = order.namemail.name
             bundle.data['email'] = order.namemail.email
             bundle.data['phone'] = order.user.phone
-            order_pk = str(bundle.data['order']).split('/')[4]
+            order_pk = str(bundle.data['order']).split('/')[-2]
             bundle.data['order'] = order_pk
             bundle.data['tracking_no'], bundle.data['real_tracking_no'] = bundle.data['real_tracking_no'], bundle.data['tracking_no']
             return bundle
