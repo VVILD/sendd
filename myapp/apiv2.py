@@ -1958,7 +1958,7 @@ class ShipmentResource2(MultipartResource, CORSModelResource):
 
     def dehydrate(self, bundle):
 
-        if bundle.request.META['REQUEST_METHOD'] is 'POST' and bundle.request.META['HTTP_X_HTTP_METHOD_OVERRIDE'] is not 'PATCH':
+        if bundle.request.META['REQUEST_METHOD'] == 'POST' and bundle.request.META['HTTP_X_HTTP_METHOD_OVERRIDE'] !='PATCH':
             order_pk = str(bundle.data['order']).split('/')[-1]
             address_pk = str(bundle.data['drop_address']).split('/')[-1]
             order = Order.objects.get(pk=order_pk)
@@ -2025,7 +2025,7 @@ class ShipmentResource2(MultipartResource, CORSModelResource):
             bundle.data['name'] = order.namemail.name
             bundle.data['email'] = order.namemail.email
             bundle.data['phone'] = order.user.phone
-            order_pk = bundle.data['order'].split('/')[-1]
+            order_pk = str(bundle.data['order']).split('/')[4]
             bundle.data['order'] = order_pk
             bundle.data['tracking_no'], bundle.data['real_tracking_no'] = bundle.data['real_tracking_no'], bundle.data['tracking_no']
             return bundle
