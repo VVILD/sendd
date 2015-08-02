@@ -39,7 +39,7 @@ class Command(BaseCommand):
 		specific_products=Product.objects.filter(order=order)
 		order_complete=True
 		for specific_product in specific_products:
-			if specific_product.status=='P':
+			if specific_product.status!='P':
 				order_complete=False
 
 		if (order_complete):

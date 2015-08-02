@@ -286,7 +286,7 @@ def send_update(sender, instance, created, **kwargs):
 	if instance.status == 'C' or instance.status == 'R':
 		complete=True
 		return_value=True
-
+		other_case=False
 #		print "in complete loop"
 
 		products_in_order = Product.objects.filter(order=instance.order)
@@ -297,8 +297,10 @@ def send_update(sender, instance, created, **kwargs):
 				#print "false check"
 				complete=False
 
-			if product.status!='R' :
+			elif product.status!='R' :
 				return_value=False
+			elif (product.status!='R' & product.status!='C'):
+				other_case=True
 
 
 
@@ -313,6 +315,8 @@ def send_update(sender, instance, created, **kwargs):
 			#print "am i here"
 			instance.order.status = 'R'
 			instance.order.save()
+		elif (other_case):
+			pass
 		else:
 			#print "33333333333333333333333333333333333333333333	"
 			instance.order.status = 'RC'

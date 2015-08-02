@@ -5,7 +5,7 @@ from myapp.models import *
 from django.db.models import Avg, Count, F, Max, Min, Sum, Q, Prefetch
 from businessapp.models import Order as BOrder
 from businessapp.models import Product,Business
-
+import json
 from django.http import HttpResponse
 
 import datetime
@@ -150,6 +150,13 @@ def results(request):
 #b2b week
 	late_orders_b2b =BOrder.objects.filter(Q(book_time__range=(start_date,date_max))&(Q(status='P') | Q(status='PU')| Q(status='D')))
 	late_products_b2b=Product.objects.filter(Q(order=late_orders_b2b))
+
+	for product in late_products_b2b:
+
+		product.latest_status=json.loads(product.tracking_data)[-1]['status']
+
+		
+
 	context = {'late_shipments':late_shipments,'late_products_b2b':late_products_b2b}
 
 

@@ -87,7 +87,8 @@ th, td {
 <td><b>Destination - City or Complete Address</b></td>
 <td><b>Courier Company</b></td>
 <td><b>Tracking No.</b></td>
-<td><b>Order Type (Prepaid/COD)</b></td>		
+<td><b>Order Type (Prepaid/COD)</b></td>
+<td><b>Latest status</b></td>		
  </tr>
 
 
@@ -126,6 +127,12 @@ th, td {
         <td>
         <a href="/admin/businessapp/order/{{ product.order.pk }}/">{{ product.order.payment_method }}</a>
         </td>
+        <td>
+
+        {{product.latest_status}}
+
+
+         </td>
         </tr>
             
     {% endfor %}
