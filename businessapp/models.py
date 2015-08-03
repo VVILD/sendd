@@ -48,6 +48,7 @@ class Business(models.Model):
     show_tracking_company = models.CharField(max_length=1, choices=(('Y', 'yes'), ('N', 'no'),), null=True, blank=True,
                                              default='N')
     pb = models.ForeignKey(PBUser, null=True, blank=True)
+    assigned_pickup_time = models.TimeField(null=True, blank=True, default=datetime.now())
 
     #     # Use UserManager to get the create_user method, etc.
     #     objects = UserManager()
