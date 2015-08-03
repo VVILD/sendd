@@ -6,6 +6,24 @@ from .models import *
 from django.http import HttpResponse, HttpResponseRedirect
 
 from django.db.models import Sum
+from django.contrib import admin
+from django.contrib.auth.admin import UserAdmin
+
+class ProfileInline(admin.StackedInline):
+    model = Profile
+    can_delete = False
+    verbose_name_plural = 'profile'
+
+# Define a new User admin
+class UserAdmin(UserAdmin):
+    inlines = (ProfileInline, )
+
+# Re-register UserAdmin
+admin.site.unregister(User)
+admin.site.register(User, UserAdmin)
+
+
+
 
 # Register your models here.
 class BusinessAdmin(admin.ModelAdmin):
@@ -302,9 +320,32 @@ class ProductInline(admin.TabularInline):
 # 	#('Invoices',{'fields':['send_invoice',], 'classes':('suit-tab','suit-tab-invoices')})
 # )
 # suit_form_tabs = (('general', 'General'))
+class FilterUserAdmin(admin.ModelAdmin): 
+
+    def queryset(self, request): 
+        qs = super(FilterUserAdmin, self).queryset(request) 
+        print "queryyyset"
+
+        profile=Profile.objects.get(user=request.user)
+
+        if (profile.usertype!='B'):
+            return qs.filter()
+        else:
+            return qs.filter(business__businessmanager__user=request.user)
+
+    def has_change_permission(self, request, obj=None):
+        if not obj:
+            # the changelist itself
+            return True
+        profile=Profile.objects.get(user=request.user)
+
+        if (profile.usertype!='B'):
+            return obj.business.businessmanager.user == request.user
+        else:
+            return True
 
 
-class OrderAdmin(admin.ModelAdmin):
+class OrderAdmin(FilterUserAdmin):
     inlines = (ProductInline,)
     search_fields = ['business__business_name', 'name', 'product__real_tracking_no']
     list_display = (

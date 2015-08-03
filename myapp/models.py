@@ -9,13 +9,8 @@ from push_notifications.models import GCMDevice
 from pickupboyapp.models import PBUser
 
 
-class Pricing(models.Model):
-    amount_charged_by_courier = models.IntegerField(null=True, blank=True)
-    amount_spent_in_packingpickup = models.IntegerField(null=True, blank=True)
-    amount_paid = models.IntegerField(null=True, blank=True)
 
-    def __unicode__(self):
-        return str(self.amount_paid - self.amount_charged_by_courier - self.amount_spent_in_packingpickup)
+
 
 
 class User(models.Model):
@@ -207,7 +202,6 @@ class Shipment(models.Model):
                                         ('M', 'Maruti courier'), ('I', 'India Post'), ('S', 'Sendd')],
                                blank=True, null=True)
 
-    pricing = models.ForeignKey(Pricing, null=True, blank=True)
     cost_of_courier = models.CharField(verbose_name='item cost', max_length=100, null=True, blank=True)
     item_name = models.CharField(max_length=100, null=True, blank=True)
     kartrocket_order = models.CharField(max_length=100, null=True, blank=True)
@@ -237,8 +231,7 @@ class Shipment(models.Model):
             trackingno = 'S' + str(no) + str(alphabet) + str(no1) + str(no2)
             print trackingno
             self.real_tracking_no = trackingno
-            p = Pricing.objects.create(amount_charged_by_courier=0, amount_spent_in_packingpickup=0, amount_paid=0)
-            self.pricing = p
+
             kwargs['force_update'] = True
             kwargs['force_insert'] = False
 

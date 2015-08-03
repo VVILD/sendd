@@ -10,6 +10,13 @@ import math
 from django.contrib.auth.models import User
 
 
+class Profile(models.Model):
+    user = models.OneToOneField(User)
+    phone = models.CharField(max_length=100)
+    usertype=models.CharField(max_length=1, choices=(('O', 'ops'), ('B', 'bd'),('A', 'admin'),),
+								   null=True, blank=True)
+    def __unicode__(self):
+		return str(self.user.username)
 # class BusinessManager(models.Model):
 # """User with app settings."""
 # phone = models.CharField(max_length=50)
@@ -44,7 +51,7 @@ class Business(models.Model):
 	company_name = models.CharField(max_length=100, null=True, blank=True)
 	website = models.CharField(max_length=100, null=True, blank=True)
 	#key=models.CharField(max_length = 100,null=True,blank =True)
-	# businessmanager = models.ForeignKey(User, null=True, blank=True)
+	businessmanager = models.ForeignKey(Profile, null=True, blank=True)
 	show_tracking_company = models.CharField(max_length=1, choices=(('Y', 'yes'), ('N', 'no'),), null=True, blank=True,
 											 default='N')
 	pb = models.ForeignKey(PBUser, null=True, blank=True)
