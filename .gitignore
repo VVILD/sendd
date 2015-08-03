@@ -5,3 +5,4 @@ businessapp/migrations
 pickupboyapp/migrations
 .idea
 django_project/media/shipment
+.pycharm-bash
