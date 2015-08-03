@@ -28,8 +28,8 @@ admin.site.register(User, UserAdmin)
 # Register your models here.
 class BusinessAdmin(admin.ModelAdmin):
     # search_fields=['name']
-    list_display = ('username', 'business_name', 'pb', 'pending_orders',)
-    list_editable = ('pb',)
+    list_display = ('username', 'business_name', 'pickup_time', 'pb', 'assigned_pickup_time', 'pending_orders',)
+    list_editable = ('pb', 'assigned_pickup_time')
     raw_id_fields = ('pb',)
 
     def pending_orders(self, obj):
