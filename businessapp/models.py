@@ -1,3 +1,5 @@
+from django.core.exceptions import ValidationError
+from django.core.validators import RegexValidator
 from django.db import models
 # from django.contrib.auth.models import User
 from datetime import datetime
@@ -29,7 +31,7 @@ class Profile(models.Model):
 
 
 # class BusinessManager(User):
-#     """User with app settings."""
+# """User with app settings."""
 #     phone = models.CharField(max_length=50)
 from pickupboyapp.models import PBUser
 
@@ -155,7 +157,7 @@ class Product(models.Model):
     return_cost = models.IntegerField(default=0, null=True, blank=True)
 
     #tracking_no=models.AutoField(primary_key=True)
-    barcode = models.CharField(null=True, blank=True, max_length=255)
+    barcode = models.CharField(null=True, blank=True, default=None, max_length=12, unique=True)
     status = models.CharField(max_length=2,
                               choices=(('P', 'pending'), ('C', 'complete'), ('PU', 'pickedup'), ('CA', 'cancelled'),
                                        ('R', 'return')),
@@ -164,9 +166,9 @@ class Product(models.Model):
     date = models.DateTimeField(null=True, blank=True)
 
     def save(self, *args, **kwargs):
-        #print self.tracking_no
-        #print self.pk
-        #print "jkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkj"
+
+        if (self.barcode is not None) and (len(self.barcode) > 12 or len(self.barcode) < 10):
+            raise ValidationError("Barcode length should be 10")
         if not self.pk:
             print self.pk
             z = timezone('Asia/Kolkata')

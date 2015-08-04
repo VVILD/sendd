@@ -1,4 +1,5 @@
 import random
+from django.core.exceptions import ValidationError
 from django.db.models.signals import post_save
 from django.db import models
 from django.core.validators import RegexValidator
@@ -205,13 +206,12 @@ class Shipment(models.Model):
     cost_of_courier = models.CharField(verbose_name='item cost', max_length=100, null=True, blank=True)
     item_name = models.CharField(max_length=100, null=True, blank=True)
     kartrocket_order = models.CharField(max_length=100, null=True, blank=True)
-    barcode = models.CharField(null=True, blank=True, max_length=255)
-
+    barcode = models.CharField(null=True, blank=True, default=None, max_length=12, unique=True)
 
     def save(self, *args, **kwargs):
-        # print self.tracking_no
-        # print self.pk
-        #print "jkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkj"
+
+        if (self.barcode is not None) and (len(self.barcode) > 12 or len(self.barcode) < 10):
+            raise ValidationError("Barcode length should be 10")
         if not self.pk:
             print self.pk
             z = timezone('Asia/Kolkata')
