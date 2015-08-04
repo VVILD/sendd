@@ -34,6 +34,7 @@ class SendConfirmationMail:
             pickupTimeHTML = """ <strong>Pickup Time:&nbsp;</strong>""" + self.pickupTime + """<br /> """
         else:
             pickupTimeHTML = ""
+            self.pickupTime = ""
 
         # If no item name is available set it as ""
 
@@ -41,6 +42,7 @@ class SendConfirmationMail:
             itemHTML = """<strong>Item: </strong>""" + self.itemName + """<br />"""
         else:
             itemHTML = ""
+            self.itemName = ""
 
         # If no image URL is available then set it as ""
         if self.itemImageURL is not None:
@@ -52,6 +54,7 @@ class SendConfirmationMail:
 
         else:
             imageHTML = ""
+            self.itemImageURL = ""
 
         # If no recipient name provided, then recipient details will be not be shown in the mail
 
@@ -62,6 +65,7 @@ class SendConfirmationMail:
             recipientDetailsHTML = recipientDetailsHTML1 + recipientDetailsHTML2
         else:
             recipientDetailsHTML = ""
+            self.recipientName = ""
 
         if self.recipientAddress is None:
             self.recipientAddress = ""
