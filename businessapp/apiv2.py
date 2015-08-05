@@ -5,7 +5,7 @@ from tastypie.utils import trailing_slash
 import time
 from datetime import datetime, timedelta
 from businessapp.models import *
-from myapp.models import Zipcode
+from myapp.models import Zipcode, Shipment
 from tastypie.authorization import Authorization
 from tastypie import fields
 from tastypie.serializers import Serializer
@@ -401,6 +401,39 @@ class OrderResource(CORSModelResource):
         # bundle.data['ucts']=[{"product_date": "2015-06-07 18:40:20 ", "product_price": 50, "product_location": "Mumbai (Maharashtra)", "product_applied_weight": "null", "product_method": "Premium", "product_quantity": "null", "product_status": "Booking Received", "product_name": "clothes", "product_weight": 2, "product_shipping_cost": "null"}, {"product_date": "2015-06-07 18:40:20 ", "product_price": 60, "product_location": "Mumbai (Maharashtra)", "product_applied_weight": "null", "product_method": "Bulk", "product_quantity": "null", "product_status": "Booking Received", "product_name": "books", "product_weight": 7, "product_shipping_cost": "null"}]
 
         return bundle
+
+
+class TrackingResource(Resource):
+    class Meta:
+        resource_name = 'tracking'
+        authentication = Authentication()
+        authorization = Authorization()
+
+    def prepend_urls(self):
+        return [
+            url(r"^(?P<resource_name>%s)/(?P<tracking_id>\w+)%s$" % (self._meta.resource_name, trailing_slash()),
+                self.wrap_view('tracking'), name="api_tracking"),
+        ]
+
+    def tracking(self, request, tracking_id, **kwargs):
+        self.method_check(request, allowed=['get'])
+        self.is_authenticated(request)
+        self.throttle_check(request)
+
+        if not tracking_id:
+            raise CustomBadRequest(
+                code="request_invalid",
+                message="No tracking_id found. Please supply tracking_id as a GET URL parameter")
+        elif str(tracking_id).startswith('SE'):
+            product = Product.objects.get(barcode=tracking_id)
+        elif str(tracking_id).startswith('B'):
+            product = Product.objects.get(real_tracking_no=tracking_id)
+        else:
+            product = Shipment.objects.get(real_tracking_no=tracking_id)
+
+        bundle = {"tracking_data": product.tracking_data}
+        self.log_throttled_access(request)
+        return self.create_response(request, bundle)
 
 
 class ProductResource2(ModelResource):
