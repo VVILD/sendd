@@ -551,7 +551,7 @@ class ProductResource2(ModelResource):
         return bundle
 
 
-class InvoiceResource(Resource):
+class InvoiceResource(CORSResource):
     class Meta:
         resource_name = 'invoice'
         authentication = Authentication()
