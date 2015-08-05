@@ -403,7 +403,7 @@ class OrderResource(CORSModelResource):
         return bundle
 
 
-class TrackingResource(CORSModelResource):
+class TrackingResource(CORSResource):
     class Meta:
         resource_name = 'tracking'
         authentication = Authentication()
@@ -414,7 +414,7 @@ class TrackingResource(CORSModelResource):
             url(r"^(?P<resource_name>%s)/(?P<tracking_id>\w+)%s$" % (self._meta.resource_name, trailing_slash()),
                 self.wrap_view('tracking'), name="api_tracking"),
         ]
-
+    @csrf_exempt
     def tracking(self, request, tracking_id, **kwargs):
         self.method_check(request, allowed=['get'])
         self.is_authenticated(request)
