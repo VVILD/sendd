@@ -164,6 +164,7 @@ class Product(models.Model):
                               default='P')
 
     date = models.DateTimeField(null=True, blank=True)
+    remittance = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
 
