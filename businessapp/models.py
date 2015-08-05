@@ -11,6 +11,8 @@ import random
 import math
 from django.contrib.auth.models import User
 
+from django.db.models import signals
+
 
 class Profile(models.Model):
     user = models.OneToOneField(User)
@@ -212,7 +214,6 @@ def send_update(sender, instance, created, **kwargs):
 
 
     if instance.applied_weight:
-        print "shittt>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
         print instance.order.business.pk
         method = instance.order.method
 
@@ -287,14 +288,14 @@ def send_update(sender, instance, created, **kwargs):
                 price = price1 * instance.applied_weight
 
         Order.objects.filter(pk=instance.order.pk).update(status='D')
-        print "prrriiiceee"
+#        print "prrriiiceee"
 
         price = math.ceil(1.20 * price)
 
         Product.objects.filter(pk=instance.pk).update(shipping_cost=price, cod_cost=cod_price)
-        print "Done"
+#        print "Done"
         #MyModel.objects.filter(pk=some_value).update(field1='some value')
-        print "in  loop"
+#        print "in  loop"
 
     if instance.status == 'C' or instance.status == 'R':
         complete = True
@@ -344,6 +345,113 @@ post_save.connect(send_update, sender=Product)
 # to change cost on product when order is saved
 
 
+def send_update_order(sender, instance, created, **kwargs):
+    # product can be pending complete returned picked up
+
+    #                              choices=(('P', 'pending'), ('C', 'complete'), ('PU', 'pickedup'), ('CA', 'cancelled'), ('R', 'return')),
+
+    #       ('P', 'pending'), ('C', 'complete'), ('N', 'cancelled'), ('D', 'in transit'), ('PU', 'pickedup')), default='P')
+
+    # order will be pending intransit complete cancelled picked up
+
+
+
+    if instance.status=='C' or instance.status=='PU' or instance.status=='CA' or instance.status=='P' or instance.status=='R':
+    	products=Product.objects.filter(order=instance)
+    	signals.post_save.disconnect(send_update, sender=Product)
+    	for product in products:
+    		product.status= instance.status
+    		product.save()
+
+    	signals.post_save.connect(send_update, sender=Product)
+
+
+    products=Product.objects.filter(order=instance)
+    for product in products:
+    	print "look here for products"
+    	print product.applied_weight
+
+        if product.applied_weight:
+	        method = instance.method
+
+	        if (instance.payment_method == 'C'):
+	            cod_price1 = (1.5 / 100) * product.price
+	            if (cod_price1 < 40):
+	                cod_price = 40
+	            else:
+	                cod_price = cod_price1
+
+	        else:
+	            cod_price = 0
+
+	        pincode = instance.pincode
+	        print pincode
+
+	        two_digits = pincode[:2]
+	        three_digits = pincode[:3]
+
+	        pricing = Pricing.objects.get(pk=instance.business.pk)
+	        print "methhhhhhhoooooooooooood"
+	        print method
+	        if (method == 'N'):
+	            if (three_digits == '400'):
+	                price1 = pricing.normal_zone_a_0
+	                price2 = pricing.normal_zone_a_1
+	                price3 = pricing.normal_zone_a_2
+
+	            elif (
+	                                                        two_digits == '41' or two_digits == '42' or two_digits == '43' or two_digits == '44' or three_digits == '403' or two_digits == '36' or two_digits == '37' or two_digits == '38' or two_digits == '39'):
+	                price1 = pricing.normal_zone_b_0
+	                price2 = pricing.normal_zone_b_1
+	                price3 = pricing.normal_zone_b_2
+	            elif (two_digits == '56' or two_digits == '11' or three_digits == '600' or three_digits == '700'):
+	                price1 = pricing.normal_zone_c_0
+	                price2 = pricing.normal_zone_c_1
+	                price3 = pricing.normal_zone_c_2
+
+	            elif (two_digits == '78' or two_digits == '79' or two_digits == '18' or two_digits == '19'):
+	                price1 = pricing.normal_zone_e_0
+	                price2 = pricing.normal_zone_e_1
+	                price3 = pricing.normal_zone_e_2
+	            else:
+	                price1 = pricing.normal_zone_d_0
+	                price2 = pricing.normal_zone_d_1
+	                price3 = pricing.normal_zone_d_2
+
+	            if (product.applied_weight <= 0.25):
+	                price = price1
+	            elif (product.applied_weight <= 0.50):
+	                price = price2
+	            else:
+	                price = price2 + math.ceil((product.applied_weight * 2 - 1)) * price3
+
+	        if (method == 'B'):
+	            if (three_digits == '400'):
+	                price1 = pricing.bulk_zone_a
+
+	            elif (
+	                                                        two_digits == '41' or two_digits == '42' or two_digits == '43' or two_digits == '44' or three_digits == '403' or two_digits == '36' or two_digits == '37' or two_digits == '38' or two_digits == '39'):
+	                price1 = pricing.bulk_zone_b
+	            elif (two_digits == '56' or two_digits == '11' or three_digits == '600' or three_digits == '700'):
+	                price1 = pricing.bulk_zone_c
+
+	            elif (two_digits == '78' or two_digits == '79' or two_digits == '18' or two_digits == '19'):
+	                price1 = pricing.bulk_zone_e
+	            else:
+	                price1 = pricing.bulk_zone_d
+
+	            if (product.applied_weight <= 10):
+	                price = price1 * 10
+	            else:
+	                price = price1 * product.applied_weight
+
+#        print "prrriiiceee"
+
+        	price = math.ceil(1.20 * price)
+
+        	Product.objects.filter(pk=product.pk).update(shipping_cost=price, cod_cost=cod_price)
+
+post_save.connect(send_update_order, sender=Order)
 
 
 class Payment(models.Model):
