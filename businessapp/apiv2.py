@@ -403,7 +403,7 @@ class OrderResource(CORSModelResource):
         return bundle
 
 
-class TrackingResource(Resource):
+class TrackingResource(CORSModelResource):
     class Meta:
         resource_name = 'tracking'
         authentication = Authentication()
