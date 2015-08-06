@@ -328,7 +328,7 @@ class FilterUserAdmin(admin.ModelAdmin):
 
         profile=Profile.objects.get(user=request.user)
 
-        if (profile.usertype!='B'):
+        if (profile.usertype=='B'):
             return qs.filter()
         else:
             return qs.filter(business__businessmanager__user=request.user)
