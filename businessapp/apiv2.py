@@ -626,8 +626,11 @@ class InvoiceResource(CORSResource):
                     orders[p_order]["total_cod"] += int(product.price)
                     if not product.remittance:
                         orders[p_order]["total_remittance_pending"] += int(product.price)
-        bundle = {
-            "orders": orders
-        }
+
+        bundle = []
+        for key, value in orders.iteritems():
+            temp = [key, value]
+            bundle.append(temp)
+        bundle.sort(key=lambda x: int(x[0]))
         self.log_throttled_access(request)
         return self.create_response(request, bundle)
