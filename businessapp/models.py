@@ -202,6 +202,10 @@ class Product(models.Model):
         print "L"
 
 
+class RemittanceProduct(Product):
+    class Meta:
+        proxy = True
+
 def send_update(sender, instance, created, **kwargs):
     # product can be pending complete returned picked up
 
