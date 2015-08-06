@@ -352,7 +352,7 @@ class FilterUserAdmin(admin.ModelAdmin):
 
 class OrderAdmin(FilterUserAdmin):
     inlines = (ProductInline,)
-    search_fields = ['business__business_name', 'name', 'product__real_tracking_no']
+    search_fields = ['business__business_name', 'name', 'product__real_tracking_no', 'product__barcode']
     list_display = (
         'order_no', 'book_time', 'business_details', 'name', 'status', 'no_of_products', 'total_shipping_cost',
         'total_cod_cost', 'method')
