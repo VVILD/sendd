@@ -111,11 +111,11 @@ admin.site.register(LoginSession)
 
 class ProductAdmin(admin.ModelAdmin):
     search_fields = ['name', 'real_tracking_no']
-    list_display = ('name', 'price', 'weight', 'status', 'real_tracking_no', 'order', 'barcode',)
+    list_display = ('name', 'price', 'weight', 'status', 'real_tracking_no', 'order', 'barcode','date')
     list_editable = ('status',)
     readonly_fields = (
         'name', 'quantity', 'sku', 'price', 'weight', 'applied_weight', 'real_tracking_no', 'order', 'tracking_data',
-        'kartrocket_order', 'shipping_cost', 'cod_cost', 'status', 'date',)
+        'kartrocket_order', 'shipping_cost', 'cod_cost', 'status', 'date','barcode',)
 
 
 admin.site.register(Product, ProductAdmin)
@@ -350,6 +350,9 @@ class FilterUserAdmin(admin.ModelAdmin):
             return True
 
 
+
+
+
 class OrderAdmin(FilterUserAdmin):
     inlines = (ProductInline,)
     search_fields = ['business__business_name', 'name', 'product__real_tracking_no', 'product__barcode']
@@ -448,3 +451,31 @@ class ShipmentAdmin(admin.ModelAdmin):
 	suit_form_tabs = (('general', 'General'), ('tracking', 'Tracking'))
 
 '''
+from daterange_filter.filter import DateRangeFilter
+
+class RemittanceProductAdmin(admin.ModelAdmin):
+    list_filter=['order__business',('date', DateRangeFilter),]
+    list_editable=['remittance',]
+    list_display = (
+        'get_order_no', 'date', 'get_business', 'name', 'cod_cost', 'shipping_cost', 'status',
+        'price','remittance')
+    readonly_fields = (
+        'name', 'quantity', 'sku', 'price', 'weight', 'applied_weight', 'real_tracking_no', 'order', 'tracking_data',
+        'kartrocket_order', 'shipping_cost', 'cod_cost', 'date','barcode',)
+
+    def get_order_no(self, obj):
+        return obj.order.order_no
+    get_order_no.admin_order_field  = 'order_no'  #Allows column order sorting
+    get_order_no.short_description = 'Order No'
+
+    def get_business(self, obj):
+        return obj.order.business
+    get_business.admin_order_field  = 'business'  #Allows column order sorting
+    get_business.short_description = 'Business'
+
+    def queryset(self, request):
+        return self.model.objects.filter(order__payment_method='C').order_by('status')
+
+
+
+admin.site.register(RemittanceProduct, RemittanceProductAdmin)
