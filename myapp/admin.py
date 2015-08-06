@@ -189,7 +189,7 @@ class OrderAdmin(admin.ModelAdmin):
     # actions = [make_pending,make_complete]
     def full_address(self, obj):
         return str(obj.flat_no) + ' ' + str(obj.address) + ' ' + str(
-            obj.pincode) + '  <a href="http://sendmates.com/admin/myapp/order/%s/">edit address</a>' % (obj.pk)
+            obj.pincode) + '  <a href="/admin/myapp/order/%s/">edit address</a>' % (obj.pk)
 
     full_address.allow_tags = True
 
@@ -328,7 +328,7 @@ class OrderAdmin(admin.ModelAdmin):
         i = 0
         output = ''
         for x in shipments:
-            output = output + '<a href ="http://sendmates.com/admin/myapp/shipment/' + str(
+            output = output + '<a href ="/admin/myapp/shipment/' + str(
                 x.pk) + '/" target="_blank" >' + str(x.real_tracking_no) + '</a> <br>'
         return output
 
@@ -480,7 +480,10 @@ class ShipmentAdmin(admin.ModelAdmin):
         #print obj.pk
         print "sdddddddddddddddddddddddddddd"
         #return super(UserAdmin, self).response_change(request, obj)
-        return HttpResponseRedirect('http://sendmates.com/admin/myapp/shipment/' + str(obj.pk) + '/')
+
+        
+
+        return HttpResponseRedirect(request.build_absolute_uri('/admin/myapp/shipment/'+ str(obj.pk) + '/'))
 
     def address(self, obj):
         try:
