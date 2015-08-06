@@ -631,6 +631,6 @@ class InvoiceResource(CORSResource):
         for key, value in orders.iteritems():
             temp = [key, value]
             bundle.append(temp)
-
+        bundle.sort(key=lambda x: int(x[0]))
         self.log_throttled_access(request)
         return self.create_response(request, bundle)
