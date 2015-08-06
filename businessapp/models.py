@@ -334,9 +334,19 @@ def send_update(sender, instance, created, **kwargs):
             instance.order.status = 'RC'
             instance.order.save()
 
-    if instance.status == 'PU':
-        instance.order.status = 'PU'
-        instance.order.save()
+
+
+    if (instance.status == 'PU') or (instance.status == 'CA'):
+    	print "33333333333333333333333333333333333333333333	"
+    	pickedup = True
+    	products_in_order = Product.objects.filter(order=instance.order)
+        for product in products_in_order:
+        	if (product.status!='PU') & (product.status!='CA'):
+        		pickedup=False 
+
+        if (pickedup):
+        	instance.order.status = 'PU'
+        	instance.order.save()
 
 
 post_save.connect(send_update, sender=Product)

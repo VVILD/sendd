@@ -1,4 +1,7 @@
-business_product_url = 'http://sendmates.com/admin/businessapp/product/'
+
+
+
+
 
 from django.contrib import admin
 from .models import *
@@ -109,7 +112,7 @@ admin.site.register(LoginSession)
 class ProductAdmin(admin.ModelAdmin):
     search_fields = ['name', 'real_tracking_no']
     list_display = ('name', 'price', 'weight', 'status', 'real_tracking_no', 'order', 'barcode',)
-    list_editable = ('status', 'barcode',)
+    list_editable = ('status',)
     readonly_fields = (
         'name', 'quantity', 'sku', 'price', 'weight', 'applied_weight', 'real_tracking_no', 'order', 'tracking_data',
         'kartrocket_order', 'shipping_cost', 'cod_cost', 'status', 'date',)
@@ -156,11 +159,12 @@ class ProductInline(admin.TabularInline):
             obj.price) + '<br>' + "<b>tracking_no:</b>" + str(
             obj.real_tracking_no) + '<br>' + "<b>kartrocket_order:</b>" + str(
             obj.kartrocket_order) + '<br>' + "<b>Mapped_tracking_no:</b>" + str(
-            obj.mapped_tracking_no) + '<br>' + "<b>company:</b>" + str(
+            obj.mapped_tracking_no) + '<br>'+ "<b>status</b>" + str(
+            obj.status) + '<br>' + "<b>company:</b>" + str(
             obj.company) + '<br>' + "<b>Shipping cost:</b>" + str(
             obj.shipping_cost) + '<br>' + "<b>Cod cost:</b>" + str(
             obj.cod_cost) + '<br>' + "<b><a href='%s%s/' target='_blank' >Product link (use this only when parcel is not sent via KARTROCKET):</b></a>" % (
-            business_product_url, obj.pk)
+            "/admin/businessapp/product/", obj.pk)
 
     product_info.allow_tags = True
     #'cod_cost'
@@ -339,7 +343,8 @@ class FilterUserAdmin(admin.ModelAdmin):
             return True
         profile=Profile.objects.get(user=request.user)
 
-        if (profile.usertype!='B'):
+        if (profile.usertype=='B'):
+
             return obj.business.businessmanager.user == request.user
         else:
             return True
@@ -347,7 +352,7 @@ class FilterUserAdmin(admin.ModelAdmin):
 
 class OrderAdmin(FilterUserAdmin):
     inlines = (ProductInline,)
-    search_fields = ['business__business_name', 'name', 'product__real_tracking_no']
+    search_fields = ['business__business_name', 'name', 'product__real_tracking_no', 'product__barcode']
     list_display = (
         'order_no', 'book_time', 'business_details', 'name', 'status', 'no_of_products', 'total_shipping_cost',
         'total_cod_cost', 'method')
@@ -372,7 +377,7 @@ class OrderAdmin(FilterUserAdmin):
         #print obj.pk
         print "sdddddddddddddddddddddddddddd"
         #return super(UserAdmin, self).response_change(request, obj)
-        return HttpResponseRedirect('http://sendmates.com/admin/businessapp/order/' + str(obj.pk) + '/')
+        return HttpResponseRedirect(request.build_absolute_uri('/admin/businessapp/order/' + str(obj.pk) + '/'))
 
     def suit_row_attributes(self, obj, request):
         print obj.name
