@@ -1695,7 +1695,8 @@ class WeborderResource2(CORSModelResource):
 
         # create order
         order = Order.objects.create(namemail=newnamemail, user=newuser, address=bundle.data['pickup_location'],
-                                        way='W', pick_now='N', pincode=bundle.data['pickup_pincode'])
+                                     way='W', pick_now='N', pincode=bundle.data['pickup_pincode'],
+                                     date=bundle.data['pickup_pincode'], time=bundle.data['pickup_time'])
         order_pk = order.pk
 
         # create address
@@ -1830,7 +1831,7 @@ class OrderResource2(MultipartResource, ModelResource):
                 else:
                     print "purane users"
                     bundle.data['promomsg'] = "You are not a first time user"
-                # bundle.data['valid']='N'
+                    # bundle.data['valid']='N'
             else:
                 bundle.data['promocode'] = "/api/v2/promocode/" + str(promocode.pk) + "/"
                 print str(bundle.data['code'])
