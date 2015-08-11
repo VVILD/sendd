@@ -1953,12 +1953,11 @@ class ShipmentResource2(MultipartResource, CORSModelResource):
             override_method = bundle.request.META['HTTP_X_HTTP_METHOD_OVERRIDE']
         except:
             override_method = 'none'
-
+        order_pk = str(bundle.data['order']).split('/')[-2]
+        address_pk = str(bundle.data['drop_address']).split('/')[-2]
+        order = Order.objects.get(pk=order_pk)
+        address = Address.objects.get(pk=address_pk)
         if bundle.request.META['REQUEST_METHOD'] == 'POST' and override_method != 'PATCH':
-            order_pk = str(bundle.data['order']).split('/')[-2]
-            address_pk = str(bundle.data['drop_address']).split('/')[-2]
-            order = Order.objects.get(pk=order_pk)
-            address = Address.objects.get(pk=address_pk)
             # # sending mail and sms
             email = order.namemail.email
             name = order.namemail.name
@@ -2026,6 +2025,21 @@ class ShipmentResource2(MultipartResource, CORSModelResource):
                 'tracking_no']
             return bundle
         else:
+            bundle.data['drop_address'] = address
+            bundle.data['pincode'] = address.pincode
+            if bundle.data['img'] is not None:
+                img_name = bundle.data['img'].split('/')[-1]
+                bundle.data['img'] = 'http://128.199.159.90/static/' + img_name
+            bundle.data['date'] = order.date
+            bundle.data['time'] = order.time
+            bundle.data['address'] = order.address
+            bundle.data['name'] = order.namemail.name
+            bundle.data['email'] = order.namemail.email
+            bundle.data['phone'] = order.user.phone
+            order_pk = str(bundle.data['order']).split('/')[-2]
+            bundle.data['order'] = order_pk
+            bundle.data['tracking_no'], bundle.data['real_tracking_no'] = bundle.data['real_tracking_no'], bundle.data[
+                'tracking_no']
             return bundle
 
 
