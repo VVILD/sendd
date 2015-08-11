@@ -390,7 +390,7 @@ class OrderAdmin(FilterUserAdmin):
             'F': 'info',
         }.get(obj.status)
         if css_class:
-            return {'class': css_class, 'data': str(obj.name)}
+            return {'class': css_class, 'data': obj.name.encode('utf-8')}
 
     def business_details(self, obj):
         return '<a href="/admin/businessapp/business/%s/">%s</a>' % (obj.business.username, obj.business.business_name)
