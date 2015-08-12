@@ -129,7 +129,7 @@ def detail(request):
 
 def results(request):
 	todays_date=date.today()
-	threshold_days_before=date.today()-datetime.timedelta(days=3)
+	threshold_days_before=date.today()-datetime.timedelta(days=2)
 
 # today min/max
 	
@@ -148,7 +148,8 @@ def results(request):
 
 	
 #b2b week
-	late_orders_b2b =BOrder.objects.filter(Q(book_time__range=(start_date,date_max))&(Q(status='P') | Q(status='PU')| Q(status='D')))
+	holachef=Business.objects.get(pk='holachef')
+	late_orders_b2b =BOrder.objects.filter(Q(book_time__range=(start_date,date_max))&(Q(status='P') | Q(status='PU')| Q(status='D'))).exclude(business=holachef)
 	late_products_b2b=Product.objects.filter(Q(order=late_orders_b2b))
 
 	for product in late_products_b2b:
