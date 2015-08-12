@@ -610,7 +610,7 @@ class InvoiceResource(CORSResource):
                     "receiver_name": product.order.name,
                     "total_shipping_cost": int(product.shipping_cost) + int(product.return_cost) + int(
                         product.cod_cost),
-                    "total_cod": 0,
+                    "total_cod_remittance": 0,
                     "total_remittance_pending": 0
                 }
                 orders[p_order]['products'] = [{
@@ -627,9 +627,6 @@ class InvoiceResource(CORSResource):
                     orders[p_order]["total_cod_remittance"] += int(product.price)
                     if not product.remittance:
                         orders[p_order]["total_remittance_pending"] += int(product.price)
-                else:
-                    orders[p_order]["total_cod_remittance"] = 0
-                    orders[p_order]["total_remittance_pending"] = 0
 
         bundle = []
         for key, value in orders.iteritems():
