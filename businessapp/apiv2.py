@@ -414,6 +414,7 @@ class TrackingResource(CORSResource):
             url(r"^(?P<resource_name>%s)/(?P<tracking_id>\w+)%s$" % (self._meta.resource_name, trailing_slash()),
                 self.wrap_view('tracking'), name="api_tracking"),
         ]
+
     @csrf_exempt
     def tracking(self, request, tracking_id, **kwargs):
         self.method_check(request, allowed=['get'])
@@ -599,8 +600,8 @@ class InvoiceResource(CORSResource):
                 })
                 orders[p_order]["total_shipping_cost"] += int(product.shipping_cost) + int(product.return_cost) + int(
                     product.cod_cost)
-                if product.order.payment_method == 'C':
-                    orders[p_order]["total_cod"] += int(product.price)
+                if product.order.payment_method == 'C' and product.status != 'R':
+                    orders[p_order]["total_cod_remittance"] += int(product.price)
                     if not product.remittance:
                         orders[p_order]["total_remittance_pending"] += int(product.price)
             else:
@@ -622,8 +623,8 @@ class InvoiceResource(CORSResource):
                                                    "price": product.price,
                                                    "remittance": product.remittance
                                                }]
-                if product.order.payment_method == 'C':
-                    orders[p_order]["total_cod"] += int(product.price)
+                if product.order.payment_method == 'C' and product.status != 'R':
+                    orders[p_order]["total_cod_remittance"] += int(product.price)
                     if not product.remittance:
                         orders[p_order]["total_remittance_pending"] += int(product.price)
 
