@@ -2024,7 +2024,7 @@ class ShipmentResource2(MultipartResource, CORSModelResource):
             bundle.data['tracking_no'], bundle.data['real_tracking_no'] = bundle.data['real_tracking_no'], bundle.data[
                 'tracking_no']
             return bundle
-        else:
+        elif bundle.request.META['REQUEST_METHOD'] == 'GET':
             bundle.data['drop_address'] = address
             bundle.data['pincode'] = address.pincode
             if bundle.data['img'] is not None:
@@ -2040,6 +2040,8 @@ class ShipmentResource2(MultipartResource, CORSModelResource):
             bundle.data['order'] = order_pk
             bundle.data['tracking_no'], bundle.data['real_tracking_no'] = bundle.data['real_tracking_no'], bundle.data[
                 'tracking_no']
+            return bundle
+        else:
             return bundle
 
 
