@@ -579,7 +579,7 @@ class InvoiceResource(CORSResource):
                 message="Please supply all 3 GET parameters: start_date, end_date and b_username")
 
         business = Business.objects.get(pk=b_username)
-        start_date = datetime.strptime(str(start_date), "%d-%m-%Y") + timedelta(days=-1)
+        start_date = datetime.strptime(str(start_date), "%d-%m-%Y")
         end_date = datetime.strptime(str(end_date), "%d-%m-%Y") + timedelta(days=1)
 
         products = Product.objects.filter(Q(order__business=business), Q(status='C') | Q(status='R'),
