@@ -320,6 +320,8 @@ def send_update(sender, instance, created, **kwargs):
             elif (product.status != 'R' & product.status != 'C'):
                 other_case = True
 
+        signals.post_save.disconnect(send_update_order, sender=Order)
+
         if (complete & (not return_value)):
             #print "am i here"
             #print "1111111111111111111111111111111111111111111111"
@@ -338,6 +340,8 @@ def send_update(sender, instance, created, **kwargs):
             instance.order.status = 'RC'
             instance.order.save()
 
+     	signals.post_save.connect(send_update_order, sender=Order)
+
 
 
     if (instance.status == 'PU') or (instance.status == 'CA'):
@@ -349,8 +353,11 @@ def send_update(sender, instance, created, **kwargs):
         		pickedup=False 
 
         if (pickedup):
+        	signals.post_save.disconnect(send_update_order, sender=Order)
         	instance.order.status = 'PU'
         	instance.order.save()
+        	signals.post_save.connect(send_update_order, sender=Order)
+
 
 
 post_save.connect(send_update, sender=Product)
