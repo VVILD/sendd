@@ -452,11 +452,11 @@ class ShipmentAdmin(admin.ModelAdmin):
 '''
 from daterange_filter.filter import DateRangeFilter
 
-class RemittanceProductAdmin(admin.ModelAdmin):
+class RemittanceProductPendingAdmin(admin.ModelAdmin):
     list_filter=['order__business',('date', DateRangeFilter),]
     list_editable=['remittance',]
     list_display = (
-        'get_order_no', 'date', 'get_business', 'name', 'cod_cost', 'shipping_cost', 'status',
+        'get_order_no','order_link', 'date', 'get_business', 'name', 'cod_cost', 'shipping_cost', 'status',
         'price','remittance')
     readonly_fields = (
         'name', 'quantity', 'sku', 'price', 'weight', 'applied_weight', 'real_tracking_no', 'order', 'tracking_data',
@@ -467,14 +467,49 @@ class RemittanceProductAdmin(admin.ModelAdmin):
     get_order_no.admin_order_field  = 'order_no'  #Allows column order sorting
     get_order_no.short_description = 'Order No'
 
+    def order_link(self, obj):
+        return '<a href="/admin/businessapp/order/%s/">%s</a>' % (obj.order.pk, obj.order.pk)
+    order_link.allow_tags = True
+
     def get_business(self, obj):
         return obj.order.business
     get_business.admin_order_field  = 'business'  #Allows column order sorting
     get_business.short_description = 'Business'
 
     def queryset(self, request):
-        return self.model.objects.filter(order__payment_method='C').order_by('status')
+        return self.model.objects.filter(order__payment_method='C').order_by('status').exclude(remittance=True)
 
 
 
-admin.site.register(RemittanceProduct, RemittanceProductAdmin)
+admin.site.register(RemittanceProductPending, RemittanceProductPendingAdmin)
+
+class RemittanceProductCompleteAdmin(admin.ModelAdmin):
+    list_filter=['order__business',('date', DateRangeFilter),]
+    list_editable=['remittance',]
+    list_display = (
+        'get_order_no', 'order_link','date', 'get_business', 'name', 'cod_cost', 'shipping_cost', 'status',
+        'price','remittance')
+    readonly_fields = (
+        'name', 'quantity', 'sku', 'price', 'weight', 'applied_weight', 'real_tracking_no', 'order', 'tracking_data',
+        'kartrocket_order', 'shipping_cost', 'cod_cost', 'date','barcode',)
+
+    def get_order_no(self, obj):
+        return obj.order.order_no
+    get_order_no.admin_order_field  = 'order_no'  #Allows column order sorting
+    get_order_no.short_description = 'Order No'
+
+    def order_link(self, obj):
+        return '<a href="/admin/businessapp/order/%s/">%s</a>' % (obj.order.pk, obj.order.pk)
+    order_link.allow_tags = True
+
+    def get_business(self, obj):
+        return obj.order.business
+    get_business.admin_order_field  = 'business'  #Allows column order sorting
+    get_business.short_description = 'Business'
+
+    def queryset(self, request):
+        return self.model.objects.filter(order__payment_method='C').order_by('status').exclude(remittance=False)
+
+
+
+admin.site.register(RemittanceProductComplete, RemittanceProductCompleteAdmin)
