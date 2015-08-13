@@ -469,9 +469,7 @@ class RemittanceProductPendingAdmin(admin.ModelAdmin):
 
     def order_link(self, obj):
         return '<a href="/admin/businessapp/order/%s/">%s</a>' % (obj.order.pk, obj.order.pk)
-    get_order_no.admin_order_field  = 'order_link'  #Allows column order sorting
-    get_order_no.short_description = 'Order link'
-
+    order_link.allow_tags = True
 
     def get_business(self, obj):
         return obj.order.business
@@ -502,9 +500,7 @@ class RemittanceProductCompleteAdmin(admin.ModelAdmin):
 
     def order_link(self, obj):
         return '<a href="/admin/businessapp/order/%s/">%s</a>' % (obj.order.pk, obj.order.pk)
-    get_order_no.admin_order_field  = 'order_link'  #Allows column order sorting
-    get_order_no.short_description = 'Order link'
-
+    order_link.allow_tags = True
 
     def get_business(self, obj):
         return obj.order.business
