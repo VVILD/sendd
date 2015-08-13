@@ -138,10 +138,10 @@ class Order(models.Model):
 
 
 class Product(models.Model):
-    name = models.CharField(max_length=100, null=True, blank=True)
+    name = models.TextField(null=True, blank=True)
     quantity = models.IntegerField(max_length=10, null=True, blank=True)
     sku = models.CharField(max_length=100, null=True, blank=True)
-    price = models.IntegerField(max_length=10, null=True, blank=True)
+    price = models.FloatField(default=0.0)
     weight = models.FloatField(max_length=10, null=True, blank=True)
     applied_weight = models.FloatField(max_length=10, null=True, blank=True)
     order = models.ForeignKey(Order, null=True, blank=True)
@@ -154,9 +154,9 @@ class Product(models.Model):
                                         ('A', 'Aramex'), ('E', 'Ecomexpress'), ('DT', 'dtdc'), ('FF', 'First Flight'),
                                         ('M', 'Maruti courier'), ('I', 'India Post'), ('S', 'Sendd')],
                                blank=True, null=True)
-    shipping_cost = models.IntegerField(null=True, blank=True)
-    cod_cost = models.IntegerField(default=0, null=True, blank=True)
-    return_cost = models.IntegerField(default=0, null=True, blank=True)
+    shipping_cost = models.FloatField(default=0.0)
+    cod_cost = models.FloatField(default=0.0)
+    return_cost = models.FloatField(default=0.0)
 
     #tracking_no=models.AutoField(primary_key=True)
     barcode = models.CharField(null=True, blank=True, default=None, max_length=12, unique=True)
@@ -476,10 +476,11 @@ post_save.connect(send_update_order, sender=Order)
 
 
 class Payment(models.Model):
-    amount = models.IntegerField()
-    payment_time = models.DateTimeField(null=True, blank=True)
+    amount = models.FloatField(default=0.0)
+    payment_time = models.DateTimeField(blank=True, null=True)
     method = models.CharField(max_length=100, null=True, blank=True)
     business = models.ForeignKey(Business)
+    bill = models.ForeignKey(Billing, related_name='payments')
 
     def save(self, *args, **kwargs):
         ''' On save, update timestamps '''
@@ -492,7 +493,19 @@ class Payment(models.Model):
 
 
 class Billing(models.Model):
-    business = models.ForeignKey(Business, null=True, blank=True)
+    id = models.AutoField(primary_key=True)
+    start_date = models.DateField()
+    end_date = models.DateField()
+    business = models.ForeignKey(Business, related_name='bills')
+    orders = models.ManyToManyField(Order, related_name='bill')
+    total_shipping_cost = models.FloatField(default=0.0)
+    total_cod_remittance_eligible = models.FloatField(default=0.0)
+    total_cod_remittance_pending = models.FloatField(default=0.0)
+    service_tax = models.FloatField(default=0.0)
+    discounts = models.FloatField(default=0.0)
+    carryover_balance = models.FloatField(default=0.0)
+    balance_due = models.FloatField(default=0.0)
+    due_date = models.DateField()
 
 
 class X(models.Model):
