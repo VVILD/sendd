@@ -202,7 +202,12 @@ class Product(models.Model):
         print "L"
 
 
-class RemittanceProduct(Product):
+class RemittanceProductPending(Product):
+    class Meta:
+        proxy = True
+
+
+class RemittanceProductComplete(Product):
     class Meta:
         proxy = True
 
