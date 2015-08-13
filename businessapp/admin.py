@@ -456,7 +456,7 @@ class RemittanceProductPendingAdmin(admin.ModelAdmin):
     list_filter=['order__business',('date', DateRangeFilter),]
     list_editable=['remittance',]
     list_display = (
-        'get_order_no', 'date', 'get_business', 'name', 'cod_cost', 'shipping_cost', 'status',
+        'get_order_no','order_link', 'date', 'get_business', 'name', 'cod_cost', 'shipping_cost', 'status',
         'price','remittance')
     readonly_fields = (
         'name', 'quantity', 'sku', 'price', 'weight', 'applied_weight', 'real_tracking_no', 'order', 'tracking_data',
@@ -466,6 +466,12 @@ class RemittanceProductPendingAdmin(admin.ModelAdmin):
         return obj.order.order_no
     get_order_no.admin_order_field  = 'order_no'  #Allows column order sorting
     get_order_no.short_description = 'Order No'
+
+    def order_link(self, obj):
+        return '<a href="/admin/businessapp/order/%s/">%s</a>' % (obj.order.pk, obj.order.pk)
+    get_order_no.admin_order_field  = 'order_link'  #Allows column order sorting
+    get_order_no.short_description = 'Order link'
+
 
     def get_business(self, obj):
         return obj.order.business
@@ -483,7 +489,7 @@ class RemittanceProductCompleteAdmin(admin.ModelAdmin):
     list_filter=['order__business',('date', DateRangeFilter),]
     list_editable=['remittance',]
     list_display = (
-        'get_order_no', 'date', 'get_business', 'name', 'cod_cost', 'shipping_cost', 'status',
+        'get_order_no', 'order_link','date', 'get_business', 'name', 'cod_cost', 'shipping_cost', 'status',
         'price','remittance')
     readonly_fields = (
         'name', 'quantity', 'sku', 'price', 'weight', 'applied_weight', 'real_tracking_no', 'order', 'tracking_data',
@@ -493,6 +499,12 @@ class RemittanceProductCompleteAdmin(admin.ModelAdmin):
         return obj.order.order_no
     get_order_no.admin_order_field  = 'order_no'  #Allows column order sorting
     get_order_no.short_description = 'Order No'
+
+    def order_link(self, obj):
+        return '<a href="/admin/businessapp/order/%s/">%s</a>' % (obj.order.pk, obj.order.pk)
+    get_order_no.admin_order_field  = 'order_link'  #Allows column order sorting
+    get_order_no.short_description = 'Order link'
+
 
     def get_business(self, obj):
         return obj.order.business
