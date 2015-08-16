@@ -481,6 +481,7 @@ class RemittanceProductPendingAdmin(admin.ModelAdmin):
 
 
 
+
 admin.site.register(RemittanceProductPending, RemittanceProductPendingAdmin)
 
 class RemittanceProductCompleteAdmin(admin.ModelAdmin):
