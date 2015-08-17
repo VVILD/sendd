@@ -87,7 +87,7 @@ class Order(models.Model):
     order_status = models.CharField(max_length=2,
                                     choices=(
                                         ('O', 'order_recieved'), ('AP', 'Approved'),('A', 'Alloted'), ('P', 'picked up'), ('Pa', 'packed'),
-                                        ('C', 'completed'), ('D', 'delivered'), ('N', 'cancelled'), ('F', 'fake'),
+                                        ('C', 'completed'), ('D', 'delivered'),('Di', 'dispatched'), ('N', 'cancelled'), ('F', 'fake'),
                                         ('Q', 'query'),), null=True, blank=True, default='O')
 
     comment = models.TextField(null=True, blank=True)
@@ -126,12 +126,27 @@ class Order(models.Model):
         z = timezone('Asia/Kolkata')
         fmt = '%Y-%m-%d %H:%M:%S'
         ind_time = datetime.now(z)
+
+
+# change status to alloted if pickupboy is assigned
+
+        if self.pb and self.order_status=='AP':
+        	self.order_status='A'
+
         if not self.pk:
             self.book_time = ind_time.strftime(fmt)
         super(Order, self).save(*args, **kwargs)
 
 
 class ReceivedOrder(Order):
+    class Meta:
+        proxy = True
+
+class ApprovedOrder(Order):
+    class Meta:
+        proxy = True
+
+class ApprovedOrderops(Order):
     class Meta:
         proxy = True
 
@@ -160,10 +175,17 @@ class FakeOrder(Order):
     class Meta:
         proxy = True
 
+class CancelledOrder(Order):
+    class Meta:
+        proxy = True
+
 
 class QueryOrder(Order):
     class Meta:
         proxy = True
+
+
+
 
 
 class Shipment(models.Model):
@@ -238,6 +260,35 @@ class Shipment(models.Model):
             print "H"
         super(Shipment, self).save(*args, **kwargs)
         print "L"
+
+def send_update(sender, instance, created, **kwargs):
+    # product can be pending complete returned picked up
+
+    #                              choices=(('P', 'pending'), ('C', 'complete'), ('PU', 'pickedup'), ('CA', 'cancelled'), ('R', 'return')),
+
+    #       ('P', 'pending'), ('C', 'complete'), ('N', 'cancelled'), ('D', 'in transit'), ('PU', 'pickedup')), default='P')
+
+    # order will be pending intransit complete cancelled picked up
+
+
+
+    if (instance.status == 'PU') or (instance.status == 'CA'):
+    	pickedup = True
+    	products_in_order = Shipment.objects.filter(order=instance.order)
+        for product in products_in_order:
+        	if (product.status!='PU') & (product.status!='CA'):
+        		pickedup=False 
+
+        if (pickedup):
+#        	signals.post_save.disconnect(send_update_order, sender=Order)
+        	instance.order.order_status = 'P'
+        	instance.order.save()
+ #       	signals.post_save.connect(send_update_order, sender=Order)
+
+
+
+post_save.connect(send_update, sender=Shipment)
+
 
 
 class Forgotpass(models.Model):

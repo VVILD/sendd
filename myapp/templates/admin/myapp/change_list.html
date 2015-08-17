@@ -2,7 +2,20 @@
 
 
 {% block content %}
-    <center>
+
+
+{% if cs %}
+
+<center>
+<a class="btn btn-info" href="/admin/myapp/receivedorder/"><span class="badge">{{o}}</span> Recieved Orders <br> Approve</a>
+   <a class="btn btn-info" href="/admin/myapp/approvedorder/"><span class="badge">{{a}}</span>Approved</a>
+<a class="btn btn-info" href="/admin/myapp/cancelledorder/">cancelled orders</a>
+
+</center>
+<br>
+<br>
+{% else %}
+<center>
 <div class="row">
         <div class="col-md-6">Today Customers Orders
         <br>
@@ -24,5 +37,7 @@
 <br>
 </div>
     </center>
+    {% endif %}
+
     {{ block.super }}
 {% endblock %}
