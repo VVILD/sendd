@@ -86,7 +86,7 @@ class Order(models.Model):
 
     order_status = models.CharField(max_length=2,
                                     choices=(
-                                        ('O', 'order_recieved'), ('A', 'Alloted'), ('P', 'picked up'), ('Pa', 'packed'),
+                                        ('O', 'order_recieved'), ('AP', 'Approved'),('A', 'Alloted'), ('P', 'picked up'), ('Pa', 'packed'),
                                         ('C', 'completed'), ('D', 'delivered'), ('N', 'cancelled'), ('F', 'fake'),
                                         ('Q', 'query'),), null=True, blank=True, default='O')
 

@@ -17,7 +17,7 @@ from django.db.models import signals
 class Profile(models.Model):
     user = models.OneToOneField(User)
     phone = models.CharField(max_length=100)
-    usertype = models.CharField(max_length=1, choices=(('O', 'ops'), ('B', 'bd'), ('A', 'admin'),),
+    usertype = models.CharField(max_length=1, choices=(('O', 'ops'), ('B', 'bd'), ('A', 'admin'),('C', 'customer support'),),
                                 null=True, blank=True)
 
     def __unicode__(self):
