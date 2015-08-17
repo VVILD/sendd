@@ -11,6 +11,7 @@ from datetime import date
 import datetime
 from django.db.models import Avg, Sum, Q
 
+import json
 
 class UserAdmin(admin.ModelAdmin):
 	search_fields = ['phone', 'name']
@@ -80,7 +81,7 @@ class OrderAdmin(admin.ModelAdmin):
 	# inlines=(ShipmentInline,)
 	save_as = True
 	list_per_page = 25
-	search_fields = ['user__phone', 'name', 'namemail__name', 'namemail__email', 'promocode__code', ]
+	search_fields = ['user__phone', 'name', 'namemail__name', 'namemail__email', 'promocode__code', 'shipment__barcode', 'shipment__real_tracking_nox']
 	list_display = (
 		'order_no', 'book_time', 'promocode', 'date', 'time', 'full_address', 'name_email', 'order_status', 'way',
 		'pb', 'comment', 'shipments', 'send_invoice')
@@ -403,6 +404,73 @@ class CSBaseOrderAdmin(OrderAdmin):
 		return super(OrderAdmin, self).changelist_view(request, extra_context=context)
 
 
+class OPBaseOrderAdmin(OrderAdmin):
+
+	list_editable = ( 'pb', 'comment',)
+
+	def changelist_view(self, request, extra_context=None):
+		extra_context = extra_context or {}
+		op=False
+		try:
+			profile=Profile.objects.get(user=request.user)
+			usertype=profile.usertype
+			if (usertype=='O'):
+				op=True
+
+		except:
+			pass
+
+		#approvedops
+		ap = Order.objects.filter(order_status='AP').count()
+		#alloted
+		a = Order.objects.filter(order_status='A').count()
+		#pickedup
+		p = Order.objects.filter(order_status='P').count()
+		#dispatched
+		c = Order.objects.filter(order_status='C').count()
+
+		context = {'op': op, 'ap':ap, 'a':a, 'p':p, 'c':c }
+		return super(OrderAdmin, self).changelist_view(request, extra_context=context)
+
+
+#ops
+class DispatchedOrderAdmin(OPBaseOrderAdmin):
+	def queryset(self, request):
+		return self.model.objects.filter(order_status='C')
+
+
+admin.site.register(DispatchedOrder, DispatchedOrderAdmin)
+
+class PickedupOrderAdmin(OPBaseOrderAdmin):
+
+
+	def queryset(self, request):
+		return self.model.objects.filter(order_status='P')
+
+
+admin.site.register(PickedupOrder, PickedupOrderAdmin)
+
+class AllotedOrderAdmin(OPBaseOrderAdmin):
+
+	def queryset(self, request):
+		return self.model.objects.filter(order_status='A')
+
+
+admin.site.register(AllotedOrder, AllotedOrderAdmin)
+
+
+class ApprovedOrderopsAdmin(OPBaseOrderAdmin):
+
+	def queryset(self, request):
+		return self.model.objects.filter(order_status='AP').order_by('time')
+
+
+admin.site.register(ApprovedOrderops, ApprovedOrderopsAdmin)
+
+
+#opsend
+
+
 class ReceivedOrderAdmin(CSBaseOrderAdmin):
 
 	def make_approved(modeladmin, request, queryset):
@@ -434,29 +502,12 @@ class ApprovedOrderAdmin(CSBaseOrderAdmin):
 
 admin.site.register(ApprovedOrder, ApprovedOrderAdmin)
 
-class ApprovedOrderopsAdmin(OrderAdmin):
-
-	def queryset(self, request):
-		return self.model.objects.filter(order_status='AP').order_by('time')
-
-
-admin.site.register(ApprovedOrderops, ApprovedOrderopsAdmin)
 
 def make_pickedup(modeladmin, request, queryset):
 	queryset.update(order_status='P')
 
 
 make_alloted.short_description = "Mark selected orders as picked up"
-
-
-class AllotedOrderAdmin(OrderAdmin):
-	actions = [make_pickedup]
-
-	def queryset(self, request):
-		return self.model.objects.filter(order_status='A')
-
-
-admin.site.register(AllotedOrder, AllotedOrderAdmin)
 
 
 class CancelledOrderAdmin(CSBaseOrderAdmin):
@@ -473,14 +524,6 @@ def make_packed(modeladmin, request, queryset):
 make_alloted.short_description = "Mark selected orders as packed"
 
 
-class PickedupOrderAdmin(OrderAdmin):
-	actions = [make_packed]
-
-	def queryset(self, request):
-		return self.model.objects.filter(order_status='P')
-
-
-admin.site.register(PickedupOrder, PickedupOrderAdmin)
 
 
 def make_complete(modeladmin, request, queryset):
@@ -499,13 +542,6 @@ class PackedOrderAdmin(OrderAdmin):
 
 admin.site.register(PackedOrder, PackedOrderAdmin)
 
-
-class CompletedOrderAdmin(OrderAdmin):
-	def queryset(self, request):
-		return self.model.objects.filter(order_status='C')
-
-
-admin.site.register(CompletedOrder, CompletedOrderAdmin)
 
 
 class FakeOrderAdmin(OrderAdmin):
@@ -820,6 +856,45 @@ class ShipmentAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Shipment, ShipmentAdmin)
+
+
+class QcShipmentAdmin(ShipmentAdmin):
+	def queryset(self, request):
+
+		return self.model.objects.filter(order__order_status='C')
+
+	list_display = (
+		'real_tracking_no', 'tracking_status' ,'update_time','parcel_details','category', 'drop_phone', 'drop_name', 'address','barcode')
+	list_filter = ['category']
+	list_editable = ()
+	readonly_fields = ('category','drop_phone', 'drop_name', 'status', 'address','barcode','tracking_data','parcel_details','real_tracking_no','name','weight','cost_of_courier','price')
+	
+	search_fields = ['order__order_no', 'real_tracking_no', 'mapped_tracking_no', 'drop_phone', 'drop_name']
+	
+	fieldsets = (
+		('Basic Information', {'fields': ['real_tracking_no', 'parcel_details', ('category', 'status')],
+							   'classes': ('suit-tab', 'suit-tab-general')}),
+		('Parcel Information',
+		 {'fields': [('name', 'weight', 'cost_of_courier'), ], 'classes': ('suit-tab', 'suit-tab-general')}),
+		('Amount paid', {'fields': ['price', ], 'classes': ('suit-tab', 'suit-tab-general')}),
+		('Tracking Information',
+		 {'fields': [('mapped_tracking_no', 'company'), 'kartrocket_order'], 'classes': ('suit-tab', 'suit-tab-general')}),
+		#('Destination Address', {'fields':['drop_name','drop_phone','drop_flat_no','locality','city','state','drop_pincode','country'] , 'classes':['collapse',]})
+		('Destination Address',
+		 {'fields': [('drop_name', 'drop_phone'), 'address', ], 'classes': ('suit-tab', 'suit-tab-general')}),
+		('Tracking', {'fields': ['tracking_data'], 'classes': ('suit-tab', 'suit-tab-tracking')})
+	)
+
+	suit_form_tabs = (('general', 'General'), ('tracking', 'Tracking'))
+
+	def tracking_status(self, obj):
+		#pk=obj.namemail.pk
+		return json.loads(obj.tracking_data)[-1]['status']
+	tracking_status.allow_tags = True
+	tracking_status.admin_order_field  = 'tracking_data'
+
+
+admin.site.register(QcShipment, QcShipmentAdmin)
 
 
 class ZipcodeAdmin(admin.ModelAdmin):

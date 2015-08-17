@@ -12,6 +12,11 @@ from django.db.models import Sum
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 
+import datetime
+
+from datetime import date
+
+
 class ProfileInline(admin.StackedInline):
     model = Profile
     can_delete = False
@@ -30,9 +35,9 @@ admin.site.register(User, UserAdmin)
 
 # Register your models here.
 class BusinessAdmin(admin.ModelAdmin):
-    # search_fields=['name']
-    list_display = ('username', 'business_name', 'pickup_time', 'pb', 'assigned_pickup_time', 'pending_orders',)
-    list_editable = ('pb', 'assigned_pickup_time')
+    search_fields=['username','business_name']
+    list_display = ('username', 'business_name', 'pickup_time', 'pb', 'assigned_pickup_time', 'pending_orders','pickedup_orders','pending_orders_today','daily')
+    list_editable = ('pb', 'assigned_pickup_time','daily')
     raw_id_fields = ('pb',)
 
     def pending_orders(self, obj):
@@ -41,6 +46,55 @@ class BusinessAdmin(admin.ModelAdmin):
             obj.username, po_count)
 
     pending_orders.allow_tags = True
+
+    def pickedup_orders(self, obj):
+        po_count = Order.objects.filter(status='PU', business__username=obj.username).count()
+        return '<a href="/admin/businessapp/order/?q=&business__username__exact=%s&status__exact=PU"> %s </a>' % (
+            obj.username, po_count)
+
+    pickedup_orders.allow_tags = True
+
+    def pending_orders_today(self, obj):
+        todays_date=date.today()
+        date_max = datetime.datetime.combine(todays_date, datetime.time.max)
+        date_min = datetime.datetime.combine(todays_date, datetime.time.min)
+        po_count = Order.objects.filter(book_time__range=(date_min,date_max),status='P', business__username=obj.username).count()
+        return '<a href="/admin/businessapp/order/?q=&business__username__exact=%s&status__exact=P"> %s </a>' % (
+            obj.username, po_count)
+
+    pending_orders_today.allow_tags = True
+
+
+class ApprovedBusinessAdmin(BusinessAdmin):
+    def queryset(self, request):
+        return self.model.objects.filter(status='Y')
+
+
+class NotApprovedBusinessAdmin(BusinessAdmin):
+    def queryset(self, request):
+        return self.model.objects.filter(status='N')
+
+
+class CancelledBusinessAdmin(BusinessAdmin):
+    def queryset(self, request):
+        return self.model.objects.filter(status='C')
+
+
+class DailyBusinessAdmin(BusinessAdmin):
+    def queryset(self, request):
+        return self.model.objects.filter(daily=True)
+
+
+
+admin.site.register(Business, BusinessAdmin)
+admin.site.register(ApprovedBusiness, ApprovedBusinessAdmin)
+admin.site.register(NotApprovedBusiness, NotApprovedBusinessAdmin)
+admin.site.register(CancelledBusiness, CancelledBusinessAdmin)
+admin.site.register(DailyBusiness, DailyBusinessAdmin)
+
+
+
+
 
 
 from django.contrib.auth.admin import UserAdmin
@@ -104,7 +158,6 @@ class ProductForm(ModelForm):
 
 admin.site.register(X)
 
-admin.site.register(Business, BusinessAdmin)
 
 admin.site.register(LoginSession)
 

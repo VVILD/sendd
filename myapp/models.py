@@ -15,274 +15,298 @@ from pickupboyapp.models import PBUser
 
 
 class User(models.Model):
-    phone_regex = RegexValidator(regex=r'^[0-9]*$',
-                                 message="Phone number must be entered in the format: '999999999'. Up to 12 digits allowed.")
-    phone = models.CharField(validators=[phone_regex], max_length=12, primary_key=True)
-    name = models.CharField(max_length=100, null=True, blank=True)
-    password = models.CharField(max_length=300, null=True, blank=True)
-    email = models.EmailField(max_length=75, null=True, blank=True)
-    otp = models.IntegerField(null=True, blank=True)
-    apikey = models.CharField(max_length=100, null=True, blank=True)
-    referral_code = models.CharField(max_length=50, null=True, blank=True)
-    time = models.DateTimeField(null=True, blank=True)
-    gcmid = models.TextField(null=True, blank=True)
-    deviceid = models.CharField(max_length=25, null=True, blank=True)
+	phone_regex = RegexValidator(regex=r'^[0-9]*$',
+								 message="Phone number must be entered in the format: '999999999'. Up to 12 digits allowed.")
+	phone = models.CharField(validators=[phone_regex], max_length=12, primary_key=True)
+	name = models.CharField(max_length=100, null=True, blank=True)
+	password = models.CharField(max_length=300, null=True, blank=True)
+	email = models.EmailField(max_length=75, null=True, blank=True)
+	otp = models.IntegerField(null=True, blank=True)
+	apikey = models.CharField(max_length=100, null=True, blank=True)
+	referral_code = models.CharField(max_length=50, null=True, blank=True)
+	time = models.DateTimeField(null=True, blank=True)
+	gcmid = models.TextField(null=True, blank=True)
+	deviceid = models.CharField(max_length=25, null=True, blank=True)
 
-    def save(self, *args, **kwargs):
-        z = timezone('Asia/Kolkata')
-        fmt = '%Y-%m-%d %H:%M:%S'
-        ind_time = datetime.now(z)
-        self.time = ind_time.strftime(fmt)
-        super(User, self).save(*args, **kwargs)
+	def save(self, *args, **kwargs):
+		z = timezone('Asia/Kolkata')
+		fmt = '%Y-%m-%d %H:%M:%S'
+		ind_time = datetime.now(z)
+		self.time = ind_time.strftime(fmt)
+		super(User, self).save(*args, **kwargs)
 
 
-    def __unicode__(self):
-        return str(self.phone)
+	def __unicode__(self):
+		return str(self.phone)
 
 
 class Address(models.Model):
-    flat_no = models.CharField(max_length=100, null=True, blank=True)
-    locality = models.CharField(max_length=200, null=True, blank=True)
-    city = models.CharField(max_length=50, null=True, blank=True)
-    state = models.CharField(max_length=50, null=True, blank=True)
-    pincode = models.CharField(max_length=30, null=True, blank=True)
-    country = models.CharField(max_length=30, null=True, blank=True)
+	flat_no = models.CharField(max_length=100, null=True, blank=True)
+	locality = models.CharField(max_length=200, null=True, blank=True)
+	city = models.CharField(max_length=50, null=True, blank=True)
+	state = models.CharField(max_length=50, null=True, blank=True)
+	pincode = models.CharField(max_length=30, null=True, blank=True)
+	country = models.CharField(max_length=30, null=True, blank=True)
 
-    def __unicode__(self):
-        return str(
-            str(self.flat_no) + ',' + str(self.locality) + ',' + str(self.city) + ',' + str(self.state) + ',' + str(
-                self.country) + ',' + str(self.pincode))
+	def __unicode__(self):
+		return str(
+			str(self.flat_no) + ',' + str(self.locality) + ',' + str(self.city) + ',' + str(self.state) + ',' + str(
+				self.country) + ',' + str(self.pincode))
 
 
 class Namemail(models.Model):
-    nm_no = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=160, null=True, blank=True)
-    email = models.EmailField(max_length=75, null=True, blank=True)
-    user = models.ForeignKey(User)
+	nm_no = models.AutoField(primary_key=True)
+	name = models.CharField(max_length=160, null=True, blank=True)
+	email = models.EmailField(max_length=75, null=True, blank=True)
+	user = models.ForeignKey(User)
 
 
 class Promocode(models.Model):
-    code = models.CharField(max_length=20, primary_key=True)
-    msg = models.CharField(max_length=150)
-    only_for_first = models.CharField(max_length=1, choices=(('Y', 'yes'), ('N', 'no'),), )
+	code = models.CharField(max_length=20, primary_key=True)
+	msg = models.CharField(max_length=150)
+	only_for_first = models.CharField(max_length=1, choices=(('Y', 'yes'), ('N', 'no'),), )
 
-    def __unicode__(self):
-        return str(self.code)
+	def __unicode__(self):
+		return str(self.code)
 
 
 class Order(models.Model):
-    order_no = models.AutoField(primary_key=True)
-    date = models.DateField(verbose_name='pickup date', null=True, blank=True)
-    time = models.TimeField(verbose_name='pickup time', null=True, blank=True)
-    user = models.ForeignKey(User)
-    promocode = models.ForeignKey(Promocode, null=True, blank=True)
+	order_no = models.AutoField(primary_key=True)
+	date = models.DateField(verbose_name='pickup date', null=True, blank=True)
+	time = models.TimeField(verbose_name='pickup time', null=True, blank=True)
+	user = models.ForeignKey(User)
+	promocode = models.ForeignKey(Promocode, null=True, blank=True)
 
-    namemail = models.ForeignKey(Namemail, null=True, blank=True)
-    name = models.CharField(max_length=100, null=True, blank=True)
-    email = models.EmailField(max_length=75, null=True, blank=True)
-    status = models.CharField(max_length=1,
-                              choices=(('P', 'pending'), ('C', 'complete'), ('N', 'cancelled'), ('F', 'fake'),),
-                              default='P')
+	namemail = models.ForeignKey(Namemail, null=True, blank=True)
+	name = models.CharField(max_length=100, null=True, blank=True)
+	email = models.EmailField(max_length=75, null=True, blank=True)
+	status = models.CharField(max_length=1,
+							  choices=(('P', 'pending'), ('C', 'complete'), ('N', 'cancelled'), ('F', 'fake'),),
+							  default='P')
 
-    order_status = models.CharField(max_length=2,
-                                    choices=(
-                                        ('O', 'order_recieved'), ('AP', 'Approved'),('A', 'Alloted'), ('P', 'picked up'), ('Pa', 'packed'),
-                                        ('C', 'completed'), ('D', 'delivered'),('Di', 'dispatched'), ('N', 'cancelled'), ('F', 'fake'),
-                                        ('Q', 'query'),), null=True, blank=True, default='O')
+	order_status = models.CharField(max_length=2,
+									choices=(
+										('O', 'order_recieved'), ('AP', 'Approved'),('A', 'Alloted'), ('P', 'picked up'), ('Pa', 'packed'),
+										('C', 'dispatched'), ('D', 'delivered'), ('N', 'cancelled'), ('F', 'fake'),
+										('Q', 'query'),), null=True, blank=True, default='O')
 
-    comment = models.TextField(null=True, blank=True)
-    way = models.CharField(max_length=1,
-                           choices=(('A', 'app'), ('W', 'web'), ('C', 'call'),),
-                           default='A')
-    pick_now = models.CharField(max_length=1,
-                                choices=(('Y', 'yes'), ('N', 'no'),),
-                                default='Y')
-    # source=models.CharField(max_length=1,
-    #								  choices=(('P','pending') ,('C','complete'),('N','cancelled'),('F','fake'),),
-    #								  default='F')
-    #cost=models.CharField(max_length = 10,null=True ,blank=True)
-    #paid=models.CharField(max_length=1,
-    #								  choices=(('Y','yes') ,('N','no'),),
-    #								  blank=True , null = True)
+	comment = models.TextField(null=True, blank=True)
+	way = models.CharField(max_length=1,
+						   choices=(('A', 'app'), ('W', 'web'), ('C', 'call'),),
+						   default='A')
+	pick_now = models.CharField(max_length=1,
+								choices=(('Y', 'yes'), ('N', 'no'),),
+								default='Y')
+	# source=models.CharField(max_length=1,
+	#								  choices=(('P','pending') ,('C','complete'),('N','cancelled'),('F','fake'),),
+	#								  default='F')
+	#cost=models.CharField(max_length = 10,null=True ,blank=True)
+	#paid=models.CharField(max_length=1,
+	#								  choices=(('Y','yes') ,('N','no'),),
+	#								  blank=True , null = True)
 
-    #cancelled=models.CharField(max_length=1,
-    # choices=(('Y','yes') ,('N','no'),),
-    #								  default='N')
-    pb = models.ForeignKey(PBUser, null=True, blank=True)
-    latitude = models.DecimalField(max_digits=25, decimal_places=20, null=True, blank=True)
-    longitude = models.DecimalField(max_digits=25, decimal_places=20, null=True, blank=True)
-    address = models.CharField(max_length=200, null=True, blank=True)
-    pincode = models.CharField(max_length=30, null=True, blank=True)
-    flat_no = models.CharField(max_length=100, null=True, blank=True)
-    #picked_up=models.BooleanField(default=False
+	#cancelled=models.CharField(max_length=1,
+	# choices=(('Y','yes') ,('N','no'),),
+	#								  default='N')
+	pb = models.ForeignKey(PBUser, null=True, blank=True)
+	latitude = models.DecimalField(max_digits=25, decimal_places=20, null=True, blank=True)
+	longitude = models.DecimalField(max_digits=25, decimal_places=20, null=True, blank=True)
+	address = models.CharField(max_length=200, null=True, blank=True)
+	pincode = models.CharField(max_length=30, null=True, blank=True)
+	flat_no = models.CharField(max_length=100, null=True, blank=True)
+	#picked_up=models.BooleanField(default=False
 
-    book_time = models.DateTimeField(null=True, blank=True)
+	book_time = models.DateTimeField(null=True, blank=True)
 
-    def __unicode__(self):
-        return str(self.order_no)
+	def __unicode__(self):
+		return str(self.order_no)
 
-    def save(self, *args, **kwargs):
-        ''' On save, update timestamps '''
-        z = timezone('Asia/Kolkata')
-        fmt = '%Y-%m-%d %H:%M:%S'
-        ind_time = datetime.now(z)
+	def save(self, *args, **kwargs):
+		''' On save, update timestamps '''
+		z = timezone('Asia/Kolkata')
+		fmt = '%Y-%m-%d %H:%M:%S'
+		ind_time = datetime.now(z)
 
 
 # change status to alloted if pickupboy is assigned
 
-        if self.pb and self.order_status=='AP':
-        	self.order_status='A'
+		if self.pb and self.order_status=='AP':
+			self.order_status='A'
 
-        if not self.pk:
-            self.book_time = ind_time.strftime(fmt)
-        super(Order, self).save(*args, **kwargs)
+		if not self.pk:
+			self.book_time = ind_time.strftime(fmt)
+		super(Order, self).save(*args, **kwargs)
 
 
 class ReceivedOrder(Order):
-    class Meta:
-        proxy = True
+	class Meta:
+		proxy = True
 
 class ApprovedOrder(Order):
-    class Meta:
-        proxy = True
+	class Meta:
+		proxy = True
 
 class ApprovedOrderops(Order):
-    class Meta:
-        proxy = True
+	class Meta:
+		proxy = True
 
 
 class AllotedOrder(Order):
-    class Meta:
-        proxy = True
+	class Meta:
+		proxy = True
 
 
 class PickedupOrder(Order):
-    class Meta:
-        proxy = True
+	class Meta:
+		proxy = True
 
 
 class PackedOrder(Order):
-    class Meta:
-        proxy = True
+	class Meta:
+		proxy = True
 
 
-class CompletedOrder(Order):
-    class Meta:
-        proxy = True
+class DispatchedOrder(Order):
+	class Meta:
+		proxy = True
 
 
 class FakeOrder(Order):
-    class Meta:
-        proxy = True
+	class Meta:
+		proxy = True
 
 class CancelledOrder(Order):
-    class Meta:
-        proxy = True
+	class Meta:
+		proxy = True
 
 
 class QueryOrder(Order):
-    class Meta:
-        proxy = True
+	class Meta:
+		proxy = True
 
 
 
 
 
 class Shipment(models.Model):
-    weight = models.CharField(verbose_name='item weight', max_length=10, null=True, blank=True)
-    price = models.CharField(max_length=10, null=True, blank=True)
+	weight = models.CharField(verbose_name='item weight', max_length=10, null=True, blank=True)
+	price = models.CharField(max_length=10, null=True, blank=True)
 
-    name = models.CharField(verbose_name='item name', max_length=50, null=True, blank=True)
+	name = models.CharField(verbose_name='item name', max_length=50, null=True, blank=True)
 
-    tracking_no = models.AutoField(primary_key=True)
-    real_tracking_no = models.CharField(max_length=10, blank=True, null=True)
-    mapped_tracking_no = models.CharField(max_length=50, null=True, blank=True)
-    tracking_data = models.CharField(max_length=8000, null=True, blank=True)
-    img = models.ImageField(upload_to='shipment/', null=True, blank=True)
-    category = models.CharField(max_length=1,
-                                choices=(('P', 'premium'), ('S', 'standard'), ('E', 'economy'),),
-                                default='P', blank=True, null=True)
-    drop_name = models.CharField(max_length=100, null=True, blank=True)
+	tracking_no = models.AutoField(primary_key=True)
+	real_tracking_no = models.CharField(max_length=10, blank=True, null=True)
+	mapped_tracking_no = models.CharField(max_length=50, null=True, blank=True)
+	tracking_data = models.CharField(max_length=8000, null=True, blank=True)
+	img = models.ImageField(upload_to='shipment/', null=True, blank=True)
+	category = models.CharField(max_length=1,
+								choices=(('P', 'premium'), ('S', 'standard'), ('E', 'economy'),),
+								default='P', blank=True, null=True)
+	drop_name = models.CharField(max_length=100, null=True, blank=True)
 
-    phone_regex2 = RegexValidator(regex=r'^[0-9]{10,11}$',
-                                  message="Phone number must be entered in the format: '999999999'. And be of 10 digits.")
+	phone_regex2 = RegexValidator(regex=r'^[0-9]{10,11}$',
+								  message="Phone number must be entered in the format: '999999999'. And be of 10 digits.")
 
-    drop_phone = models.CharField(validators=[phone_regex2], max_length=16, null=True, blank=True)
-    drop_address = models.ForeignKey(Address, null=True, blank=True)
-    order = models.ForeignKey(Order, null=True, blank=True)
+	drop_phone = models.CharField(validators=[phone_regex2], max_length=16, null=True, blank=True)
+	drop_address = models.ForeignKey(Address, null=True, blank=True)
+	order = models.ForeignKey(Order, null=True, blank=True)
 
-    status = models.CharField(max_length=2,
-                              choices=(('P', 'pending'), ('C', 'complete'), ('PU', 'pickedup'), ('CA', 'cancelled')),
-                              default='P', null=True, blank=True)
+	status = models.CharField(max_length=2,
+							  choices=(('P', 'pending'), ('C', 'complete'), ('PU', 'pickedup'), ('CA', 'cancelled'), ('DI', 'dispatched')),
+							  default='P', null=True, blank=True)
 
-    paid = models.CharField(max_length=10,
-                            choices=(('Paid', 'Paid'), ('Not Paid', 'Not Paid'),),
-                            blank=True, null=True, default='Not Paid')
+	paid = models.CharField(max_length=10,
+							choices=(('Paid', 'Paid'), ('Not Paid', 'Not Paid'),),
+							blank=True, null=True, default='Not Paid')
 
-    company = models.CharField(max_length=2,
-                               choices=[('F', 'FedEx'), ('D', 'Delhivery'), ('P', 'Professional'), ('G', 'Gati'),
-                                        ('A', 'Aramex'), ('E', 'Ecomexpress'), ('DT', 'dtdc'), ('FF', 'First Flight'),
-                                        ('M', 'Maruti courier'), ('I', 'India Post'), ('S', 'Sendd')],
-                               blank=True, null=True)
+	company = models.CharField(max_length=2,
+							   choices=[('F', 'FedEx'), ('D', 'Delhivery'), ('P', 'Professional'), ('G', 'Gati'),
+										('A', 'Aramex'), ('E', 'Ecomexpress'), ('DT', 'dtdc'), ('FF', 'First Flight'),
+										('M', 'Maruti courier'), ('I', 'India Post'), ('S', 'Sendd')],
+							   blank=True, null=True)
 
-    cost_of_courier = models.CharField(verbose_name='item cost', max_length=100, null=True, blank=True)
-    item_name = models.CharField(max_length=100, null=True, blank=True)
-    kartrocket_order = models.CharField(max_length=100, null=True, blank=True)
-    barcode = models.CharField(null=True, blank=True, default=None, max_length=12, unique=True)
+	cost_of_courier = models.CharField(verbose_name='item cost', max_length=100, null=True, blank=True)
+	item_name = models.CharField(max_length=100, null=True, blank=True)
+	kartrocket_order = models.CharField(max_length=100, null=True, blank=True)
+	barcode = models.CharField(null=True, blank=True, default=None, max_length=12, unique=True)
 
-    def save(self, *args, **kwargs):
+	__original_tracking_data = None
 
-        if (self.barcode is not None) and (len(self.barcode) > 12 or len(self.barcode) < 10):
-            raise ValidationError("Barcode length should be 10")
-        if not self.pk:
-            print self.pk
-            z = timezone('Asia/Kolkata')
-            fmt = '%Y-%m-%d %H:%M:%S'
-            ind_time = datetime.now(z)
-            time = ind_time.strftime(fmt)
-            time = str(time)
-            self.tracking_data = "[{\"status\": \"Booking Received\", \"date\"	: \"" + time + " \", \"location\": \"Mumbai (Maharashtra)\"}]"
-            print self.tracking_data
-            print self.status
-            super(Shipment, self).save(*args, **kwargs)
-            print self.pk
-            alphabet = random.choice('BDQP')
-            no1 = random.choice('1234567890')
-            no2 = random.choice('1234567890')
-            no = int(self.pk) + 134528
-            trackingno = 'S' + str(no) + str(alphabet) + str(no1) + str(no2)
-            print trackingno
-            self.real_tracking_no = trackingno
+	update_time=models.DateTimeField(null=True, blank=True)
 
-            kwargs['force_update'] = True
-            kwargs['force_insert'] = False
 
-            print "H"
-        super(Shipment, self).save(*args, **kwargs)
-        print "L"
+	def __init__(self, *args, **kwargs):
+		super(Shipment, self).__init__(*args, **kwargs)
+		self.__original_tracking_data = self.tracking_data
+
+	def save(self, *args, **kwargs):
+
+		if self.tracking_data != self.__original_tracking_data:
+			z = timezone('Asia/Kolkata')
+			fmt = '%Y-%m-%d %H:%M:%S'
+			ind_time = datetime.now(z)
+			time = ind_time.strftime(fmt)
+			self.update_time=time
+
+
+		if (self.barcode is not None) and (len(self.barcode) > 12 or len(self.barcode) < 10):
+			raise ValidationError("Barcode length should be 10")
+		if not self.pk:
+			print self.pk
+			z = timezone('Asia/Kolkata')
+			fmt = '%Y-%m-%d %H:%M:%S'
+			ind_time = datetime.now(z)
+			time = ind_time.strftime(fmt)
+			self.update_time=time
+			time = str(time)
+
+			self.tracking_data = "[{\"status\": \"Booking Received\", \"date\"	: \"" + time + " \", \"location\": \"Mumbai (Maharashtra)\"}]"
+#            print self.tracking_data
+#            print self.status
+			super(Shipment, self).save(*args, **kwargs)
+			print self.pk
+			alphabet = random.choice('BDQP')
+			no1 = random.choice('1234567890')
+			no2 = random.choice('1234567890')
+			no = int(self.pk) + 134528
+			trackingno = 'S' + str(no) + str(alphabet) + str(no1) + str(no2)
+			print trackingno
+			self.real_tracking_no = trackingno
+
+			kwargs['force_update'] = True
+			kwargs['force_insert'] = False
+
+			print "H"
+		super(Shipment, self).save(*args, **kwargs)
+		self.__original_tracking_data = self.tracking_data
+
+class QcShipment(Shipment):
+	class Meta:
+		proxy = True
+
 
 def send_update(sender, instance, created, **kwargs):
-    # product can be pending complete returned picked up
+	# product can be pending complete returned picked up
 
-    #                              choices=(('P', 'pending'), ('C', 'complete'), ('PU', 'pickedup'), ('CA', 'cancelled'), ('R', 'return')),
+	#                              choices=(('P', 'pending'), ('C', 'complete'), ('PU', 'pickedup'), ('CA', 'cancelled'), ('R', 'return')),
 
-    #       ('P', 'pending'), ('C', 'complete'), ('N', 'cancelled'), ('D', 'in transit'), ('PU', 'pickedup')), default='P')
+	#       ('P', 'pending'), ('C', 'complete'), ('N', 'cancelled'), ('D', 'in transit'), ('PU', 'pickedup')), default='P')
 
-    # order will be pending intransit complete cancelled picked up
+	# order will be pending intransit complete cancelled picked up
 
 
 
-    if (instance.status == 'PU') or (instance.status == 'CA'):
-    	pickedup = True
-    	products_in_order = Shipment.objects.filter(order=instance.order)
-        for product in products_in_order:
-        	if (product.status!='PU') & (product.status!='CA'):
-        		pickedup=False 
+	if (instance.status == 'PU') or (instance.status == 'CA'):
+		pickedup = True
+		products_in_order = Shipment.objects.filter(order=instance.order)
+		for product in products_in_order:
+			if (product.status!='PU') & (product.status!='CA'):
+				pickedup=False 
 
-        if (pickedup):
+		if (pickedup):
 #        	signals.post_save.disconnect(send_update_order, sender=Order)
-        	instance.order.order_status = 'P'
-        	instance.order.save()
+			instance.order.order_status = 'P'
+			instance.order.save()
  #       	signals.post_save.connect(send_update_order, sender=Order)
 
 
@@ -292,134 +316,134 @@ post_save.connect(send_update, sender=Shipment)
 
 
 class Forgotpass(models.Model):
-    user = models.ForeignKey(User)
-    auth = models.CharField(max_length=100)
-    time = models.DateTimeField(null=True, blank=True)
+	user = models.ForeignKey(User)
+	auth = models.CharField(max_length=100)
+	time = models.DateTimeField(null=True, blank=True)
 
-    def save(self, *args, **kwargs):
-        ''' On save, update timestamps '''
-        z = timezone('Asia/Kolkata')
-        fmt = '%Y-%m-%d %H:%M:%S'
-        ind_time = datetime.now(z)
-        self.time = ind_time.strftime(fmt)
-        super(Forgotpass, self).save(*args, **kwargs)
+	def save(self, *args, **kwargs):
+		''' On save, update timestamps '''
+		z = timezone('Asia/Kolkata')
+		fmt = '%Y-%m-%d %H:%M:%S'
+		ind_time = datetime.now(z)
+		self.time = ind_time.strftime(fmt)
+		super(Forgotpass, self).save(*args, **kwargs)
 
 
 class X(models.Model):
-    Name = models.CharField(max_length=100)
-    C = models.ImageField(upload_to='shipment/')
-    order = models.ForeignKey(Order, null=True)
+	Name = models.CharField(max_length=100)
+	C = models.ImageField(upload_to='shipment/')
+	order = models.ForeignKey(Order, null=True)
 
 
 class LoginSession(models.Model):
-    user = models.ForeignKey(User, null=True, blank=True)
-    time = models.DateTimeField(null=True, blank=True)
-    success = models.CharField(max_length=100,
-                               choices=(('notregistered', 'notregistered'), ('wrongpassword', 'wrongpassword'),
-                                        ('success', 'success'),),
-                               default='wrongpassword')
+	user = models.ForeignKey(User, null=True, blank=True)
+	time = models.DateTimeField(null=True, blank=True)
+	success = models.CharField(max_length=100,
+							   choices=(('notregistered', 'notregistered'), ('wrongpassword', 'wrongpassword'),
+										('success', 'success'),),
+							   default='wrongpassword')
 
-    def save(self, *args, **kwargs):
-        ''' On save, update timestamps '''
-        z = timezone('Asia/Kolkata')
-        fmt = '%Y-%m-%d %H:%M:%S'
-        ind_time = datetime.now(z)
-        if not self.pk:
-            self.time = ind_time.strftime(fmt)
-        super(LoginSession, self).save(*args, **kwargs)
+	def save(self, *args, **kwargs):
+		''' On save, update timestamps '''
+		z = timezone('Asia/Kolkata')
+		fmt = '%Y-%m-%d %H:%M:%S'
+		ind_time = datetime.now(z)
+		if not self.pk:
+			self.time = ind_time.strftime(fmt)
+		super(LoginSession, self).save(*args, **kwargs)
 
 
 class Weborder(models.Model):
-    item_details = models.CharField(max_length=100)
-    pickup_location = models.CharField(max_length=4000)
-    pincode = models.CharField(max_length=56)
-    number = models.CharField(max_length=51)
-    time = models.DateTimeField(null=True, blank=True)
+	item_details = models.CharField(max_length=100)
+	pickup_location = models.CharField(max_length=4000)
+	pincode = models.CharField(max_length=56)
+	number = models.CharField(max_length=51)
+	time = models.DateTimeField(null=True, blank=True)
 
 
-    def save(self, *args, **kwargs):
-        ''' On save, update timestamps '''
-        z = timezone('Asia/Kolkata')
-        fmt = '%Y-%m-%d %H:%M:%S'
-        ind_time = datetime.now(z)
-        self.time = ind_time.strftime(fmt)
-        super(Weborder, self).save(*args, **kwargs)
+	def save(self, *args, **kwargs):
+		''' On save, update timestamps '''
+		z = timezone('Asia/Kolkata')
+		fmt = '%Y-%m-%d %H:%M:%S'
+		ind_time = datetime.now(z)
+		self.time = ind_time.strftime(fmt)
+		super(Weborder, self).save(*args, **kwargs)
 
 
 class Priceapp(models.Model):
-    weight = models.CharField(max_length=10)
-    pincode = models.CharField(max_length=60)
-    l = models.CharField(max_length=10)
-    b = models.CharField(max_length=10)
-    h = models.CharField(max_length=10)
+	weight = models.CharField(max_length=10)
+	pincode = models.CharField(max_length=60)
+	l = models.CharField(max_length=10)
+	b = models.CharField(max_length=10)
+	h = models.CharField(max_length=10)
 
 
 class Dateapp(models.Model):
-    pincode = models.CharField(max_length=60)
+	pincode = models.CharField(max_length=60)
 
 
 class Gcmmessage(models.Model):
-    title = models.CharField(max_length=60)
-    message = models.TextField()
+	title = models.CharField(max_length=60)
+	message = models.TextField()
 
-    def __unicode__(self):
-        return str(self.message)
+	def __unicode__(self):
+		return str(self.message)
 
 
-    def save(self, *args, **kwargs):
-        ''' On save, update timestamps '''
-        try:
-            devices = GCMDevice.objects.all()
-            devices.send_message(self.message, extra={"title": self.title})
-        # device = GCMDevice.objects.get(registration_id='APA91bEjN-CdfjLJd4PGJRu4z3k0pbY8wndZddW2tIc5mcsU_b6UhjgbOLDniWYYd_9GZ4MPPAwh0Wva-_dPsl-fabuteKKV262VljMCt3msxhmoCBcGrq675OLw8zIQYzxopHqfeGgQ')
-        #device.send_message("harsh bahut bada chakka hai.harsh", extra={"tracking_no": "S134807P31","url":"http://128.199.159.90/static/IMG_20150508_144433.jpeg"})
-        except:
-            pass
-        super(Gcmmessage, self).save(*args, **kwargs)
+	def save(self, *args, **kwargs):
+		''' On save, update timestamps '''
+		try:
+			devices = GCMDevice.objects.all()
+			devices.send_message(self.message, extra={"title": self.title})
+		# device = GCMDevice.objects.get(registration_id='APA91bEjN-CdfjLJd4PGJRu4z3k0pbY8wndZddW2tIc5mcsU_b6UhjgbOLDniWYYd_9GZ4MPPAwh0Wva-_dPsl-fabuteKKV262VljMCt3msxhmoCBcGrq675OLw8zIQYzxopHqfeGgQ')
+		#device.send_message("harsh bahut bada chakka hai.harsh", extra={"tracking_no": "S134807P31","url":"http://128.199.159.90/static/IMG_20150508_144433.jpeg"})
+		except:
+			pass
+		super(Gcmmessage, self).save(*args, **kwargs)
 
 
 class Promocheck(models.Model):
-    code = models.CharField(max_length=20)
-    user = models.ForeignKey(User, null=True, blank=True)
-    valid = models.CharField(max_length=1, choices=(('Y', 'yes'), ('N', 'no'),), )
+	code = models.CharField(max_length=20)
+	user = models.ForeignKey(User, null=True, blank=True)
+	valid = models.CharField(max_length=1, choices=(('Y', 'yes'), ('N', 'no'),), )
 
 
 class Pincodecheck(models.Model):
-    pincode = models.CharField(max_length=6)
+	pincode = models.CharField(max_length=6)
 
-    def __unicode__(self):
-        return str(self.pincode)
-
-
-    def send_update(sender, instance, created, **kwargs):
-        print "shittt>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-        print instance.pk
-
-    # quersyset.filter(pk=instance.pk).update(....)
-    #MyModel.objects.filter(pk=some_value).update(field1='some value')
+	def __unicode__(self):
+		return str(self.pincode)
 
 
-    post_save.connect(send_update, sender=Shipment)
+	def send_update(sender, instance, created, **kwargs):
+		print "shittt>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+		print instance.pk
+
+	# quersyset.filter(pk=instance.pk).update(....)
+	#MyModel.objects.filter(pk=some_value).update(field1='some value')
+
+
+	post_save.connect(send_update, sender=Shipment)
 
 
 class Zipcode(models.Model):
-    pincode = models.CharField(max_length=6, primary_key=True)
-    zone = models.CharField(max_length=1)
-    city = models.CharField(max_length=56)
-    state = models.CharField(max_length=56)
-    cod = models.BooleanField(default=False)
-    fedex = models.BooleanField(default=False)
-    aramex = models.BooleanField(default=False)
-    delhivery = models.BooleanField(default=False)
-    ecom = models.BooleanField(default=False)
-    firstflight = models.BooleanField(default=False)
+	pincode = models.CharField(max_length=6, primary_key=True)
+	zone = models.CharField(max_length=1)
+	city = models.CharField(max_length=56)
+	state = models.CharField(max_length=56)
+	cod = models.BooleanField(default=False)
+	fedex = models.BooleanField(default=False)
+	aramex = models.BooleanField(default=False)
+	delhivery = models.BooleanField(default=False)
+	ecom = models.BooleanField(default=False)
+	firstflight = models.BooleanField(default=False)
 
-    def __unicode__(self):
-        return str(self.pincode)
+	def __unicode__(self):
+		return str(self.pincode)
 
 
 class Invoicesent(models.Model):
-    order = models.ForeignKey(Order)
+	order = models.ForeignKey(Order)
 
 
 

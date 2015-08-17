@@ -64,6 +64,11 @@ class Business(models.Model):
     assigned_pickup_time = models.TimeField(null=True, blank=True)
     #     # Use UserManager to get the create_user method, etc.
     #     objects = UserManager()
+    comment = models.TextField(null=True, blank=True)
+    daily = models.BooleanField(default=False)
+    status = models.CharField(max_length=1, choices=(('Y', 'approved'), ('N', 'not approved'),('C', 'cancelled'),), null=True, blank=True,
+                                             default='N')
+    
 
     def save(self, *args, **kwargs):
         #print self.tracking_no
@@ -77,6 +82,22 @@ class Business(models.Model):
 
     def __unicode__(self):
         return str(self.business_name)
+
+class ApprovedBusiness(Business):
+    class Meta:
+        proxy = True
+
+class NotApprovedBusiness(Business):
+    class Meta:
+        proxy = True
+
+class CancelledBusiness(Business):
+    class Meta:
+        proxy = True
+
+class DailyBusiness(Business):
+    class Meta:
+        proxy = True
 
 
 class LoginSession(models.Model):
@@ -115,7 +136,7 @@ class Order(models.Model):
     book_time = models.DateTimeField(null=True, blank=True)
     status = models.CharField(max_length=2, choices=(
         ('P', 'pending'), ('C', 'complete'), ('N', 'cancelled'), ('D', 'in transit'), ('PU', 'pickedup'),
-        ('RC', 'return/completed'), ('R', 'return')), default='P')
+        ('RC', 'return/completed'), ('R', 'return'), ('DI', 'dispatched')), default='P')
 
     method = models.CharField(max_length=1,
                               choices=(('B', 'Bulk'), ('N', 'Normal'),),
@@ -162,13 +183,34 @@ class Product(models.Model):
     barcode = models.CharField(null=True, blank=True, default=None, max_length=12, unique=True)
     status = models.CharField(max_length=2,
                               choices=(('P', 'pending'), ('C', 'complete'), ('PU', 'pickedup'), ('CA', 'cancelled'),
-                                       ('R', 'return')),
+                                       ('R', 'return'), ('DI', 'dispatched')),
                               default='P')
 
     date = models.DateTimeField(null=True, blank=True)
     remittance = models.BooleanField(default=False)
 
+
+    __original_tracking_data = None
+
+    update_time=models.DateTimeField(null=True, blank=True)
+
+
+    def __init__(self, *args, **kwargs):
+        super(Product, self).__init__(*args, **kwargs)
+        self.__original_tracking_data = self.tracking_data
+
+
+
+
     def save(self, *args, **kwargs):
+
+        if self.tracking_data != self.__original_tracking_data:
+            z = timezone('Asia/Kolkata')
+            fmt = '%Y-%m-%d %H:%M:%S'
+            ind_time = datetime.now(z)
+            time = ind_time.strftime(fmt)
+            self.update_time=time
+
 
         if (self.barcode is not None) and (len(self.barcode) > 12 or len(self.barcode) < 10):
             raise ValidationError("Barcode length should be 10")
@@ -199,8 +241,7 @@ class Product(models.Model):
 
             print "H"
         super(Product, self).save(*args, **kwargs)
-        print "L"
-
+        self.__original_tracking_data = self.tracking_data
 
 class RemittanceProductPending(Product):
     class Meta:
