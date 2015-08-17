@@ -115,7 +115,18 @@ class ProductAdmin(admin.ModelAdmin):
     list_editable = ('status', )
     readonly_fields = (
         'name', 'quantity', 'sku', 'price', 'weight', 'applied_weight', 'real_tracking_no', 'order',
-        'kartrocket_order', 'shipping_cost', 'cod_cost', 'status', 'date', 'barcode')
+        'kartrocket_order', 'shipping_cost', 'cod_cost', 'status', 'date',)
+
+
+    fieldsets = (
+        ('Tracking_details', {'fields': ['mapped_tracking_no', 'company','real_tracking_no','kartrocket_order'], 'classes': ('suit-tab', 'suit-tab-general')}),
+        ('General', {'fields': ['name', 'quantity','sku','price','weight','applied_weight','status','date','remittance','order'], 'classes': ('suit-tab', 'suit-tab-general')}),
+        ('Cost', {'fields': ['shipping_cost', 'cod_cost','return_cost'], 'classes': ('suit-tab', 'suit-tab-general')}),
+        ('Tracking', {'fields': ['tracking_data'], 'classes': ('suit-tab', 'suit-tab-tracking')}),
+        ('Barcode', {'fields': ['barcode'], 'classes': ('suit-tab', 'suit-tab-barcode')}),
+    )
+
+    suit_form_tabs = (('general', 'General'), ('tracking', 'Tracking'),('barcode', 'Barcode'))
 
 
 admin.site.register(Product, ProductAdmin)
