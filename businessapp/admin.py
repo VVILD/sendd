@@ -36,9 +36,50 @@ admin.site.register(User, UserAdmin)
 # Register your models here.
 class BusinessAdmin(admin.ModelAdmin):
     search_fields=['username','business_name']
-    list_display = ('username', 'business_name', 'pickup_time', 'pb', 'assigned_pickup_time', 'pending_orders','pickedup_orders','pending_orders_today','daily')
-    list_editable = ('pb', 'assigned_pickup_time','daily')
+    list_display = ('username', 'business_name', 'pickup_time', 'pb', 'assigned_pickup_time','status', 'pending_orders','pickedup_orders','pending_orders_today','daily')
+    list_editable = ('pb', 'assigned_pickup_time','status','daily')
     raw_id_fields = ('pb',)
+
+    def changelist_view(self, request, extra_context=None):
+        extra_context = extra_context or {}
+        op=False
+        cs=False
+        qc=False
+        try:
+            profile=Profile.objects.get(user=request.user)
+            usertype=profile.usertype
+            if (usertype=='O'):
+                op=True
+            elif (usertype=='C'):
+                cs=True
+        except:
+            pass
+
+        #approvedops
+        ap = Business.objects.filter(status='Y').count()
+        #alloted
+        n = Business.objects.filter(status='N').count()
+        #pickedup
+        c = Business.objects.filter(status='C').count()
+        #dispatched
+        d = Business.objects.filter(daily=True).count()
+
+        context = {'op': op,'cs': cs, 'ap':ap, 'n':n, 'd':d, 'c':c }
+        return super(BusinessAdmin, self).changelist_view(request, extra_context=context)
+
+    def make_approved(modeladmin, request, queryset):
+        queryset.update(status='Y')
+    make_approved.short_description = "Mark selected orders as Approved"
+
+    def make_notapproved(modeladmin, request, queryset):
+        queryset.update(status='N')
+    make_notapproved.short_description = "Mark selected orders as Not Approved"    
+
+    def make_cancelled(modeladmin, request, queryset):
+        queryset.update(status='C')
+    make_cancelled.short_description = "Mark selected orders as Cancelled"
+
+    actions = [make_approved, make_notapproved, make_cancelled]
 
     def pending_orders(self, obj):
         po_count = Order.objects.filter(status='P', business__username=obj.username).count()
