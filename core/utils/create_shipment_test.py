@@ -35,7 +35,7 @@ shipment.RequestedShipment.DropoffType = 'REGULAR_PICKUP'
 
 # See page 355 in WS_ShipService.pdf for a full list. Here are the common ones:
 # STANDARD_OVERNIGHT, PRIORITY_OVERNIGHT, FEDEX_GROUND, FEDEX_EXPRESS_SAVER
-shipment.RequestedShipment.ServiceType = 'PRIORITY_OVERNIGHT'
+shipment.RequestedShipment.ServiceType = 'STANDARD_OVERNIGHT'
 
 # What kind of package this will be shipped in.
 # FEDEX_BOX, FEDEX_PAK, FEDEX_TUBE, YOUR_PACKAGING
@@ -78,6 +78,28 @@ shipment.RequestedShipment.ShippingChargesPayment.Payor.ResponsibleParty.Account
 # shipment.RequestedShipment.ShippingChargesPayment.Payor.ResponsibleParty.Address.CountryCode = 'US'
 
 
+shipment.RequestedShipment.SpecialServicesRequested = shipment.create_wsdl_object_of_type('PackageSpecialServicesRequested')
+shipment.RequestedShipment.SpecialServicesRequested.SpecialServiceTypes = 'COD'
+shipment.RequestedShipment.SpecialServicesRequested.CodDetail = shipment.create_wsdl_object_of_type('CodDetail')
+shipment.RequestedShipment.SpecialServicesRequested.CodDetail.CodCollectionAmount = shipment.create_wsdl_object_of_type('Money')
+shipment.RequestedShipment.SpecialServicesRequested.CodDetail.CodCollectionAmount.Currency = 'INR'
+shipment.RequestedShipment.SpecialServicesRequested.CodDetail.CodCollectionAmount.Amount = 100
+shipment.RequestedShipment.SpecialServicesRequested.CodDetail.CollectionType = 'CASH'
+shipment.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress = shipment.create_wsdl_object_of_type('Party')
+shipment.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress.Contact = shipment.create_wsdl_object_of_type('Contact')
+shipment.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress.Address = shipment.create_wsdl_object_of_type('Address')
+shipment.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress.Contact.PersonName = 'Sumeet Wadhwa'
+shipment.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress.Contact.CompanyName = 'Crazymind Technologies Pvt. Ltd.'
+shipment.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress.Contact.PhoneNumber = '8879475752'
+shipment.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress.Address.StreetLines = ['303, Building no 5, Lake Heights, Adi Shankaracharya marg', ', Rambaug, IIT-Mumbai, Powai']
+shipment.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress.Address.City = 'Mumbai'
+shipment.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress.Address.StateOrProvinceCode = 'MH'
+shipment.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress.Address.PostalCode = '400076'
+shipment.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress.Address.CountryCode = 'IN'
+shipment.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress.Address.CountryName = 'INDIA'
+shipment.RequestedShipment.SpecialServicesRequested.CodDetail.RemitToName = 'Crazymind Technologies Pvt. Ltd.'
+shipment.RequestedShipment.SpecialServicesRequested.CodDetail.ReferenceIndicator = None
+
 shipment.RequestedShipment.CustomsClearanceDetail.DutiesPayment.PaymentType = 'SENDER'
 shipment.RequestedShipment.CustomsClearanceDetail.DutiesPayment.Payor.ResponsibleParty.AccountNumber = FEDEX_CONFIG_OBJ.account_number
 shipment.RequestedShipment.CustomsClearanceDetail.DutiesPayment.Payor.ResponsibleParty.Contact = ''
@@ -85,7 +107,7 @@ shipment.RequestedShipment.CustomsClearanceDetail.DutiesPayment.Payor.Responsibl
 shipment.RequestedShipment.CustomsClearanceDetail.DocumentContent = 'NON_DOCUMENTS'
 shipment.RequestedShipment.CustomsClearanceDetail.CustomsValue.Currency = 'INR'
 shipment.RequestedShipment.CustomsClearanceDetail.CustomsValue.Amount = 400
-shipment.RequestedShipment.CustomsClearanceDetail.CommercialInvoice.Purpose = 'NOT_SOLD'
+shipment.RequestedShipment.CustomsClearanceDetail.CommercialInvoice.Purpose = 'SOLD'
 shipment.RequestedShipment.CustomsClearanceDetail.CommercialInvoice.TaxesOrMiscellaneousChargeType = None
 shipment.RequestedShipment.CustomsClearanceDetail.Commodities.NumberOfPieces = 1
 shipment.RequestedShipment.CustomsClearanceDetail.Commodities.Description = 'Bedsheets'
@@ -144,7 +166,7 @@ shipment.add_package(package1)
 
 # If you'd like to see some documentation on the ship service WSDL, un-comment
 # this line. (Spammy).
-#print shipment.client
+# print shipment.client
 
 # Un-comment this to see your complete, ready-to-send request as it stands
 # before it is actually sent. This is useful for seeing what values you can

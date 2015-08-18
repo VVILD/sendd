@@ -35,6 +35,7 @@ def create_fedex_shipment(request):
     service_type = None
     item_price = None
     fedex = Fedex()
+    is_cod = False
     if client_type == 'business':
         product = Product.objects.get(pk=shipment_pk)
         if product.fedex_label:
@@ -108,7 +109,8 @@ def create_fedex_shipment(request):
         "state": sender_state,
         "pincode": sender_pincode,
         "is_business": is_business_sender,
-        "country_code": sender_country_code
+        "country_code": sender_country_code,
+        "is_cod": is_cod
     }
     receiver = {
         "name": receiver_name,

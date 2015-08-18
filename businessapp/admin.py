@@ -334,7 +334,7 @@ class ProductInline(admin.TabularInline):
         if obj.fedex_label:
             return '<a href="/static/%s">%s</a>' % (str(obj.fedex_label.name).split('/')[-1], "Print label")
         else:
-            return '<a href="/create_fedex_shipment/?%s">%s</a>' % (params, "Create Normal Order")
+            return '<a href="/create_fedex_shipment/?%s">%s</a>' % (params, "Create Order")
 
     fedex.allow_tags = True
 

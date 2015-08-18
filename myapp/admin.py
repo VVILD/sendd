@@ -453,7 +453,7 @@ class ShipmentAdmin(admin.ModelAdmin):
     list_editable = (
         'name', 'cost_of_courier', 'weight', 'mapped_tracking_no', 'company', 'price', 'category', 'drop_phone',
         'drop_name', 'barcode', 'img',)
-    readonly_fields = ('real_tracking_no', 'print_invoice', 'generate_order', 'parcel_details', 'address')
+    readonly_fields = ('real_tracking_no', 'print_invoice', 'generate_order', 'parcel_details', 'address', 'fedex')
 
     fieldsets = (
         ('Basic Information', {'fields': ['real_tracking_no', 'parcel_details', ('category', 'status')],
@@ -466,7 +466,7 @@ class ShipmentAdmin(admin.ModelAdmin):
         #('Destination Address', {'fields':['drop_name','drop_phone','drop_flat_no','locality','city','state','drop_pincode','country'] , 'classes':['collapse',]})
         ('Destination Address',
          {'fields': [('drop_name', 'drop_phone'), 'address', ], 'classes': ('suit-tab', 'suit-tab-general')}),
-        ('Actions', {'fields': ['print_invoice', 'generate_order'], 'classes': ('suit-tab', 'suit-tab-general')}),
+        ('Actions', {'fields': ['print_invoice', 'generate_order', 'fedex'], 'classes': ('suit-tab', 'suit-tab-general')}),
         ('Tracking', {'fields': ['tracking_data'], 'classes': ('suit-tab', 'suit-tab-tracking')})
     )
 
@@ -733,6 +733,15 @@ class ShipmentAdmin(admin.ModelAdmin):
             return '<div style="color:red">' + error_string + '</div>'
 
     generate_order.allow_tags = True
+
+    def fedex(self, obj):
+        params = urllib.urlencode({'shipment_pk': obj.pk, 'client_type': "customer"})
+        if obj.fedex_label:
+            return '<a href="/static/%s">%s</a>' % (str(obj.fedex_label.name).split('/')[-1], "Print label")
+        else:
+            return '<a href="/create_fedex_shipment/?%s">%s</a>' % (params, "Create Order")
+
+    fedex.allow_tags = True
 
 
 admin.site.register(Shipment, ShipmentAdmin)

@@ -79,6 +79,30 @@ class Fedex:
 
         shipment.RequestedShipment.ShippingChargesPayment.Payor.ResponsibleParty.AccountNumber = self.FEDEX_CONFIG_OBJ.account_number
 
+        if sender['is_cod']:
+            shipment.RequestedShipment.SpecialServicesRequested = shipment.create_wsdl_object_of_type('PackageSpecialServicesRequested')
+            shipment.RequestedShipment.SpecialServicesRequested.SpecialServiceTypes = 'COD'
+            shipment.RequestedShipment.SpecialServicesRequested.CodDetail = shipment.create_wsdl_object_of_type('CodDetail')
+            shipment.RequestedShipment.SpecialServicesRequested.CodDetail.CodCollectionAmount = shipment.create_wsdl_object_of_type('Money')
+            shipment.RequestedShipment.SpecialServicesRequested.CodDetail.CodCollectionAmount.Currency = 'INR'
+            shipment.RequestedShipment.SpecialServicesRequested.CodDetail.CodCollectionAmount.Amount = float(item['price'])
+            shipment.RequestedShipment.SpecialServicesRequested.CodDetail.CollectionType = 'CASH'
+            shipment.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress = shipment.create_wsdl_object_of_type('Party')
+            shipment.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress.Contact = shipment.create_wsdl_object_of_type('Contact')
+            shipment.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress.Address = shipment.create_wsdl_object_of_type('Address')
+            shipment.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress.Contact.PersonName = 'Sumeet Wadhwa'
+            shipment.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress.Contact.CompanyName = 'Crazymind Technologies Pvt. Ltd.'
+            shipment.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress.Contact.PhoneNumber = '8879475752'
+            shipment.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress.Address.StreetLines = ['303, Building no 5, Lake Heights, Adi Shankaracharya marg', ', Rambaug, IIT-Mumbai, Powai']
+            shipment.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress.Address.City = 'Mumbai'
+            shipment.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress.Address.StateOrProvinceCode = 'MH'
+            shipment.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress.Address.PostalCode = '400076'
+            shipment.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress.Address.CountryCode = 'IN'
+            shipment.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress.Address.CountryName = 'INDIA'
+            shipment.RequestedShipment.SpecialServicesRequested.CodDetail.RemitToName = 'Crazymind Technologies Pvt. Ltd.'
+            shipment.RequestedShipment.SpecialServicesRequested.CodDetail.ReferenceIndicator = None
+
+
         shipment.RequestedShipment.CustomsClearanceDetail.DutiesPayment.PaymentType = 'SENDER'
         shipment.RequestedShipment.CustomsClearanceDetail.DutiesPayment.Payor.ResponsibleParty.AccountNumber = self.FEDEX_CONFIG_OBJ.account_number
         shipment.RequestedShipment.CustomsClearanceDetail.DutiesPayment.Payor.ResponsibleParty.Contact = ''
@@ -86,7 +110,10 @@ class Fedex:
         shipment.RequestedShipment.CustomsClearanceDetail.DocumentContent = 'NON_DOCUMENTS'
         shipment.RequestedShipment.CustomsClearanceDetail.CustomsValue.Currency = 'INR'
         shipment.RequestedShipment.CustomsClearanceDetail.CustomsValue.Amount = float(item['price'])
-        shipment.RequestedShipment.CustomsClearanceDetail.CommercialInvoice.Purpose = 'NOT_SOLD'
+        if sender['is_cod']:
+            shipment.RequestedShipment.CustomsClearanceDetail.CommercialInvoice.Purpose = 'SOLD'
+        else:
+            shipment.RequestedShipment.CustomsClearanceDetail.CommercialInvoice.Purpose = 'NOT_SOLD'
         shipment.RequestedShipment.CustomsClearanceDetail.CommercialInvoice.TaxesOrMiscellaneousChargeType = None
         shipment.RequestedShipment.CustomsClearanceDetail.Commodities.NumberOfPieces = 1
         shipment.RequestedShipment.CustomsClearanceDetail.Commodities.Description = str(item['name'])
