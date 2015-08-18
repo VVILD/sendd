@@ -331,8 +331,10 @@ class ProductInline(admin.TabularInline):
 
     def fedex(self, obj):
         params = urllib.urlencode({'shipment_pk': obj.pk, 'client_type': "business"})
-        if obj.fedex_label:
-            return '<a href="/static/%s">%s</a>' % (str(obj.fedex_label.name).split('/')[-1], "Print label")
+        if obj.fedex_outbound_label and obj.fedex_cod_return_label:
+            return '<a href="/static/%s">%s</a>' % (str(obj.fedex_outbound_label.name).split('/')[-1], "Print Outbound Label")+'<br>'+ '<a href="/static/%s">%s</a>' % (str(obj.fedex_cod_return_label.name).split('/')[-1], "Print COD Return Label")
+        elif obj.fedex_outbound_label:
+            return '<a href="/static/%s">%s</a>' % (str(obj.fedex_outbound_label.name).split('/')[-1], "Print Outbound Label")
         else:
             return '<a href="/create_fedex_shipment/?%s">%s</a>' % (params, "Create Order")
 
@@ -346,10 +348,10 @@ class ProductInline(admin.TabularInline):
 # 	#('Invoices',{'fields':['send_invoice',], 'classes':('suit-tab','suit-tab-invoices')})
 # )
 # suit_form_tabs = (('general', 'General'))
-class FilterUserAdmin(admin.ModelAdmin): 
+class FilterUserAdmin(admin.ModelAdmin):
 
-    def queryset(self, request): 
-        qs = super(FilterUserAdmin, self).queryset(request) 
+    def queryset(self, request):
+        qs = super(FilterUserAdmin, self).queryset(request)
         print "queryyyset"
 
         profile=Profile.objects.get(user=request.user)

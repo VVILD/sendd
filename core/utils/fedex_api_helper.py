@@ -142,13 +142,13 @@ class Fedex:
         # To use doctab stocks, you must change ImageType above to one of the
         # label printer formats (ZPLII, EPL2, DPL).
         # See documentation for paper types, there quite a few.
-        shipment.RequestedShipment.LabelSpecification.LabelStockType = 'PAPER_7X4.75'
+        shipment.RequestedShipment.LabelSpecification.LabelStockType = 'PAPER_8.5X11_TOP_HALF_LABEL'
         shipment.RequestedShipment.LabelSpecification.LabelOrder = None
 
         # This indicates if the top or bottom of the label comes out of the
         # printer first.
         # BOTTOM_EDGE_OF_TEXT_FIRST or TOP_EDGE_OF_TEXT_FIRST
-        shipment.RequestedShipment.LabelSpecification.LabelPrintingOrientation = 'BOTTOM_EDGE_OF_TEXT_FIRST'
+        shipment.RequestedShipment.LabelSpecification.LabelPrintingOrientation = 'TOP_EDGE_OF_TEXT_FIRST'
 
         package1_weight = shipment.create_wsdl_object_of_type('Weight')
         # Weight, in pounds.
@@ -193,12 +193,19 @@ class Fedex:
         ascii_label_data = shipment.response.CompletedShipmentDetail.CompletedPackageDetails[0].Label.Parts[0].Image
         # Convert the ASCII data to binary.
         # label_binary_data = binascii.a2b_base64(ascii_label_data)
+        if sender['is_cod']:
+            COD_RETURN_LABEL = shipment.response.CompletedShipmentDetail.AssociatedShipments[0].Label.Parts[0].Image
+            OUTBOUND_LABEL = shipment.response.CompletedShipmentDetail.CompletedPackageDetails[0].Label.Parts[0].Image
+        else:
+            OUTBOUND_LABEL = shipment.response.CompletedShipmentDetail.CompletedPackageDetails[0].Label.Parts[0].Image
+            COD_RETURN_LABEL = None
 
         return {
             "status": shipment.response.HighestSeverity,
             "tracking_number": shipment.response.CompletedShipmentDetail.CompletedPackageDetails[0].TrackingIds[
                 0].TrackingNumber,
-            "label": ascii_label_data
+            "OUTBOUND_LABEL": OUTBOUND_LABEL,
+            "COD_RETURN_LABEL": COD_RETURN_LABEL
         }
 
 

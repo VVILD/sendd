@@ -10,8 +10,12 @@
     <h2>Message: {{ result.message }}</h2>
 {% else %}
     <h2>Tracking #: {{ result.tracking_number }}</h2>
-    <a href={{ STATIC_URL }}{{ result.label_url }}>Print</a>
+    <a href={{ STATIC_URL }}{{ result.outbound_label_url }}>Print Outbound Label</a>
 {#    <h2>Shipping Cost: {{ result.shipping_cost }}</h2>#}
+    <br>
+    {% if result.is_cod %}
+        <a href={{ STATIC_URL }}{{ result.cod_return_label_url }}>Print COD Return Label</a>
+    {% endif %}
 {% endif %}
 </body>
 </html>

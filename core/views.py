@@ -38,7 +38,7 @@ def create_fedex_shipment(request):
     is_cod = False
     if client_type == 'business':
         product = Product.objects.get(pk=shipment_pk)
-        if product.fedex_label:
+        if product.fedex_outbound_label:
             return HttpResponseBadRequest("Fedex Order already created")
         item_name = product.name
         item_weight = product.applied_weight
@@ -71,7 +71,7 @@ def create_fedex_shipment(request):
         item_price = product.price
     elif client_type == 'customer':
         shipment = Shipment.objects.get(pk=shipment_pk)
-        if shipment.fedex_label:
+        if shipment.fedex_outbound_label:
             return HttpResponseBadRequest("Fedex Order already created")
         item_name = shipment.item_name
         item_weight = shipment.weight
@@ -131,21 +131,30 @@ def create_fedex_shipment(request):
     }
     dropoff_type = 'REGULAR_PICKUP'
     result = fedex.create_shipment(sender, receiver, item, dropoff_type, service_type)
-    label_url = None
+    cod_return_label_url = None
+    outbound_label_url = None
     if result['status'] != 'ERROR':
         if client_type == 'business':
             product.mapped_tracking_no = result['tracking_number']
             # product.actual_cost = result['shipping_cost']
-            product.fedex_label.save(result['tracking_number']+'.pdf', ContentFile(base64.b64decode(result['label'])))
-            label_url = str(product.fedex_label.name).split('/')[-1]
+            if is_cod:
+                product.fedex_cod_return_label.save(result['tracking_number']+'_COD.pdf', ContentFile(base64.b64decode(result['COD_RETURN_LABEL'])))
+                cod_return_label_url = str(product.fedex_cod_return_label.name).split('/')[-1]
+            product.fedex_outbound_label.save(result['tracking_number']+'_OUT.pdf', ContentFile(base64.b64decode(result['OUTBOUND_LABEL'])))
+            outbound_label_url = str(product.fedex_outbound_label.name).split('/')[-1]
         elif client_type == 'customer':
             shipment.mapped_tracking_no = result['tracking_number']
             # shipment.actual_cost = result['shipping_cost']
-            shipment.fedex_label.save(result['tracking_number']+'.pdf', ContentFile(base64.b64decode(result['label'])))
-            label_url = str(shipment.fedex_label.name).split('/')[-1]
+            if is_cod:
+                shipment.fedex_cod_return_label.save(result['tracking_number']+'_COD.pdf', ContentFile(base64.b64decode(result['COD_RETURN_LABEL'])))
+                cod_return_label_url = str(shipment.fedex_cod_return_label.name).split('/')[-1]
+            shipment.fedex_outbound_label.save(result['tracking_number']+'_OUT.pdf', ContentFile(base64.b64decode(result['OUTBOUND_LABEL'])))
+            outbound_label_url = str(shipment.fedex_outbound_label.name).split('/')[-1]
     context = {
         "status": result['status'],
         "tracking_number": result["tracking_number"],
-        "label_url": label_url
+        "cod_return_label_url": cod_return_label_url,
+        "outbound_label_url": outbound_label_url,
+        "is_cod": is_cod
     }
     return render(request, 'fedex_new_shipment.html', {"result": context})
