@@ -46,18 +46,18 @@ class Fedex:
         shipment.RequestedShipment.PackagingType = 'YOUR_PACKAGING'
 
         # Shipper contact info.
-        shipment.RequestedShipment.Shipper.Contact.PersonName = str(sender['name'])
-        if sender['company']:
-            shipment.RequestedShipment.Shipper.Contact.CompanyName = str(sender['company'])
-        shipment.RequestedShipment.Shipper.Contact.PhoneNumber = str(sender['phone'])
+        shipment.RequestedShipment.Shipper.Contact.PersonName = "Sendd"
+        # if sender['company']:
+        shipment.RequestedShipment.Shipper.Contact.CompanyName = "Sendd"
+        shipment.RequestedShipment.Shipper.Contact.PhoneNumber = '8080028081'
 
         # Shipper address.
-        shipment.RequestedShipment.Shipper.Address.StreetLines = [str(sender['address1']), str(sender['address2'])]
-        shipment.RequestedShipment.Shipper.Address.City = str(sender['city'])
-        state_code = StateCodes.objects.get(subdivision_name=str(sender['state']))
-        shipment.RequestedShipment.Shipper.Address.StateOrProvinceCode = str(state_code.code).split('-')[1]
-        shipment.RequestedShipment.Shipper.Address.PostalCode = str(sender['pincode'])
-        shipment.RequestedShipment.Shipper.Address.CountryCode = str(sender['country_code'])
+        shipment.RequestedShipment.Shipper.Address.StreetLines = ["107 A-Wing Classique Center, Gundavali", "Andheri East, Mahakali Caves Road"]
+        shipment.RequestedShipment.Shipper.Address.City = "Mumbai"
+        # state_code = StateCodes.objects.get(subdivision_name=str(sender['state']))
+        shipment.RequestedShipment.Shipper.Address.StateOrProvinceCode = "MH"
+        shipment.RequestedShipment.Shipper.Address.PostalCode = "400093"
+        shipment.RequestedShipment.Shipper.Address.CountryCode = "IN"
         # shipment.RequestedShipment.Shipper.Address.Residential = not sender['is_business']
 
         # Recipient contact info.
