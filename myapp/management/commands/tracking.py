@@ -334,8 +334,10 @@ class Command(BaseCommand):
 
 				break;
 
-		product.tracking_data=json.dumps(tracking_data)
-		product.save()
+		if (json.dumps(tracking_data)!='[]'):
+			product.tracking_data=json.dumps(tracking_data)
+			product.save()
+
 
 
 	self.stdout.write("starting Aramex api for aramex shipment")
@@ -386,8 +388,10 @@ class Command(BaseCommand):
 
 				break;
 
-		shipment.tracking_data=json.dumps(tracking_data)
-		shipment.save()
+		if (json.dumps(tracking_data)!='[]'):
+			shipment.tracking_data=json.dumps(tracking_data)
+			shipment.save()
+
 
 		#print tracking_data
 

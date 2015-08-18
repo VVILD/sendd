@@ -147,7 +147,7 @@ class Product(models.Model):
     order = models.ForeignKey(Order, null=True, blank=True)
     real_tracking_no = models.CharField(max_length=10, blank=True, null=True)
     mapped_tracking_no = models.CharField(max_length=50, null=True, blank=True)
-    tracking_data = models.CharField(max_length=8000, null=True, blank=True)
+    tracking_data = models.TextField(null=True, blank=True)
     kartrocket_order = models.CharField(max_length=100, null=True, blank=True)
     company = models.CharField(max_length=2,
                                choices=[('F', 'FedEx'), ('D', 'Delhivery'), ('P', 'Professional'), ('G', 'Gati'),
