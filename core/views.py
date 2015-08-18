@@ -37,8 +37,8 @@ def create_fedex_shipment(request):
     fedex = Fedex()
     if client_type == 'business':
         product = Product.objects.get(pk=shipment_pk)
-        if product.mapped_tracking_no:
-            return HttpResponseBadRequest("Order already created")
+        if product.fedex_label:
+            return HttpResponseBadRequest("Fedex Order already created")
         item_name = product.name
         item_weight = product.applied_weight
         sender_name = product.order.business.name
@@ -70,8 +70,8 @@ def create_fedex_shipment(request):
         item_price = product.price
     elif client_type == 'customer':
         shipment = Shipment.objects.get(pk=shipment_pk)
-        if shipment.mapped_tracking_no:
-            return HttpResponseBadRequest
+        if shipment.fedex_label:
+            return HttpResponseBadRequest("Fedex Order already created")
         item_name = shipment.item_name
         item_weight = shipment.weight
         sender_name = shipment.order.namemail.name
@@ -135,13 +135,12 @@ def create_fedex_shipment(request):
             product.mapped_tracking_no = result['tracking_number']
             # product.actual_cost = result['shipping_cost']
             product.fedex_label.save(result['tracking_number']+'.pdf', ContentFile(base64.b64decode(result['label'])))
-            label_url = product.fedex_label.name
+            label_url = str(product.fedex_label.name).split('/')[-1]
         elif client_type == 'customer':
             shipment.mapped_tracking_no = result['tracking_number']
             # shipment.actual_cost = result['shipping_cost']
-            shipment.fedex_label = ContentFile(result['label'])
-            shipment.save()
-            label_url = shipment.fedex_label.name
+            shipment.fedex_label.save(result['tracking_number']+'.pdf', ContentFile(base64.b64decode(result['label'])))
+            label_url = str(shipment.fedex_label.name).split('/')[-1]
     context = {
         "status": result['status'],
         "tracking_number": result["tracking_number"],

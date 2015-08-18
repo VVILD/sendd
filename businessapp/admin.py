@@ -161,9 +161,9 @@ class ProductInline(admin.TabularInline):
     model = Product
     form = ProductForm
     exclude = ['sku', 'weight', 'real_tracking_no', 'tracking_data']
-    readonly_fields = ('product_info', 'weight', 'shipping_cost', 'generate_order', 'generate_fedex_label')
+    readonly_fields = ('product_info', 'weight', 'shipping_cost', 'generate_order', 'fedex')
     fields = (
-        'product_info', 'name', 'quantity', 'price', 'weight', 'applied_weight', 'generate_order', 'generate_fedex_label')
+        'product_info', 'name', 'quantity', 'price', 'weight', 'applied_weight', 'generate_order', 'fedex')
     extra = 0
 
     def product_info(self, obj):
@@ -329,11 +329,14 @@ class ProductInline(admin.TabularInline):
 
     generate_order.allow_tags = True
 
-    def generate_fedex_label(self, obj):
+    def fedex(self, obj):
         params = urllib.urlencode({'shipment_pk': obj.pk, 'client_type': "business"})
-        return '<a href="/create_fedex_shipment/?%s">%s</a>' % (params, "Create Fedex order")
+        if obj.fedex_label:
+            return '<a href="/static/%s">%s</a>' % (str(obj.fedex_label.name).split('/')[-1], "Print label")
+        else:
+            return '<a href="/create_fedex_shipment/?%s">%s</a>' % (params, "Create Normal Order")
 
-    generate_fedex_label.allow_tags = True
+    fedex.allow_tags = True
 
 
 # fieldsets=(
