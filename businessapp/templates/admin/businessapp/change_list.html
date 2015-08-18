@@ -11,6 +11,11 @@
    <a class="btn btn-info" href="/admin/businessapp/approvedbusiness/"><span class="badge">{{ap}}</span>Approved</a>
 <a class="btn btn-info" href="/admin/businessapp/cancelledbusiness/"><span class="badge">{{c}}</span>cancelled</a>
 <a class="btn btn-info" href="/admin/businessapp/dailybusiness/"><span class="badge">{{d}}</span>daily</a>
+
+
+<a class="btn btn-info" href="/admin/businessapp/yesterdaypendingorder/"><span class="badge">{{d}}</span>Pending orders</a>
+
+
 </center>
 <br>
 <br>
@@ -22,11 +27,11 @@
         <li># orders: {{count_b2c}}</li>
         <li>Total revenue: {{sum_b2c}}</li>
         </div> -->
-   <a class="btn btn-info" href="/admin/myapp/approvedorderops/"><span class="badge">{{ap}}</span> Approved Orders <br> Allot Someone</a>
-   <a class="btn btn-info" href="/admin/myapp/allotedorder/"><span class="badge">{{a}}</span>On the way to pickup <br> Check if picked up</a>
-   <a class="btn btn-info" href="/admin/myapp/pickeduporder/"><span class="badge">{{p}}</span>Picked up <br> Now Dispatch</a>
+   <a class="btn btn-info" href="/admin/businessapp/approvedbusiness/?o=5"><span class="badge">{{ap}}</span> Approved business</a>
+   <a class="btn btn-info" href="/admin/businessapp/order/?q=&status__exact=P"><span class="badge">{{p}}</span>Pending orders </a>
+   <a class="btn btn-info" href="/admin/businessapp/order/?q=&status__exact=PU"><span class="badge">{{pu}}</span>Picked up orders</a>
 
-   <a class="btn btn-info" href="/admin/myapp/dispatchedorder/"><span class="badge">{{c}}</span>Dispatched orders</a>
+   <a class="btn btn-info" href="/admin/businessapp/order/?q=&status__exact=DI"><span class="badge">{{di}}</span>Dispatched orders</a>
 <br>
 
 

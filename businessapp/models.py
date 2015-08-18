@@ -158,6 +158,10 @@ class Order(models.Model):
         super(Order, self).save(*args, **kwargs)
 
 
+class YesterdayPendingOrder(Order):
+    class Meta:
+        proxy = True
+
 class Product(models.Model):
     name = models.TextField(null=True, blank=True)
     quantity = models.IntegerField(max_length=10, null=True, blank=True)
@@ -249,6 +253,10 @@ class RemittanceProductPending(Product):
 
 
 class RemittanceProductComplete(Product):
+    class Meta:
+        proxy = True
+
+class QcProduct(Product):
     class Meta:
         proxy = True
 

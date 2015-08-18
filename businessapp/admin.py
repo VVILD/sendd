@@ -1,7 +1,7 @@
 
 
 
-
+import json
 
 from django.contrib import admin
 from .models import *
@@ -36,8 +36,8 @@ admin.site.register(User, UserAdmin)
 # Register your models here.
 class BusinessAdmin(admin.ModelAdmin):
     search_fields=['username','business_name']
-    list_display = ('username', 'business_name', 'pickup_time', 'pb', 'assigned_pickup_time','status', 'pending_orders','pickedup_orders','pending_orders_today','daily')
-    list_editable = ('pb', 'assigned_pickup_time','status','daily')
+    list_display = ('username', 'business_name', 'pickup_time', 'pb', 'assigned_pickup_time','status', 'pending_orders','pickedup_orders','pending_orders_today','daily','comment')
+    list_editable = ('pb', 'assigned_pickup_time','daily','comment')
     raw_id_fields = ('pb',)
 
     def changelist_view(self, request, extra_context=None):
@@ -209,7 +209,7 @@ class ProductAdmin(admin.ModelAdmin):
     list_editable = ('status', )
     readonly_fields = (
         'name', 'quantity', 'sku', 'price', 'weight', 'applied_weight', 'real_tracking_no', 'order',
-        'kartrocket_order', 'shipping_cost', 'cod_cost', 'status', 'date',)
+        'kartrocket_order', 'shipping_cost', 'cod_cost', 'status', 'date','barcode')
 
 
     fieldsets = (
@@ -224,6 +224,43 @@ class ProductAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Product, ProductAdmin)
+
+
+class QcProductAdmin(ProductAdmin):
+    def queryset(self, request):
+
+        return self.model.objects.filter(order__status='DI')
+
+    list_display = (
+        'real_tracking_no', 'tracking_status' ,'update_time','barcode','get_method')
+    list_filter = ['order__method']
+    list_editable = ()
+#    readonly_fields = ('order__method','drop_phone', 'drop_name', 'status', 'address','barcode','tracking_data','real_tracking_no','name','weight','cost_of_courier','price')
+
+
+    search_fields = ['order__order_no', 'real_tracking_no', 'mapped_tracking_no', 'drop_phone', 'drop_name']
+    
+
+    def get_method(self, obj):
+        if (obj.order.method=='B'):
+            return 'Bulk'
+        elif (obj.order.method=='N'):
+            return 'Normal'
+        else:
+            return 'None'
+
+    get_method.admin_order_field  = 'order__method'  #Allows column order sorting
+    get_method.short_description = 'method'
+
+    def tracking_status(self, obj):
+        #pk=obj.namemail.pk
+        return json.loads(obj.tracking_data)[-1]['status']
+    tracking_status.allow_tags = True
+    tracking_status.admin_order_field  = 'tracking_data'
+
+
+admin.site.register(QcProduct, QcProductAdmin)
+
 
 admin.site.register(Payment)
 admin.site.register(Forgotpass)
@@ -468,6 +505,34 @@ class OrderAdmin(FilterUserAdmin):
     list_filter = ['business', 'status', 'book_time']
     actions = [make_pending, make_complete, make_cancelled, make_transit]
 
+    def changelist_view(self, request, extra_context=None):
+        extra_context = extra_context or {}
+        op=False
+        cs=False
+        qc=False
+        try:
+            profile=Profile.objects.get(user=request.user)
+            usertype=profile.usertype
+            if (usertype=='O'):
+                op=True
+            elif (usertype=='C'):
+                cs=True
+        except:
+            pass
+
+        #approvedops
+        ap = Business.objects.filter(status='Y').count()
+        #alloted
+        pu = Order.objects.filter(status='PU').count()
+        #pickedup
+        p = Order.objects.filter(status='P').count()
+        #dispatched
+        di = Order.objects.filter(status='DI').count()
+
+        context = {'op': op,'cs': cs, 'ap':ap, 'p':p, 'di':di, 'pu':pu }
+        return super(OrderAdmin, self).changelist_view(request, extra_context=context)
+
+
     def no_of_products(self, obj):
         return Product.objects.filter(order=obj).count()
 
@@ -501,6 +566,18 @@ class OrderAdmin(FilterUserAdmin):
         return '<a href="/admin/businessapp/business/%s/">%s</a>' % (obj.business.username, obj.business.business_name)
 
     business_details.allow_tags = True
+
+
+class YesterdayPendingOrderAdmin(OrderAdmin):
+
+    def queryset(self, request):
+        yesterday_date=date.today()-datetime.timedelta(days=1)
+        date_max = datetime.datetime.combine(yesterday_date, datetime.time.max)
+        date_min = datetime.datetime.combine(yesterday_date, datetime.time.min)
+        
+        return self.model.objects.filter(book_time__range=(date_min,date_max),status='P')
+        
+admin.site.register(YesterdayPendingOrder, YesterdayPendingOrderAdmin)
 
 
 '''
