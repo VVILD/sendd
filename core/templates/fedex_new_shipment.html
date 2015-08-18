@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>Fedex new Shipment Status</title>
+</head>
+<body>
+<h2>Status: {{ result.status }}</h2>
+{% if result.status == 'ERROR' %}
+    <h2>Message: {{ result.message }}</h2>
+{% else %}
+    <h2>Tracking #: {{ result.tracking_number }}</h2>
+    <a href={{ MEDIA_URL }}{{ result.label_url }}>Print</a>
+{#    <h2>Shipping Cost: {{ result.shipping_cost }}</h2>#}
+{% endif %}
+</body>
+</html>

@@ -167,6 +167,7 @@ class Product(models.Model):
 
     date = models.DateTimeField(null=True, blank=True)
     remittance = models.BooleanField(default=False)
+    fedex_label = models.FileField(upload_to="fedex_labels", blank=True, null=True)
 
     def save(self, *args, **kwargs):
 

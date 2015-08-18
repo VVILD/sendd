@@ -1,7 +1,4 @@
-
-
-
-
+import urllib
 
 from django.contrib import admin
 from .models import *
@@ -12,10 +9,12 @@ from django.db.models import Sum
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 
+
 class ProfileInline(admin.StackedInline):
     model = Profile
     can_delete = False
     verbose_name_plural = 'profile'
+
 
 # Define a new User admin
 class UserAdmin(UserAdmin):
@@ -82,7 +81,7 @@ from businessapp.models import Product, Order
 # class BmInline(admin.StackedInline):
 # model = BusinessManager
 # can_delete = False
-#     verbose_name_plural = 'businessmanager'
+# verbose_name_plural = 'businessmanager'
 
 # Define a new User admin
 # class UserAdmin(UserAdmin):
@@ -111,7 +110,7 @@ admin.site.register(LoginSession)
 
 class ProductAdmin(admin.ModelAdmin):
     search_fields = ['name', 'real_tracking_no']
-    list_display = ('name', 'price', 'weight', 'status', 'real_tracking_no', 'order', 'barcode','date',)
+    list_display = ('name', 'price', 'weight', 'status', 'real_tracking_no', 'order', 'barcode', 'date',)
     list_editable = ('status', )
     readonly_fields = (
         'name', 'quantity', 'sku', 'price', 'weight', 'applied_weight', 'real_tracking_no', 'order',
@@ -149,8 +148,9 @@ class ProductInline(admin.TabularInline):
     model = Product
     form = ProductForm
     exclude = ['sku', 'weight', 'real_tracking_no', 'tracking_data']
-    readonly_fields = ('product_info', 'weight', 'shipping_cost', 'generate_order')
-    fields = ('product_info', 'name', 'quantity', 'price', 'weight', 'applied_weight', 'generate_order')
+    readonly_fields = ('product_info', 'weight', 'shipping_cost', 'generate_order', 'generate_fedex_label')
+    fields = (
+        'product_info', 'name', 'quantity', 'price', 'weight', 'applied_weight', 'generate_order', 'generate_fedex_label')
     extra = 0
 
     def product_info(self, obj):
@@ -159,7 +159,7 @@ class ProductInline(admin.TabularInline):
             obj.price) + '<br>' + "<b>tracking_no:</b>" + str(
             obj.real_tracking_no) + '<br>' + "<b>kartrocket_order:</b>" + str(
             obj.kartrocket_order) + '<br>' + "<b>Mapped_tracking_no:</b>" + str(
-            obj.mapped_tracking_no) + '<br>'+ "<b>status</b>" + str(
+            obj.mapped_tracking_no) + '<br>' + "<b>status</b>" + str(
             obj.status) + '<br>' + "<b>company:</b>" + str(
             obj.company) + '<br>' + "<b>Shipping cost:</b>" + str(
             obj.shipping_cost) + '<br>' + "<b>Cod cost:</b>" + str(
@@ -302,8 +302,8 @@ class ProductInline(admin.TabularInline):
 
 
 
-            #message="Hi " + user.name +", \n Greetings from DoorMint!,Our service provider ' "  + serviceprovider_name + "' (" + serviceprovider_number +") will reach you on "+book_date +" at "+str_time+" for "+ service1_name + "( "+service2_name+"). Call 9022662244, if you need help . Thanks for choosing us!"
-            #message=urllib.quote(message)
+                #message="Hi " + user.name +", \n Greetings from DoorMint!,Our service provider ' "  + serviceprovider_name + "' (" + serviceprovider_number +") will reach you on "+book_date +" at "+str_time+" for "+ service1_name + "( "+service2_name+"). Call 9022662244, if you need help . Thanks for choosing us!"
+                #message=urllib.quote(message)
 
         except:
             print 's'
@@ -316,6 +316,12 @@ class ProductInline(admin.TabularInline):
 
     generate_order.allow_tags = True
 
+    def generate_fedex_label(self, obj):
+        params = urllib.urlencode({'shipment_pk': obj.pk, 'client_type': "business"})
+        return '<a href="/create_fedex_shipment/?%s">%s</a>' % (params, "Create Fedex order")
+
+    generate_fedex_label.allow_tags = True
+
 
 # fieldsets=(
 # ('Basic Information', {'fields':['real_tracking_no','print_invoice',], 'classes':('suit-tab','suit-tab-general')}),
@@ -324,15 +330,14 @@ class ProductInline(admin.TabularInline):
 # 	#('Invoices',{'fields':['send_invoice',], 'classes':('suit-tab','suit-tab-invoices')})
 # )
 # suit_form_tabs = (('general', 'General'))
-class FilterUserAdmin(admin.ModelAdmin): 
-
-    def queryset(self, request): 
-        qs = super(FilterUserAdmin, self).queryset(request) 
+class FilterUserAdmin(admin.ModelAdmin):
+    def queryset(self, request):
+        qs = super(FilterUserAdmin, self).queryset(request)
         print "queryyyset"
 
-        profile=Profile.objects.get(user=request.user)
+        profile = Profile.objects.get(user=request.user)
 
-        if (profile.usertype!='B'):
+        if (profile.usertype != 'B'):
             return qs.filter()
         else:
             return qs.filter(business__businessmanager__user=request.user)
@@ -341,16 +346,13 @@ class FilterUserAdmin(admin.ModelAdmin):
         if not obj:
             # the changelist itself
             return True
-        profile=Profile.objects.get(user=request.user)
+        profile = Profile.objects.get(user=request.user)
 
-        if (profile.usertype=='B'):
+        if (profile.usertype == 'B'):
 
             return obj.business.businessmanager.user == request.user
         else:
             return True
-
-
-
 
 
 class OrderAdmin(FilterUserAdmin):
@@ -452,64 +454,70 @@ class ShipmentAdmin(admin.ModelAdmin):
 '''
 from daterange_filter.filter import DateRangeFilter
 
+
 class RemittanceProductPendingAdmin(admin.ModelAdmin):
-    list_filter=['order__business',('date', DateRangeFilter),]
-    list_editable=['remittance',]
+    list_filter = ['order__business', ('date', DateRangeFilter), ]
+    list_editable = ['remittance', ]
     list_display = (
-        'get_order_no','order_link', 'date', 'get_business', 'name', 'cod_cost', 'shipping_cost', 'status',
-        'price','remittance')
+        'get_order_no', 'order_link', 'date', 'get_business', 'name', 'cod_cost', 'shipping_cost', 'status',
+        'price', 'remittance')
     readonly_fields = (
         'name', 'quantity', 'sku', 'price', 'weight', 'applied_weight', 'real_tracking_no', 'order', 'tracking_data',
-        'kartrocket_order', 'shipping_cost', 'cod_cost', 'date','barcode',)
+        'kartrocket_order', 'shipping_cost', 'cod_cost', 'date', 'barcode',)
 
     def get_order_no(self, obj):
         return obj.order.order_no
-    get_order_no.admin_order_field  = 'order_no'  #Allows column order sorting
+
+    get_order_no.admin_order_field = 'order_no'  #Allows column order sorting
     get_order_no.short_description = 'Order No'
 
     def order_link(self, obj):
         return '<a href="/admin/businessapp/order/%s/">%s</a>' % (obj.order.pk, obj.order.pk)
+
     order_link.allow_tags = True
 
     def get_business(self, obj):
         return obj.order.business
-    get_business.admin_order_field  = 'business'  #Allows column order sorting
+
+    get_business.admin_order_field = 'business'  #Allows column order sorting
     get_business.short_description = 'Business'
 
     def queryset(self, request):
         return self.model.objects.filter(order__payment_method='C').order_by('status').exclude(remittance=True)
 
 
-
 admin.site.register(RemittanceProductPending, RemittanceProductPendingAdmin)
 
+
 class RemittanceProductCompleteAdmin(admin.ModelAdmin):
-    list_filter=['order__business',('date', DateRangeFilter),]
-    list_editable=['remittance',]
+    list_filter = ['order__business', ('date', DateRangeFilter), ]
+    list_editable = ['remittance', ]
     list_display = (
-        'get_order_no', 'order_link','date', 'get_business', 'name', 'cod_cost', 'shipping_cost', 'status',
-        'price','remittance')
+        'get_order_no', 'order_link', 'date', 'get_business', 'name', 'cod_cost', 'shipping_cost', 'status',
+        'price', 'remittance')
     readonly_fields = (
         'name', 'quantity', 'sku', 'price', 'weight', 'applied_weight', 'real_tracking_no', 'order', 'tracking_data',
-        'kartrocket_order', 'shipping_cost', 'cod_cost', 'date','barcode',)
+        'kartrocket_order', 'shipping_cost', 'cod_cost', 'date', 'barcode',)
 
     def get_order_no(self, obj):
         return obj.order.order_no
-    get_order_no.admin_order_field  = 'order_no'  #Allows column order sorting
+
+    get_order_no.admin_order_field = 'order_no'  #Allows column order sorting
     get_order_no.short_description = 'Order No'
 
     def order_link(self, obj):
         return '<a href="/admin/businessapp/order/%s/">%s</a>' % (obj.order.pk, obj.order.pk)
+
     order_link.allow_tags = True
 
     def get_business(self, obj):
         return obj.order.business
-    get_business.admin_order_field  = 'business'  #Allows column order sorting
+
+    get_business.admin_order_field = 'business'  #Allows column order sorting
     get_business.short_description = 'Business'
 
     def queryset(self, request):
         return self.model.objects.filter(order__payment_method='C').order_by('status').exclude(remittance=False)
-
 
 
 admin.site.register(RemittanceProductComplete, RemittanceProductCompleteAdmin)

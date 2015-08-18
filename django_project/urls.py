@@ -1,8 +1,9 @@
 from django.conf.urls import patterns, include, url
 from django.contrib import admin
+from core.views import create_fedex_shipment
 from myapp.api import UserResource,AddressResource,OrderResource,ShipmentResource,XResource,LoginSessionResource,WeborderResource,PriceappResource,DateappResource,ForgotpassResource
 from tastypie.api import Api
-
+from django_project import settings
 from myapp.api import *
 from pickupboyapp.api import PickupboyResource, PBLocationsResource, PBUserResource, BarcodeResource
 from pickupboyapp.views import pb_location_view
@@ -88,4 +89,5 @@ urlpatterns = patterns('',
     url(r'^stats/', include('myapp.urls')),       
     url(r'^pb_api/', include(pbv1_api.urls)),
     url(r'^pb_location/', pb_location_view, name='pb_location'),
+    url(r'^create_fedex_shipment/', create_fedex_shipment, name='create_fedex'),
 )
