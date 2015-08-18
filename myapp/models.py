@@ -207,7 +207,7 @@ class Shipment(models.Model):
     item_name = models.CharField(max_length=100, null=True, blank=True)
     kartrocket_order = models.CharField(max_length=100, null=True, blank=True)
     barcode = models.CharField(null=True, blank=True, default=None, max_length=12, unique=True)
-    fedex_label = models.FileField(upload_to="fedex_labels", blank=True, null=True)
+    fedex_label = models.FileField(upload_to='shipment/', blank=True, null=True)
 
     def save(self, *args, **kwargs):
 

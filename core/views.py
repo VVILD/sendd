@@ -135,13 +135,13 @@ def create_fedex_shipment(request):
             product.mapped_tracking_no = result['tracking_number']
             # product.actual_cost = result['shipping_cost']
             product.fedex_label.save(result['tracking_number']+'.pdf', ContentFile(base64.b64decode(result['label'])))
-            label_url = product.fedex_label.url
+            label_url = product.fedex_label.name
         elif client_type == 'customer':
             shipment.mapped_tracking_no = result['tracking_number']
             # shipment.actual_cost = result['shipping_cost']
             shipment.fedex_label = ContentFile(result['label'])
             shipment.save()
-            label_url = shipment.fedex_label.url
+            label_url = shipment.fedex_label.name
     context = {
         "status": result['status'],
         "tracking_number": result["tracking_number"],

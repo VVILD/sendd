@@ -10,7 +10,7 @@
     <h2>Message: {{ result.message }}</h2>
 {% else %}
     <h2>Tracking #: {{ result.tracking_number }}</h2>
-    <a href={{ MEDIA_URL }}{{ result.label_url }}>Print</a>
+    <a href={{ STATIC_URL }}{{ result.label_url }}>Print</a>
 {#    <h2>Shipping Cost: {{ result.shipping_cost }}</h2>#}
 {% endif %}
 </body>
