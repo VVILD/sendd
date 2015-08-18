@@ -158,6 +158,9 @@ class Fedex:
         package1 = shipment.create_wsdl_object_of_type('RequestedPackageLineItem')
         package1.SequenceNumber = 1
         package1.PhysicalPackaging = None
+        package1.CustomerReferences = shipment.create_wsdl_object_of_type('CustomerReference')
+        package1.CustomerReferences.CustomerReferenceType = 'CUSTOMER_REFERENCE'
+        package1.CustomerReferences.Value = 'Bill D/T - Sender'
         package1.Weight = package1_weight
         # Un-comment this to see the other variables you may set on a package.
         # print package1

@@ -67,7 +67,7 @@ def create_fedex_shipment(request):
         is_cod = False
         if product_type == 'C':
             is_cod = True
-        service_type=fedex.get_service_type(product.order.method, product.price, is_cod)
+        service_type=fedex.get_service_type(str(product.order.method), float(product.price), is_cod)
         item_price = product.price
     elif client_type == 'customer':
         shipment = Shipment.objects.get(pk=shipment_pk)
@@ -96,7 +96,7 @@ def create_fedex_shipment(request):
         receiver_pincode = shipment.drop_address.pincode
         receiver_country_code = 'IN'
         is_business_receiver = False
-        service_type = fedex.get_service_type(shipment.category, shipment.price)
+        service_type = fedex.get_service_type(str(shipment.category), float(shipment.price))
         item_price = shipment.price
 
     sender = {
