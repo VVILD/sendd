@@ -332,11 +332,11 @@ class ProductInline(admin.TabularInline):
     def fedex(self, obj):
         params = urllib.urlencode({'shipment_pk': obj.pk, 'client_type': "business"})
         if obj.fedex_outbound_label and obj.fedex_cod_return_label:
-            return '<a href="/static/%s">%s</a>' % (str(obj.fedex_outbound_label.name).split('/')[-1], "Print Outbound Label")+'<br>'+ '<a href="/static/%s">%s</a>' % (str(obj.fedex_cod_return_label.name).split('/')[-1], "Print COD Return Label")
+            return '<a href="/static/%s" target="_blank">%s</a>' % (str(obj.fedex_outbound_label.name).split('/')[-1], "Print Outbound Label")+'<br>'+ '<a href="/static/%s" target="_blank">%s</a>' % (str(obj.fedex_cod_return_label.name).split('/')[-1], "Print COD Return Label")
         elif obj.fedex_outbound_label:
-            return '<a href="/static/%s">%s</a>' % (str(obj.fedex_outbound_label.name).split('/')[-1], "Print Outbound Label")
+            return '<a href="/static/%s" target="_blank">%s</a>' % (str(obj.fedex_outbound_label.name).split('/')[-1], "Print Outbound Label")
         else:
-            return '<a href="/create_fedex_shipment/?%s">%s</a>' % (params, "Create Order")
+            return '<a href="/create_fedex_shipment/?%s" target="_blank">%s</a>' % (params, "Create Order")
 
     fedex.allow_tags = True
 
