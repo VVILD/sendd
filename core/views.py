@@ -145,6 +145,7 @@ def create_fedex_shipment(request):
             if result["shipping_cost"]:
                 product.actual_shipping_cost = float(result["shipping_cost"])
             # product.status = 'DI'
+            product.company = 'F'
             product.save()
         elif client_type == 'customer':
             shipment.mapped_tracking_no = result['tracking_number']
@@ -157,6 +158,7 @@ def create_fedex_shipment(request):
             if result["shipping_cost"]:
                 shipment.actual_shipping_cost = float(result["shipping_cost"])
             # shipment.status = 'DI'
+            shipment.company = 'F'
             shipment.save()
     context = {
         "status": result['status'],
