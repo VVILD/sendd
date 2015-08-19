@@ -203,6 +203,10 @@ class Fedex:
         # print shipment.client
         shipment.send_request()
         # print shipment.response
+        print shipment.client.last_sent()
+        print "************************************"
+        print shipment.client.last_received()
+
         if shipment.response.HighestSeverity == "ERROR":
             return {
                 "status": shipment.response.HighestSeverity,
