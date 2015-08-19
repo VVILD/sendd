@@ -144,6 +144,8 @@ def create_fedex_shipment(request):
             outbound_label_url = str(product.fedex_outbound_label.name).split('/')[-1]
             if result["shipping_cost"]:
                 product.actual_shipping_cost = float(result["shipping_cost"])
+            # product.status = 'DI'
+            product.save()
         elif client_type == 'customer':
             shipment.mapped_tracking_no = result['tracking_number']
             # shipment.actual_cost = result['shipping_cost']
@@ -154,6 +156,8 @@ def create_fedex_shipment(request):
             outbound_label_url = str(shipment.fedex_outbound_label.name).split('/')[-1]
             if result["shipping_cost"]:
                 shipment.actual_shipping_cost = float(result["shipping_cost"])
+            # shipment.status = 'DI'
+            shipment.save()
     context = {
         "status": result['status'],
         "tracking_number": result["tracking_number"],
