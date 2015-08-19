@@ -15,12 +15,21 @@ __author__ = 'vatsalshah'
 
 
 class Fedex:
-    # Change these values to match your testing account/meter number.
-    FEDEX_CONFIG_OBJ = FedexConfig(key='Ha8gotyUoTHURYW6',
-                                   password='ueU6dTNMxL0uPsJfxadWBhhjW',
-                                   account_number='510087640',
-                                   meter_number='118685245',
-                                   use_test_server=False)
+    FEDEX_CONFIG_INTRA_MUMBAI = FedexConfig(key='FRmcajHEPfMUjNmC',
+                                            password='fY5ZwylNGYFXAgNoChYYYSojG',
+                                            account_number='678650382',
+                                            meter_number='108284351',
+                                            use_test_server=False)
+    FEDEX_CONFIG_INDIA = FedexConfig(key='jFdC6SAqFS9vz7gY',
+                                     password='6bxCaeVdszjUo2iHw5R3tbrBu',
+                                     account_number='677853204',
+                                     meter_number='108284345',
+                                     use_test_server=False)
+    FEDEX_CONFIG_TEST = FedexConfig(key='Ha8gotyUoTHURYW6',
+                                    password='ueU6dTNMxL0uPsJfxadWBhhjW',
+                                    account_number='510087640',
+                                    meter_number='118685245',
+                                    use_test_server=False)
     # Set this to the INFO level to see the response from Fedex printed in stdout.
     logging.basicConfig(level=logging.INFO)
 
@@ -28,10 +37,13 @@ class Fedex:
         self.shipment = None
 
     def create_shipment(self, sender, receiver, item, dropoff_type='REGULAR_PICKUP', service_type='STANDARD_OVERNIGHT'):
-
+        if str(receiver['city']).lower() == 'mumbai':
+            FEDEX_CONFIG_OBJ = self.FEDEX_CONFIG_INTRA_MUMBAI
+        else:
+            FEDEX_CONFIG_OBJ = self.FEDEX_CONFIG_INDIA
         # This is the object that will be handling our tracking request.
         # We're using the FedexConfig object from example_config.py in this dir.
-        shipment = FedexProcessShipmentRequest(self.FEDEX_CONFIG_OBJ)
+        shipment = FedexProcessShipmentRequest(FEDEX_CONFIG_OBJ)
 
         # This is very generalized, top-level information.
         # REGULAR_PICKUP, REQUEST_COURIER, DROP_BOX, BUSINESS_SERVICE_CENTER or STATION
@@ -52,7 +64,8 @@ class Fedex:
         shipment.RequestedShipment.Shipper.Contact.PhoneNumber = '8080028081'
 
         # Shipper address.
-        shipment.RequestedShipment.Shipper.Address.StreetLines = ["107 A-Wing Classique Center, Gundavali", "Andheri East, Mahakali Caves Road"]
+        shipment.RequestedShipment.Shipper.Address.StreetLines = ["107 A-Wing Classique Center, Gundavali",
+                                                                  "Andheri East, Mahakali Caves Road"]
         shipment.RequestedShipment.Shipper.Address.City = "Mumbai"
         # state_code = StateCodes.objects.get(subdivision_name=str(sender['state']))
         shipment.RequestedShipment.Shipper.Address.StateOrProvinceCode = "MH"
@@ -67,7 +80,8 @@ class Fedex:
         shipment.RequestedShipment.Recipient.Contact.PhoneNumber = str(receiver['phone'])
 
         # Recipient address
-        shipment.RequestedShipment.Recipient.Address.StreetLines = [str(receiver['address1']), str(receiver['address2'])]
+        shipment.RequestedShipment.Recipient.Address.StreetLines = [str(receiver['address1']),
+                                                                    str(receiver['address2'])]
         shipment.RequestedShipment.Recipient.Address.City = str(receiver['city'])
         state_code = StateCodes.objects.get(subdivision_name=str(receiver['state']))
         shipment.RequestedShipment.Recipient.Address.StateOrProvinceCode = str(state_code.code).split('-')[1]
@@ -77,23 +91,31 @@ class Fedex:
         # shipment.RequestedShipment.Recipient.Address.Residential = not receiver['is_business']
         shipment.RequestedShipment.EdtRequestType = None
 
-        shipment.RequestedShipment.ShippingChargesPayment.Payor.ResponsibleParty.AccountNumber = self.FEDEX_CONFIG_OBJ.account_number
+        shipment.RequestedShipment.ShippingChargesPayment.Payor.ResponsibleParty.AccountNumber = FEDEX_CONFIG_OBJ.account_number
 
         if sender['is_cod']:
-            shipment.RequestedShipment.SpecialServicesRequested = shipment.create_wsdl_object_of_type('PackageSpecialServicesRequested')
+            shipment.RequestedShipment.SpecialServicesRequested = shipment.create_wsdl_object_of_type(
+                'PackageSpecialServicesRequested')
             shipment.RequestedShipment.SpecialServicesRequested.SpecialServiceTypes = 'COD'
-            shipment.RequestedShipment.SpecialServicesRequested.CodDetail = shipment.create_wsdl_object_of_type('CodDetail')
-            shipment.RequestedShipment.SpecialServicesRequested.CodDetail.CodCollectionAmount = shipment.create_wsdl_object_of_type('Money')
+            shipment.RequestedShipment.SpecialServicesRequested.CodDetail = shipment.create_wsdl_object_of_type(
+                'CodDetail')
+            shipment.RequestedShipment.SpecialServicesRequested.CodDetail.CodCollectionAmount = shipment.create_wsdl_object_of_type(
+                'Money')
             shipment.RequestedShipment.SpecialServicesRequested.CodDetail.CodCollectionAmount.Currency = 'INR'
-            shipment.RequestedShipment.SpecialServicesRequested.CodDetail.CodCollectionAmount.Amount = float(item['price'])
+            shipment.RequestedShipment.SpecialServicesRequested.CodDetail.CodCollectionAmount.Amount = float(
+                item['price'])
             shipment.RequestedShipment.SpecialServicesRequested.CodDetail.CollectionType = 'CASH'
-            shipment.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress = shipment.create_wsdl_object_of_type('Party')
-            shipment.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress.Contact = shipment.create_wsdl_object_of_type('Contact')
-            shipment.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress.Address = shipment.create_wsdl_object_of_type('Address')
+            shipment.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress = shipment.create_wsdl_object_of_type(
+                'Party')
+            shipment.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress.Contact = shipment.create_wsdl_object_of_type(
+                'Contact')
+            shipment.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress.Address = shipment.create_wsdl_object_of_type(
+                'Address')
             shipment.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress.Contact.PersonName = 'Sumeet Wadhwa'
             shipment.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress.Contact.CompanyName = 'Crazymind Technologies Pvt. Ltd.'
             shipment.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress.Contact.PhoneNumber = '8879475752'
-            shipment.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress.Address.StreetLines = ['303, Building no 5, Lake Heights, Adi Shankaracharya marg', ', Rambaug, IIT-Mumbai, Powai']
+            shipment.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress.Address.StreetLines = [
+                '303, Building no 5, Lake Heights, Adi Shankaracharya marg', ', Rambaug, IIT-Mumbai, Powai']
             shipment.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress.Address.City = 'Mumbai'
             shipment.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress.Address.StateOrProvinceCode = 'MH'
             shipment.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress.Address.PostalCode = '400076'
@@ -102,9 +124,8 @@ class Fedex:
             shipment.RequestedShipment.SpecialServicesRequested.CodDetail.RemitToName = 'Crazymind Technologies Pvt. Ltd.'
             shipment.RequestedShipment.SpecialServicesRequested.CodDetail.ReferenceIndicator = None
 
-
         shipment.RequestedShipment.CustomsClearanceDetail.DutiesPayment.PaymentType = 'SENDER'
-        shipment.RequestedShipment.CustomsClearanceDetail.DutiesPayment.Payor.ResponsibleParty.AccountNumber = self.FEDEX_CONFIG_OBJ.account_number
+        shipment.RequestedShipment.CustomsClearanceDetail.DutiesPayment.Payor.ResponsibleParty.AccountNumber = FEDEX_CONFIG_OBJ.account_number
         shipment.RequestedShipment.CustomsClearanceDetail.DutiesPayment.Payor.ResponsibleParty.Contact = ''
         shipment.RequestedShipment.CustomsClearanceDetail.DutiesPayment.Payor.ResponsibleParty.Address.CountryCode = 'IN'
         shipment.RequestedShipment.CustomsClearanceDetail.DocumentContent = 'NON_DOCUMENTS'
@@ -172,9 +193,9 @@ class Fedex:
         # Check if the shipment is valid
         # shipment.send_validation_request()
         # if shipment.response.HighestSeverity != "SUCCESS":
-        #     return {
-        #         "status" : shipment.response.HighestSeverity,
-        #         "message": shipment.response.Notifications.Message
+        # return {
+        # "status" : shipment.response.HighestSeverity,
+        # "message": shipment.response.Notifications.Message
         #     }
 
         # Fires off the request, sets the 'response' attribute on the object.
@@ -184,7 +205,7 @@ class Fedex:
         # print shipment.response
         if shipment.response.HighestSeverity == "ERROR":
             return {
-                "status" : shipment.response.HighestSeverity,
+                "status": shipment.response.HighestSeverity,
                 "message": shipment.response.Notifications.Message
             }
         # Get the label image in ASCII format from the reply. Note the list indices
