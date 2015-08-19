@@ -83,7 +83,7 @@ class Fedex:
         shipment.RequestedShipment.Recipient.Address.StreetLines = [str(receiver['address1']),
                                                                     str(receiver['address2'])]
         shipment.RequestedShipment.Recipient.Address.City = str(receiver['city'])
-        state_code = StateCodes.objects.get(subdivision_name=str(receiver['state']))
+        state_code = StateCodes.objects.get(country_code='IN', subdivision_name=str(receiver['state']))
         shipment.RequestedShipment.Recipient.Address.StateOrProvinceCode = str(state_code.code).split('-')[1]
         shipment.RequestedShipment.Recipient.Address.PostalCode = str(receiver['pincode'])
         shipment.RequestedShipment.Recipient.Address.CountryCode = str(receiver['country_code'])
