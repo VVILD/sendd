@@ -209,6 +209,7 @@ class Shipment(models.Model):
     barcode = models.CharField(null=True, blank=True, default=None, max_length=12, unique=True)
     fedex_cod_return_label = models.FileField(upload_to='shipment/', blank=True, null=True)
     fedex_outbound_label = models.FileField(upload_to='shipment/', blank=True, null=True)
+    actual_shipping_cost = models.FloatField(default=0.0)
 
     def save(self, *args, **kwargs):
 

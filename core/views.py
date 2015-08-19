@@ -142,6 +142,8 @@ def create_fedex_shipment(request):
                 cod_return_label_url = str(product.fedex_cod_return_label.name).split('/')[-1]
             product.fedex_outbound_label.save(result['tracking_number']+'_OUT.pdf', ContentFile(base64.b64decode(result['OUTBOUND_LABEL'])))
             outbound_label_url = str(product.fedex_outbound_label.name).split('/')[-1]
+            if result["shipping_cost"]:
+                product.actual_shipping_cost = float(result["shipping_cost"])
         elif client_type == 'customer':
             shipment.mapped_tracking_no = result['tracking_number']
             # shipment.actual_cost = result['shipping_cost']
@@ -150,11 +152,16 @@ def create_fedex_shipment(request):
                 cod_return_label_url = str(shipment.fedex_cod_return_label.name).split('/')[-1]
             shipment.fedex_outbound_label.save(result['tracking_number']+'_OUT.pdf', ContentFile(base64.b64decode(result['OUTBOUND_LABEL'])))
             outbound_label_url = str(shipment.fedex_outbound_label.name).split('/')[-1]
+            if result["shipping_cost"]:
+                shipment.actual_shipping_cost = float(result["shipping_cost"])
     context = {
         "status": result['status'],
         "tracking_number": result["tracking_number"],
         "cod_return_label_url": cod_return_label_url,
         "outbound_label_url": outbound_label_url,
-        "is_cod": is_cod
+        "is_cod": is_cod,
+        "service_type": result["service_type"],
+        "account": result["account"],
+        "shipping_cost": result["shipping_cost"]
     }
     return render(request, 'fedex_new_shipment.html', {"result": context})

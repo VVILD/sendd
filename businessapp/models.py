@@ -169,6 +169,7 @@ class Product(models.Model):
     remittance = models.BooleanField(default=False)
     fedex_cod_return_label = models.FileField(upload_to='shipment/', blank=True, null=True)
     fedex_outbound_label = models.FileField(upload_to='shipment/', blank=True, null=True)
+    actual_shipping_cost = models.FloatField(default=0.0)
 
     def save(self, *args, **kwargs):
 

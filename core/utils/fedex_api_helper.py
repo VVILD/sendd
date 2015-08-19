@@ -203,9 +203,7 @@ class Fedex:
         # print shipment.client
         shipment.send_request()
         # print shipment.response
-        print shipment.client.last_sent()
-        print "************************************"
-        print shipment.client.last_received()
+        # print shipment.client.last_sent()
 
         if shipment.response.HighestSeverity == "ERROR":
             return {
@@ -215,7 +213,7 @@ class Fedex:
         # Get the label image in ASCII format from the reply. Note the list indices
         # we're using. You'll need to adjust or iterate through these if your shipment
         # has multiple packages.
-        ascii_label_data = shipment.response.CompletedShipmentDetail.CompletedPackageDetails[0].Label.Parts[0].Image
+        # ascii_label_data = shipment.response.CompletedShipmentDetail.CompletedPackageDetails[0].Label.Parts[0].Image
         # Convert the ASCII data to binary.
         # label_binary_data = binascii.a2b_base64(ascii_label_data)
         if sender['is_cod']:
@@ -224,22 +222,28 @@ class Fedex:
         else:
             OUTBOUND_LABEL = shipment.response.CompletedShipmentDetail.CompletedPackageDetails[0].Label.Parts[0].Image
             COD_RETURN_LABEL = None
+        shiping_cost = None
+        if shipment.response.HighestSeverity == "SUCCESS":
+            shiping_cost = shipment.response.CompletedShipmentDetail.ShipmentRating.ShipmentRateDetails[0].TotalNetCharge.Amount
 
         return {
             "status": shipment.response.HighestSeverity,
             "tracking_number": shipment.response.CompletedShipmentDetail.CompletedPackageDetails[0].TrackingIds[
                 0].TrackingNumber,
             "OUTBOUND_LABEL": OUTBOUND_LABEL,
-            "COD_RETURN_LABEL": COD_RETURN_LABEL
+            "COD_RETURN_LABEL": COD_RETURN_LABEL,
+            "service_type": service_type,
+            "account": FEDEX_CONFIG_OBJ.account_number,
+            "shipping_cost": shiping_cost
         }
 
 
     @staticmethod
     def get_service_type(selected_type, item_value, is_cod=False):
-        if selected_type == 'P' and item_value < 5000 and not is_cod:
+        if selected_type in ('P', 'S', 'N') and item_value < 5000 and not is_cod:
             return 'PRIORITY_OVERNIGHT'
-        elif selected_type == 'P' and item_value > 5000 or is_cod:
+        elif selected_type in ('P', 'S', 'N') and item_value > 5000 or is_cod:
             return 'STANDARD_OVERNIGHT'
-        elif selected_type in ('B', 'N', 'S', 'E'):
+        elif selected_type in ('B', 'E'):
             return 'FEDEX_EXPRESS_SAVER'
         return False
