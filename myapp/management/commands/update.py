@@ -35,10 +35,19 @@ class Command(BaseCommand):
  
   def handle(self, *args, **options):
 
+	error=[]
   	for barcode in data:
-  		product=Product.objects.get(barcode=barcode)
-  		product.mapped_tracking_no=data[barcode]
-  		product.company='DT'
-  		product.save()
+  		try:
+  			product=Product.objects.get(barcode=barcode)
+  			product.mapped_tracking_no=data[barcode]
+  			product.company='DT'
+  			product.save()
+  		except:
+  			print "ERROR"
+  			print barcode
+  			print "ERROR"
+  			error.append(barcode)
+
+ 	print error	
 
 
