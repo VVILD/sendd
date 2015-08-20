@@ -1,3 +1,5 @@
+from PyPDF2 import PdfFileWriter, PdfFileReader
+import cStringIO
 from django.core.files.base import ContentFile
 from django.http import HttpResponseBadRequest
 from django.shortcuts import render
@@ -140,7 +142,16 @@ def create_fedex_shipment(request):
             if is_cod:
                 product.fedex_cod_return_label.save(result['tracking_number']+'_COD.pdf', ContentFile(base64.b64decode(result['COD_RETURN_LABEL'])))
                 cod_return_label_url = str(product.fedex_cod_return_label.name).split('/')[-1]
-            product.fedex_outbound_label.save(result['tracking_number']+'_OUT.pdf', ContentFile(base64.b64decode(result['OUTBOUND_LABEL'])))
+            output = PdfFileWriter()
+            f1 = ContentFile(base64.b64decode(result['OUTBOUND_LABEL']))
+            input1 = PdfFileReader(f1, strict=False)
+            output.addPage(input1.getPage(0))
+            output.addPage(input1.getPage(1))
+            output.addPage(input1.getPage(2))
+            output.addJS("this.print({bUI:true,bSilent:false,bShrinkToFit:true});")
+            outputStream = cStringIO.StringIO()
+            output.write(outputStream)
+            product.fedex_outbound_label.save(result['tracking_number']+'_OUT.pdf', ContentFile(outputStream.getvalue()))
             outbound_label_url = str(product.fedex_outbound_label.name).split('/')[-1]
             if result["shipping_cost"]:
                 product.actual_shipping_cost = float(result["shipping_cost"])
@@ -153,7 +164,16 @@ def create_fedex_shipment(request):
             if is_cod:
                 shipment.fedex_cod_return_label.save(result['tracking_number']+'_COD.pdf', ContentFile(base64.b64decode(result['COD_RETURN_LABEL'])))
                 cod_return_label_url = str(shipment.fedex_cod_return_label.name).split('/')[-1]
-            shipment.fedex_outbound_label.save(result['tracking_number']+'_OUT.pdf', ContentFile(base64.b64decode(result['OUTBOUND_LABEL'])))
+            output = PdfFileWriter()
+            f1 = ContentFile(base64.b64decode(result['OUTBOUND_LABEL']))
+            input1 = PdfFileReader(f1, strict=False)
+            output.addPage(input1.getPage(0))
+            output.addPage(input1.getPage(1))
+            output.addPage(input1.getPage(2))
+            output.addJS("this.print({bUI:true,bSilent:false,bShrinkToFit:true});")
+            outputStream = cStringIO.StringIO()
+            output.write(outputStream)
+            shipment.fedex_outbound_label.save(result['tracking_number']+'_OUT.pdf', ContentFile(outputStream.getvalue()))
             outbound_label_url = str(shipment.fedex_outbound_label.name).split('/')[-1]
             if result["shipping_cost"]:
                 shipment.actual_shipping_cost = float(result["shipping_cost"])
