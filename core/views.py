@@ -98,8 +98,8 @@ def create_fedex_shipment(request):
         receiver_pincode = shipment.drop_address.pincode
         receiver_country_code = 'IN'
         is_business_receiver = False
-        service_type = fedex.get_service_type(str(shipment.category), float(shipment.price))
-        item_price = shipment.price
+        service_type = fedex.get_service_type(str(shipment.category), float(shipment.cost_of_courier))
+        item_price = shipment.cost_of_courier
 
     sender = {
         "name": sender_name,
