@@ -28,16 +28,16 @@ from tastypie.authentication import Authentication
 import redis
 
 config = {
-    'host': 'localhost',
-    'port': 6379,
-    'db': 0,
+	'host': 'localhost',
+	'port': 6379,
+	'db': 0,
 }
 
 r = redis.StrictRedis(**config)
 
 # class SillyAuthentication(Authentication):
 #     def is_authenticated(self, request, **kwargs):
-        
+		
 #         print self.__dict__
 #         print request.__dict__
 #         if 'daniel' in request.user.username:
@@ -51,69 +51,69 @@ from tastypie.exceptions import Unauthorized
 
 
 class urlencodeSerializer(Serializer):
-    formats = ['json', 'jsonp', 'xml', 'yaml', 'html', 'plist', 'urlencode']
-    content_types = {
-        'json': 'application/json',
-        'jsonp': 'text/javascript',
-        'xml': 'application/xml',
-        'yaml': 'text/yaml',
-        'html': 'text/html',
-        'plist': 'application/x-plist',
-        'urlencode': 'application/x-www-form-urlencoded',
-        }
-    def from_urlencode(self, data,options=None):
-        """ handles basic formencoded url posts """
-        qs = dict((k, v if len(v)>1 else v[0] )
-            for k, v in urlparse.parse_qs(data).iteritems())
-        return qs
+	formats = ['json', 'jsonp', 'xml', 'yaml', 'html', 'plist', 'urlencode']
+	content_types = {
+		'json': 'application/json',
+		'jsonp': 'text/javascript',
+		'xml': 'application/xml',
+		'yaml': 'text/yaml',
+		'html': 'text/html',
+		'plist': 'application/x-plist',
+		'urlencode': 'application/x-www-form-urlencoded',
+		}
+	def from_urlencode(self, data,options=None):
+		""" handles basic formencoded url posts """
+		qs = dict((k, v if len(v)>1 else v[0] )
+			for k, v in urlparse.parse_qs(data).iteritems())
+		return qs
 
-    def to_urlencode(self,content): 
-        pass
+	def to_urlencode(self,content): 
+		pass
 
 
 class OnlyAuthorization(Authorization):
 
-    def read_detail(self, object_list, bundle):
-        # Is the requested object owned by the user?
-        print "0kkkkkkkkkkkkkkkk"
-        
-        #these 2 lines due to product wanting to use this authorisation
-        if (bundle.request.META["HTTP_AUTHORIZATION"]=='A'):
-        	return True
+	def read_detail(self, object_list, bundle):
+		# Is the requested object owned by the user?
+		print "0kkkkkkkkkkkkkkkk"
+		
+		#these 2 lines due to product wanting to use this authorisation
+		if (bundle.request.META["HTTP_AUTHORIZATION"]=='A'):
+			return True
 
-        return bundle.request.META["HTTP_AUTHORIZATION"]==bundle.obj.business.apikey
+		return bundle.request.META["HTTP_AUTHORIZATION"]==bundle.obj.business.apikey
 
-    def create_list(self, object_list, bundle):
-        # Assuming they're auto-assigned to ``user``.
-        print '1kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk'
-        return object_list
+	def create_list(self, object_list, bundle):
+		# Assuming they're auto-assigned to ``user``.
+		print '1kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk'
+		return object_list
 
-    def create_detail(self, object_list, bundle):
-    	print '2kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk'
-        return bundle.obj.user == bundle.request.user
+	def create_detail(self, object_list, bundle):
+		print '2kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk'
+		return bundle.obj.user == bundle.request.user
 
-    def update_list(self, object_list, bundle):
-        allowed = []
+	def update_list(self, object_list, bundle):
+		allowed = []
 
-        print "fgd"
-        # Since they may not all be saved, iterate over them.
-        for obj in object_list:
-            if obj.user == bundle.request.user:
-                allowed.append(obj)
+		print "fgd"
+		# Since they may not all be saved, iterate over them.
+		for obj in object_list:
+			if obj.user == bundle.request.user:
+				allowed.append(obj)
 
-        return allowed
+		return allowed
 
-    def update_detail(self, object_list, bundle):
-    	print "dfd"
-        return bundle.request.META["HTTP_AUTHORIZATION"]==bundle.obj.business.apikey
+	def update_detail(self, object_list, bundle):
+		print "dfd"
+		return bundle.request.META["HTTP_AUTHORIZATION"]==bundle.obj.business.apikey
 
 
-    def delete_list(self, object_list, bundle):
-        # Sorry user, no deletes for you!
-        raise Unauthorized("Sorry, no deletes.")
+	def delete_list(self, object_list, bundle):
+		# Sorry user, no deletes for you!
+		raise Unauthorized("Sorry, no deletes.")
 
-    def delete_detail(self, object_list, bundle):
-        raise Unauthorized("Sorry, no deletes.")
+	def delete_detail(self, object_list, bundle):
+		raise Unauthorized("Sorry, no deletes.")
 
 
 '''
@@ -278,9 +278,8 @@ class BusinessResource(CORSModelResource):
 		#pk=bundle.data['resource_uri'].split('/')[4]
 
 		try:
-			u = User.objects.get(username=business.businessmanager.username)
-			bundle.data['manager']=u.businessmanager.first_name 
-			bundle.data['manager_number']=u.businessmanager.phone
+			bundle.data['manager'] = business.businessmanager.user.first_name + business.businessmanager.user.first_name 
+			bundle.data['manager_number'] = business.businessmanager.phone
 		
 		except:
 			bundle.data['manager']='Ankush Sharma'
@@ -558,8 +557,8 @@ class ProductResource(CORSModelResource):
 
 	def prepend_urls(self):
 		return [
-            url(r"^(?P<resource_name>%s)/(?P<real_tracking_no>[\w\d_.-]+)/$" % self._meta.resource_name, self.wrap_view('dispatch_detail'), name="api_dispatch_detail"),
-        ]
+			url(r"^(?P<resource_name>%s)/(?P<real_tracking_no>[\w\d_.-]+)/$" % self._meta.resource_name, self.wrap_view('dispatch_detail'), name="api_dispatch_detail"),
+		]
 
 
 	def build_filters(self, filters=None):
