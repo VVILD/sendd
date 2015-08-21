@@ -509,6 +509,8 @@ class OrderResource(CORSModelResource):
 							raw_data=raw_data+ "India Post"
 						elif(p.company=="S"):
 							raw_data=raw_data+ "Sendd"
+						elif(p.company=="B"):
+							raw_data=raw_data+ "Bluedart"
 						else:
 							raw_data=''	
 
