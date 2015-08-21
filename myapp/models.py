@@ -244,6 +244,7 @@ class Shipment(models.Model):
         if (self.barcode is not None) and (len(self.barcode) > 12 or len(self.barcode) < 10):
             raise ValidationError("Barcode length should be 10")
 
+        super(Shipment, self).save(*args, **kwargs)
         # is_cod = False
         # fedex = Fedex()
         # item_name = self.item_name

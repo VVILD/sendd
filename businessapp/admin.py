@@ -116,7 +116,7 @@ class ProductAdmin(admin.ModelAdmin):
     list_editable = ('status', )
     readonly_fields = (
         'name', 'quantity', 'sku', 'price', 'weight', 'applied_weight', 'real_tracking_no', 'order',
-        'kartrocket_order', 'shipping_cost', 'cod_cost', 'status', 'date', 'fedex_check',)
+        'kartrocket_order', 'shipping_cost', 'cod_cost', 'status', 'date', 'fedex_check','barcode')
 
 
     fieldsets = (
@@ -161,7 +161,7 @@ class ProductInline(admin.TabularInline):
     model = Product
     form = ProductForm
     exclude = ['sku', 'weight', 'real_tracking_no', 'tracking_data']
-    readonly_fields = ('product_info', 'weight', 'shipping_cost', 'generate_order', 'fedex')
+    readonly_fields = ('product_info', 'weight', 'shipping_cost', 'generate_order', 'fedex',)
     fields = (
         'product_info', 'name', 'quantity', 'price', 'weight', 'applied_weight', 'generate_order', 'fedex')
     extra = 0
