@@ -239,6 +239,7 @@ class Shipment(models.Model):
 
             kwargs['force_update'] = True
             kwargs['force_insert'] = False
+            super(Shipment, self).save(*args, **kwargs)
 
         if (self.barcode is not None) and (len(self.barcode) > 12 or len(self.barcode) < 10):
             raise ValidationError("Barcode length should be 10")
