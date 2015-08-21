@@ -80,8 +80,9 @@ class Command(BaseCommand):
 
 				break;
 
-		product.tracking_data=json.dumps(tracking_data)
-		product.save()
+		if (json.dumps(tracking_data)!='[]'):
+			product.tracking_data=json.dumps(tracking_data)
+			product.save()
 
 
 #bluedart shipment
