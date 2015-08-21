@@ -335,7 +335,7 @@ class ProductInline(admin.TabularInline):
         params = urllib.urlencode({'shipment_pk': obj.pk, 'client_type': "business"})
         if not obj.applied_weight:
             return "Enter applied weight"
-        elif obj.fedex_check != 'P':
+        elif obj.fedex_check != 'P' and obj.fedex_check is not None:
             return "Fedex Check Failed"
         else:
             if obj.fedex_outbound_label and obj.fedex_cod_return_label:
