@@ -25,6 +25,8 @@ from tastypie.resources import csrf_exempt
 from tastypie.resources import Resource, ModelResource
 import logging
 
+from pickupboyapp.exceptions import CustomBadRequest
+from tastypie.utils import trailing_slash
 import redis
 
 config = {
@@ -1666,7 +1668,7 @@ class WeborderResource2(CORSModelResource):
         queryset = Weborder.objects.all()
         resource_name = 'weborder'
         authorization = Authorization()
-        always_return_data = True
+        always_return_data = False
 
     def hydrate(self, bundle):
 
@@ -1692,11 +1694,18 @@ class WeborderResource2(CORSModelResource):
                 newnamemail = x
                 break
 
+        #see if promocode exist
 
-        # create order
         order = Order.objects.create(namemail=newnamemail, user=newuser, address=bundle.data['pickup_location'],
                                      way='W', pick_now='N', pincode=bundle.data['pickup_pincode'],
                                      date=bundle.data['pickup_date'], time=bundle.data['pickup_time'])
+
+
+
+
+
+        # create order
+        
         order_pk = order.pk
 
         # create address
@@ -1747,6 +1756,7 @@ class WeborderResource2(CORSModelResource):
         bundle.data['tracking_id'] = shipment.real_tracking_no
 
         return bundle
+
 
 
 class ForgotpassResource2(MultipartResource, ModelResource):
@@ -2368,3 +2378,39 @@ class ZipcodeResource2(MultipartResource, CORSModelResource):
         resource_name = 'zipcode'
         authorization = Authorization()
         always_return_data = True
+
+
+    def prepend_urls(self):
+        return [
+            url(r"^(?P<resource_name>%s)%s$" % (self._meta.resource_name, trailing_slash()),
+                self.wrap_view('pending_orders'), name="api_pending_orders"),
+        ]
+
+    def pending_orders(self, request, **kwargs):
+        self.method_check(request, allowed=['get'])
+        self.is_authenticated(request)
+        self.throttle_check(request)
+
+        zipcode = request.GET.get('zipcode', '')
+        if not zipcode:
+            raise CustomBadRequest(
+                code="request_invalid",
+                message="No pickupboy found. Please supply zipcode as a GET parameter")
+
+        try:
+          print "gh"
+          print zipcode
+          Zipcode.objects.get(pincode=zipcode)
+          print "here"
+          bundle = {
+              "valid": "Y"
+          }
+        except:
+          bundle = {
+              "valid": "N"
+          }
+
+        
+        self.log_throttled_access(request)
+
+        return self.create_response(request, bundle)

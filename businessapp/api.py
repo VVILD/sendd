@@ -278,7 +278,7 @@ class BusinessResource(CORSModelResource):
 		#pk=bundle.data['resource_uri'].split('/')[4]
 
 		try:
-			bundle.data['manager'] = business.businessmanager.user.first_name + business.businessmanager.user.first_name 
+			bundle.data['manager'] = business.businessmanager.user.first_name + business.businessmanager.user.last_name 
 			bundle.data['manager_number'] = business.businessmanager.phone
 		
 		except:
