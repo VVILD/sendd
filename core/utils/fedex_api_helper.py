@@ -83,11 +83,15 @@ class Fedex:
         shipment.RequestedShipment.Recipient.Contact.PersonName = str(receiver['name'])
         # if receiver['company']:
         #     shipment.RequestedShipment.Recipient.Contact.CompanyName = str(receiver['company'])
-        shipment.RequestedShipment.Recipient.Contact.CompanyName = str(receiver_address[0])
+        if len(receiver_address) > 1:
+            shipment.RequestedShipment.Recipient.Contact.CompanyName = str(receiver_address[0])
         shipment.RequestedShipment.Recipient.Contact.PhoneNumber = str(receiver['phone'])
 
         # Recipient address
-        shipment.RequestedShipment.Recipient.Address.StreetLines = [receiver_address[1:]]
+        if len(receiver_address) > 1:
+            shipment.RequestedShipment.Recipient.Address.StreetLines = [receiver_address[1:]]
+        else:
+            shipment.RequestedShipment.Recipient.Address.StreetLines = [receiver_address[0]]
         shipment.RequestedShipment.Recipient.Address.City = str(receiver['city'])
         state_code = StateCodes.objects.get(country_code='IN', subdivision_name=str(receiver['state']))
         shipment.RequestedShipment.Recipient.Address.StateOrProvinceCode = str(state_code.code).split('-')[1]
