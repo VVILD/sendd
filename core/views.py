@@ -14,19 +14,19 @@ __author__ = 'vatsalshah'
 def create_fedex_shipment(request):
     shipment_pk = request.GET.get('shipment_pk', None)
     client_type = request.GET.get('client_type', None)
-    sender_name = None
-    sender_phone = None
-    sender_company = None
-    sender_address1, sender_address2 = None, None
-    sender_city = None
-    sender_state = None
-    sender_pincode = None
-    sender_country_code = None
-    is_business_sender = None
+    # sender_name = None
+    # sender_phone = None
+    # sender_company = None
+    # sender_address1, sender_address2 = None, None
+    # sender_city = None
+    # sender_state = None
+    # sender_pincode = None
+    # sender_country_code = None
+    # is_business_sender = None
     receiver_name = None
     receiver_phone = None
     receiver_company = None
-    receiver_address1, receiver_address2 = None, None
+    receiver_address  = None
     receiver_city = None
     receiver_state = None
     receiver_pincode = None
@@ -44,22 +44,23 @@ def create_fedex_shipment(request):
             return HttpResponseBadRequest("Fedex Order already created")
         item_name = product.name
         item_weight = product.applied_weight
-        sender_name = product.order.business.name
-        sender_company = product.order.business.business_name
-        sender_phone = product.order.business.contact_mob
-        sender_address = product.order.business.address
-        sender_address1, sender_address2 = sender_address[:len(sender_address) / 2], sender_address[
-                                                                                     len(sender_address) / 2:]
-        sender_city = product.order.business.city
-        sender_state = product.order.business.state
-        sender_pincode = product.order.business.pincode
-        sender_country_code = 'IN'
+        # sender_name = product.order.business.name
+        # sender_company = product.order.business.business_name
+        # sender_phone = product.order.business.contact_mob
+        # sender_address = product.order.business.address
+        # sender_address1, sender_address2 = sender_address[:len(sender_address) / 2], sender_address[
+        #                                                                              len(sender_address) / 2:]
+        # sender_city = product.order.business.city
+        # sender_state = product.order.business.state
+        # sender_pincode = product.order.business.pincode
+        # sender_country_code = 'IN'
         is_business_sender = True
         receiver_name = product.order.name
         receiver_company = None
         receiver_phone = product.order.phone
         receiver_address1 = product.order.address1
         receiver_address2 = product.order.address2
+        receiver_address = receiver_address1 + receiver_address2
         receiver_city = product.order.city
         receiver_state = product.order.state
         receiver_pincode = product.order.pincode
@@ -77,49 +78,50 @@ def create_fedex_shipment(request):
             return HttpResponseBadRequest("Fedex Order already created")
         item_name = shipment.item_name
         item_weight = shipment.weight
-        sender_name = shipment.order.namemail.name
-        sender_phone = shipment.order.user.phone
-        sender_address = shipment.order.flat_no + shipment.order.address
-        sender_address1, sender_address2 = sender_address[:len(sender_address) / 2], sender_address[
-                                                                                     len(sender_address) / 2:]
-        sender_city = "Mumbai"
-        sender_state = "Maharashtra"
-        sender_pincode = shipment.order.pincode
-        sender_country_code = 'IN'
+        # sender_name = shipment.order.namemail.name
+        # sender_phone = shipment.order.user.phone
+        # sender_address = shipment.order.flat_no + shipment.order.address
+        # sender_address1, sender_address2 = sender_address[:len(sender_address) / 2], sender_address[
+        #                                                                              len(sender_address) / 2:]
+        # sender_city = "Mumbai"
+        # sender_state = "Maharashtra"
+        # sender_pincode = shipment.order.pincode
+        # sender_country_code = 'IN'
         is_business_sender = False
         receiver_name = shipment.drop_name
         receiver_company = None
         receiver_phone = shipment.drop_phone
         receiver_address = shipment.drop_address.flat_no + shipment.drop_address.locality
-        receiver_address1, receiver_address2 = receiver_address[:len(receiver_address) / 2], receiver_address[
-                                                                                             len(receiver_address) / 2:]
+        # receiver_address1, receiver_address2 = receiver_address[:len(receiver_address) / 2], receiver_address[
+        #                                                                                      len(receiver_address) / 2:]
         receiver_city = shipment.drop_address.city
         receiver_state = shipment.drop_address.state
         receiver_pincode = shipment.drop_address.pincode
         receiver_country_code = 'IN'
         is_business_receiver = False
-        service_type = fedex.get_service_type(str(shipment.category), float(shipment.price))
-        item_price = shipment.price
+        service_type = fedex.get_service_type(str(shipment.category), float(shipment.cost_of_courier))
+        item_price = shipment.cost_of_courier
 
     sender = {
-        "name": sender_name,
-        "company": sender_company,
-        "phone": sender_phone,
-        "address1": sender_address1,
-        "address2": sender_address2,
-        "city": sender_city,
-        "state": sender_state,
-        "pincode": sender_pincode,
-        "is_business": is_business_sender,
-        "country_code": sender_country_code,
+        # "name": sender_name,
+        # "company": sender_company,
+        # "phone": sender_phone,
+        # "address1": sender_address1,
+        # "address2": sender_address2,
+        # "city": sender_city,
+        # "state": sender_state,
+        # "pincode": sender_pincode,
+        # "is_business": is_business_sender,
+        # "country_code": sender_country_code,
         "is_cod": is_cod
     }
     receiver = {
         "name": receiver_name,
         "company": receiver_company,
         "phone": receiver_phone,
-        "address1": receiver_address1,
-        "address2": receiver_address2,
+        # "address1": receiver_address1,
+        # "address2": receiver_address2,
+        "address": receiver_address,
         "city": receiver_city,
         "state": receiver_state,
         "pincode": receiver_pincode,

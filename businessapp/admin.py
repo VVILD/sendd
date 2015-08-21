@@ -112,11 +112,11 @@ admin.site.register(LoginSession)
 
 class ProductAdmin(admin.ModelAdmin):
     search_fields = ['name', 'real_tracking_no']
-    list_display = ('name', 'price', 'weight', 'status', 'real_tracking_no', 'order', 'barcode','date',)
+    list_display = ('name', 'price', 'weight', 'status', 'fedex_check', 'real_tracking_no', 'order', 'barcode','date',)
     list_editable = ('status', )
     readonly_fields = (
         'name', 'quantity', 'sku', 'price', 'weight', 'applied_weight', 'real_tracking_no', 'order',
-        'kartrocket_order', 'shipping_cost', 'cod_cost', 'status', 'date',)
+        'kartrocket_order', 'shipping_cost', 'cod_cost', 'status', 'date', 'fedex_check',)
 
 
     fieldsets = (
@@ -169,7 +169,8 @@ class ProductInline(admin.TabularInline):
     def product_info(self, obj):
         return '<b>Name:</b>' + str(obj.name) + '<br>' + '<b>Quantity:</b>' + str(
             obj.quantity) + '<br>' + 'SKU: ' + str(obj.sku) + '<br>' + '<b>Price:</b>' + str(
-            obj.price) + '<br>' + "<b>tracking_no:</b>" + str(
+            obj.price) + '<br>' + "<b>Fedex check:</b>" + str(
+            obj.get_fedex_check_display()) + '<br>' + "<b>tracking_no:</b>" + str(
             obj.real_tracking_no) + '<br>' + "<b>kartrocket_order:</b>" + str(
             obj.kartrocket_order) + '<br>' + "<b>Mapped_tracking_no:</b>" + str(
             obj.mapped_tracking_no) + '<br>'+ "<b>status</b>" + str(
@@ -332,12 +333,17 @@ class ProductInline(admin.TabularInline):
 
     def fedex(self, obj):
         params = urllib.urlencode({'shipment_pk': obj.pk, 'client_type': "business"})
-        if obj.fedex_outbound_label and obj.fedex_cod_return_label:
-            return '<a href="/static/%s" target="_blank">%s</a>' % (str(obj.fedex_outbound_label.name).split('/')[-1], "Print Outbound Label")+'<br>'+ '<a href="/static/%s" target="_blank">%s</a>' % (str(obj.fedex_cod_return_label.name).split('/')[-1], "Print COD Return Label")
-        elif obj.fedex_outbound_label:
-            return '<a href="/static/%s" target="_blank">%s</a>' % (str(obj.fedex_outbound_label.name).split('/')[-1], "Print Outbound Label")
+        if not obj.applied_weight:
+            return "Enter applied weight"
+        elif obj.fedex_check != 'P':
+            return "Fedex Check Failed"
         else:
-            return '<a href="/create_fedex_shipment/?%s" target="_blank">%s</a>' % (params, "Create Order")
+            if obj.fedex_outbound_label and obj.fedex_cod_return_label:
+                return '<a href="/static/%s" target="_blank">%s</a>' % (str(obj.fedex_outbound_label.name).split('/')[-1], "Print Outbound Label")+'<br>'+ '<a href="/static/%s" target="_blank">%s</a>' % (str(obj.fedex_cod_return_label.name).split('/')[-1], "Print COD Return Label")
+            elif obj.fedex_outbound_label:
+                return '<a href="/static/%s" target="_blank">%s</a>' % (str(obj.fedex_outbound_label.name).split('/')[-1], "Print Outbound Label")
+            else:
+                return '<a href="/create_fedex_shipment/?%s" target="_blank">%s</a>' % (params, "Create Order")
 
     fedex.allow_tags = True
 
@@ -382,8 +388,8 @@ class OrderAdmin(FilterUserAdmin):
     inlines = (ProductInline,)
     search_fields = ['business__business_name', 'name', 'product__real_tracking_no', 'product__barcode']
     list_display = (
-        'order_no', 'book_time', 'business_details', 'name', 'status', 'no_of_products', 'total_shipping_cost',
-        'total_cod_cost', 'method')
+        'order_no', 'book_time', 'business_details', 'name', 'status', 'fedex_check', 'no_of_products', 'total_shipping_cost',
+        'total_cod_cost', 'method',)
     list_editable = ('status',)
     list_filter = ['business', 'status', 'book_time']
     actions = [make_pending, make_complete, make_cancelled, make_transit]
@@ -419,6 +425,14 @@ class OrderAdmin(FilterUserAdmin):
 
     def business_details(self, obj):
         return '<a href="/admin/businessapp/business/%s/">%s</a>' % (obj.business.username, obj.business.business_name)
+
+    def fedex_check(self, obj):
+        status = 'Pass'
+        products = Product.objects.filter(order=obj)
+        for product in products:
+            if product.fedex_check != 'P':
+                status = product.get_fedex_check_display()
+        return status
 
     business_details.allow_tags = True
 

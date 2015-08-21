@@ -4,9 +4,11 @@ import binascii
 # any globally installed versions.
 import os
 import sys
+import textwrap
 from django.core.files.base import ContentFile
+from core.fedex.services.rate_service import FedexRateServiceRequest
 from core.models import StateCodes
-
+from django.core.exceptions import ValidationError
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from core.fedex.config import FedexConfig
 from core.fedex.services.ship_service import FedexProcessShipmentRequest
@@ -45,6 +47,10 @@ class Fedex:
         # We're using the FedexConfig object from example_config.py in this dir.
         shipment = FedexProcessShipmentRequest(FEDEX_CONFIG_OBJ)
 
+        receiver_address = textwrap.wrap(receiver['address'], 35)
+        if len(receiver_address) > 3:
+            raise ValidationError("Address Length > 130 chars")
+
         # This is very generalized, top-level information.
         # REGULAR_PICKUP, REQUEST_COURIER, DROP_BOX, BUSINESS_SERVICE_CENTER or STATION
         shipment.RequestedShipment.DropoffType = str(dropoff_type)
@@ -75,13 +81,13 @@ class Fedex:
 
         # Recipient contact info.
         shipment.RequestedShipment.Recipient.Contact.PersonName = str(receiver['name'])
-        if receiver['company']:
-            shipment.RequestedShipment.Recipient.Contact.CompanyName = str(receiver['company'])
+        # if receiver['company']:
+        #     shipment.RequestedShipment.Recipient.Contact.CompanyName = str(receiver['company'])
+        shipment.RequestedShipment.Recipient.Contact.CompanyName = str(receiver_address[0])
         shipment.RequestedShipment.Recipient.Contact.PhoneNumber = str(receiver['phone'])
 
         # Recipient address
-        shipment.RequestedShipment.Recipient.Address.StreetLines = [str(receiver['address1']),
-                                                                    str(receiver['address2'])]
+        shipment.RequestedShipment.Recipient.Address.StreetLines = [receiver_address[1:]]
         shipment.RequestedShipment.Recipient.Address.City = str(receiver['city'])
         state_code = StateCodes.objects.get(country_code='IN', subdivision_name=str(receiver['state']))
         shipment.RequestedShipment.Recipient.Address.StateOrProvinceCode = str(state_code.code).split('-')[1]
@@ -236,7 +242,190 @@ class Fedex:
             "account": FEDEX_CONFIG_OBJ.account_number,
             "shipping_cost": shiping_cost
         }
+    
+    def is_oda(self, sender, receiver, item, dropoff_type='REGULAR_PICKUP', service_type='STANDARD_OVERNIGHT'):
+        if str(receiver['city']).lower() == 'mumbai':
+            FEDEX_CONFIG_OBJ = self.FEDEX_CONFIG_INTRA_MUMBAI
+        else:
+            FEDEX_CONFIG_OBJ = self.FEDEX_CONFIG_INDIA
+        # This is the object that will be handling our tracking request.
+        # We're using the FedexConfig object from example_config.py in this dir.
+        rate_request = FedexRateServiceRequest(FEDEX_CONFIG_OBJ)
 
+
+        receiver_address = textwrap.wrap(receiver['address'], 35)
+        if len(receiver_address) > 3:
+            raise ValidationError("Address Length > 70 chars")
+
+
+        # This is very generalized, top-level information.
+        # REGULAR_PICKUP, REQUEST_COURIER, DROP_BOX, BUSINESS_SERVICE_CENTER or STATION
+        rate_request.RequestedShipment.DropoffType = str(dropoff_type)
+
+        # See page 355 in WS_ShipService.pdf for a full list. Here are the common ones:
+        # STANDARD_OVERNIGHT, PRIORITY_OVERNIGHT, FEDEX_GROUND, FEDEX_EXPRESS_SAVER
+        rate_request.RequestedShipment.ServiceType = str(service_type)
+
+        # What kind of package this will be shipped in.
+        # FEDEX_BOX, FEDEX_PAK, FEDEX_TUBE, YOUR_PACKAGING
+        rate_request.RequestedShipment.PackagingType = 'YOUR_PACKAGING'
+
+        # Shipper contact info.
+        rate_request.RequestedShipment.Shipper.Contact.PersonName = "Sendd"
+        # if sender['company']:
+        rate_request.RequestedShipment.Shipper.Contact.CompanyName = "Sendd"
+        rate_request.RequestedShipment.Shipper.Contact.PhoneNumber = '8080028081'
+
+        # Shipper address.
+        rate_request.RequestedShipment.Shipper.Address.StreetLines = ["107 A-Wing Classique Center, Gundavali",
+                                                                  "Andheri East, Mahakali Caves Road"]
+        rate_request.RequestedShipment.Shipper.Address.City = "Mumbai"
+        # state_code = StateCodes.objects.get(subdivision_name=str(sender['state']))
+        rate_request.RequestedShipment.Shipper.Address.StateOrProvinceCode = "MH"
+        rate_request.RequestedShipment.Shipper.Address.PostalCode = "400093"
+        rate_request.RequestedShipment.Shipper.Address.CountryCode = "IN"
+        # rate_request.RequestedShipment.Shipper.Address.Residential = not sender['is_business']
+
+        # Recipient contact info.
+        rate_request.RequestedShipment.Recipient.Contact.PersonName = str(receiver['name'])
+        # if receiver['company']:
+        #     rate_request.RequestedShipment.Recipient.Contact.CompanyName = str(receiver['company'])
+        rate_request.RequestedShipment.Recipient.Contact.CompanyName = str(receiver_address[0])
+        rate_request.RequestedShipment.Recipient.Contact.PhoneNumber = str(receiver['phone'])
+
+        # Recipient address
+        rate_request.RequestedShipment.Recipient.Address.StreetLines = [receiver_address[1:]]
+        rate_request.RequestedShipment.Recipient.Address.City = str(receiver['city'])
+        state_code = StateCodes.objects.get(country_code='IN', subdivision_name=str(receiver['state']))
+        rate_request.RequestedShipment.Recipient.Address.StateOrProvinceCode = str(state_code.code).split('-')[1]
+        rate_request.RequestedShipment.Recipient.Address.PostalCode = str(receiver['pincode'])
+        rate_request.RequestedShipment.Recipient.Address.CountryCode = str(receiver['country_code'])
+        # This is needed to ensure an accurate rate quote with the response.
+        # rate_request.RequestedShipment.Recipient.Address.Residential = not receiver['is_business']
+        rate_request.RequestedShipment.EdtRequestType = None
+
+        rate_request.RequestedShipment.ShippingChargesPayment.Payor.ResponsibleParty.AccountNumber = FEDEX_CONFIG_OBJ.account_number
+
+        if sender['is_cod']:
+            rate_request.RequestedShipment.SpecialServicesRequested = rate_request.create_wsdl_object_of_type(
+                'PackageSpecialServicesRequested')
+            rate_request.RequestedShipment.SpecialServicesRequested.SpecialServiceTypes = 'COD'
+            rate_request.RequestedShipment.SpecialServicesRequested.CodDetail = rate_request.create_wsdl_object_of_type(
+                'CodDetail')
+            rate_request.RequestedShipment.SpecialServicesRequested.CodDetail.CodCollectionAmount = rate_request.create_wsdl_object_of_type(
+                'Money')
+            rate_request.RequestedShipment.SpecialServicesRequested.CodDetail.CodCollectionAmount.Currency = 'INR'
+            rate_request.RequestedShipment.SpecialServicesRequested.CodDetail.CodCollectionAmount.Amount = float(
+                item['price'])
+            rate_request.RequestedShipment.SpecialServicesRequested.CodDetail.CollectionType = 'CASH'
+            rate_request.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress = rate_request.create_wsdl_object_of_type(
+                'Party')
+            rate_request.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress.Contact = rate_request.create_wsdl_object_of_type(
+                'Contact')
+            rate_request.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress.Address = rate_request.create_wsdl_object_of_type(
+                'Address')
+            rate_request.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress.Contact.PersonName = 'Sumeet Wadhwa'
+            rate_request.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress.Contact.CompanyName = 'Crazymind Technologies Pvt. Ltd.'
+            rate_request.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress.Contact.PhoneNumber = '8879475752'
+            rate_request.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress.Address.StreetLines = [
+                '303, Building no 5, Lake Heights, Adi Shankaracharya marg', ', Rambaug, IIT-Mumbai, Powai']
+            rate_request.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress.Address.City = 'Mumbai'
+            rate_request.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress.Address.StateOrProvinceCode = 'MH'
+            rate_request.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress.Address.PostalCode = '400076'
+            rate_request.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress.Address.CountryCode = 'IN'
+            rate_request.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress.Address.CountryName = 'INDIA'
+            rate_request.RequestedShipment.SpecialServicesRequested.CodDetail.RemitToName = 'Crazymind Technologies Pvt. Ltd.'
+            rate_request.RequestedShipment.SpecialServicesRequested.CodDetail.ReferenceIndicator = None
+
+        rate_request.RequestedShipment.CustomsClearanceDetail.DutiesPayment.PaymentType = 'SENDER'
+        rate_request.RequestedShipment.CustomsClearanceDetail.DutiesPayment.Payor.ResponsibleParty.AccountNumber = FEDEX_CONFIG_OBJ.account_number
+        rate_request.RequestedShipment.CustomsClearanceDetail.DutiesPayment.Payor.ResponsibleParty.Contact = ''
+        rate_request.RequestedShipment.CustomsClearanceDetail.DutiesPayment.Payor.ResponsibleParty.Address.CountryCode = 'IN'
+        rate_request.RequestedShipment.CustomsClearanceDetail.DocumentContent = 'NON_DOCUMENTS'
+        rate_request.RequestedShipment.CustomsClearanceDetail.CustomsValue.Currency = 'INR'
+        rate_request.RequestedShipment.CustomsClearanceDetail.CustomsValue.Amount = float(item['price'])
+        if sender['is_cod']:
+            rate_request.RequestedShipment.CustomsClearanceDetail.CommercialInvoice.Purpose = 'SOLD'
+        else:
+            rate_request.RequestedShipment.CustomsClearanceDetail.CommercialInvoice.Purpose = 'NOT_SOLD'
+        rate_request.RequestedShipment.CustomsClearanceDetail.CommercialInvoice.TaxesOrMiscellaneousChargeType = None
+        rate_request.RequestedShipment.CustomsClearanceDetail.Commodities.NumberOfPieces = 1
+        rate_request.RequestedShipment.CustomsClearanceDetail.Commodities.Description = str(item['name'])
+        rate_request.RequestedShipment.CustomsClearanceDetail.Commodities.CountryOfManufacture = 'IN'
+        rate_request.RequestedShipment.CustomsClearanceDetail.Commodities.Weight.Value = float(item['weight'])
+        rate_request.RequestedShipment.CustomsClearanceDetail.Commodities.Weight.Units = "KG"
+        rate_request.RequestedShipment.CustomsClearanceDetail.Commodities.Quantity = 1
+        rate_request.RequestedShipment.CustomsClearanceDetail.Commodities.QuantityUnits = 'EA'
+        rate_request.RequestedShipment.CustomsClearanceDetail.Commodities.UnitPrice.Currency = 'INR'
+        rate_request.RequestedShipment.CustomsClearanceDetail.Commodities.UnitPrice.Amount = float(item['price'])
+        rate_request.RequestedShipment.CustomsClearanceDetail.Commodities.CustomsValue.Currency = 'INR'
+        rate_request.RequestedShipment.CustomsClearanceDetail.Commodities.CustomsValue.Amount = float(item['price'])
+        rate_request.RequestedShipment.CustomsClearanceDetail.ExportDetail.B13AFilingOption = 'NOT_REQUIRED'
+        rate_request.RequestedShipment.CustomsClearanceDetail.ClearanceBrokerage = None
+        rate_request.RequestedShipment.CustomsClearanceDetail.FreightOnValue = None
+
+
+        # Specifies the label type to be returned.
+        # LABEL_DATA_ONLY or COMMON2D
+        # rate_request.RequestedShipment.LabelSpecification.LabelFormatType = 'COMMON2D'
+        #
+        # # Specifies which format the label file will be sent to you in.
+        # # DPL, EPL2, PDF, PNG, ZPLII
+        # rate_request.RequestedShipment.LabelSpecification.ImageType = 'PDF'
+        #
+        # # To use doctab stocks, you must change ImageType above to one of the
+        # # label printer formats (ZPLII, EPL2, DPL).
+        # # See documentation for paper types, there quite a few.
+        # rate_request.RequestedShipment.LabelSpecification.LabelStockType = 'PAPER_8.5X11_TOP_HALF_LABEL'
+        # rate_request.RequestedShipment.LabelSpecification.LabelOrder = None
+        #
+        # # This indicates if the top or bottom of the label comes out of the
+        # # printer first.
+        # # BOTTOM_EDGE_OF_TEXT_FIRST or TOP_EDGE_OF_TEXT_FIRST
+        # rate_request.RequestedShipment.LabelSpecification.LabelPrintingOrientation = 'TOP_EDGE_OF_TEXT_FIRST'
+
+        package1_weight = rate_request.create_wsdl_object_of_type('Weight')
+        # Weight, in pounds.
+        package1_weight.Value = float(item['weight'])
+        package1_weight.Units = "KG"
+
+        package1 = rate_request.create_wsdl_object_of_type('RequestedPackageLineItem')
+        package1.SequenceNumber = 1
+        package1.PhysicalPackaging = None
+        package1.CustomerReferences = rate_request.create_wsdl_object_of_type('CustomerReference')
+        package1.CustomerReferences.CustomerReferenceType = 'CUSTOMER_REFERENCE'
+        package1.CustomerReferences.Value = 'Bill D/T - Sender'
+        package1.Weight = package1_weight
+        # Un-comment this to see the other variables you may set on a package.
+        # print package1
+        package1.GroupPackageCount = 1
+        # This adds the RequestedPackageLineItem WSDL object to the rate_request. It
+        # increments the package count and total weight of the rate_request for you.
+        rate_request.add_package(package1)
+
+        # Check if the rate_request is valid
+        # rate_request.send_validation_request()
+        # if rate_request.response.HighestSeverity != "SUCCESS":
+        # return {
+        # "status" : rate_request.response.HighestSeverity,
+        # "message": rate_request.response.Notifications.Message
+        #     }
+
+        # Fires off the request, sets the 'response' attribute on the object.
+        # print rate_request.RequestedShipment
+        # print rate_request.client
+        rate_request.send_request()
+        # print rate_request.response
+        # print rate_request.client.last_sent()
+
+        # RateReplyDetails can contain rates for multiple ServiceTypes if ServiceType was set to None
+        status = False
+        for service in rate_request.response.RateReplyDetails:
+            for detail in service.RatedShipmentDetails:
+                for surcharge in detail.ShipmentRateDetail.Surcharges:
+                    if surcharge.SurchargeType == 'OUT_OF_DELIVERY_AREA':
+                        status = True
+        return status
 
     @staticmethod
     def get_service_type(selected_type, item_value, is_cod=False):

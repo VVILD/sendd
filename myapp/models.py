@@ -1,5 +1,5 @@
 import random
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.db.models.signals import post_save
 from django.db import models
 from django.core.validators import RegexValidator
@@ -7,6 +7,7 @@ import hashlib
 from datetime import datetime, timedelta
 from pytz import timezone
 from push_notifications.models import GCMDevice
+from core.utils.fedex_api_helper import Fedex
 from pickupboyapp.models import PBUser
 
 
@@ -210,11 +211,12 @@ class Shipment(models.Model):
     fedex_cod_return_label = models.FileField(upload_to='shipment/', blank=True, null=True)
     fedex_outbound_label = models.FileField(upload_to='shipment/', blank=True, null=True)
     actual_shipping_cost = models.FloatField(default=0.0)
+    fedex_check = models.CharField(max_length=1,
+                                   choices=(('I', 'Integrity Check'), ('O', 'ODA'), ('R', 'Restricted States'), ('P', 'Pass'), ('S', 'State Integrity Check'), ('A', 'Address Integrity Check')),
+                                   null=True, blank=True)
 
     def save(self, *args, **kwargs):
 
-        if (self.barcode is not None) and (len(self.barcode) > 12 or len(self.barcode) < 10):
-            raise ValidationError("Barcode length should be 10")
         if not self.pk:
             print self.pk
             z = timezone('Asia/Kolkata')
@@ -238,9 +240,85 @@ class Shipment(models.Model):
             kwargs['force_update'] = True
             kwargs['force_insert'] = False
 
-            print "H"
+        if (self.barcode is not None) and (len(self.barcode) > 12 or len(self.barcode) < 10):
+            raise ValidationError("Barcode length should be 10")
+
+        is_cod = False
+        fedex = Fedex()
+        item_name = self.item_name
+        item_weight = self.weight
+        # sender_name = self.order.namemail.name
+        # sender_phone = self.order.user.phone
+        # sender_address = self.order.flat_no + self.order.address
+        # sender_address1, sender_address2 = sender_address[:len(sender_address) / 2], sender_address[
+        #                                                                              len(sender_address) / 2:]
+        # sender_city = "Mumbai"
+        # sender_state = "Maharashtra"
+        # sender_pincode = self.order.pincode
+        # sender_country_code = 'IN'
+        is_business_sender = False
+        receiver_name = self.drop_name
+        receiver_company = None
+        receiver_phone = self.drop_phone
+        receiver_address = self.drop_address.flat_no + self.drop_address.locality
+        # receiver_address1, receiver_address2 = receiver_address[:len(receiver_address) / 2], receiver_address[
+        #                                                                                      len(receiver_address) / 2:]
+        receiver_city = self.drop_address.city
+        receiver_state = self.drop_address.state
+        receiver_pincode = self.drop_address.pincode
+        receiver_country_code = 'IN'
+        is_business_receiver = False
+        service_type = fedex.get_service_type(str(self.category), float(self.cost_of_courier))
+        item_price = self.cost_of_courier
+
+        sender = {
+            # "name": sender_name,
+            # "company": sender_company,
+            # "phone": sender_phone,
+            # "address1": sender_address1,
+            # "address2": sender_address2,
+            # "city": sender_city,
+            # "state": sender_state,
+            # "pincode": sender_pincode,
+            # "is_business": is_business_sender,
+            # "country_code": sender_country_code,
+            "is_cod": is_cod
+        }
+        receiver = {
+            "name": receiver_name,
+            "company": receiver_company,
+            "phone": receiver_phone,
+            # "address1": receiver_address1,
+            # "address2": receiver_address2,
+            "address": receiver_address,
+            "city": receiver_city,
+            "state": receiver_state,
+            "pincode": receiver_pincode,
+            "is_business": is_business_receiver,
+            "country_code": receiver_country_code
+        }
+        item = {
+            "name": item_name,
+            "weight": item_weight,
+            "price": item_price
+        }
+        dropoff_type = 'REGULAR_PICKUP'
+
+        try:
+            result = fedex.is_oda(sender, receiver, item, dropoff_type, service_type)
+
+            if result:
+                self.fedex_check = 'O'
+            elif receiver_state in ('Uttar Pradesh', 'Madhya Pradesh', 'Bihar', 'Jharkhand'):
+                self.fedex_check = 'R'
+            else:
+                self.fedex_check = 'P'
+        except ObjectDoesNotExist:
+            self.fedex_check = 'S'
+        except ValidationError:
+            self.fedex_check = 'A'
+
         super(Shipment, self).save(*args, **kwargs)
-        print "L"
 
 
 class Forgotpass(models.Model):

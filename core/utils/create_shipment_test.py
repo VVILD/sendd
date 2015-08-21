@@ -20,7 +20,7 @@ FEDEX_CONFIG_OBJ = FedexConfig(key='Ha8gotyUoTHURYW6',
                                password='ueU6dTNMxL0uPsJfxadWBhhjW',
                                account_number='510087640',
                                meter_number='118685245',
-                               use_test_server=False)
+                               use_test_server=True)
 
 # Set this to the INFO level to see the response from Fedex printed in stdout.
 logging.basicConfig(level=logging.INFO)
@@ -35,7 +35,7 @@ shipment.RequestedShipment.DropoffType = 'REGULAR_PICKUP'
 
 # See page 355 in WS_ShipService.pdf for a full list. Here are the common ones:
 # STANDARD_OVERNIGHT, PRIORITY_OVERNIGHT, FEDEX_GROUND, FEDEX_EXPRESS_SAVER
-shipment.RequestedShipment.ServiceType = 'STANDARD_OVERNIGHT'
+shipment.RequestedShipment.ServiceType = 'PRIORITY_OVERNIGHT'
 
 # What kind of package this will be shipped in.
 # FEDEX_BOX, FEDEX_PAK, FEDEX_TUBE, YOUR_PACKAGING
@@ -58,11 +58,11 @@ shipment.RequestedShipment.Shipper.Address.CountryCode = 'IN'
 
 # Recipient contact info.
 shipment.RequestedShipment.Recipient.Contact.PersonName = 'Manoj Sharma'
-shipment.RequestedShipment.Recipient.Contact.CompanyName = 'Recipient Company Name'
+shipment.RequestedShipment.Recipient.Contact.CompanyName = 'o i j y n n l v s f i k p r d u a q a z p s r j l v p l o f j m c r b k p a v y '
 shipment.RequestedShipment.Recipient.Contact.PhoneNumber = '9012637906'
 
 # Recipient address
-shipment.RequestedShipment.Recipient.Address.StreetLines = ['Recipient Address Line 1']
+shipment.RequestedShipment.Recipient.Address.StreetLines = ['o i j y n n l v s f i k p r d u a q a z p s r j l v p l o f j m c r b k p a v y ', 'Recipient Address Line 2']
 shipment.RequestedShipment.Recipient.Address.City = 'Mumbai'
 shipment.RequestedShipment.Recipient.Address.StateOrProvinceCode = 'MH'
 shipment.RequestedShipment.Recipient.Address.PostalCode = '400093'
@@ -78,27 +78,27 @@ shipment.RequestedShipment.ShippingChargesPayment.Payor.ResponsibleParty.Account
 # shipment.RequestedShipment.ShippingChargesPayment.Payor.ResponsibleParty.Address.CountryCode = 'US'
 
 
-shipment.RequestedShipment.SpecialServicesRequested = shipment.create_wsdl_object_of_type('PackageSpecialServicesRequested')
-shipment.RequestedShipment.SpecialServicesRequested.SpecialServiceTypes = 'COD'
-shipment.RequestedShipment.SpecialServicesRequested.CodDetail = shipment.create_wsdl_object_of_type('CodDetail')
-shipment.RequestedShipment.SpecialServicesRequested.CodDetail.CodCollectionAmount = shipment.create_wsdl_object_of_type('Money')
-shipment.RequestedShipment.SpecialServicesRequested.CodDetail.CodCollectionAmount.Currency = 'INR'
-shipment.RequestedShipment.SpecialServicesRequested.CodDetail.CodCollectionAmount.Amount = 100
-shipment.RequestedShipment.SpecialServicesRequested.CodDetail.CollectionType = 'CASH'
-shipment.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress = shipment.create_wsdl_object_of_type('Party')
-shipment.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress.Contact = shipment.create_wsdl_object_of_type('Contact')
-shipment.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress.Address = shipment.create_wsdl_object_of_type('Address')
-shipment.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress.Contact.PersonName = 'Sumeet Wadhwa'
-shipment.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress.Contact.CompanyName = 'Crazymind Technologies Pvt. Ltd.'
-shipment.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress.Contact.PhoneNumber = '8879475752'
-shipment.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress.Address.StreetLines = ['303, Building no 5, Lake Heights, Adi Shankaracharya marg', ', Rambaug, IIT-Mumbai, Powai']
-shipment.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress.Address.City = 'Mumbai'
-shipment.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress.Address.StateOrProvinceCode = 'MH'
-shipment.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress.Address.PostalCode = '400076'
-shipment.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress.Address.CountryCode = 'IN'
-shipment.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress.Address.CountryName = 'INDIA'
-shipment.RequestedShipment.SpecialServicesRequested.CodDetail.RemitToName = 'Crazymind Technologies Pvt. Ltd.'
-shipment.RequestedShipment.SpecialServicesRequested.CodDetail.ReferenceIndicator = None
+# shipment.RequestedShipment.SpecialServicesRequested = shipment.create_wsdl_object_of_type('PackageSpecialServicesRequested')
+# shipment.RequestedShipment.SpecialServicesRequested.SpecialServiceTypes = 'COD'
+# shipment.RequestedShipment.SpecialServicesRequested.CodDetail = shipment.create_wsdl_object_of_type('CodDetail')
+# shipment.RequestedShipment.SpecialServicesRequested.CodDetail.CodCollectionAmount = shipment.create_wsdl_object_of_type('Money')
+# shipment.RequestedShipment.SpecialServicesRequested.CodDetail.CodCollectionAmount.Currency = 'INR'
+# shipment.RequestedShipment.SpecialServicesRequested.CodDetail.CodCollectionAmount.Amount = 100
+# shipment.RequestedShipment.SpecialServicesRequested.CodDetail.CollectionType = 'CASH'
+# shipment.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress = shipment.create_wsdl_object_of_type('Party')
+# shipment.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress.Contact = shipment.create_wsdl_object_of_type('Contact')
+# shipment.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress.Address = shipment.create_wsdl_object_of_type('Address')
+# shipment.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress.Contact.PersonName = 'Sumeet Wadhwa'
+# shipment.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress.Contact.CompanyName = 'Crazymind Technologies Pvt. Ltd.'
+# shipment.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress.Contact.PhoneNumber = '8879475752'
+# shipment.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress.Address.StreetLines = ['303, Building no 5, Lake Heights, Adi Shankaracharya marg', ', Rambaug, IIT-Mumbai, Powai']
+# shipment.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress.Address.City = 'Mumbai'
+# shipment.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress.Address.StateOrProvinceCode = 'MH'
+# shipment.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress.Address.PostalCode = '400076'
+# shipment.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress.Address.CountryCode = 'IN'
+# shipment.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress.Address.CountryName = 'INDIA'
+# shipment.RequestedShipment.SpecialServicesRequested.CodDetail.RemitToName = 'Crazymind Technologies Pvt. Ltd.'
+# shipment.RequestedShipment.SpecialServicesRequested.CodDetail.ReferenceIndicator = None
 
 shipment.RequestedShipment.CustomsClearanceDetail.DutiesPayment.PaymentType = 'SENDER'
 shipment.RequestedShipment.CustomsClearanceDetail.DutiesPayment.Payor.ResponsibleParty.AccountNumber = FEDEX_CONFIG_OBJ.account_number
@@ -107,7 +107,7 @@ shipment.RequestedShipment.CustomsClearanceDetail.DutiesPayment.Payor.Responsibl
 shipment.RequestedShipment.CustomsClearanceDetail.DocumentContent = 'NON_DOCUMENTS'
 shipment.RequestedShipment.CustomsClearanceDetail.CustomsValue.Currency = 'INR'
 shipment.RequestedShipment.CustomsClearanceDetail.CustomsValue.Amount = 400
-shipment.RequestedShipment.CustomsClearanceDetail.CommercialInvoice.Purpose = 'SOLD'
+shipment.RequestedShipment.CustomsClearanceDetail.CommercialInvoice.Purpose = 'NOT_SOLD'
 shipment.RequestedShipment.CustomsClearanceDetail.CommercialInvoice.TaxesOrMiscellaneousChargeType = None
 shipment.RequestedShipment.CustomsClearanceDetail.Commodities.NumberOfPieces = 1
 shipment.RequestedShipment.CustomsClearanceDetail.Commodities.Description = 'Bedsheets'
@@ -204,11 +204,11 @@ label_binary_data = binascii.a2b_base64(ascii_label_data)
 This is an example of how to dump a label to a PNG file.
 """
 # This will be the file we write the label out to.
-pdf_file = ContentFile(ascii_label_data)
-print(pdf_file)
-# png_file = open('example_shipment_label.png', 'wb')
-# png_file.write(label_binary_data)
-# png_file.close()
+# pdf_file = ContentFile(ascii_label_data)
+# print(pdf_file)
+png_file = open('example_shipment_label.pdf', 'wb')
+png_file.write(label_binary_data)
+png_file.close()
 
 """
 This is an example of how to print the label to a serial printer. This will not
