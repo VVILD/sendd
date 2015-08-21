@@ -433,7 +433,7 @@ class Fedex:
 
     @staticmethod
     def get_service_type(selected_type, item_value, is_cod=False):
-        if selected_type in ('P', 'S', 'N') and item_value < 5000 and not is_cod:
+        if selected_type in ('P', 'S', 'N') and item_value <= 5000 and not is_cod:
             return 'PRIORITY_OVERNIGHT'
         elif selected_type in ('P', 'S', 'N') and item_value > 5000 or is_cod:
             return 'STANDARD_OVERNIGHT'
