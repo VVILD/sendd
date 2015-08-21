@@ -358,6 +358,8 @@ class OrderResource(CORSModelResource):
                             raw_data = raw_data + "DTDC"
                         elif (p.company == "FF"):
                             raw_data = raw_data + "First Flight"
+                        elif (p.company == "B"):
+                            raw_data = raw_data + "Bluedart"
                         else:
                             raw_data = raw_data + "ERROR"
 
