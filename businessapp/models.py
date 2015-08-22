@@ -12,6 +12,7 @@ import math
 from django.contrib.auth.models import User
 
 from django.db.models import signals
+from core.fedex.base_service import FedexError
 from core.utils.fedex_api_helper import Fedex
 from django.core.exceptions import ObjectDoesNotExist
 
@@ -173,7 +174,7 @@ class Product(models.Model):
     fedex_outbound_label = models.FileField(upload_to='shipment/', blank=True, null=True)
     actual_shipping_cost = models.FloatField(default=0.0)
     fedex_check = models.CharField(max_length=1,
-                                   choices=(('I', 'Integrity Check'), ('O', 'ODA'), ('R', 'Restricted States'), ('P', 'Pass'), ('S', 'State Integrity Check'), ('A', 'Address Integrity Check')),
+                                   choices=(('I', 'Integrity Check'), ('O', 'ODA'), ('R', 'Restricted States'), ('P', 'Pass'), ('S', 'State Integrity Check'), ('A', 'Address Integrity Check'), ('N', 'Not Servicable')),
                                    null=True, blank=True)
 
     def save(self, *args, **kwargs):
@@ -286,6 +287,12 @@ class Product(models.Model):
             except ValidationError:
                 self.fedex_check = 'A'
                 print "H"
+            except FedexError as e:
+                if e.error_code == '868':
+                    self.fedex_check = 'N'
+                else:
+                    raise e
+
         super(Product, self).save(*args, **kwargs)
         print "L"
 

@@ -259,7 +259,7 @@ class Fedex:
 
         receiver_address = textwrap.wrap(receiver['address'], 35)
         if len(receiver_address) > 3:
-            raise ValidationError("Address Length > 70 chars")
+            raise ValidationError("Address Length > 130 chars")
 
 
         # This is very generalized, top-level information.
@@ -294,11 +294,15 @@ class Fedex:
         rate_request.RequestedShipment.Recipient.Contact.PersonName = str(receiver['name'])
         # if receiver['company']:
         #     rate_request.RequestedShipment.Recipient.Contact.CompanyName = str(receiver['company'])
-        rate_request.RequestedShipment.Recipient.Contact.CompanyName = str(receiver_address[0])
+        if len(receiver_address) > 1:
+            rate_request.RequestedShipment.Recipient.Contact.CompanyName = str(receiver_address[0])
         rate_request.RequestedShipment.Recipient.Contact.PhoneNumber = str(receiver['phone'])
 
         # Recipient address
-        rate_request.RequestedShipment.Recipient.Address.StreetLines = [receiver_address[1:]]
+        if len(receiver_address) > 1:
+            rate_request.RequestedShipment.Recipient.Address.StreetLines = [receiver_address[1:]]
+        else:
+            rate_request.RequestedShipment.Recipient.Address.StreetLines = [receiver_address[0]]
         rate_request.RequestedShipment.Recipient.Address.City = str(receiver['city'])
         state_code = StateCodes.objects.get(country_code='IN', subdivision_name=str(receiver['state']))
         rate_request.RequestedShipment.Recipient.Address.StateOrProvinceCode = str(state_code.code).split('-')[1]
@@ -420,7 +424,7 @@ class Fedex:
         # print rate_request.client
         rate_request.send_request()
         # print rate_request.response
-        # print rate_request.client.last_sent()
+        print rate_request.client.last_sent()
 
         # RateReplyDetails can contain rates for multiple ServiceTypes if ServiceType was set to None
         status = False
