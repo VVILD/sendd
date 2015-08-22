@@ -259,7 +259,7 @@ class Fedex:
 
         receiver_address = textwrap.wrap(receiver['address'], 35)
         if len(receiver_address) > 3:
-            raise ValidationError("Address Length > 70 chars")
+            raise ValidationError("Address Length > 130 chars")
 
 
         # This is very generalized, top-level information.
@@ -424,7 +424,7 @@ class Fedex:
         # print rate_request.client
         rate_request.send_request()
         # print rate_request.response
-        # print rate_request.client.last_sent()
+        print rate_request.client.last_sent()
 
         # RateReplyDetails can contain rates for multiple ServiceTypes if ServiceType was set to None
         status = False
