@@ -66,6 +66,9 @@ class Promocode(models.Model):
     code = models.CharField(max_length=20, primary_key=True)
     msg = models.CharField(max_length=150)
     only_for_first = models.CharField(max_length=1, choices=(('Y', 'yes'), ('N', 'no'),), )
+    one_time = models.CharField(max_length=1, choices=(('Y', 'yes'), ('N', 'no'),), )
+    promocode_type = models.CharField(max_length=1, choices=(('P', 'percentage'), ('S', 'sum'),), )
+    promocode_amount = models.FloatField(default=0.0)
 
     def __unicode__(self):
         return str(self.code)
