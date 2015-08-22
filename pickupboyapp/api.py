@@ -165,6 +165,12 @@ class PickupboyResource(Resource):
                     "barcode": shipment.barcode,
                     "real_tracking_no": shipment.real_tracking_no
                 })
+            promocode_type = None
+            promocode_amount = None
+            if order.promocode.promocode_type:
+                promocode_type = order.promocode.promocode_type
+            if order.promocode.promocode_amount:
+                promocode_amount = order.promocode.promocode_amount
             order_repr = {
                 "address": order.address,
                 "flat_no": order.flat_no,
@@ -172,8 +178,8 @@ class PickupboyResource(Resource):
                 "pincode": order.pincode,
                 "pickup_time": order.time,
                 "user": order.user,
-                "promocode_type": order.promocode.promocode_type,
-                "promocode_amount": order.promocode.promocode_amount
+                "promocode_type": promocode_type,
+                "promocode_amount": promocode_amount
             }
             detailed_order = {
                 "type": "b2c",
