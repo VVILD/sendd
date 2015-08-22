@@ -295,8 +295,8 @@ class Product(models.Model):
                     else:
                         raise e
 
-            except:
-                pass
+        except:
+            pass
 
         super(Product, self).save(*args, **kwargs)
         print "L"
