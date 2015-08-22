@@ -171,7 +171,9 @@ class PickupboyResource(Resource):
                 "name": Namemail.objects.get(pk=order.namemail.pk).name,
                 "pincode": order.pincode,
                 "pickup_time": order.time,
-                "user": order.user
+                "user": order.user,
+                "promocode_type": order.promocode.promocode_type,
+                "promocode_amount": order.promocode.promocode_amount
             }
             detailed_order = {
                 "type": "b2c",
