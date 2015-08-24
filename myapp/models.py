@@ -9,6 +9,7 @@ from pytz import timezone
 from push_notifications.models import GCMDevice
 from core.utils.fedex_api_helper import Fedex
 from pickupboyapp.models import PBUser
+import urllib2
 
 
 
@@ -90,9 +91,9 @@ class Order(models.Model):
 
     order_status = models.CharField(max_length=2,
                                     choices=(
-                                        ('O', 'order_recieved'), ('A', 'Alloted'), ('P', 'picked up'), ('Pa', 'packed'),
+                                        ('O', 'order_recieved'), ('AP', 'Approved'),('A', 'Alloted'), ('P', 'picked up'), ('Pa', 'packed'),
                                         ('C', 'completed'), ('D', 'delivered'), ('N', 'cancelled'), ('F', 'fake'),
-                                        ('Q', 'query'),), null=True, blank=True, default='O')
+                                        ('Q', 'query'), ('DI', 'dispatched'),), null=True, blank=True, default='O')
 
     comment = models.TextField(null=True, blank=True)
     way = models.CharField(max_length=1,
@@ -126,6 +127,19 @@ class Order(models.Model):
         return str(self.order_no)
 
     def save(self, *args, **kwargs):
+        if self.pb and self.order_status=='AP':
+            self.order_status='A'
+            phone=self.pb.phone
+            msg0 = "http://enterprise.smsgupshup.com/GatewayAPI/rest?method=SendMessage&send_to="
+            msga = str(phone)
+            msg1 = "&msg=Welcome+to+Sendd.+Your+OTP+is+"
+            msg2 = "1234"
+            msg3 = ".This+message+is+for+automated+verification+purpose.+No+action+required.&msg_type=TEXT&userid=2000142364&auth_scheme=plain&password=h0s6jgB4N&v=1.1&format=text"
+            query = ''.join([msg0, msga, msg1, msg2, msg3])
+            print query
+            x = urllib2.urlopen(query).read()            
+
+
         ''' On save, update timestamps '''
         z = timezone('Asia/Kolkata')
         fmt = '%Y-%m-%d %H:%M:%S'
@@ -149,8 +163,11 @@ class PickedupOrder(Order):
     class Meta:
         proxy = True
 
+class DispatchedOrder(Order):
+    class Meta:
+        proxy = True
 
-class PackedOrder(Order):
+class ApprovedOrder(Order):
     class Meta:
         proxy = True
 
@@ -194,7 +211,7 @@ class Shipment(models.Model):
     order = models.ForeignKey(Order, null=True, blank=True)
 
     status = models.CharField(max_length=2,
-                              choices=(('P', 'pending'), ('C', 'complete'), ('PU', 'pickedup'), ('CA', 'cancelled')),
+                              choices=(('P', 'pending'), ('C', 'complete'), ('PU', 'pickedup'), ('CA', 'cancelled'), ('DI', 'dispatched')),
                               default='P', null=True, blank=True)
 
     paid = models.CharField(max_length=10,
@@ -218,7 +235,21 @@ class Shipment(models.Model):
                                    choices=(('I', 'Integrity Check'), ('O', 'ODA'), ('R', 'Restricted States'), ('P', 'Pass'), ('S', 'State Integrity Check'), ('A', 'Address Integrity Check'), ('N', 'Not Servicable')),
                                    null=True, blank=True)
 
+    __original_tracking_data = None
+    update_time=models.DateTimeField(null=True, blank=True)
+    def __init__(self, *args, **kwargs):
+        super(Shipment, self).__init__(*args, **kwargs)
+        self.__original_tracking_data = self.tracking_data
+
     def save(self, *args, **kwargs):
+
+        if self.tracking_data != self.__original_tracking_data:
+            z = timezone('Asia/Kolkata')
+            fmt = '%Y-%m-%d %H:%M:%S'
+            ind_time = datetime.now(z)
+            time = ind_time.strftime(fmt)
+            self.update_time=time
+
 
         if not self.pk:
             print self.pk
@@ -326,6 +357,11 @@ class Shipment(models.Model):
         # super(Shipment, self).save(*args, **kwargs)
 
 
+
+class QcShipment(Shipment):
+    class Meta:
+        proxy = True
+
 class Forgotpass(models.Model):
     user = models.ForeignKey(User)
     auth = models.CharField(max_length=100)
@@ -426,16 +462,23 @@ class Pincodecheck(models.Model):
         return str(self.pincode)
 
 
-    def send_update(sender, instance, created, **kwargs):
-        print "shittt>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-        print instance.pk
-
-    # quersyset.filter(pk=instance.pk).update(....)
-    #MyModel.objects.filter(pk=some_value).update(field1='some value')
-
-
-    post_save.connect(send_update, sender=Shipment)
-
+def send_update(sender, instance, created, **kwargs):
+# product can be pending complete returned picked up
+# choices=(('P', 'pending'), ('C', 'complete'), ('PU', 'pickedup'), ('CA', 'cancelled'), ('R', 'return')),
+# ('P', 'pending'), ('C', 'complete'), ('N', 'cancelled'), ('D', 'in transit'), ('PU', 'pickedup')), default='P')
+# order will be pending intransit complete cancelled picked up
+    if (instance.status == 'PU') or (instance.status == 'CA'):
+        pickedup = True
+        products_in_order = Shipment.objects.filter(order=instance.order)
+        for product in products_in_order:
+            if (product.status!='PU') & (product.status!='CA'):
+                pickedup=False
+        if (pickedup):
+# signals.post_save.disconnect(send_update_order, sender=Order)
+            instance.order.order_status = 'P'
+            instance.order.save()
+# signals.post_save.connect(send_update_order, sender=Order)
+post_save.connect(send_update, sender=Shipment)
 
 class Zipcode(models.Model):
     pincode = models.CharField(max_length=6, primary_key=True)

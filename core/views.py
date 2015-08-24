@@ -157,7 +157,7 @@ def create_fedex_shipment(request):
             outbound_label_url = str(product.fedex_outbound_label.name).split('/')[-1]
             if result["shipping_cost"]:
                 product.actual_shipping_cost = float(result["shipping_cost"])
-            # product.status = 'DI'
+            product.status = 'DI'
             product.company = 'F'
             product.save()
         elif client_type == 'customer':
@@ -179,7 +179,7 @@ def create_fedex_shipment(request):
             outbound_label_url = str(shipment.fedex_outbound_label.name).split('/')[-1]
             if result["shipping_cost"]:
                 shipment.actual_shipping_cost = float(result["shipping_cost"])
-            # shipment.status = 'DI'
+            shipment.status = 'DI'
             shipment.company = 'F'
             shipment.save()
     context = {

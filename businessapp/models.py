@@ -20,7 +20,7 @@ from django.core.exceptions import ObjectDoesNotExist
 class Profile(models.Model):
     user = models.OneToOneField(User)
     phone = models.CharField(max_length=100)
-    usertype = models.CharField(max_length=1, choices=(('O', 'ops'), ('B', 'bd'), ('A', 'admin'),),
+    usertype = models.CharField(max_length=1, choices=(('O', 'ops'), ('B', 'bd'), ('A', 'admin'),('Q', 'qc'),('C', 'customer support'),),
                                 null=True, blank=True)
 
     def __unicode__(self):
@@ -67,6 +67,11 @@ class Business(models.Model):
     assigned_pickup_time = models.TimeField(null=True, blank=True)
     #     # Use UserManager to get the create_user method, etc.
     #     objects = UserManager()
+
+    comment = models.TextField(null=True, blank=True)
+    daily = models.BooleanField(default=False)
+    status = models.CharField(max_length=1, choices=(('Y', 'approved'), ('N', 'not approved'),('C', 'cancelled'),), null=True, blank=True,
+    default='N')
 
     def save(self, *args, **kwargs):
         #print self.tracking_no
@@ -118,7 +123,7 @@ class Order(models.Model):
     book_time = models.DateTimeField(null=True, blank=True)
     status = models.CharField(max_length=2, choices=(
         ('P', 'pending'), ('C', 'complete'), ('N', 'cancelled'), ('D', 'in transit'), ('PU', 'pickedup'),
-        ('RC', 'return/completed'), ('R', 'return')), default='P')
+        ('RC', 'return/completed'), ('R', 'return'), ('DI', 'dispatched')), default='P')
 
     method = models.CharField(max_length=1,
                               choices=(('B', 'Bulk'), ('N', 'Normal'),),
@@ -165,7 +170,7 @@ class Product(models.Model):
     barcode = models.CharField(null=True, blank=True, default=None, max_length=12, unique=True)
     status = models.CharField(max_length=2,
                               choices=(('P', 'pending'), ('C', 'complete'), ('PU', 'pickedup'), ('CA', 'cancelled'),
-                                       ('R', 'return')),
+                                       ('R', 'return'), ('DI', 'dispatched')),
                               default='P')
 
     date = models.DateTimeField(null=True, blank=True)
@@ -177,8 +182,21 @@ class Product(models.Model):
                                    choices=(('I', 'Integrity Check'), ('O', 'ODA'), ('R', 'Restricted States'), ('P', 'Pass'), ('S', 'State Integrity Check'), ('A', 'Address Integrity Check'), ('N', 'Not Servicable')),
                                    null=True, blank=True)
 
+    __original_tracking_data = None
+    update_time=models.DateTimeField(null=True, blank=True)
+    def __init__(self, *args, **kwargs):
+        super(Product, self).__init__(*args, **kwargs)
+        self.__original_tracking_data = self.tracking_data
+
     def save(self, *args, **kwargs):
 
+        if self.tracking_data != self.__original_tracking_data:
+            z = timezone('Asia/Kolkata')
+            fmt = '%Y-%m-%d %H:%M:%S'
+            ind_time = datetime.now(z)
+            time = ind_time.strftime(fmt)
+            self.update_time=time
+        
         if not self.pk:
             print self.pk
             z = timezone('Asia/Kolkata')
@@ -299,8 +317,7 @@ class Product(models.Model):
             pass
 
         super(Product, self).save(*args, **kwargs)
-        print "L"
-
+        self.__original_tracking_data = self.tracking_data
 
 class RemittanceProductPending(Product):
     class Meta:

@@ -1,0 +1,28 @@
+{% extends "admin/index.html" %}
+
+
+{% block content %}
+    <center>
+<div class="row">
+        <div class="col-md-6">Today Customers Orders
+        <br>
+        <li># orders: {{count_b2c}}</li>
+        <li>Total revenue: {{sum_b2c}}</li>
+        </div>
+   <a class="btn btn-info" href="/admin/myapp/receivedorder/"><span class="badge">{{o}}</span> Recieved Orders <br> Allot Someone</a>
+   <a class="btn btn-info" href="/admin/myapp/allotedorder/"><span class="badge">{{a}}</span>On the way to pickup <br> Check if picked up</a>
+   <a class="btn btn-info" href="/admin/myapp/pickeduporder/"><span class="badge">{{p}}</span>Picked up <br> Now Pack</a>
+   <a class="btn btn-info" href="/admin/myapp/packedorder/"><span class="badge">{{pa}}</span>Packed<br>Do data entry/send invoice</a>
+<br>
+
+
+<br>
+   <a class="btn btn-info" href="/admin/myapp/completedorder/"><span class="badge">{{c}}</span>Completed orders</a>
+<a class="btn btn-info" href="/admin/myapp/fakeorder/">Fake orders</a>
+<a class="btn btn-info" href="/admin/myapp/queryorder/">Query Orders</a>
+<br>
+<br>
+</div>
+    </center>
+    {{ block.super }}
+{% endblock %}

@@ -76,9 +76,10 @@ class PickupboyAdmin(admin.ModelAdmin):
 
 class OrderAdmin(admin.ModelAdmin):
     # inlines=(ShipmentInline,)
+    #actions_on_top = True
     save_as = True
     list_per_page = 25
-    search_fields = ['user__phone', 'name', 'namemail__name', 'namemail__email', 'promocode__code', 'shipment__real_tracking_no', 'shipment__barcode']
+    search_fields = ['user__phone', 'name', 'namemail__name', 'namemail__email', 'promocode__code', 'shipment__real_tracking_no','shipment__barcode']
     list_display = (
         'order_no', 'book_time', 'promocode', 'date', 'time', 'full_address', 'name_email', 'order_status', 'way',
         'pb', 'comment', 'shipments', 'send_invoice')
@@ -105,8 +106,8 @@ class OrderAdmin(admin.ModelAdmin):
         o = Order.objects.filter(order_status='O').count()
         a = Order.objects.filter(order_status='A').count()
         p = Order.objects.filter(order_status='P').count()
-        pa = Order.objects.filter(order_status='Pa').count()
-        c = Order.objects.filter(order_status='C').count()
+        pa = Order.objects.filter(order_status='AP').count()
+        c = Order.objects.filter(order_status='DI').count()
 
         todays_date = date.today()
         # week_before=date.today()-datetime.timedelta(days=7)
@@ -355,7 +356,12 @@ make_alloted.short_description = "Mark selected orders as alloted"
 
 
 class ReceivedOrderAdmin(OrderAdmin):
-    actions = [make_alloted]
+    def make_approved(modeladmin, request, queryset):
+        queryset.update(order_status='AP')
+
+
+    make_approved.short_description = "Approve"
+    actions = [make_approved]
 
 
     def queryset(self, request):
@@ -373,6 +379,12 @@ make_alloted.short_description = "Mark selected orders as picked up"
 
 
 class AllotedOrderAdmin(OrderAdmin):
+    def make_pickedup(modeladmin, request, queryset):
+        queryset.update(order_status='P')
+
+
+    make_alloted.short_description = "picked up"
+
     actions = [make_pickedup]
 
     def queryset(self, request):
@@ -382,15 +394,24 @@ class AllotedOrderAdmin(OrderAdmin):
 admin.site.register(AllotedOrder, AllotedOrderAdmin)
 
 
-def make_packed(modeladmin, request, queryset):
-    queryset.update(order_status='Pa')
+class DispatchedOrderAdmin(OrderAdmin):
+    
+    def queryset(self, request):
+        return self.model.objects.filter(order_status='DI')
 
 
-make_alloted.short_description = "Mark selected orders as packed"
+admin.site.register(DispatchedOrder, DispatchedOrderAdmin)
+
 
 
 class PickedupOrderAdmin(OrderAdmin):
-    actions = [make_packed]
+    def make_dispatched(modeladmin, request, queryset):
+        queryset.update(order_status='DI')
+
+
+    make_alloted.short_description = "dispatched"
+
+    actions = [make_dispatched]
 
     def queryset(self, request):
         return self.model.objects.filter(order_status='P')
@@ -399,21 +420,22 @@ class PickedupOrderAdmin(OrderAdmin):
 admin.site.register(PickedupOrder, PickedupOrderAdmin)
 
 
-def make_complete(modeladmin, request, queryset):
-    queryset.update(order_status='C')
 
 
-make_alloted.short_description = "Mark selected orders as complete"
+class ApprovedOrderAdmin(OrderAdmin):
+    def make_Alloted(modeladmin, request, queryset):
+        queryset.update(order_status='A')
 
 
-class PackedOrderAdmin(OrderAdmin):
-    actions = [make_complete]
+    make_alloted.short_description = "Alloted"
+
+    actions = [make_alloted]
 
     def queryset(self, request):
-        return self.model.objects.filter(order_status='Pa')
+        return self.model.objects.filter(order_status='AP')
 
 
-admin.site.register(PackedOrder, PackedOrderAdmin)
+admin.site.register(ApprovedOrder, ApprovedOrderAdmin)
 
 
 class CompletedOrderAdmin(OrderAdmin):
@@ -787,3 +809,38 @@ class WeborderAdmin(admin.ModelAdmin):
 admin.site.register(Weborder, WeborderAdmin)
 
 admin.site.register(Priceapp)
+
+
+class QcShipmentAdmin(ShipmentAdmin):
+    def queryset(self, request):
+        return self.model.objects.filter(order__order_status='C')
+    list_display = (
+    'real_tracking_no', 'tracking_status' ,'update_time','parcel_details','category', 'drop_phone', 'drop_name', 'address','barcode')
+    list_filter = ['category']
+    list_editable = ()
+    readonly_fields = ('category','drop_phone', 'drop_name', 'status', 'address','barcode','tracking_data','parcel_details','real_tracking_no','name','weight','cost_of_courier','price')
+    search_fields = ['order__order_no', 'real_tracking_no', 'mapped_tracking_no', 'drop_phone', 'drop_name']
+    fieldsets = (
+    ('Basic Information', {'fields': ['real_tracking_no', 'parcel_details', ('category', 'status')],
+    'classes': ('suit-tab', 'suit-tab-general')}),
+    ('Parcel Information',
+    {'fields': [('name', 'weight', 'cost_of_courier'), ], 'classes': ('suit-tab', 'suit-tab-general')}),
+    ('Amount paid', {'fields': ['price', ], 'classes': ('suit-tab', 'suit-tab-general')}),
+    ('Tracking Information',
+    {'fields': [('mapped_tracking_no', 'company'), 'kartrocket_order'], 'classes': ('suit-tab', 'suit-tab-general')}),
+    #('Destination Address', {'fields':['drop_name','drop_phone','drop_flat_no','locality','city','state','drop_pincode','country'] , 'classes':['collapse',]})
+    ('Destination Address',
+    {'fields': [('drop_name', 'drop_phone'), 'address', ], 'classes': ('suit-tab', 'suit-tab-general')}),
+    ('Tracking', {'fields': ['tracking_data'], 'classes': ('suit-tab', 'suit-tab-tracking')})
+    )
+    suit_form_tabs = (('general', 'General'), ('tracking', 'Tracking'))
+    
+    def tracking_status(self, obj):
+    #pk=obj.namemail.pk
+        return json.loads(obj.tracking_data)[-1]['status']
+    tracking_status.allow_tags = True
+    tracking_status.admin_order_field = 'tracking_data'
+
+
+
+admin.site.register(QcShipment, QcShipmentAdmin)

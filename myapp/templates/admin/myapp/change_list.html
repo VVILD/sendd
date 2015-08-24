@@ -2,6 +2,42 @@
 
 
 {% block content %}
+<script>
+(function ($) {
+
+    function fix_actions() {
+        var container = $('div.actions');
+
+        if (container.find('option').length < 10) {
+            container.find('label, button').hide();
+
+            var buttons = $('<div></div>')
+                .prependTo(container)
+                .css('display', 'inline')
+                .addClass('class', 'action-buttons');
+
+            container.find('option:gt(0)').each(function () {
+                $('<button>')
+                    .appendTo(buttons)
+                    .attr('name', this.value)
+                    .addClass('button')
+                    .text(this.text)
+                    .click(function () {
+                        container.find('select')
+                            .find(':selected').attr('selected', '').end()
+                            .find('[value=' + this.name + ']').attr('selected', 'selected');
+                        $('#changelist-form button[name="index"]').click();
+                    });
+            });
+        }
+    };
+
+    $(function () {
+        fix_actions();
+    });
+})(django.jQuery);
+
+</script>
     <center>
 <div class="row">
         <div class="col-md-6">Today Customers Orders
@@ -9,15 +45,16 @@
         <li># orders: {{count_b2c}}</li>
         <li>Total revenue: {{sum_b2c}}</li>
         </div>
-   <a class="btn btn-info" href="/admin/myapp/receivedorder/"><span class="badge">{{o}}</span> Recieved Orders <br> Allot Someone</a>
-   <a class="btn btn-info" href="/admin/myapp/allotedorder/"><span class="badge">{{a}}</span>On the way to pickup <br> Check if picked up</a>
-   <a class="btn btn-info" href="/admin/myapp/pickeduporder/"><span class="badge">{{p}}</span>Picked up <br> Now Pack</a>
-   <a class="btn btn-info" href="/admin/myapp/packedorder/"><span class="badge">{{pa}}</span>Packed<br>Do data entry/send invoice</a>
+   <a class="btn btn-info" href="/admin/myapp/receivedorder/"><span class="badge">{{o}}</span> Recieved Orders</a>
+   <a class="btn btn-info" href="/admin/myapp/approvedorder/"><span class="badge">{{pa}}</span>Approved Orders</a>
+   <a class="btn btn-info" href="/admin/myapp/allotedorder/"><span class="badge">{{a}}</span>Alloted Orders</a>
+   <a class="btn btn-info" href="/admin/myapp/pickeduporder/"><span class="badge">{{p}}</span>Picked up Orders</a>
+
 <br>
 
 
 <br>
-   <a class="btn btn-info" href="/admin/myapp/completedorder/"><span class="badge">{{c}}</span>Completed orders</a>
+   <a class="btn btn-info" href="/admin/myapp/dispatchedorder/"><span class="badge">{{c}}</span>Dispatched orders</a>
 <a class="btn btn-info" href="/admin/myapp/fakeorder/">Fake orders</a>
 <a class="btn btn-info" href="/admin/myapp/queryorder/">Query Orders</a>
 <br>
