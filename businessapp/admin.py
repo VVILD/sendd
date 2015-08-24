@@ -38,6 +38,7 @@ class BusinessAdmin(admin.ModelAdmin):
     list_display = ('username', 'business_name', 'pickup_time', 'pb', 'assigned_pickup_time','status', 'pending_orders','pickedup_orders','daily','comment')
     list_editable = ('pb', 'assigned_pickup_time','daily','comment')
     raw_id_fields = ('pb',)
+    list_filter = ['username', 'status', 'daily','pb']
 
     def pending_orders(self, obj):
         po_count = Order.objects.filter(status='P', business__username=obj.username).count()
