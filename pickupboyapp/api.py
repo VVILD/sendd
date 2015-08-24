@@ -36,7 +36,7 @@ class PBUserResource(ModelResource):
         allowed_methods = ['get']
         authorization = Authorization()
 
-    def hydrate(self, bundle):
+    def dehydrate(self, bundle):
         if bundle.request.method == 'GET':
             bundle.data['otp'] = randint(1000, 9999)
             msg0 = "http://enterprise.smsgupshup.com/GatewayAPI/rest?method=SendMessage&send_to="
