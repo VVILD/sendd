@@ -814,7 +814,8 @@ admin.site.register(Priceapp)
 
 class QcShipmentAdmin(ShipmentAdmin):
     def queryset(self, request):
-        return self.model.objects.filter(order__order_status='C')
+        return self.model.objects.filter(order__order_status='DI')
+    
     list_display = (
     'real_tracking_no', 'tracking_status' ,'update_time','parcel_details','category', 'drop_phone', 'drop_name', 'address','barcode')
     list_filter = ['category']
