@@ -477,6 +477,17 @@ def send_update(sender, instance, created, **kwargs):
 # signals.post_save.disconnect(send_update_order, sender=Order)
             instance.order.order_status = 'P'
             instance.order.save()
+
+    if (instance.status == 'DI') or (instance.status == 'CA'):
+        Dispatched = True
+        products_in_order = Shipment.objects.filter(order=instance.order)
+        for product in products_in_order:
+            if (product.status!='DI') & (product.status!='CA'):
+                Dispatched=False
+        if (Dispatched):
+# signals.post_save.disconnect(send_update_order, sender=Order)
+            instance.order.order_status = 'DI'
+            instance.order.save()
 # signals.post_save.connect(send_update_order, sender=Order)
 post_save.connect(send_update, sender=Shipment)
 
