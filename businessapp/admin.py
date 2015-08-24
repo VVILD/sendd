@@ -1,7 +1,9 @@
 import urllib
+import json
 
 
 
+from datetime import date
 
 
 from django.contrib import admin
@@ -32,8 +34,9 @@ admin.site.register(User, UserAdmin)
 # Register your models here.
 class BusinessAdmin(admin.ModelAdmin):
     # search_fields=['name']
-    list_display = ('username', 'business_name', 'pickup_time', 'pb', 'assigned_pickup_time', 'pending_orders',)
-    list_editable = ('pb', 'assigned_pickup_time')
+    search_fields=['username','business_name']
+    list_display = ('username', 'business_name', 'pickup_time', 'pb', 'assigned_pickup_time','status', 'pending_orders','pickedup_orders','daily','comment')
+    list_editable = ('pb', 'assigned_pickup_time','daily','comment')
     raw_id_fields = ('pb',)
 
     def pending_orders(self, obj):
@@ -42,7 +45,18 @@ class BusinessAdmin(admin.ModelAdmin):
             obj.username, po_count)
 
     pending_orders.allow_tags = True
+    def pickedup_orders(self, obj):
+        po_count = Order.objects.filter(status='PU', business__username=obj.username).count()
+        return '<a href="/admin/businessapp/order/?q=&business__username__exact=%s&status__exact=PU"> %s </a>' % (obj.username, po_count)
+    pickedup_orders.allow_tags = True
 
+    def pending_orders_today(self, obj):
+        todays_date=date.today()
+        date_max = datetime.datetime.combine(todays_date, datetime.time.max)
+        date_min = datetime.datetime.combine(todays_date, datetime.time.min)
+        po_count = Order.objects.filter(book_time__range=(date_min,date_max),status='P', business__username=obj.username).count()
+        return '<a href="/admin/businessapp/order/?q=&business__username__exact=%s&status__exact=P"> %s </a>' % (obj.username, po_count)
+    pending_orders_today.allow_tags = True
 
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import User
@@ -360,27 +374,36 @@ class ProductInline(admin.TabularInline):
 # suit_form_tabs = (('general', 'General'))
 class FilterUserAdmin(admin.ModelAdmin):
 
+
     def queryset(self, request):
-        qs = super(FilterUserAdmin, self).queryset(request)
-        print "queryyyset"
+        try:
+            qs = super(FilterUserAdmin, self).queryset(request)
+            print "queryyyset"
 
-        profile=Profile.objects.get(user=request.user)
+            profile=Profile.objects.get(user=request.user)
 
-        if (profile.usertype!='B'):
+            if (profile.usertype!='B'):
+                return qs.filter()
+            else:
+                return qs.filter(business__businessmanager__user=request.user)
+        except:
             return qs.filter()
-        else:
-            return qs.filter(business__businessmanager__user=request.user)
+
 
     def has_change_permission(self, request, obj=None):
-        if not obj:
-            # the changelist itself
-            return True
-        profile=Profile.objects.get(user=request.user)
+        try:
+            if not obj:
+                # the changelist itself
+                return True
+            profile=Profile.objects.get(user=request.user)
 
-        if (profile.usertype=='B'):
+            if (profile.usertype=='B'):
 
-            return obj.business.businessmanager.user == request.user
-        else:
+                return obj.business.businessmanager.user == request.user
+            else:
+                return True
+
+        except:
             return True
 
 
@@ -555,3 +578,29 @@ class RemittanceProductCompleteAdmin(admin.ModelAdmin):
 
 
 admin.site.register(RemittanceProductComplete, RemittanceProductCompleteAdmin)
+
+
+class QcProductAdmin(ProductAdmin):
+    def queryset(self, request):
+        return self.model.objects.filter(order__status='DI')
+    list_display = (
+        'real_tracking_no', 'tracking_status' ,'update_time','barcode','get_method')
+    list_filter = ['order__method']
+    list_editable = ()
+# readonly_fields = ('order__method','drop_phone', 'drop_name', 'status', 'address','barcode','tracking_data','real_tracking_no','name','weight','cost_of_courier','price')
+    search_fields = ['order__order_no', 'real_tracking_no', 'mapped_tracking_no', 'drop_phone', 'drop_name']
+    def get_method(self, obj):
+        if (obj.order.method=='B'):
+            return 'Bulk'
+        elif (obj.order.method=='N'):
+            return 'Normal'
+        else:
+            return 'None'
+    get_method.admin_order_field = 'order__method' #Allows column order sorting
+    get_method.short_description = 'method'
+    def tracking_status(self, obj):
+#pk=obj.namemail.pk
+        return json.loads(obj.tracking_data)[-1]['status']
+    tracking_status.allow_tags = True
+    tracking_status.admin_order_field = 'tracking_data'
+admin.site.register(QcProduct, QcProductAdmin)

@@ -1668,7 +1668,7 @@ class WeborderResource2(CORSModelResource):
         queryset = Weborder.objects.all()
         resource_name = 'weborder'
         authorization = Authorization()
-        always_return_data = False
+        always_return_data = True
 
     def hydrate(self, bundle):
 

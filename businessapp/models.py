@@ -328,6 +328,10 @@ class RemittanceProductComplete(Product):
     class Meta:
         proxy = True
 
+class QcProduct(Product):
+    class Meta:
+        proxy = True
+
 def send_update(sender, instance, created, **kwargs):
     # product can be pending complete returned picked up
 
@@ -467,7 +471,7 @@ def send_update(sender, instance, created, **kwargs):
 
 
     if (instance.status == 'PU') or (instance.status == 'CA'):
-    	print "33333333333333333333333333333333333333333333	"
+    	#print "33333333333333333333333333333333333333333333	"
     	pickedup = True
     	products_in_order = Product.objects.filter(order=instance.order)
         for product in products_in_order:
@@ -479,6 +483,20 @@ def send_update(sender, instance, created, **kwargs):
         	instance.order.status = 'PU'
         	instance.order.save()
         	signals.post_save.connect(send_update_order, sender=Order)
+
+    if (instance.status == 'DI') or (instance.status == 'CA'):
+        #print "33333333333333333333333333333333333333333333    "
+        Dispatched = True
+        products_in_order = Product.objects.filter(order=instance.order)
+        for product in products_in_order:
+            if (product.status!='DI') & (product.status!='CA'):
+                Dispatched=False
+
+        if (Dispatched):
+            signals.post_save.disconnect(send_update_order, sender=Order)
+            instance.order.status = 'DI'
+            instance.order.save()
+            signals.post_save.connect(send_update_order, sender=Order)
 
 
 
