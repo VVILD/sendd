@@ -167,10 +167,11 @@ class PickupboyResource(Resource):
                 })
             promocode_type = None
             promocode_amount = None
-            if order.promocode.promocode_type:
-                promocode_type = order.promocode.promocode_type
-            if order.promocode.promocode_amount:
-                promocode_amount = order.promocode.promocode_amount
+            if order.promocode:
+                if order.promocode.promocode_type:
+                    promocode_type = order.promocode.promocode_type
+                if order.promocode.promocode_amount:
+                    promocode_amount = order.promocode.promocode_amount
             order_repr = {
                 "address": order.address,
                 "flat_no": order.flat_no,
