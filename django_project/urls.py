@@ -69,16 +69,20 @@ pbv1_api.register(PBLocationsResource())
 pbv1_api.register(PBUserResource())
 pbv1_api.register(BarcodeResource())
 
-from businessapp.apiv2 import ProductResource2, InvoiceResource, TrackingResource
+from businessapp.apiv2 import ProductResource2, InvoiceResource, TrackingResource, SearchResource
 bv2_api = Api(api_name='v2')
 bv2_api.register(ProductResource2())
 bv2_api.register(InvoiceResource())
 bv2_api.register(TrackingResource())
+bv2_api.register(SearchResource())
 
 from businessapp.apiv3 import ProductResource3, OrderResource3
 bv3_api = Api(api_name='v3')
 bv3_api.register(ProductResource3())
 bv3_api.register(OrderResource3())
+
+
+
 
 urlpatterns = patterns('',
     # Examples:

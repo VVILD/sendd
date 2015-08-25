@@ -553,6 +553,73 @@ class ProductResource2(ModelResource):
         return bundle
 
 
+class SearchResource(CORSResource):
+    class Meta:
+        resource_name = 'search'
+        authentication = Authentication()
+        authorization = Authorization()
+
+    def prepend_urls(self):
+        return [
+            url(r"^(?P<resource_name>%s)/tracking%s$" % (self._meta.resource_name, trailing_slash()),
+                self.wrap_view('tracking'), name="api_tracking"),
+            url(r"^(?P<resource_name>%s)/business%s$" % (self._meta.resource_name, trailing_slash()),
+                self.wrap_view('business'), name="api_business"),
+        ]
+
+    def tracking(self, request, **kwargs):
+        self.method_check(request, allowed=['get'])
+        self.is_authenticated(request)
+        self.throttle_check(request)
+
+        tracking_id = request.GET.get('tracking_id', False)
+
+        if not tracking_id:
+            raise CustomBadRequest(
+                code="request_invalid",
+                message="No tracking_id found. Please supply tracking_id as a GET parameter")
+        elif str(tracking_id).startswith('SE'):
+            product = Product.objects.get(barcode=tracking_id)
+        elif str(tracking_id).startswith('B'):
+            product = Product.objects.get(real_tracking_no=tracking_id)
+        else:
+            product = Shipment.objects.get(real_tracking_no=tracking_id)
+
+        bundle = {"order": product.order.__dict__}
+        bundle['order']['products'] = [product.__dict__]
+
+        self.log_throttled_access(request)
+        return self.create_response(request, bundle)
+
+    def business(self, request, **kwargs):
+        self.method_check(request, allowed=['get'])
+        self.is_authenticated(request)
+        self.throttle_check(request)
+
+        business_username = request.GET.get('business', False)
+        date = request.GET.get('date', False)
+        start_date = datetime.strptime(str(date), "%d-%m-%Y")
+        end_date = datetime.strptime(str(date), "%d-%m-%Y") + timedelta(days=1)
+        if not business_username:
+            raise CustomBadRequest(
+                code="request_invalid",
+                message="No business username found. Please supply business username as a GET parameter")
+        if not date:
+            raise CustomBadRequest(
+                code="request_invalid",
+                message="No date found. Please supply date as a GET parameter")
+        orders = Order.objects.filter(business__username=business_username, book_time__gte=start_date, book_time__lt=end_date)
+        result = []
+        for order in orders:
+            products = Product.objects.filter(order__pk=order.pk)
+            order = order.__dict__
+            order['products'] = [product.__dict__ for product in products]
+            result.append(order)
+        bundle = result
+        self.log_throttled_access(request)
+        return self.create_response(request, bundle)
+
+
 class InvoiceResource(CORSResource):
     class Meta:
         resource_name = 'invoice'
