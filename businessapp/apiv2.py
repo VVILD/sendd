@@ -586,7 +586,12 @@ class SearchResource(CORSResource):
             product = Shipment.objects.get(real_tracking_no=tracking_id)
 
         bundle = {"order": product.order.__dict__}
-        bundle['order']['products'] = [product.__dict__]
+        bundle['order']['products'] = [{  "product_name": product.name, "product_quantity": product.quantity,
+                                    "product_weight": product.weight, "product_applied_weight": product.applied_weight,
+                                    "product_price": product.price, "product_shipping_cost": product.shipping_cost,
+                                    "product_status": product.status, "product_date": product.date,
+                                    "product_sku": product.sku,
+                                    "product_trackingid": product.real_tracking_no, }]
 
         self.log_throttled_access(request)
         return self.create_response(request, bundle)
@@ -613,7 +618,12 @@ class SearchResource(CORSResource):
         for order in orders:
             products = Product.objects.filter(order__pk=order.pk)
             order = order.__dict__
-            order['products'] = [product.__dict__ for product in products]
+            order['products'] = [{  "product_name": product.name, "product_quantity": product.quantity,
+                                    "product_weight": product.weight, "product_applied_weight": product.applied_weight,
+                                    "product_price": product.price, "product_shipping_cost": product.shipping_cost,
+                                    "product_status": product.status, "product_date": product.date,
+                                    "product_sku": product.sku,
+                                    "product_trackingid": product.real_tracking_no, } for product in products]
             result.append(order)
         bundle = result
         self.log_throttled_access(request)
