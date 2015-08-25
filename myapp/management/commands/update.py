@@ -47,7 +47,7 @@ class Command(BaseCommand):
   	for barcode in data:
   		try:
   			product=Product.objects.filter(barcode=barcode).update(mapped_tracking_no=data[barcode],company='B')
-  			if (Product.objects.filter(barcode=barcode).count()==0):
+  			if (product==0):
   				error.append(barcode)
   		except:
   			print "ERROR"
@@ -57,4 +57,4 @@ class Command(BaseCommand):
 
  	print error	
 
-
+"SE78970104":"14380694171"
