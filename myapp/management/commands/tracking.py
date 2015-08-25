@@ -61,6 +61,15 @@ class Command(BaseCommand):
 			str0=remove_non_ascii_1(x['message'])
 			str3=x['location'].encode('utf8')
 			tracking_data.append({"status":str(str0),"date":str(str1),"location":str(str3)})
+
+			if ('shipment returned back to shipper'.lower() in str0.lower()):
+				print "fucking returned"
+				product.status='R'
+				print product.shipping_cost
+				product.return_cost=product.shipping_cost
+				product.save()
+
+
 			if ('delivered' in str0.lower()):
 				print "fucking delivered"
 				product.status='C'
@@ -116,6 +125,8 @@ class Command(BaseCommand):
 			str0=remove_non_ascii_1(x['message'])
 			str3=x['location'].encode('utf8')
 			tracking_data.append({"status":str(str0),"date":str(str1),"location":str(str3)})
+
+
 			if ('delivered' in str0.lower()):
 				print "fucking delivered"
 				shipment.status='C'
