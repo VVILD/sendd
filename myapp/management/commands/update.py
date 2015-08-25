@@ -57,4 +57,3 @@ class Command(BaseCommand):
 
  	print error	
 
-"SE78970104":"14380694171"
