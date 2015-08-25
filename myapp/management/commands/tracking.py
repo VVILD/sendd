@@ -11,6 +11,7 @@ import datetime
 import urllib
 import re
 import datetime	
+from django.db.models import Avg, Count, F, Max, Min, Sum, Q, Prefetch
 
 
 
@@ -30,10 +31,10 @@ class Command(BaseCommand):
  
   def handle(self, *args, **options):
 
-
 #bluedart product
+
 	self.stdout.write("starting bluedart api for bluedart product")
-	required_product = Product.objects.filter(company='B',status='P').exclude(order__status='C')
+	required_product = Product.objects.filter(Q(company='B')&(Q(status='P')|Q(status='DI'))).exclude(order__status='C')
 	slug='bluedart'
 	
 	for product in required_product:
@@ -86,8 +87,9 @@ class Command(BaseCommand):
 
 
 #bluedart shipment
+
 	self.stdout.write("starting bluedart api for bluedart shipment")
-	required_shipment = Shipment.objects.filter(company='B',status='P')
+	required_shipment = Shipment.objects.filter(Q(company='B')&(Q(status='P')|Q(status='DI')))
 	slug='bluedart'
 	
 	for shipment in required_shipment:
@@ -147,7 +149,7 @@ class Command(BaseCommand):
 
 	
 	self.stdout.write("starting Aramex api for aramex product")
-	required_product = Product.objects.filter(company='A',status='P').exclude(order__status='C')
+	required_product = Product.objects.filter(Q(company='A')&(Q(status='P')|Q(status='DI'))).exclude(order__status='C')
 	slug='aramex'
 	
 	for product in required_product:
@@ -198,7 +200,7 @@ class Command(BaseCommand):
 		product.save()
 
 	self.stdout.write("starting Aramex api for aramex shipment")
-	required_shipment = Shipment.objects.filter(company='A',status='P')
+	required_shipment = Shipment.objects.filter(Q(company='A')&(Q(status='P')|Q(status='DI')))
 	slug='aramex'
 	
 	for shipment in required_shipment:
@@ -254,7 +256,7 @@ class Command(BaseCommand):
 
 
 	self.stdout.write("starting fedex api for fedex product")
-	required_product = Product.objects.filter(company='F',status='P').order_by("-order__book_time").exclude(order__status='C')
+	required_product = Product.objects.filter(Q(company='F')&(Q(status='P')|Q(status='DI'))).order_by("-order__book_time").exclude(order__status='C')
 	#slug='aramex'
 	str1=" FedEx"
 	str2=" to FedEx"
@@ -330,7 +332,7 @@ class Command(BaseCommand):
 
 
 	self.stdout.write("starting fedex api for fedex shipment")
-	required_shipment = Shipment.objects.filter(company='F',status='P')
+	required_shipment = Shipment.objects.filter(Q(company='F')&(Q(status='P')|Q(status='DI')))
 	#slug='aramex'
 	str1=" FedEx"
 	str2=" to FedEx"
@@ -403,7 +405,7 @@ class Command(BaseCommand):
 #Dtdc tracking
 
 	self.stdout.write("starting Dtdc api for Dtdc product")
-	required_product = Product.objects.filter(company='DT',status='P').exclude(order__status='C')
+	required_product = Product.objects.filter(Q(company='DT')&(Q(status='P')|Q(status='DI'))).exclude(order__status='C')
 	slug='dtdc'
 	
 	for product in required_product:
@@ -457,7 +459,7 @@ class Command(BaseCommand):
 
 
 	self.stdout.write("starting Aramex api for aramex shipment")
-	required_shipment = Shipment.objects.filter(company='DT',status='P')
+	required_shipment = Shipment.objects.filter(Q(company='DT')&(Q(status='P')|Q(status='DI')))
 	slug='dtdc'
 	
 	for shipment in required_shipment:
@@ -513,7 +515,7 @@ class Command(BaseCommand):
 
 
 	self.stdout.write("starting india Post api for india Post product")
-	required_product = Product.objects.filter(company='I',status='P').exclude(order__status='C')
+	required_product = Product.objects.filter(Q(company='I')&(Q(status='P')|Q(status='DI'))).exclude(order__status='C')
 	slug='india-post'
 	
 	for product in required_product:
@@ -569,7 +571,7 @@ class Command(BaseCommand):
 
 
 	self.stdout.write("starting India Post api for India Post shipment")
-	required_shipment = Shipment.objects.filter(company='I',status='P')
+	required_shipment = Shipment.objects.filter(Q(company='I')&(Q(status='P')|Q(status='DI')))
 	slug='india-post'
 	
 	for shipment in required_shipment:

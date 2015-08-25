@@ -344,7 +344,6 @@ def send_update(sender, instance, created, **kwargs):
 
 
     if instance.applied_weight:
-        print instance.order.business.pk
         method = instance.order.method
 
         if (instance.order.payment_method == 'C'):

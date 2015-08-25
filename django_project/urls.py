@@ -76,6 +76,14 @@ bv2_api.register(InvoiceResource())
 bv2_api.register(TrackingResource())
 bv2_api.register(SearchResource())
 
+from businessapp.apiv3 import ProductResource3, OrderResource3
+bv3_api = Api(api_name='v3')
+bv3_api.register(ProductResource3())
+bv3_api.register(OrderResource3())
+
+
+
+
 urlpatterns = patterns('',
     # Examples:
     # url(r'^$', 'shippanda.views.home', name='home'),
@@ -86,6 +94,7 @@ urlpatterns = patterns('',
     url(r'^api/', include(v2_api.urls)),
     url(r'^bapi/', include(bv1_api.urls)),
     url(r'^bapi/', include(bv2_api.urls)),
+    url(r'^bapi/', include(bv3_api.urls)),
     url(r'^stats/', include('myapp.urls')),       
     url(r'^pb_api/', include(pbv1_api.urls)),
     url(r'^pb_location/', pb_location_view, name='pb_location'),
