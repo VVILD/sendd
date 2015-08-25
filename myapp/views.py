@@ -51,7 +51,7 @@ def index(request):
 	    print len(x)
 	    sum=0
 	    for y in x:
-	        sum=sum+int(y['price'])
+	        sum=sum+float(y['price'])
 	    print sum
 	    b2c_stats.append([str(key),len(x),sum,sum/len(x)])
 
