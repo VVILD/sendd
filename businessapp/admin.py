@@ -486,7 +486,7 @@ class OrderAdmin(FilterUserAdmin):
             if (not product.mapped_tracking_no):
                 return False
         return mapped_ok
-        mapped_ok.boolean = True
+    mapped_ok.boolean = True
 
 
     def no_of_products(self, obj):
