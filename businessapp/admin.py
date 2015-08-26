@@ -192,7 +192,8 @@ class ProductInline(admin.TabularInline):
             obj.status) + '<br>' + "<b>company:</b>" + str(
             obj.company) + '<br>' + "<b>Shipping cost:</b>" + str(
             obj.shipping_cost) + '<br>' + "<b>Cod cost:</b>" + str(
-            obj.cod_cost) + '<br>'+ "<b> actual_shipping_cost :</b>" + str(
+            obj.cod_cost) + '<br>' + "<b>BARCODE:</b>" + str(
+            obj.barcode) + '<br>'+ "<b> actual_shipping_cost :</b>" + str(
             obj.actual_shipping_cost) + '<br>'  + "<b><a href='%s%s/' target='_blank' >Product link (use this only when parcel is not sent via KARTROCKET):</b></a>" % (
             "/admin/businessapp/product/", obj.pk)
 

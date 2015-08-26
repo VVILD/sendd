@@ -474,6 +474,7 @@ class OrderResource(CORSModelResource):
 				product_shipping_cost=p.shipping_cost
 				product_sku=p.sku
 				product_trackingid=p.real_tracking_no
+				product_barcode=p.barcode
 				
 				
 				print '2'
@@ -525,7 +526,7 @@ class OrderResource(CORSModelResource):
 				
 				print raw_data
 				print '3.5'
-				l.append({"product_name":product_name,"product_quantity":product_quantity,"product_weight":product_weight,"product_applied_weight":product_applied_weight,"product_price":product_price,"product_shipping_cost":product_shipping_cost,"product_status":raw_data,"product_date":product_date,"product_location":product_location,"product_sku":product_sku,"product_trackingid":product_trackingid,})
+				l.append({"product_name":product_name,"product_quantity":product_quantity,"product_weight":product_weight,"product_applied_weight":product_applied_weight,"product_price":product_price,"product_shipping_cost":product_shipping_cost,"product_status":raw_data,"product_date":product_date,"product_location":product_location,"product_sku":product_sku,"product_trackingid":product_trackingid,"product_barcode":product_barcode,})
 				print '4'
 			data= json.dumps(l)
 
