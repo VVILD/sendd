@@ -308,7 +308,7 @@ class OrderResource(CORSModelResource):
             return bundle
 
     def dehydrate(self, bundle):
-        pk = bundle.data['resource_uri'].split('/')[-1]
+        pk = bundle.data['resource_uri'].split('/')[4]
         products = Product.objects.filter(order__pk=pk)
         bundle.data['products'] = [product.__dict__ for product in products]
         return bundle
