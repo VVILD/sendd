@@ -1,0 +1,32 @@
+{% extends "admin/change_form.html" %}
+{% block content %}
+
+gffd
+<center>
+<a class="btn btn-info" href="/admin/businessapp/business/?status__exact=N"><span class="badge">{{d}}</span> Not Approved</a>
+<a class="btn btn-info" href="/admin/businessapp/business/?status__exact=Y"><span class="badge">{{ap}}</span>Approved</a>
+<a class="btn btn-info" href="/admin/businessapp/business/?status__exact=C"><span class="badge">{{c}}</span>cancelled</a>
+<a class="btn btn-info" href="/admin/businessapp/business/?daily__exact=1"><span class="badge">{{d}}</span>daily</a>
+<a class="btn btn-info" href="/admin/businessapp/yesterdaypendingorder/"><span class="badge">{{d}}</span>Pending orders</a>
+</center>
+<br>
+<br>
+
+<center>
+<div class="row">
+<!-- <div class="col-md-6">Today Customers Orders
+<br>
+<li># orders: {{count_b2c}}</li>
+<li>Total revenue: {{sum_b2c}}</li>
+</div> -->
+<a class="btn btn-info" href="/admin/businessapp/business/?status__exact=Y"><span class="badge">{{ap}}</span> Approved business</a>
+<a class="btn btn-info" href="/admin/businessapp/order/?q=&status__exact=P"><span class="badge">{{p}}</span>Pending orders </a>
+<a class="btn btn-info" href="/admin/businessapp/order/?q=&status__exact=PU"><span class="badge">{{pu}}</span>Picked up orders</a>
+<a class="btn btn-info" href="/admin/businessapp/order/?q=&status__exact=DI"><span class="badge">{{di}}</span>Dispatched orders</a>
+<br>
+<br>
+</div>
+</center>
+
+{{ block.super }}
+{% endblock %}
