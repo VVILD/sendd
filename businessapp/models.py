@@ -308,7 +308,7 @@ class Product(models.Model):
                     self.fedex_check = 'A'
                     print "H"
                 except FedexError as e:
-                    if e.error_code == '868':
+                    if e.error_code == '868' or e.error_code == '711':
                         self.fedex_check = 'N'
                     else:
                         raise e
