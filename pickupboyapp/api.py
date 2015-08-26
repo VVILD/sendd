@@ -167,9 +167,13 @@ class PickupboyResource(Resource):
                 })
             promocode_type = None
             promocode_amount = None
+            promocode_code= None
+            promocode_msg=None
             if order.promocode:
                 if order.promocode.promocode_type:
                     promocode_type = order.promocode.promocode_type
+                    promocode_code = order.promocode.code
+                    promocode_msg =order.promocode.msg
                 if order.promocode.promocode_amount:
                     promocode_amount = order.promocode.promocode_amount
             order_repr = {
@@ -180,7 +184,9 @@ class PickupboyResource(Resource):
                 "pickup_time": order.time,
                 "user": order.user,
                 "promocode_type": promocode_type,
-                "promocode_amount": promocode_amount
+                "promocode_amount": promocode_amount,
+                "promocode_msg":promocode_msg,
+                "promocode_code":promocode_code
             }
             detailed_order = {
                 "type": "b2c",

@@ -2043,8 +2043,13 @@ class ShipmentResource2(MultipartResource, CORSModelResource):
             bundle.data['date'] = order.date
             bundle.data['time'] = order.time
             bundle.data['address'] = order.address
-            bundle.data['name'] = order.namemail.name
-            bundle.data['email'] = order.namemail.email
+            try:
+                bundle.data['name'] = order.namemail.name
+                bundle.data['email'] = order.namemail.email
+            except:
+                bundle.data['name'] = '-'
+                bundle.data['email'] = '-'
+
             bundle.data['phone'] = order.user.phone
             order_pk = str(bundle.data['order']).split('/')[-2]
             bundle.data['order'] = order_pk
