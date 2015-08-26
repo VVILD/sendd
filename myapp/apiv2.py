@@ -1963,10 +1963,16 @@ class ShipmentResource2(MultipartResource, CORSModelResource):
             override_method = bundle.request.META['HTTP_X_HTTP_METHOD_OVERRIDE']
         except:
             override_method = 'none'
+        #print bundle.data['drop_address']
         order_pk = str(bundle.data['order']).split('/')[-2]
-        address_pk = str(bundle.data['drop_address']).split('/')[-2]
+        #error null
+        try:
+            address_pk = str(bundle.data['drop_address']).split('/')[-2]
+            address = Address.objects.get(pk=address_pk)
+        except:
+            address='-'
+
         order = Order.objects.get(pk=order_pk)
-        address = Address.objects.get(pk=address_pk)
         if bundle.request.META['REQUEST_METHOD'] == 'POST' and override_method != 'PATCH':
             # # sending mail and sms
             email = order.namemail.email
@@ -2018,8 +2024,15 @@ class ShipmentResource2(MultipartResource, CORSModelResource):
                                           recipientContact=recipientContact, recipientAddress=recipientAddress)
             mailer.send()
 
-            bundle.data['drop_address'] = address
-            bundle.data['pincode'] = address.pincode
+            
+            #error NULL
+            try:
+                bundle.data['drop_address'] = address
+                bundle.data['pincode'] = address.pincode
+            except:
+                bundle.data['drop_address'] = '-'
+                bundle.data['pincode'] = '-'
+
             if bundle.data['img'] is not None:
                 img_name = bundle.data['img'].split('/')[-1]
                 bundle.data['img'] = 'http://128.199.159.90/static/' + img_name
