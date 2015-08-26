@@ -257,7 +257,7 @@ class Product(models.Model):
                 is_cod = False
                 if product_type == 'C':
                     is_cod = True
-                service_type=fedex.get_service_type(str(self.order.method), float(self.price), is_cod)
+                service_type, config=fedex.get_service_type(str(self.order.method), float(self.price), float(item_weight), receiver_city, is_cod)
                 item_price = self.price
 
                 sender = {
@@ -291,10 +291,10 @@ class Product(models.Model):
                     "weight": item_weight,
                     "price": item_price
                 }
-                dropoff_type = 'REGULAR_PICKUP'
+                # dropoff_type = 'REGULAR_PICKUP'
 
                 try:
-                    result = fedex.is_oda(sender, receiver, item, dropoff_type, service_type)
+                    result = fedex.is_oda(sender, receiver, item, config, service_type)
 
                     if result:
                         self.fedex_check = 'O'

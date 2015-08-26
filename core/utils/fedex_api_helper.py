@@ -17,32 +17,14 @@ __author__ = 'vatsalshah'
 
 
 class Fedex:
-    FEDEX_CONFIG_INTRA_MUMBAI = FedexConfig(key='FRmcajHEPfMUjNmC',
-                                            password='fY5ZwylNGYFXAgNoChYYYSojG',
-                                            account_number='678650382',
-                                            meter_number='108284351',
-                                            use_test_server=False)
-    FEDEX_CONFIG_INDIA = FedexConfig(key='jFdC6SAqFS9vz7gY',
-                                     password='6bxCaeVdszjUo2iHw5R3tbrBu',
-                                     account_number='677853204',
-                                     meter_number='108284345',
-                                     use_test_server=False)
-    FEDEX_CONFIG_TEST = FedexConfig(key='Ha8gotyUoTHURYW6',
-                                    password='ueU6dTNMxL0uPsJfxadWBhhjW',
-                                    account_number='510087640',
-                                    meter_number='118685245',
-                                    use_test_server=False)
     # Set this to the INFO level to see the response from Fedex printed in stdout.
     logging.basicConfig(level=logging.INFO)
 
     def __init__(self):
         self.shipment = None
 
-    def create_shipment(self, sender, receiver, item, dropoff_type='REGULAR_PICKUP', service_type='STANDARD_OVERNIGHT'):
-        if str(receiver['city']).lower() == 'mumbai':
-            FEDEX_CONFIG_OBJ = self.FEDEX_CONFIG_INTRA_MUMBAI
-        else:
-            FEDEX_CONFIG_OBJ = self.FEDEX_CONFIG_INDIA
+    def create_shipment(self, sender, receiver, item, FEDEX_CONFIG_OBJ, service_type):
+
         # This is the object that will be handling our tracking request.
         # We're using the FedexConfig object from example_config.py in this dir.
         shipment = FedexProcessShipmentRequest(FEDEX_CONFIG_OBJ)
@@ -53,7 +35,7 @@ class Fedex:
 
         # This is very generalized, top-level information.
         # REGULAR_PICKUP, REQUEST_COURIER, DROP_BOX, BUSINESS_SERVICE_CENTER or STATION
-        shipment.RequestedShipment.DropoffType = str(dropoff_type)
+        shipment.RequestedShipment.DropoffType = "REGULAR_PICKUP"
 
         # See page 355 in WS_ShipService.pdf for a full list. Here are the common ones:
         # STANDARD_OVERNIGHT, PRIORITY_OVERNIGHT, FEDEX_GROUND, FEDEX_EXPRESS_SAVER
@@ -247,11 +229,8 @@ class Fedex:
             "shipping_cost": shiping_cost
         }
     
-    def is_oda(self, sender, receiver, item, dropoff_type='REGULAR_PICKUP', service_type='STANDARD_OVERNIGHT'):
-        if str(receiver['city']).lower() == 'mumbai':
-            FEDEX_CONFIG_OBJ = self.FEDEX_CONFIG_INTRA_MUMBAI
-        else:
-            FEDEX_CONFIG_OBJ = self.FEDEX_CONFIG_INDIA
+    def is_oda(self, sender, receiver, item, FEDEX_CONFIG_OBJ, service_type):
+
         # This is the object that will be handling our tracking request.
         # We're using the FedexConfig object from example_config.py in this dir.
         rate_request = FedexRateServiceRequest(FEDEX_CONFIG_OBJ)
@@ -264,7 +243,7 @@ class Fedex:
 
         # This is very generalized, top-level information.
         # REGULAR_PICKUP, REQUEST_COURIER, DROP_BOX, BUSINESS_SERVICE_CENTER or STATION
-        rate_request.RequestedShipment.DropoffType = str(dropoff_type)
+        rate_request.RequestedShipment.DropoffType = "REGULAR_PICKUP"
 
         # See page 355 in WS_ShipService.pdf for a full list. Here are the common ones:
         # STANDARD_OVERNIGHT, PRIORITY_OVERNIGHT, FEDEX_GROUND, FEDEX_EXPRESS_SAVER
@@ -424,7 +403,7 @@ class Fedex:
         # print rate_request.client
         rate_request.send_request()
         # print rate_request.response
-        print rate_request.client.last_sent()
+        # print rate_request.client.last_sent()
 
         # RateReplyDetails can contain rates for multiple ServiceTypes if ServiceType was set to None
         status = False
@@ -436,11 +415,42 @@ class Fedex:
         return status
 
     @staticmethod
-    def get_service_type(selected_type, item_value, is_cod=False):
-        if selected_type in ('P', 'S', 'N') and item_value <= 5000 and not is_cod:
-            return 'PRIORITY_OVERNIGHT'
-        elif selected_type in ('P', 'S', 'N') and item_value > 5000 or is_cod:
-            return 'STANDARD_OVERNIGHT'
-        elif selected_type in ('B', 'E'):
-            return 'FEDEX_EXPRESS_SAVER'
-        return False
+    def get_service_type(selected_type, item_value, item_weight, receiver_city, is_cod=False):
+        FEDEX_CONFIG_INTRA_MUMBAI = FedexConfig(key='FRmcajHEPfMUjNmC',
+                                            password='fY5ZwylNGYFXAgNoChYYYSojG',
+                                            account_number='678650382',
+                                            meter_number='108284351',
+                                            use_test_server=False)
+        FEDEX_CONFIG_INDIA = FedexConfig(key='jFdC6SAqFS9vz7gY',
+                                         password='6bxCaeVdszjUo2iHw5R3tbrBu',
+                                         account_number='677853204',
+                                         meter_number='108284345',
+                                         use_test_server=False)
+        # FEDEX_CONFIG_TEST = FedexConfig(key='Ha8gotyUoTHURYW6',
+        #                                 password='ueU6dTNMxL0uPsJfxadWBhhjW',
+        #                                 account_number='510087640',
+        #                                 meter_number='118685245',
+        #                                 use_test_server=False)
+        if str(receiver_city).lower() == 'mumbai':
+            if item_weight <= 0.5 and not is_cod and item_value <= 5000:
+                return 'PRIORITY_OVERNIGHT', FEDEX_CONFIG_INTRA_MUMBAI
+            elif item_weight <= 0.5 and (is_cod or item_value > 5000):
+                return 'STANDARD_OVERNIGHT', FEDEX_CONFIG_INDIA
+            elif item_weight <= 1.0 and not is_cod and item_value <= 5000:
+                return 'PRIORITY_OVERNIGHT', FEDEX_CONFIG_INTRA_MUMBAI
+            elif item_weight <= 1.0 and (is_cod or item_value > 5000):
+                return 'STANDARD_OVERNIGHT', FEDEX_CONFIG_INTRA_MUMBAI
+            elif item_weight <= 3.0:
+                return 'FEDEX_EXPRESS_SAVER', FEDEX_CONFIG_INDIA
+            else:
+                return 'FEDEX_EXPRESS_SAVER', FEDEX_CONFIG_INTRA_MUMBAI
+        elif selected_type in ('P', 'S', 'N'):
+            if is_cod or item_value > 5000:
+                return 'STANDARD_OVERNIGHT', FEDEX_CONFIG_INDIA
+            else:
+                return 'PRIORITY_OVERNIGHT', FEDEX_CONFIG_INDIA
+        else:
+            if item_weight <= 3.0:
+                return 'FEDEX_EXPRESS_SAVER', FEDEX_CONFIG_INDIA
+            else:
+                return 'FEDEX_EXPRESS_SAVER', FEDEX_CONFIG_INTRA_MUMBAI

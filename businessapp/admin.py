@@ -352,12 +352,12 @@ class ProductInline(admin.TabularInline):
         if not obj.applied_weight:
             return "Enter applied weight"
         elif obj.fedex_check != 'P' and obj.fedex_check is not None and obj.fedex_check != 'R':
-            return "Fedex Check Failed"
+            return "Fedex Check Failed" + '<br> <h2 style="color:red">' + obj.get_fedex_check_display() + '</h2>'
         else:
             if obj.fedex_outbound_label and obj.fedex_cod_return_label:
-                return '<a href="/static/%s" target="_blank">%s</a>' % (str(obj.fedex_outbound_label.name).split('/')[-1], "Print Outbound Label")+'<br>'+ '<a href="/static/%s" target="_blank">%s</a>' % (str(obj.fedex_cod_return_label.name).split('/')[-1], "Print COD Return Label")
+                return '<a href="/static/%s" target="_blank">%s</a>' % (str(obj.fedex_outbound_label.name).split('/')[-1], "Print Outbound Label")+'<br>'+ '<a href="/static/%s" target="_blank">%s</a>' % (str(obj.fedex_cod_return_label.name).split('/')[-1], "Print COD Return Label") + '<br><a style="color:red" href="/create_fedex_shipment/?%s" target="_blank">%s</a>' % (params, "Re-Create Order")
             elif obj.fedex_outbound_label:
-                return '<a href="/static/%s" target="_blank">%s</a>' % (str(obj.fedex_outbound_label.name).split('/')[-1], "Print Outbound Label")
+                return '<a href="/static/%s" target="_blank">%s</a>' % (str(obj.fedex_outbound_label.name).split('/')[-1], "Print Outbound Label") + '<br><a style="color:red" href="/create_fedex_shipment/?%s" target="_blank">%s</a>' % (params, "Re-Create Order")
             else:
                 if obj.fedex_check != 'R':
                     return '<a href="/create_fedex_shipment/?%s" target="_blank">%s</a>' % (params, "Create Order")

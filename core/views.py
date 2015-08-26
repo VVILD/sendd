@@ -38,10 +38,11 @@ def create_fedex_shipment(request):
     item_price = None
     fedex = Fedex()
     is_cod = False
+    config = None
     if client_type == 'business':
         product = Product.objects.get(pk=shipment_pk)
-        if product.fedex_outbound_label:
-            return HttpResponseBadRequest("Fedex Order already created")
+        # if product.fedex_outbound_label:
+        #     return HttpResponseBadRequest("Fedex Order already created")
         item_name = product.name
         item_weight = product.applied_weight
         # sender_name = product.order.business.name
@@ -70,12 +71,12 @@ def create_fedex_shipment(request):
         is_cod = False
         if product_type == 'C':
             is_cod = True
-        service_type=fedex.get_service_type(str(product.order.method), float(product.price), is_cod)
+        service_type, config = fedex.get_service_type(str(product.order.method), float(product.price), float(item_weight), receiver_city, is_cod)
         item_price = product.price
     elif client_type == 'customer':
         shipment = Shipment.objects.get(pk=shipment_pk)
-        if shipment.fedex_outbound_label:
-            return HttpResponseBadRequest("Fedex Order already created")
+        # if shipment.fedex_outbound_label:
+        #     return HttpResponseBadRequest("Fedex Order already created")
         item_name = shipment.item_name
         item_weight = shipment.weight
         # sender_name = shipment.order.namemail.name
@@ -99,7 +100,7 @@ def create_fedex_shipment(request):
         receiver_pincode = shipment.drop_address.pincode
         receiver_country_code = 'IN'
         is_business_receiver = False
-        service_type = fedex.get_service_type(str(shipment.category), float(shipment.cost_of_courier))
+        service_type, config = fedex.get_service_type(str(shipment.category), float(shipment.cost_of_courier), float(item_weight), receiver_city)
         item_price = shipment.cost_of_courier
 
     sender = {
@@ -133,8 +134,8 @@ def create_fedex_shipment(request):
         "weight": item_weight,
         "price": item_price
     }
-    dropoff_type = 'REGULAR_PICKUP'
-    result = fedex.create_shipment(sender, receiver, item, dropoff_type, service_type)
+    # dropoff_type = 'REGULAR_PICKUP'
+    result = fedex.create_shipment(sender, receiver, item, config, service_type)
     cod_return_label_url = None
     outbound_label_url = None
     if result['status'] != 'ERROR':
