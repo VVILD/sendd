@@ -1963,10 +1963,16 @@ class ShipmentResource2(MultipartResource, CORSModelResource):
             override_method = bundle.request.META['HTTP_X_HTTP_METHOD_OVERRIDE']
         except:
             override_method = 'none'
+        #print bundle.data['drop_address']
         order_pk = str(bundle.data['order']).split('/')[-2]
-        address_pk = str(bundle.data['drop_address']).split('/')[-2]
+        #error null
+        try:
+            address_pk = str(bundle.data['drop_address']).split('/')[-2]
+            address = Address.objects.get(pk=address_pk)
+        except:
+            address='-'
+
         order = Order.objects.get(pk=order_pk)
-        address = Address.objects.get(pk=address_pk)
         if bundle.request.META['REQUEST_METHOD'] == 'POST' and override_method != 'PATCH':
             # # sending mail and sms
             email = order.namemail.email
@@ -2018,8 +2024,15 @@ class ShipmentResource2(MultipartResource, CORSModelResource):
                                           recipientContact=recipientContact, recipientAddress=recipientAddress)
             mailer.send()
 
-            bundle.data['drop_address'] = address
-            bundle.data['pincode'] = address.pincode
+            
+            #error NULL
+            try:
+                bundle.data['drop_address'] = address
+                bundle.data['pincode'] = address.pincode
+            except:
+                bundle.data['drop_address'] = '-'
+                bundle.data['pincode'] = '-'
+
             if bundle.data['img'] is not None:
                 img_name = bundle.data['img'].split('/')[-1]
                 bundle.data['img'] = 'http://128.199.159.90/static/' + img_name
@@ -2029,25 +2042,34 @@ class ShipmentResource2(MultipartResource, CORSModelResource):
             bundle.data['name'] = order.namemail.name
             bundle.data['email'] = order.namemail.email
             bundle.data['phone'] = order.user.phone
-            order_pk = str(bundle.data['order']).split('/')[-2]
-            bundle.data['order'] = order_pk
+            bundle.data['order'] = order.pk
             bundle.data['tracking_no'], bundle.data['real_tracking_no'] = bundle.data['real_tracking_no'], bundle.data[
                 'tracking_no']
             return bundle
         elif bundle.request.META['REQUEST_METHOD'] == 'GET':
-            bundle.data['drop_address'] = address
-            bundle.data['pincode'] = address.pincode
+            try:
+                bundle.data['drop_address'] = address
+                bundle.data['pincode'] = address.pincode
+            except:
+                bundle.data['drop_address'] = '-'
+                bundle.data['pincode'] = '-'
+
+                   
             if bundle.data['img'] is not None:
                 img_name = bundle.data['img'].split('/')[-1]
                 bundle.data['img'] = 'http://128.199.159.90/static/' + img_name
             bundle.data['date'] = order.date
             bundle.data['time'] = order.time
             bundle.data['address'] = order.address
-            bundle.data['name'] = order.namemail.name
-            bundle.data['email'] = order.namemail.email
+            try:
+                bundle.data['name'] = order.namemail.name
+                bundle.data['email'] = order.namemail.email
+            except:
+                bundle.data['name'] = '-'
+                bundle.data['email'] = '-'
+
             bundle.data['phone'] = order.user.phone
-            order_pk = str(bundle.data['order']).split('/')[-2]
-            bundle.data['order'] = order_pk
+            bundle.data['order'] = order.pk
             bundle.data['tracking_no'], bundle.data['real_tracking_no'] = bundle.data['real_tracking_no'], bundle.data[
                 'tracking_no']
             return bundle

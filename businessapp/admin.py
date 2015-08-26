@@ -28,8 +28,54 @@ class UserAdmin(UserAdmin):
 admin.site.unregister(User)
 admin.site.register(User, UserAdmin)
 
+import csv
+from django.http import HttpResponse
+from setuptools.compat import unicode
 
 
+
+def export_as_csv_action(description="Export selected objects as CSV file",
+                         fields=None, exclude=None, header=True):
+    """
+    This function returns an export csv action
+    'fields' and 'exclude' work like in django ModelForm
+    'header' is whether or not to output the column names as the first row
+    """
+
+    from itertools import chain
+
+    def export_as_csv(modeladmin, request, queryset):
+        """
+        Generic csv export admin action.
+        based on http://djangosnippets.org/snippets/2369/
+        """
+        opts = modeladmin.model._meta
+        field_names = set([field.name for field in opts.fields])
+        many_to_many_field_names = set([many_to_many_field.name for many_to_many_field in opts.many_to_many])
+        if fields:
+            fieldset = set(fields)
+            field_names = field_names & fieldset
+        elif exclude:
+            excludeset = set(exclude)
+            field_names = field_names - excludeset
+
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename=%s.csv' % unicode(opts).replace('.', '_')
+
+        writer = csv.writer(response)
+        if header:
+            writer.writerow(list(chain(field_names, many_to_many_field_names)))
+        for obj in queryset:
+            row = []
+            for field in field_names:
+                row.append(unicode(getattr(obj, field)))
+            for field in many_to_many_field_names:
+                row.append(unicode(getattr(obj, field).all()))
+
+            writer.writerow(row)
+        return response
+    export_as_csv.short_description = description
+    return export_as_csv
 
 # Register your models here.
 class BusinessAdmin(admin.ModelAdmin):
@@ -129,6 +175,7 @@ class ProductAdmin(admin.ModelAdmin):
     search_fields = ['name', 'real_tracking_no']
     list_display = ('name', 'price', 'weight', 'status', 'fedex_check', 'real_tracking_no', 'order', 'barcode','date',)
     list_editable = ('status', )
+    list_filter=['order__business']
     readonly_fields = (
         'name', 'quantity', 'sku', 'price', 'weight', 'applied_weight', 'real_tracking_no', 'order',
         'kartrocket_order', 'shipping_cost', 'cod_cost', 'status', 'date', 'fedex_check','barcode')
@@ -144,12 +191,19 @@ class ProductAdmin(admin.ModelAdmin):
 
     suit_form_tabs = (('general', 'General'), ('tracking', 'Tracking'),('barcode', 'Barcode'))
 
+    actions = [export_as_csv_action("CSV Export", fields=['name','real_tracking_no','order__name'])]
 
 admin.site.register(Product, ProductAdmin)
 
 admin.site.register(Payment)
 admin.site.register(Forgotpass)
-admin.site.register(Pricing)
+
+class PricingAdmin(admin.ModelAdmin):
+    # search_fields=['name']
+    list_filter=('business__username','business__business_name')
+
+
+admin.site.register(Pricing,PricingAdmin)
 
 # admin.site.register(BusinessManager)
 
@@ -409,10 +463,12 @@ class FilterUserAdmin(admin.ModelAdmin):
             return True
 
 
+    
 
 
 
 class OrderAdmin(FilterUserAdmin):
+
     inlines = (ProductInline,)
     search_fields = ['business__business_name', 'name', 'product__real_tracking_no', 'product__barcode','city','state','product__mapped_tracking_no']
     list_display = (
@@ -420,7 +476,7 @@ class OrderAdmin(FilterUserAdmin):
         'total_cod_cost', 'method',)
     list_editable = ('status',)
     list_filter = ['business', 'status', 'book_time']
-    actions = [make_pending, make_complete, make_cancelled, make_transit]
+    actions = [make_pending, make_complete, make_cancelled, make_transit,export_as_csv_action("CSV Export", fields=['name','product__real_tracking_no'])]
 
     def no_of_products(self, obj):
         return Product.objects.filter(order=obj).count()
@@ -586,8 +642,8 @@ class QcProductAdmin(ProductAdmin):
     def queryset(self, request):
         return self.model.objects.filter(order__status='DI')
     list_display = (
-        'real_tracking_no', 'tracking_status' ,'update_time','barcode','get_method')
-    list_filter = ['order__method']
+        'real_tracking_no', 'tracking_status' ,'update_time','barcode','get_method','get_business')
+    list_filter = ['order__method','order__business']
     list_editable = ()
 # readonly_fields = ('order__method','drop_phone', 'drop_name', 'status', 'address','barcode','tracking_data','real_tracking_no','name','weight','cost_of_courier','price')
     search_fields = ['order__order_no', 'real_tracking_no', 'mapped_tracking_no', 'drop_phone', 'drop_name']
@@ -605,4 +661,11 @@ class QcProductAdmin(ProductAdmin):
         return json.loads(obj.tracking_data)[-1]['status']
     tracking_status.allow_tags = True
     tracking_status.admin_order_field = 'tracking_data'
+
+    def get_business(self, obj):
+        return obj.order.business
+    get_business.short_description = 'business'
+    get_business.admin_order_field = 'order__business'
+
+
 admin.site.register(QcProduct, QcProductAdmin)
