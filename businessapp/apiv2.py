@@ -308,99 +308,9 @@ class OrderResource(CORSModelResource):
             return bundle
 
     def dehydrate(self, bundle):
-        try:
-            pk = bundle.data['resource_uri'].split('/')[4]
-            order = Order.objects.get(pk=pk)
-            show_tracking_company = False
-            if (order.business.show_tracking_company == 'Y'):
-                show_tracking_company = True
-
-            product = Product.objects.filter(order=order)
-            print product
-            l = []
-            for p in product:
-                product_name = p.name
-                product_quantity = p.quantity
-                print '1'
-                product_weight = p.weight
-                product_applied_weight = p.applied_weight
-                product_price = p.price
-                product_shipping_cost = p.shipping_cost
-                product_sku = p.sku
-                product_trackingid = p.real_tracking_no
-
-                print '2'
-
-                tracking_json = json.loads(p.tracking_data)
-                print '3'
-                product_status = tracking_json[-1]['status'].encode('ascii', 'ignore')
-                product_date = tracking_json[-1]['date'].encode('ascii', 'ignore')
-                product_location = tracking_json[-1]['location'].encode('ascii', 'ignore')
-                print len(tracking_json)
-                print "asd"
-                raw_data = ' '
-                try:
-                    if (show_tracking_company):
-                        raw_data = raw_data + str(p.mapped_tracking_no) + "&nbsp; &nbsp; &nbsp; "
-                        if (p.company == "F"):
-                            raw_data = raw_data + "FEDEX"
-                        elif (p.company == "D"):
-                            raw_data = raw_data + "DELHIVERY"
-                        elif (p.company == "P"):
-                            raw_data = raw_data + "Professional"
-                        elif (p.company == "G"):
-                            raw_data = raw_data + "gati"
-                        elif (p.company == "A"):
-                            raw_data = raw_data + "ARAMEX"
-                        elif (p.company == "E"):
-                            raw_data = raw_data + "Ecomexpress"
-                        elif (p.company == "DT"):
-                            raw_data = raw_data + "DTDC"
-                        elif (p.company == "FF"):
-                            raw_data = raw_data + "First Flight"
-                        elif (p.company == "B"):
-                            raw_data = raw_data + "Bluedart"
-                        else:
-                            raw_data = raw_data + "ERROR"
-
-                        raw_data = raw_data + "<br>"
-
-
-                except:
-                    print "shit"
-
-                for x in range(0, len(tracking_json)):
-                    raw_data = raw_data + tracking_json[x]['status'].encode('ascii',
-                                                                            'ignore') + "&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;" + \
-                               tracking_json[x]['date'].encode('ascii',
-                                                               'ignore') + "&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;" + \
-                               tracking_json[x]['location'].encode('ascii', 'ignore') + "<br>"
-
-                print raw_data
-                print '3.5'
-                l.append({"product_name": product_name, "product_quantity": product_quantity,
-                          "product_weight": product_weight, "product_applied_weight": product_applied_weight,
-                          "product_price": product_price, "product_shipping_cost": product_shipping_cost,
-                          "product_status": raw_data, "product_date": product_date,
-                          "product_location": product_location, "product_sku": product_sku,
-                          "product_trackingid": product_trackingid, })
-                print '4'
-            data = json.dumps(l)
-
-            # bundle.data['products']=data
-            bundle.data['products'] = l
-
-            bundle.data['status'] = order.status
-            bundle.data['date'] = order.book_time.date()
-        # bundle.data['time']=order.book_time.time()
-
-        # bundle.data['order_no']=436+int(bundle.data['id'])
-        # print bundle.data['order_no']
-        except:
-            print "shit"
-
-        # bundle.data['ucts']=[{"product_date": "2015-06-07 18:40:20 ", "product_price": 50, "product_location": "Mumbai (Maharashtra)", "product_applied_weight": "null", "product_method": "Premium", "product_quantity": "null", "product_status": "Booking Received", "product_name": "clothes", "product_weight": 2, "product_shipping_cost": "null"}, {"product_date": "2015-06-07 18:40:20 ", "product_price": 60, "product_location": "Mumbai (Maharashtra)", "product_applied_weight": "null", "product_method": "Bulk", "product_quantity": "null", "product_status": "Booking Received", "product_name": "books", "product_weight": 7, "product_shipping_cost": "null"}]
-
+        pk = bundle.data['resource_uri'].split('/')[-1]
+        products = Product.objects.filter(order__pk=pk)
+        bundle.data['products'] = [product.__dict__ for product in products]
         return bundle
 
 
@@ -586,12 +496,7 @@ class SearchResource(CORSResource):
             product = Shipment.objects.get(real_tracking_no=tracking_id)
 
         bundle = {"order": product.order.__dict__}
-        bundle['order']['products'] = [{  "product_name": product.name, "product_quantity": product.quantity,
-                                    "product_weight": product.weight, "product_applied_weight": product.applied_weight,
-                                    "product_price": product.price, "product_shipping_cost": product.shipping_cost,
-                                    "product_status": product.status, "product_date": product.date,
-                                    "product_sku": product.sku,
-                                    "product_trackingid": product.real_tracking_no, }]
+        bundle['order']['products'] = [product.__dict__]
 
         self.log_throttled_access(request)
         return self.create_response(request, bundle)
@@ -618,12 +523,7 @@ class SearchResource(CORSResource):
         for order in orders:
             products = Product.objects.filter(order__pk=order.pk)
             order = order.__dict__
-            order['products'] = [{  "product_name": product.name, "product_quantity": product.quantity,
-                                    "product_weight": product.weight, "product_applied_weight": product.applied_weight,
-                                    "product_price": product.price, "product_shipping_cost": product.shipping_cost,
-                                    "product_status": product.status, "product_date": product.date,
-                                    "product_sku": product.sku,
-                                    "product_trackingid": product.real_tracking_no, } for product in products]
+            order['products'] = [product.__dict__ for product in products]
             result.append(order)
         bundle = result
         self.log_throttled_access(request)
