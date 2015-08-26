@@ -76,7 +76,7 @@ bv2_api.register(ProductResource2())
 bv2_api.register(InvoiceResource())
 bv2_api.register(TrackingResource())
 bv2_api.register(SearchResource())
-bv2_api.register(OrderResource2)
+bv2_api.register(OrderResource2())
 
 from businessapp.apiv3 import ProductResource3, OrderResource3
 bv3_api = Api(api_name='v3')
