@@ -2047,8 +2047,14 @@ class ShipmentResource2(MultipartResource, CORSModelResource):
                 'tracking_no']
             return bundle
         elif bundle.request.META['REQUEST_METHOD'] == 'GET':
-            bundle.data['drop_address'] = address
-            bundle.data['pincode'] = address.pincode
+            try:
+                bundle.data['drop_address'] = address
+                bundle.data['pincode'] = address.pincode
+            except:
+                bundle.data['drop_address'] = '-'
+                bundle.data['pincode'] = '-'
+
+                   
             if bundle.data['img'] is not None:
                 img_name = bundle.data['img'].split('/')[-1]
                 bundle.data['img'] = 'http://128.199.159.90/static/' + img_name
