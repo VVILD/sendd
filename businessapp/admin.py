@@ -64,7 +64,7 @@ def export_as_csv_action(description="Export selected objects as CSV file",
 
         writer = csv.writer(response)
         if header:
-            writer.writerow(list(chain(field_names, many_to_many_field_names)))
+            writer.writerow(list(chain(field_nameracking no:s, many_to_many_field_names)))
         for obj in queryset:
             row = []
             for field in field_names:
@@ -178,7 +178,7 @@ class ProductAdmin(admin.ModelAdmin):
     list_filter=['order__business']
     readonly_fields = (
         'name', 'quantity', 'sku', 'price', 'weight', 'applied_weight', 'real_tracking_no', 'order',
-        'kartrocket_order', 'shipping_cost', 'cod_cost', 'status', 'date', 'fedex_check','barcode')
+        'kartrocket_order', 'shipping_cost', 'cod_cost', 'status', 'date', 'fedex_check')
 
 
     fieldsets = (
@@ -406,12 +406,12 @@ class ProductInline(admin.TabularInline):
         if not obj.applied_weight:
             return "Enter applied weight"
         elif obj.fedex_check != 'P' and obj.fedex_check is not None and obj.fedex_check != 'R':
-            return "Fedex Check Failed" + '<br> <h2 style="color:red">' + obj.get_fedex_check_display() + '</h2>'
+            return "Fedex Check Failed"
         else:
             if obj.fedex_outbound_label and obj.fedex_cod_return_label:
-                return '<a href="/static/%s" target="_blank">%s</a>' % (str(obj.fedex_outbound_label.name).split('/')[-1], "Print Outbound Label")+'<br>'+ '<a href="/static/%s" target="_blank">%s</a>' % (str(obj.fedex_cod_return_label.name).split('/')[-1], "Print COD Return Label") + '<br><a style="color:red" href="/create_fedex_shipment/?%s" target="_blank">%s</a>' % (params, "Re-Create Order")
+                return '<a href="/static/%s" target="_blank">%s</a>' % (str(obj.fedex_outbound_label.name).split('/')[-1], "Print Outbound Label")+'<br>'+ '<a href="/static/%s" target="_blank">%s</a>' % (str(obj.fedex_cod_return_label.name).split('/')[-1], "Print COD Return Label")
             elif obj.fedex_outbound_label:
-                return '<a href="/static/%s" target="_blank">%s</a>' % (str(obj.fedex_outbound_label.name).split('/')[-1], "Print Outbound Label") + '<br><a style="color:red" href="/create_fedex_shipment/?%s" target="_blank">%s</a>' % (params, "Re-Create Order")
+                return '<a href="/static/%s" target="_blank">%s</a>' % (str(obj.fedex_outbound_label.name).split('/')[-1], "Print Outbound Label")
             else:
                 if obj.fedex_check != 'R':
                     return '<a href="/create_fedex_shipment/?%s" target="_blank">%s</a>' % (params, "Create Order")
@@ -472,11 +472,21 @@ class OrderAdmin(FilterUserAdmin):
     inlines = (ProductInline,)
     search_fields = ['business__business_name', 'name', 'product__real_tracking_no', 'product__barcode','city','state','product__mapped_tracking_no']
     list_display = (
-        'order_no', 'book_time', 'business_details', 'name', 'status', 'fedex_check', 'no_of_products', 'total_shipping_cost',
+        'order_no', 'book_time', 'business_details', 'name', 'status', 'fedex_check', 'no_of_products','mapped_ok', 'total_shipping_cost',
         'total_cod_cost', 'method',)
     list_editable = ('status',)
     list_filter = ['business', 'status', 'book_time']
     actions = [make_pending, make_complete, make_cancelled, make_transit,export_as_csv_action("CSV Export", fields=['name','product__real_tracking_no'])]
+
+    def mapped_ok(self,obj):
+        products=Product.objects.filter(order=obj)
+        mapped_ok=True
+        for product in products:
+            if (not product.mapped_tracking_no):
+                return False
+
+        return mapped_ok
+    mapped_ok.boolean = True
 
     def no_of_products(self, obj):
         return Product.objects.filter(order=obj).count()
