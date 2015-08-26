@@ -13,6 +13,7 @@ from django.contrib.auth.models import User
 
 from django.db.models import signals
 from core.fedex.base_service import FedexError
+from core.utils import state_matcher
 from core.utils.fedex_api_helper import Fedex
 from django.core.exceptions import ObjectDoesNotExist
 
@@ -179,7 +180,7 @@ class Product(models.Model):
     fedex_outbound_label = models.FileField(upload_to='shipment/', blank=True, null=True)
     actual_shipping_cost = models.FloatField(default=0.0)
     fedex_check = models.CharField(max_length=1,
-                                   choices=(('I', 'Integrity Check'), ('O', 'ODA'), ('R', 'Restricted States'), ('P', 'Pass'), ('S', 'State Integrity Check'), ('A', 'Address Integrity Check'), ('N', 'Not Servicable')),
+                                   choices=(('I', 'Integrity Check'), ('O', 'ODA'), ('R', 'Restricted States'), ('P', 'Pass'), ('S', 'State Integrity Check'), ('A', 'Address Integrity Check'), ('N', 'Not Servicable'), ('Z', 'Invalid Pincode')),
                                    null=True, blank=True)
 
     __original_tracking_data = None
@@ -303,13 +304,41 @@ class Product(models.Model):
                     else:
                         self.fedex_check = 'P'
                 except ObjectDoesNotExist:
-                    self.fedex_check = 'S'
+                    closest_state = state_matcher.get_closest_state(receiver_state)
+                    if closest_state:
+                        try:
+                            receiver['state'] = closest_state[0]
+                            result = fedex.is_oda(sender, receiver, item, config, service_type)
+                            if result:
+                                self.fedex_check = 'O'
+                            elif receiver_state in ('Uttar Pradesh', 'Madhya Pradesh', 'Bihar', 'Jharkhand'):
+                                self.fedex_check = 'R'
+                            else:
+                                self.fedex_check = 'P'
+                            self.order.state = receiver["state"]
+                            self.order.save()
+                        except ObjectDoesNotExist:
+                            self.fedex_check = 'S'
+                        except ValidationError:
+                            self.fedex_check = 'A'
+                            print "H"
+                        except FedexError as e:
+                            if e.error_code == '868' or e.error_code == '711':
+                                self.fedex_check = 'N'
+                            elif e.error_code == '521':
+                                self.fedex_check = 'Z'
+                            else:
+                                raise e
+                    else:
+                        self.fedex_check = 'S'
                 except ValidationError:
                     self.fedex_check = 'A'
                     print "H"
                 except FedexError as e:
                     if e.error_code == '868' or e.error_code == '711':
                         self.fedex_check = 'N'
+                    elif e.error_code == '521':
+                        self.fedex_check = 'Z'
                     else:
                         raise e
 
