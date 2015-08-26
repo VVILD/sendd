@@ -336,7 +336,7 @@ class TrackingResource(CORSResource):
             raise CustomBadRequest(
                 code="request_invalid",
                 message="No tracking_id found. Please supply tracking_id as a GET URL parameter")
-        elif str(tracking_id).startswith('SE'):
+        elif str(tracking_id).startswith('SE') or str(tracking_id).startswith('se'):
             product = Product.objects.get(barcode=tracking_id)
         elif str(tracking_id).startswith('B'):
             product = Product.objects.get(real_tracking_no=tracking_id)
@@ -488,7 +488,7 @@ class SearchResource(CORSResource):
             raise CustomBadRequest(
                 code="request_invalid",
                 message="No tracking_id found. Please supply tracking_id as a GET parameter")
-        elif str(tracking_id).startswith('SE'):
+        elif str(tracking_id).startswith('SE') or str(tracking_id).startswith('se'):
             product = Product.objects.get(barcode=tracking_id)
         elif str(tracking_id).startswith('B'):
             product = Product.objects.get(real_tracking_no=tracking_id)
