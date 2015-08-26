@@ -2029,8 +2029,7 @@ class ShipmentResource2(MultipartResource, CORSModelResource):
             bundle.data['name'] = order.namemail.name
             bundle.data['email'] = order.namemail.email
             bundle.data['phone'] = order.user.phone
-            order_pk = str(bundle.data['order']).split('/')[-2]
-            bundle.data['order'] = order_pk
+            bundle.data['order'] = order.pk
             bundle.data['tracking_no'], bundle.data['real_tracking_no'] = bundle.data['real_tracking_no'], bundle.data[
                 'tracking_no']
             return bundle
