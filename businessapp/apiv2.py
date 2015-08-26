@@ -574,7 +574,8 @@ class InvoiceResource(CORSResource):
                     "cod_cost": product.cod_cost,
                     "return_cost": product.return_cost,
                     "price": product.price,
-                    "remittance": product.remittance
+                    "remittance": product.remittance,
+                    "tracking_id": product.real_tracking_no
                 })
                 orders[p_order]["total_shipping_cost"] += int(product.shipping_cost) + int(product.return_cost) + int(
                     product.cod_cost)
@@ -599,7 +600,8 @@ class InvoiceResource(CORSResource):
                                                    "cod_cost": product.cod_cost,
                                                    "return_cost": product.return_cost,
                                                    "price": product.price,
-                                                   "remittance": product.remittance
+                                                   "remittance": product.remittance,
+                                                   "tracking_id": product.real_tracking_no
                                                }]
                 if product.order.payment_method == 'C' and product.status != 'R':
                     orders[p_order]["total_cod_remittance"] += int(product.price)
