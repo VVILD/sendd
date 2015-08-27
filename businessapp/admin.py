@@ -77,14 +77,48 @@ def export_as_csv_action(description="Export selected objects as CSV file",
     export_as_csv.short_description = description
     return export_as_csv
 
+
+class BaseBusinessAdmin(admin.ModelAdmin):
+
+    def changelist_view(self, request, extra_context=None):
+        extra_context = extra_context or {}
+        
+        cs=False
+        op=False
+        try:
+            print "jkjkjkjkjkjkjkjkjkjk"
+            print "see"
+            profile=Profile.objects.get(user=request.user)
+            usertype=profile.usertype
+            if (usertype=='C'):
+                print "jkjkjkjkjkjkjkjkjkjk"
+                cs=True
+            if (usertype=='O'):
+                op=True
+        except:
+            pass
+
+
+        context = {'cs':cs,'op':op}
+        return super(BaseBusinessAdmin, self).changelist_view(request, extra_context=context)
+
+
 # Register your models here.
-class BusinessAdmin(admin.ModelAdmin):
+class BusinessAdmin(BaseBusinessAdmin):
     # search_fields=['name']
     search_fields=['username','business_name']
     list_display = ('username', 'business_name', 'pickup_time', 'pb', 'assigned_pickup_time','status', 'pending_orders','pickedup_orders','daily','comment')
     list_editable = ('pb', 'assigned_pickup_time','daily','comment')
     raw_id_fields = ('pb',)
     list_filter = ['username', 'status', 'daily','pb']
+
+    def make_approved(modeladmin, request, queryset):
+        queryset.update(status='Y')
+
+
+    make_approved.short_description = "Mark business as approved"
+
+    actions=[make_approved]
 
     def pending_orders(self, obj):
         po_count = Order.objects.filter(status='P', business__username=obj.username).count()
@@ -428,7 +462,7 @@ class ProductInline(admin.TabularInline):
 # 	#('Invoices',{'fields':['send_invoice',], 'classes':('suit-tab','suit-tab-invoices')})
 # )
 # suit_form_tabs = (('general', 'General'))
-class FilterUserAdmin(admin.ModelAdmin):
+class FilterUserAdmin(BaseBusinessAdmin):
 
 
     def queryset(self, request):

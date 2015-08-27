@@ -37,6 +37,7 @@
 })(django.jQuery);
 
 </script>
+{% if cs %}
 
 
 <center>
@@ -49,13 +50,16 @@
 <br>
 <br>
 
-<center>
-<div class="row">
+
+
 <!-- <div class="col-md-6">Today Customers Orders
 <br>
 <li># orders: {{count_b2c}}</li>
 <li>Total revenue: {{sum_b2c}}</li>
 </div> -->
+{% elif op %}
+<center>
+<div class="row">
 <a class="btn btn-info" href="/admin/businessapp/business/?status__exact=Y"><span class="badge">{{ap}}</span> Approved business</a>
 <a class="btn btn-info" href="/admin/businessapp/order/?q=&status__exact=P"><span class="badge">{{p}}</span>Pending orders </a>
 <a class="btn btn-info" href="/admin/businessapp/order/?q=&status__exact=PU"><span class="badge">{{pu}}</span>Picked up orders</a>
@@ -64,6 +68,7 @@
 <br>
 </div>
 </center>
+{% endif %}
 
 {{ block.super }}
 {% endblock %}

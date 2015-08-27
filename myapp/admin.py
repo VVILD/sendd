@@ -1,6 +1,7 @@
 from django.contrib import admin
 from .models import *
 from myapp.forms import ShipmentForm, OrderForm, OrderEditForm
+from businessapp.models import Profile
 
 import json
 # Register your models here.
@@ -99,6 +100,22 @@ class OrderAdmin(admin.ModelAdmin):
 
     def changelist_view(self, request, extra_context=None):
         extra_context = extra_context or {}
+        
+        cs=False
+        op=False
+        try:
+            print "jkjkjkjkjkjkjkjkjkjk"
+            print "see"
+            profile=Profile.objects.get(user=request.user)
+            usertype=profile.usertype
+            if (usertype=='C'):
+                print "jkjkjkjkjkjkjkjkjkjk"
+                cs=True
+            if (usertype=='O'):
+                op=True
+        except:
+            pass
+
         todays_date = date.today()
 
         today_min = datetime.datetime.combine(todays_date, datetime.time.min)
@@ -132,7 +149,7 @@ class OrderAdmin(admin.ModelAdmin):
         count_b2c = today_shipments.count()
         action_b2c = today_shipments.count() - today_shipments_correct.count()
 
-        context = {'o': o, 'a': a, 'p': p, 'c': c, 'pa': pa, 'count_b2c': count_b2c, 'sum_b2c': sum_b2c}
+        context = {'o': o, 'a': a, 'p': p, 'c': c, 'pa': pa, 'count_b2c': count_b2c, 'sum_b2c': sum_b2c,'cs':cs,'op':op}
         return super(OrderAdmin, self).changelist_view(request, extra_context=context)
 
 
@@ -433,10 +450,17 @@ class ApprovedOrderAdmin(OrderAdmin):
     actions = [make_alloted]
 
     def queryset(self, request):
-        return self.model.objects.filter(order_status='AP')
+        return self.model.objects.filter(order_status='AP').order_by('time')
 
 
 admin.site.register(ApprovedOrder, ApprovedOrderAdmin)
+
+class ApprovedOrderCsAdmin(OrderAdmin):
+
+    def queryset(self, request):
+        return self.model.objects.filter().exclude(order_status='O').exclude(order_status='N')
+
+admin.site.register(ApprovedOrderCs, ApprovedOrderCsAdmin)
 
 
 class CompletedOrderAdmin(OrderAdmin):

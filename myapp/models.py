@@ -171,6 +171,10 @@ class ApprovedOrder(Order):
     class Meta:
         proxy = True
 
+class ApprovedOrderCs(Order):
+    class Meta:
+        proxy = True
+
 
 class CompletedOrder(Order):
     class Meta:

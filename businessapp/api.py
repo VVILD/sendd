@@ -262,6 +262,15 @@ class BusinessResource(CORSModelResource):
 		authorization= Authorization()
 		always_return_data = True
 
+	def hydrate(self,bundle):
+
+		mail="Hi, we have a new sign up our biz panel with the username "+str(bundle.data['username'])+". This is just an informing mail"
+		subject=str(bundle.data['username']) + " just signed up on our biz panel"
+		send_mail(subject, mail, "Team Sendd <order@sendd.co>", ["sargun@sendd.co","ankit@sendd.co","sumeet@sendd.co"])
+
+
+		return bundle
+
 	def dehydrate(self,bundle):
 
 
