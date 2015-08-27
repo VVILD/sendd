@@ -126,7 +126,7 @@ class OrderAdmin(admin.ModelAdmin):
         p = Order.objects.filter(order_status='P').count()
         pa = Order.objects.filter(order_status='AP').count()
         c = Order.objects.filter(order_status='DI').count()
-
+        acs= Order.objects.filter().exclude(order_status='O').exclude(order_status='N').count()
         todays_date = date.today()
         # week_before=date.today()-datetime.timedelta(days=7)
 
@@ -149,7 +149,7 @@ class OrderAdmin(admin.ModelAdmin):
         count_b2c = today_shipments.count()
         action_b2c = today_shipments.count() - today_shipments_correct.count()
 
-        context = {'o': o, 'a': a, 'p': p, 'c': c, 'pa': pa, 'count_b2c': count_b2c, 'sum_b2c': sum_b2c,'cs':cs,'op':op}
+        context = {'o': o, 'a': a, 'p': p, 'c': c, 'pa': pa, 'count_b2c': count_b2c, 'sum_b2c': sum_b2c,'cs':cs,'op':op,'acs':acs}
         return super(OrderAdmin, self).changelist_view(request, extra_context=context)
 
 
@@ -358,6 +358,22 @@ admin.site.register(Gcmmessage)
 admin.site.register(Promocode)
 
 
+class CSOrderAdmin(OrderAdmin):
+    list_display = (
+        'order_no', 'book_time', 'promocode', 'date', 'time', 'full_address', 'name_email', 'order_status', 'way',
+        'cs_comment', 'shipments')
+    list_editable = ('date', 'time', 'cs_comment',)
+
+
+class OPOrderAdmin(OrderAdmin):
+    list_display = (
+        'order_no', 'book_time', 'promocode', 'date', 'time', 'full_address', 'name_email', 'order_status','pb', 'way',
+        'cs_comment','comment', 'shipments')
+    list_editable = ('pb','comment',)
+
+
+
+
 class PromocheckAdmin(admin.ModelAdmin):
     list_per_page = 10
     list_display = ('code', 'user')
@@ -373,13 +389,18 @@ def make_alloted(modeladmin, request, queryset):
 make_alloted.short_description = "Mark selected orders as alloted"
 
 
-class ReceivedOrderAdmin(OrderAdmin):
+class ReceivedOrderAdmin(CSOrderAdmin):
     def make_approved(modeladmin, request, queryset):
         queryset.update(order_status='AP')
 
+    def make_cancelled(modeladmin, request, queryset):
+        queryset.update(order_status='N')
+
 
     make_approved.short_description = "Approve"
-    actions = [make_approved]
+    make_cancelled.short_description = "Cancel"
+
+    actions = [make_approved,make_cancelled]
 
 
     def queryset(self, request):
@@ -396,7 +417,7 @@ def make_pickedup(modeladmin, request, queryset):
 make_alloted.short_description = "Mark selected orders as picked up"
 
 
-class AllotedOrderAdmin(OrderAdmin):
+class AllotedOrderAdmin(OPOrderAdmin):
     def make_pickedup(modeladmin, request, queryset):
         queryset.update(order_status='P')
 
@@ -412,7 +433,7 @@ class AllotedOrderAdmin(OrderAdmin):
 admin.site.register(AllotedOrder, AllotedOrderAdmin)
 
 
-class DispatchedOrderAdmin(OrderAdmin):
+class DispatchedOrderAdmin(OPOrderAdmin):
     
     def queryset(self, request):
         return self.model.objects.filter(order_status='DI')
@@ -422,7 +443,7 @@ admin.site.register(DispatchedOrder, DispatchedOrderAdmin)
 
 
 
-class PickedupOrderAdmin(OrderAdmin):
+class PickedupOrderAdmin(OPOrderAdmin):
     def make_dispatched(modeladmin, request, queryset):
         queryset.update(order_status='DI')
 
@@ -440,7 +461,7 @@ admin.site.register(PickedupOrder, PickedupOrderAdmin)
 
 
 
-class ApprovedOrderAdmin(OrderAdmin):
+class ApprovedOrderAdmin(OPOrderAdmin):
     def make_Alloted(modeladmin, request, queryset):
         queryset.update(order_status='A')
 
@@ -455,7 +476,7 @@ class ApprovedOrderAdmin(OrderAdmin):
 
 admin.site.register(ApprovedOrder, ApprovedOrderAdmin)
 
-class ApprovedOrderCsAdmin(OrderAdmin):
+class ApprovedOrderCsAdmin(CSOrderAdmin):
 
     def queryset(self, request):
         return self.model.objects.filter().exclude(order_status='O').exclude(order_status='N')
@@ -469,6 +490,14 @@ class CompletedOrderAdmin(OrderAdmin):
 
 
 admin.site.register(CompletedOrder, CompletedOrderAdmin)
+
+
+class CancelledOrderAdmin(CSOrderAdmin):
+    def queryset(self, request):
+        return self.model.objects.filter(order_status='N')
+
+
+admin.site.register(CancelledOrder, CancelledOrderAdmin)
 
 
 class FakeOrderAdmin(OrderAdmin):

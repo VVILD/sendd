@@ -96,6 +96,8 @@ class Order(models.Model):
                                         ('Q', 'query'), ('DI', 'dispatched'),), null=True, blank=True, default='O')
 
     comment = models.TextField(null=True, blank=True)
+    cs_comment = models.TextField(null=True, blank=True)
+    
     way = models.CharField(max_length=1,
                            choices=(('A', 'app'), ('W', 'web'), ('C', 'call'),),
                            default='A')
@@ -168,6 +170,10 @@ class DispatchedOrder(Order):
         proxy = True
 
 class ApprovedOrder(Order):
+    class Meta:
+        proxy = True
+
+class CancelledOrder(Order):
     class Meta:
         proxy = True
 
