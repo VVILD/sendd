@@ -784,7 +784,7 @@ class ShipmentAdmin(admin.ModelAdmin):
     def fedex(self, obj):
         params = urllib.urlencode({'shipment_pk': obj.pk, 'client_type': "customer"})
         if obj.fedex_outbound_label:
-            return '<a href="/static/%s">%s</a>' % (str(obj.fedex_outbound_label.name).split('/')[-1], "Print label")
+            return '<a href="/static/%s">%s</a>' % (str(obj.fedex_outbound_label.name).split('/')[-1], "Print label") + '<br> <a style="color:red" href="/create_fedex_shipment/?%s">%s</a>' % (params, "Re-Create Order")
         else:
             return '<a href="/create_fedex_shipment/?%s">%s</a>' % (params, "Create Order")
 
