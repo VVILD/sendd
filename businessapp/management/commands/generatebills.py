@@ -22,8 +22,8 @@ class Command(BaseCommand):
     )
 
     def handle(self, *args, **options):
-        start_date = datetime.datetime(options['year'], options['month'], 1)
-        end_date = datetime.datetime(options['year'], options['month'] + 1, 1) - datetime.timedelta(days=1)
+        start_date = datetime.datetime(int(options['year']), int(options['month']), 1)
+        end_date = datetime.datetime(int(options['year']), int(options['month']) + 1, 1) - datetime.timedelta(days=1)
         if len(args) > 0:
             business_products = []
             for business in args:
@@ -81,3 +81,4 @@ class Command(BaseCommand):
                             if not product.remittance:
                                 orders[p_order]["total_remittance_pending"] += int(product.price)
                 result[obj[0].pk] = orders
+            print(result)
