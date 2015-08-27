@@ -129,13 +129,13 @@ class Order(models.Model):
     def save(self, *args, **kwargs):
         if self.pb and self.order_status=='AP':
             self.order_status='A'
+            address= str(self.flat_no) + str(self.address) +str(self.pincode)  
             phone=self.pb.phone
+            user_phone=self.user.phone
             msg0 = "http://enterprise.smsgupshup.com/GatewayAPI/rest?method=SendMessage&send_to="
             msga = str(phone)
-            msg1 = "&msg=Welcome+to+Sendd.+Your+OTP+is+"
-            msg2 = "1234"
-            msg3 = ".This+message+is+for+automated+verification+purpose.+No+action+required.&msg_type=TEXT&userid=2000142364&auth_scheme=plain&password=h0s6jgB4N&v=1.1&format=text"
-            query = ''.join([msg0, msga, msg1, msg2, msg3])
+            msg1 = "&msg=Pickup+details+for+order+no%3A"+str(self.namemail.name)+".%0D%0AName%3A123%2C+Address%3A"+str(address)+"%2C+Mobile+No%3A"+str(user_phone)+"&msg_type=TEXT&userid=2000142364&auth_scheme=plain&password=h0s6jgB4N&v=1.1&format=text"
+            query = ''.join([msg0, msga, msg1])
             print query
             x = urllib2.urlopen(query).read()            
 
@@ -168,6 +168,10 @@ class DispatchedOrder(Order):
         proxy = True
 
 class ApprovedOrder(Order):
+    class Meta:
+        proxy = True
+
+class ApprovedOrderCs(Order):
     class Meta:
         proxy = True
 

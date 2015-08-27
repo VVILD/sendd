@@ -38,28 +38,63 @@
 })(django.jQuery);
 
 </script>
-    <center>
+
+
+<!-- {% if cs %}
+<center>
+<a class="btn btn-info" href="/admin/myapp/receivedorder/"><span class="badge">{{o}}</span> Recieved Orders <br> Approve</a>
+<a class="btn btn-info" href="/admin/myapp/approvedordercs/"><span class="badge">{{a}}</span>Approved</a>
+<a class="btn btn-info" href="/admin/myapp/cancelledorder/">cancelled orders</a>
+</center>
+<br>
+<br>
+{% elif op %}
+<center>
+<div class="row">
+
+<a class="btn btn-info" href="/admin/myapp/approvedorder/"><span class="badge">{{ap}}</span> Approved Orders <br> Allot Someone</a>
+<a class="btn btn-info" href="/admin/myapp/allotedorder/"><span class="badge">{{a}}</span>On the way to pickup <br> Check if picked up</a>
+<a class="btn btn-info" href="/admin/myapp/pickeduporder/"><span class="badge">{{p}}</span>Picked up <br> Now Dispatch</a>
+<a class="btn btn-info" href="/admin/myapp/dispatchedorder/"><span class="badge">{{c}}</span>Dispatched orders</a>
+<br>
+<br>
+</div>
+</center>
+{% elif qc %}
+<center>
+<div class="row">
+<a class="btn btn-info" href="/admin/myapp/approvedordercs/"><span class="badge">{{o}}</span> Approved Orders <br> Allot Someone</a>
+<a class="btn btn-info" href="/admin/myapp/allotedorder/"><span class="badge">{{a}}</span>On the way to pickup <br> Check if picked up</a>
+<a class="btn btn-info" href="/admin/myapp/pickeduporder/"><span class="badge">{{p}}</span>Picked up <br> Now Dispatch</a>
+<a class="btn btn-info" href="/admin/myapp/dispatchedorder/"><span class="badge">{{c}}</span>Dispatched orders</a>
+<br>
+<br>
+</div>
+</center>
+{% endif %} -->
+
+  <center>
 <div class="row">
         <div class="col-md-6">Today Customers Orders
         <br>
         <li># orders: {{count_b2c}}</li>
         <li>Total revenue: {{sum_b2c}}</li>
         </div>
-   <a class="btn btn-info" href="/admin/myapp/receivedorder/"><span class="badge">{{o}}</span> Recieved Orders</a>
-   <a class="btn btn-info" href="/admin/myapp/approvedorder/"><span class="badge">{{pa}}</span>Approved Orders</a>
-   <a class="btn btn-info" href="/admin/myapp/allotedorder/"><span class="badge">{{a}}</span>Alloted Orders</a>
-   <a class="btn btn-info" href="/admin/myapp/pickeduporder/"><span class="badge">{{p}}</span>Picked up Orders</a>
-
+   <a class="btn btn-info" href="/admin/myapp/receivedorder/"><span class="badge">{{o}}</span> Recieved Orders <br> Allot Someone</a>
+   <a class="btn btn-info" href="/admin/myapp/allotedorder/"><span class="badge">{{a}}</span>On the way to pickup <br> Check if picked up</a>
+   <a class="btn btn-info" href="/admin/myapp/pickeduporder/"><span class="badge">{{p}}</span>Picked up <br> Now Pack</a>
+   <a class="btn btn-info" href="/admin/myapp/packedorder/"><span class="badge">{{pa}}</span>Packed<br>Do data entry/send invoice</a>
 <br>
 
 
 <br>
-   <a class="btn btn-info" href="/admin/myapp/dispatchedorder/"><span class="badge">{{c}}</span>Dispatched orders</a>
+   <a class="btn btn-info" href="/admin/myapp/completedorder/"><span class="badge">{{c}}</span>Completed orders</a>
 <a class="btn btn-info" href="/admin/myapp/fakeorder/">Fake orders</a>
 <a class="btn btn-info" href="/admin/myapp/queryorder/">Query Orders</a>
 <br>
 <br>
 </div>
     </center>
-    {{ block.super }}
+{{ block.super }}
 {% endblock %}
+
