@@ -586,6 +586,9 @@ class InvoiceResource(CORSResource):
                         orders[p_order]["total_remittance_pending"] += int(product.price)
             else:
                 orders[p_order] = {
+                    "drop_address_address": product.order.address1 + product.order.address2,
+                    "drop_address_pincode": product.order.pincode,
+                    "drop_address_state": product.order.state,
                     "drop_address_city": product.order.city,
                     "receiver_name": product.order.name,
                     "total_shipping_cost": int(product.shipping_cost) + int(product.return_cost) + int(
