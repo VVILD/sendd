@@ -323,8 +323,10 @@ class Command(BaseCommand):
 					product.status='C'
 					product.save()
 
-			product.tracking_data=json.dumps(tracking_data)
-			product.save()
+			if (json.dumps(tracking_data)!='[]'):
+				product.tracking_data=json.dumps(tracking_data)
+				product.save()
+
 
 		except:#tracking number already exist
 			print number 

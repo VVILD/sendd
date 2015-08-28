@@ -87,6 +87,26 @@ class Business(models.Model):
     def __unicode__(self):
         return str(self.business_name)
 
+class NotApprovedBusiness(Business):
+    class Meta:
+        proxy = True
+
+class ApprovedBusiness(Business):
+    class Meta:
+        proxy = True
+
+class ApprovedBusinessOP(Business):
+    class Meta:
+        proxy = True
+
+class DailyBusiness(Business):
+    class Meta:
+        proxy = True
+
+class CancelledBusiness(Business):
+    class Meta:
+        proxy = True
+
 
 class LoginSession(models.Model):
     Business = models.ForeignKey(Business, null=True, blank=True)
