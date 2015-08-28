@@ -67,6 +67,32 @@
 <br>
 </div>
 </center>
+{%else%}
+
+<center>
+Customer support links
+<a class="btn btn-info" href="/admin/businessapp/business/notapprovedbusiness/"><span class="badge">{{nap}}</span> Not Approved</a>
+<a class="btn btn-info" href="/admin/businessapp/business/approvedbusiness/"><span class="badge">{{ap}}</span>Approved</a>
+<a class="btn btn-info" href="/admin/businessapp/business/cancelledbusiness/"><span class="badge">{{c}}</span>cancelled</a>
+<a class="btn btn-info" href="/admin/businessapp/business/dailybusiness/"><span class="badge">{{d}}</span>daily</a>
+</center>
+<br>
+<br>
+
+
+<center>
+Fullfillment executive link
+<div class="row">
+<a class="btn btn-info" href="/admin/businessapp/approvedbusinessop/"><span class="badge">{{ap}}</span> Approved business</a>
+<a class="btn btn-info" href="/admin/businessapp/order/?q=&status__exact=P"><span class="badge">{{p}}</span>Pending orders </a>
+<a class="btn btn-info" href="/admin/businessapp/order/?q=&status__exact=PU"><span class="badge">{{pu}}</span>Picked up orders</a>
+<a class="btn btn-info" href="/admin/businessapp/order/?q=&status__exact=DI"><span class="badge">{{di}}</span>Dispatched orders</a>
+<br>
+<br>
+</div>
+</center>
+
+
 {% endif %}
 
 
