@@ -334,8 +334,11 @@ class OrderAdmin(admin.ModelAdmin):
             pk = obj.namemail.pk
             name = obj.namemail.name
             email = obj.namemail.email
-            return '%s<br><a href="/admin/myapp/namemail/%s/" onclick="return showAddAnotherPopup(this);">%s|%s</a>' % (
-                user, pk, name, email)
+
+            #approvedordercs/?q=8879006197
+
+            return '<a href ="/admin/myapp/approvedordercs/?q=%s" target="_blank" > %s </a><br>(click here for previous order history) <br><br><a href="/admin/myapp/namemail/%s/" onclick="return showAddAnotherPopup(this);">%s|%s</a>' % (
+                user,user, pk, name, email)
         except:
             return 'fail'
 
@@ -479,7 +482,7 @@ admin.site.register(ApprovedOrder, ApprovedOrderAdmin)
 class ApprovedOrderCsAdmin(CSOrderAdmin):
 
     def queryset(self, request):
-        return self.model.objects.filter().exclude(order_status='O').exclude(order_status='N')
+        return self.model.objects.filter().exclude(order_status='O').exclude(order_status='N').exclude(order_status='F')
 
 admin.site.register(ApprovedOrderCs, ApprovedOrderCsAdmin)
 
