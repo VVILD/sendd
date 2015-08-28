@@ -345,7 +345,7 @@ class OrderAdmin(admin.ModelAdmin):
 
             #approvedordercs/?q=8879006197
 
-            return '<a href ="/admin/myapp/approvedordercs/?q=%s" target="_blank" > %s </a><br>(click here for previous order history) <br><br><a href="/admin/myapp/namemail/%s/" onclick="return showAddAnotherPopup(this);">%s|%s</a>' % (
+            return '%s<br><a href ="/admin/myapp/approvedordercs/?q=%s" target="_blank" >(click here for previous order history)</a><br> <br><br><a href="/admin/myapp/namemail/%s/" onclick="return showAddAnotherPopup(this);">%s|%s</a>' % (
                 user,user, pk, name, email)
         except:
             return 'fail'
