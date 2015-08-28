@@ -365,14 +365,14 @@ class CSOrderAdmin(OrderAdmin):
     list_display = (
         'order_no', 'book_time', 'promocode', 'date', 'time', 'full_address', 'name_email', 'order_status', 'way',
         'cs_comment', 'shipments')
-    list_editable = ('date', 'time', 'cs_comment',)
+    list_editable = ('date', 'time', 'order_status', 'cs_comment',)
 
 
 class OPOrderAdmin(OrderAdmin):
     list_display = (
         'order_no', 'book_time', 'promocode', 'date', 'time', 'full_address', 'name_email', 'order_status','pb', 'way',
         'cs_comment','comment', 'shipments')
-    list_editable = ('pb','comment',)
+    list_editable = ('pb', 'order_status','comment',)
 
 
 
