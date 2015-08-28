@@ -81,7 +81,7 @@ class OrderAdmin(admin.ModelAdmin):
     #actions_on_top = True
     save_as = True
     list_per_page = 25
-    search_fields = ['user__phone', 'name', 'namemail__name', 'namemail__email', 'promocode__code', 'shipment__real_tracking_no','shipment__barcode']
+    search_fields = ['user__phone', 'name', 'namemail__name', 'namemail__email', 'promocode__code', 'shipment__real_tracking_no','shipment__barcode','shipment__drop_phone','shipment__drop_name']
     list_display = (
         'order_no', 'book_time', 'promocode', 'date', 'time', 'full_address', 'name_email', 'order_status', 'way',
         'pb', 'comment', 'shipments', 'send_invoice')
