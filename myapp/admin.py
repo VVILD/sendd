@@ -83,7 +83,7 @@ class OrderAdmin(admin.ModelAdmin):
     list_per_page = 25
     search_fields = ['user__phone', 'name', 'namemail__name', 'namemail__email', 'promocode__code', 'shipment__real_tracking_no','shipment__barcode']
     list_display = (
-        'order_no', 'book_time', 'promocode', 'date', 'time', 'full_address', 'name_email', 'order_status', 'way',
+        'order_no', 'book_time', 'promocode', 'date', 'time', 'full_address', 'name_email', 'order_status', 'fedex_check', 'way',
         'pb', 'comment', 'shipments', 'send_invoice')
     list_editable = ('date', 'time', 'order_status', 'pb', 'comment',)
     list_filter = ['book_time', 'status', 'pb']
@@ -321,6 +321,14 @@ class OrderAdmin(admin.ModelAdmin):
         else:
             return e_string
 
+    def fedex_check(self, obj):
+        status = 'Pass'
+        products = Shipment.objects.filter(order=obj)
+        for product in products:
+            if product.fedex_check != 'P':
+                status = product.get_fedex_check_display()
+        return status
+
     send_invoice.allow_tags = True
 
 
@@ -500,7 +508,7 @@ class ShipmentAdmin(admin.ModelAdmin):
     list_editable = (
         'name', 'cost_of_courier', 'weight', 'mapped_tracking_no', 'company', 'price', 'category', 'drop_phone',
         'drop_name', 'barcode', 'img',)
-    readonly_fields = ('real_tracking_no', 'print_invoice', 'generate_order', 'parcel_details', 'address', 'fedex')
+    readonly_fields = ('fedex_check', 'real_tracking_no', 'print_invoice', 'generate_order', 'parcel_details', 'address', 'fedex')
 
     fieldsets = (
         ('Basic Information', {'fields': ['real_tracking_no', 'parcel_details', ('category', 'status')],
@@ -513,7 +521,7 @@ class ShipmentAdmin(admin.ModelAdmin):
         #('Destination Address', {'fields':['drop_name','drop_phone','drop_flat_no','locality','city','state','drop_pincode','country'] , 'classes':['collapse',]})
         ('Destination Address',
          {'fields': [('drop_name', 'drop_phone'), 'address', ], 'classes': ('suit-tab', 'suit-tab-general')}),
-        ('Actions', {'fields': ['print_invoice', 'generate_order', 'fedex'], 'classes': ('suit-tab', 'suit-tab-general')}),
+        ('Actions', {'fields': ['fedex_check', 'print_invoice', 'generate_order', 'fedex'], 'classes': ('suit-tab', 'suit-tab-general')}),
         ('Tracking', {'fields': ['tracking_data'], 'classes': ('suit-tab', 'suit-tab-tracking')})
     )
 
@@ -783,11 +791,18 @@ class ShipmentAdmin(admin.ModelAdmin):
 
     def fedex(self, obj):
         params = urllib.urlencode({'shipment_pk': obj.pk, 'client_type': "customer"})
-        if obj.fedex_outbound_label:
-            return '<a href="/static/%s">%s</a>' % (str(obj.fedex_outbound_label.name).split('/')[-1], "Print label") + '<br> <a style="color:red" href="/create_fedex_shipment/?%s">%s</a>' % (params, "Re-Create Order")
+        if not obj.weight:
+            return "Enter item weight"
+        elif obj.fedex_check != 'P' and obj.fedex_check is not None and obj.fedex_check != 'R':
+            return "Fedex Check Failed" + '<br> <h2 style="color:red">' + obj.get_fedex_check_display() + '</h2>'
         else:
-            return '<a href="/create_fedex_shipment/?%s">%s</a>' % (params, "Create Order")
-
+            if obj.fedex_outbound_label:
+                return '<a href="/static/%s" target="_blank">%s</a>' % (str(obj.fedex_outbound_label.name).split('/')[-1], "Print Outbound Label") + '<br><a style="color:red" href="/create_fedex_shipment/?%s" target="_blank">%s</a>' % (params, "Re-Create Order")
+            else:
+                if obj.fedex_check != 'R':
+                    return '<a href="/create_fedex_shipment/?%s" target="_blank">%s</a>' % (params, "Create Order")
+                else:
+                    return '<a href="/create_fedex_shipment/?%s" target="_blank">%s</a>' % (params, "Create Order") + '<h2 style="color:red">Restricted States</h2>'
     fedex.allow_tags = True
 
 
