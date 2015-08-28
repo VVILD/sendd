@@ -77,7 +77,30 @@ def export_as_csv_action(description="Export selected objects as CSV file",
     export_as_csv.short_description = description
     return export_as_csv
 
+# <a class="btn btn-info" href="/admin/businessapp/business/notapprovedbusiness/"><span class="badge">{{nap}}</span> Not Approved</a>
+# <a class="btn btn-info" href="/admin/businessapp/business/approvedbusiness/"><span class="badge">{{ap}}</span>Approved</a>
+# <a class="btn btn-info" href="/admin/businessapp/business/cancelledbusiness/"><span class="badge">{{c}}</span>cancelled</a>
+# <a class="btn btn-info" href="/admin/businessapp/business/dailybusiness/"><span class="badge">{{d}}</span>daily</a>
+# </center>
+# <br>
+# <br>
 
+
+
+# <!-- <div class="col-md-6">Today Customers Orders
+# <br>
+# <li># orders: {{count_b2c}}</li>
+# <li>Total revenue: {{sum_b2c}}</li>
+# </div> -->
+# {% elif op %}
+# <center>
+# <div class="row">
+# <a class="btn btn-info" href="/admin/businessapp/business/approvedbusinessop/"><span class="badge">{{ap}}</span> Approved business</a>
+# <a class="btn btn-info" href="/admin/businessapp/order/?q=&status__exact=P"><span class="badge">{{p}}</span>Pending orders </a>
+# <a class="btn btn-info" href="/admin/businessapp/order/?q=&status__exact=PU"><span class="badge">{{pu}}</span>Picked up orders</a>
+# <a class="btn btn-info" href="/admin/businessapp/order/?q=&status__exact=DI"><span class="badge">{{di}}</span>Dispatched orders</a>
+# <br>
+# <br>
 class BaseBusinessAdmin(admin.ModelAdmin):
 
     def changelist_view(self, request, extra_context=None):
@@ -98,8 +121,18 @@ class BaseBusinessAdmin(admin.ModelAdmin):
         except:
             pass
 
+        nap = Business.objects.filter(status='N').count()
+        ap = Business.objects.filter(status='Y').count()
+        d = Business.objects.filter(daily=True).count()
+        c = Business.objects.filter(status='C').count()
+        #pa = Business.objects.filter(order_status='AP').count()
+        #c = Business.objects.filter(order_status='DI').count()
+        p= Order.objects.filter(status='P').count()
+        pu= Order.objects.filter(status='PU').count()
+        di= Order.objects.filter(status='DI').count()
 
-        context = {'cs':cs,'op':op}
+
+        context = {'cs':cs,'op':op,'nap':nap,'ap':ap,'d':d,'c':c,'p':p,'pu':pu,'di':di}
         return super(BaseBusinessAdmin, self).changelist_view(request, extra_context=context)
 
 
@@ -110,7 +143,7 @@ class BusinessAdmin(BaseBusinessAdmin):
     list_display = ('username', 'business_name', 'pickup_time', 'pb', 'assigned_pickup_time','status', 'pending_orders','pickedup_orders','daily','comment')
     list_editable = ('pb', 'assigned_pickup_time','daily','comment')
     raw_id_fields = ('pb',)
-    list_filter = ['username', 'status', 'daily','pb']
+    list_filter = ['username', 'daily','pb']
 
     def make_approved(modeladmin, request, queryset):
         queryset.update(status='Y')
@@ -138,6 +171,73 @@ class BusinessAdmin(BaseBusinessAdmin):
         po_count = Order.objects.filter(book_time__range=(date_min,date_max),status='P', business__username=obj.username).count()
         return '<a href="/admin/businessapp/order/?q=&business__username__exact=%s&status__exact=P"> %s </a>' % (obj.username, po_count)
     pending_orders_today.allow_tags = True
+
+
+class CSBusinessAdmin(BusinessAdmin):
+    # search_fields=['name']
+    search_fields=['username','business_name']
+    list_display = ('username', 'business_name', 'pickup_time','pb','assigned_pickup_time','status', 'pending_orders','pickedup_orders','daily','comment')
+    list_editable = ('assigned_pickup_time','comment')
+    list_filter = ['username', 'daily','pb']
+
+
+class OPBusinessAdmin(BusinessAdmin):
+    # search_fields=['name']
+    search_fields=['username','business_name']
+    list_display = ('username', 'business_name', 'pickup_time', 'pb', 'assigned_pickup_time','status', 'pending_orders','pickedup_orders','daily','comment')
+    list_editable = ('pb',)
+    raw_id_fields = ('pb',)
+    list_filter = ['username', 'daily','pb']
+
+
+class NotApprovedBusinessAdmin(CSBusinessAdmin):
+    def make_approved(modeladmin, request, queryset):
+        queryset.update(status='Y')
+
+
+    make_approved.short_description = "approved"
+
+    actions = [make_approved]
+
+    def queryset(self, request):
+        return self.model.objects.filter(status='N')
+
+
+admin.site.register(NotApprovedBusiness, NotApprovedBusinessAdmin)
+
+
+class ApprovedBusinessAdmin(CSBusinessAdmin):
+    
+    def queryset(self, request):
+        return self.model.objects.filter(status='Y')
+
+
+admin.site.register(ApprovedBusiness, ApprovedBusinessAdmin)
+
+class DailyBusinessAdmin(CSBusinessAdmin):
+    
+    def queryset(self, request):
+        return self.model.objects.filter(daily='True')
+
+
+admin.site.register(DailyBusiness, DailyBusinessAdmin)
+
+class CancelledBusinessAdmin(CSBusinessAdmin):
+    
+    def queryset(self, request):
+        return self.model.objects.filter(status='C')
+
+
+admin.site.register(CancelledBusiness, CancelledBusinessAdmin)
+
+class ApprovedBusinessOPAdmin(OPBusinessAdmin):
+    
+    def queryset(self, request):
+        return self.model.objects.filter(status='Y')
+
+
+admin.site.register(ApprovedBusinessOP, ApprovedBusinessOPAdmin)
+
 
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import User
