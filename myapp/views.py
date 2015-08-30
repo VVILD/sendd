@@ -31,7 +31,7 @@ def index(request):
 #customer stats today
 
 
-	today_orders =Order.objects.filter(Q(book_time__range=(today_min,today_max))&(Q(status='P') | Q(status='C')))
+	today_orders =Order.objects.filter(Q(book_time__range=(today_min,today_max))&(Q(status='P') | Q(status='C')| Q(status='DI')))
 	today_shipments_correct=Shipment.objects.filter(order=today_orders).exclude(price__isnull=True).exclude(price__exact='')
 	today_shipments=Shipment.objects.filter(order=today_orders)
 	average_b2c=today_shipments_correct.aggregate(Avg('price'))['price__avg']
@@ -40,7 +40,7 @@ def index(request):
 	action_b2c=today_shipments.count()-today_shipments_correct.count()
 	
 #customer stats week
-	week_orders =Order.objects.filter(Q(book_time__range=(date_min,date_max))&(Q(status='P') | Q(status='C')))
+	week_orders =Order.objects.filter(Q(book_time__range=(date_min,date_max))&(Q(status='P') | Q(status='C')| Q(status='C')))
 	week_shipments=Shipment.objects.filter(order=week_orders).values('order__book_time','price').exclude(price__isnull=True).exclude(price__exact='')
 
 	b2c_stats=[]
@@ -56,7 +56,7 @@ def index(request):
 	    b2c_stats.append([str(key),len(x),sum,sum/len(x)])
 
 #business stats today
-	today_orders_b2b=BOrder.objects.filter(Q(book_time__range=(today_min,today_max))&(Q(status='P') | Q(status='C')| Q(status='D')))
+	today_orders_b2b=BOrder.objects.filter(Q(book_time__range=(today_min,today_max))&(Q(status='P') | Q(status='C')| Q(status='DI')| Q(status='D')))
 	today_products_correct=Product.objects.filter(order=today_orders_b2b).exclude(shipping_cost__isnull=True)
 	today_products=Product.objects.filter(order=today_orders_b2b)
 	average_b2b=today_products_correct.aggregate(total=Avg('shipping_cost', field="shipping_cost+cod_cost"))['total']
@@ -66,7 +66,7 @@ def index(request):
 
 	
 #b2b week
-	week_orders_b2b =BOrder.objects.filter(Q(book_time__range=(date_min,date_max))&(Q(status='P') | Q(status='C')| Q(status='D')))
+	week_orders_b2b =BOrder.objects.filter(Q(book_time__range=(date_min,date_max))&(Q(status='P') | Q(status='C')| Q(status='D')| Q(status='DI')))
 	week_products_b2b=Product.objects.filter(order=week_orders_b2b).values('order__book_time','shipping_cost','cod_cost').exclude(shipping_cost__isnull=True)
 	b2b_stats=[]
 	for key, values in groupby(week_products_b2b, key=lambda row: row['order__book_time'].date()):
