@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 from pytz import timezone
 from push_notifications.models import GCMDevice
 from core.fedex.base_service import FedexError
+from core.models import Warehouse
 from core.utils import state_matcher
 from core.utils.fedex_api_helper import Fedex
 from pickupboyapp.models import PBUser
@@ -126,6 +127,7 @@ class Order(models.Model):
     #picked_up=models.BooleanField(default=False
 
     book_time = models.DateTimeField(null=True, blank=True)
+    warehouse = models.ForeignKey(Warehouse, null=True, blank=True, related_name="myapp_orders")
 
     def __unicode__(self):
         return str(self.order_no)

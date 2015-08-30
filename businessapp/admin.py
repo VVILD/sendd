@@ -140,10 +140,10 @@ class BaseBusinessAdmin(admin.ModelAdmin):
 class BusinessAdmin(BaseBusinessAdmin):
     # search_fields=['name']
     search_fields=['username','business_name']
-    list_display = ('username', 'business_name', 'pickup_time', 'pb', 'assigned_pickup_time','status', 'pending_orders','pickedup_orders','daily','comment')
+    list_display = ('username', 'business_name', 'pickup_time', 'warehouse', 'pb', 'assigned_pickup_time','status', 'pending_orders','pickedup_orders','daily','comment')
     list_editable = ('pb', 'assigned_pickup_time','daily','comment')
-    raw_id_fields = ('pb',)
-    list_filter = ['username', 'daily','pb']
+    raw_id_fields = ('pb', 'warehouse')
+    list_filter = ['username', 'daily','pb', 'warehouse']
 
     def make_approved(modeladmin, request, queryset):
         queryset.update(status='Y')

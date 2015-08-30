@@ -3,6 +3,8 @@ from django.core.validators import RegexValidator
 from django.db import models
 # from django.contrib.auth.models import User
 from datetime import datetime
+from geopy.distance import vincenty
+from geopy.geocoders import googlev3
 from pytz import timezone
 from django.db.models.signals import post_save
 import hashlib
@@ -13,6 +15,7 @@ from django.contrib.auth.models import User
 
 from django.db.models import signals
 from core.fedex.base_service import FedexError
+from core.models import Warehouse
 from core.utils import state_matcher
 from core.utils.fedex_api_helper import Fedex
 from django.core.exceptions import ObjectDoesNotExist
@@ -73,14 +76,26 @@ class Business(models.Model):
     daily = models.BooleanField(default=False)
     status = models.CharField(max_length=1, choices=(('Y', 'approved'), ('N', 'not approved'),('C', 'cancelled'),), null=True, blank=True,
     default='N')
+    warehouse = models.ForeignKey(Warehouse, null=True, blank=True)
 
     def save(self, *args, **kwargs):
-        #print self.tracking_no
-        #print self.pk
-        #print "jkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkj"
         if not self.apikey:
-            print "wkwkwkwkwkwkwkwkwk"
-            self.apikey = hashlib.sha1(str(random.getrandbits(256))).hexdigest();
+            self.apikey = hashlib.sha1(str(random.getrandbits(256))).hexdigest()
+        if not self.warehouse:
+            geolocator = googlev3.GoogleV3(api_key="AIzaSyBEfEgATQeVkoKUnaB4O9rIdX2K2Bsh63o")
+            warehouses = Warehouse.objects.filter(city=self.city)
+            closest_warehouse = None
+            min_dist = 9999.9999
+            print(self.address + ', ' + self.city + ', ' + self.state + ", India")
+            business_location = geolocator.geocode(self.address + self.city + self.state + "India")
+            print(business_location)
+            business_lat_long = (business_location.latitude, business_location.longitude)
+            for warehouse in warehouses:
+                distance = vincenty(business_lat_long, (warehouse.lat, warehouse.long)).kilometers
+                if distance < min_dist:
+                    min_dist = distance
+                    closest_warehouse = warehouse
+            self.warehouse = closest_warehouse
         super(Business, self).save(*args, **kwargs)
 
 
