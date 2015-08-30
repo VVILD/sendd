@@ -441,7 +441,7 @@ class ProductResource2(ModelResource):
                                              country=bundle.data['country'],
                                              payment_method=bundle.data['payment_method'],
                                              reference_id=bundle.data['reference_id'], email=bundle.data['email'],
-                                             method=bundle.data['shipping_method'])
+                                             shipping_method=bundle.data['shipping_method'])
                 print "order created	"
 
             except:

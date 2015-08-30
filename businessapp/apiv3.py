@@ -262,11 +262,16 @@ class OrderResource3(ModelResource):
             bundle.data['business'] = "/bapi/v1/business/" + str(bundle.data['username']) + "/"
         except Business.DoesNotExist:
             raise ImmediateHttpResponse(HttpBadRequest("Username doesnt exist"))
+        except KeyError:
+            raise ImmediateHttpResponse(HttpBadRequest("Please Provide a valid username key"))
 
-        if len(bundle.data['phone']) is not 10:
+        try:
+            if len(bundle.data['phone']) is not 10:
                 raise ImmediateHttpResponse(HttpBadRequest("Enter valid phone number = 10 digits"))
         #print "ssssssssss"
-
+        except:
+            raise ImmediateHttpResponse(HttpBadRequest("Enter valid phone number = 10 digits"))
+        
         for product in bundle.data['products']:
         #    print product['barcode']
             try:
