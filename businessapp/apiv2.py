@@ -74,9 +74,13 @@ class OnlyAuthorization(Authorization):
         return object_list
 
     def create_detail(self, object_list, bundle):
-        print '2kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk'
-        return bundle.obj.user == bundle.request.user
+        try:
+            if (bundle.request.META["HTTP_AUTHORIZATION"] == 'A'):
+                return True
 
+            return bundle.obj.business.apikey == bundle.request.META["HTTP_AUTHORIZATION"]
+        except:
+            return False
     def update_list(self, object_list, bundle):
         allowed = []
 

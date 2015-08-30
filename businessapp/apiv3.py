@@ -74,8 +74,13 @@ class OnlyAuthorization(Authorization):
         return object_list
 
     def create_detail(self, object_list, bundle):
-        print '2kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk'
-        return True
+        try:
+            if (bundle.request.META["HTTP_AUTHORIZATION"] == 'A'):
+                return True
+
+            return bundle.obj.business.apikey == bundle.request.META["HTTP_AUTHORIZATION"]
+        except:
+            return False
 
     def update_list(self, object_list, bundle):
         allowed = []
@@ -245,11 +250,72 @@ class OrderResource3(ModelResource):
     class Meta:
         queryset = Order.objects.all()
         resource_name = 'order'
-        authorization = OnlyAuthorization()
-        # authentication=Authentication()
+        authorization =OnlyAuthorization()
+        authentication=Authentication()
         always_return_data = True
         ordering = ['book_time']
 
+    def hydrate(self, bundle):
+        #print "sssssssss"
+        try:
+            business_obj=Business.objects.get(username=bundle.data['username'])
+            bundle.data['business'] = "/bapi/v1/business/" + str(bundle.data['username']) + "/"
+        except Business.DoesNotExist:
+            raise ImmediateHttpResponse(HttpBadRequest("Username doesnt exist"))
+
+        if len(bundle.data['phone']) is not 10:
+                raise ImmediateHttpResponse(HttpBadRequest("Enter valid phone number = 10 digits"))
+        #print "ssssssssss"
+
+        for product in bundle.data['products']:
+        #    print product['barcode']
+            try:
+                y=Product.objects.get(barcode=product['barcode'])
+                raise ImmediateHttpResponse(HttpBadRequest("Barcode already exist. Please enter unique barcode"))
+            except Product.DoesNotExist:
+                pass
+            except KeyError:
+                pass
+
+        return bundle
+
+
+    def dehydrate(self, bundle):
+
+        new_bundle={}
+        new_bundle['products']={}
+        count=0
+        for product in bundle.data['products']:
+        #    print product['barcode']
+            print product
+            product_pk = product.split('/')[-2]
+            product = Product.objects.get(pk=product_pk)
+            new_bundle['products'][count]={}
+            new_bundle['products'][count]['name']=product.name
+            new_bundle['products'][count]['sku']=product.sku
+            new_bundle['products'][count]['quantity']=product.quantity
+            new_bundle['products'][count]['weight']=product.weight
+            new_bundle['products'][count]['tracking_no']=product.real_tracking_no
+
+
+            count=count+1
+            # try:
+            #     y=Product.objects.get(barcode=product['barcode'])
+            #     raise ImmediateHttpResponse(HttpBadRequest("Barcode already exist. Please enter unique barcode"))
+            # except Product.DoesNotExist:
+            #     pass
+            # except KeyError:
+            #     pass
+
+
+        # temp = 'sd'
+
+        # bundle = {}
+        # bundle['tracking_no']={}
+        # bundle['tracking_no']['df'] = temp
+
+        bundle=new_bundle
+        return bundle
 
 
 

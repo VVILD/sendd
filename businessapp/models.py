@@ -71,7 +71,7 @@ class Business(models.Model):
 
     comment = models.TextField(null=True, blank=True)
     daily = models.BooleanField(default=False)
-    status = models.CharField(max_length=1, choices=(('Y', 'approved'), ('N', 'not approved'),('C', 'cancelled'),), null=True, blank=True,
+    status = models.CharField(max_length=1, choices=(('Y', 'approved'), ('N', 'not approved'),('C', 'cancelled'),('A', 'alloted'),), null=True, blank=True,
     default='N')
 
     def save(self, *args, **kwargs):
@@ -81,7 +81,13 @@ class Business(models.Model):
         if not self.apikey:
             print "wkwkwkwkwkwkwkwkwk"
             self.apikey = hashlib.sha1(str(random.getrandbits(256))).hexdigest();
+        
+        if self.pb  and self.status=='Y':
+            self.status='A'
+
         super(Business, self).save(*args, **kwargs)
+
+
 
 
     def __unicode__(self):
@@ -98,6 +104,11 @@ class ApprovedBusiness(Business):
 class ApprovedBusinessOP(Business):
     class Meta:
         proxy = True
+
+class AllotedBusiness(Business):
+    class Meta:
+        proxy = True
+
 
 class DailyBusiness(Business):
     class Meta:
@@ -146,7 +157,7 @@ class Order(models.Model):
         ('P', 'pending'), ('C', 'complete'), ('N', 'cancelled'), ('D', 'in transit'), ('PU', 'pickedup'),
         ('RC', 'return/completed'), ('R', 'return'), ('DI', 'dispatched')), default='P')
 
-    method = models.CharField(max_length=1,
+    shipping_method = models.CharField(max_length=1,
                               choices=(('B', 'Bulk'), ('N', 'Normal'),),
                               blank=True, null=True)
     business = models.ForeignKey(Business)
@@ -393,7 +404,10 @@ def send_update(sender, instance, created, **kwargs):
 
 
     if instance.applied_weight:
-        method = instance.order.method
+        print "see order here"
+        print instance.order
+        print "see order here"
+        method = instance.order.shipping_method
 
         if (instance.order.payment_method == 'C'):
             cod_price1 = (1.5 / 100) * instance.price
@@ -578,7 +592,7 @@ def send_update_order(sender, instance, created, **kwargs):
         print product.applied_weight
 
         if product.applied_weight:
-            method = instance.method
+            method = instance.shipping_method
 
             if (instance.payment_method == 'C'):
                 cod_price1 = (1.5 / 100) * product.price
