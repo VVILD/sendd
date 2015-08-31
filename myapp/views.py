@@ -18,7 +18,7 @@ from itertools import groupby
 
 def index(request):
 	todays_date=date.today()
-	week_before=date.today()-datetime.timedelta(days=62)
+	week_before=date.today()-datetime.timedelta(days=5)
 
 # today min/max
 	today_min = datetime.datetime.combine(todays_date, datetime.time.min)
@@ -68,6 +68,11 @@ def index(request):
 #b2b week
 	week_orders_b2b =BOrder.objects.filter(Q(book_time__range=(date_min,date_max))&(Q(status='P') | Q(status='C')| Q(status='D')| Q(status='DI')))
 	week_products_b2b=Product.objects.filter(order=week_orders_b2b).values('order__book_time','shipping_cost','cod_cost').exclude(shipping_cost__isnull=True)
+	
+	week_products_b2b=Product.objects.filter(order=week_orders_b2b).values('order__book_time','shipping_cost','cod_cost').exclude(shipping_cost__isnull=True)
+
+	product=Product.objects.extra(select={'day': 'date( date)'}).values('day').annotate(count=Count('pk'),shipping_sum=Sum('shipping_cost'),cod_sum=Sum('shipping_cost'),return_sum=Sum('return_cost'))
+
 	b2b_stats=[]
 	for key, values in groupby(week_products_b2b, key=lambda row: row['order__book_time'].date()):
 	    print('-')
@@ -89,7 +94,7 @@ def index(request):
 	product_groupedby_business=Product.objects.filter(order=today_orders_b2b).exclude(shipping_cost__isnull=True).values('order__business').annotate(total_revenue=Sum('shipping_cost', field="shipping_cost+cod_cost"), total_no=Count('order'))
 
 
-	context = {'product_groupedby_business':product_groupedby_business,'average_b2c':average_b2c,'sum_b2c':sum_b2c,'count_b2c':count_b2c,'average_b2b':average_b2b,'sum_b2b':sum_b2b,'count_b2b':count_b2b,'b2c_stats':b2c_stats,'b2b_stats':b2b_stats,'action_b2b':action_b2b,'action_b2c':action_b2c}
+	context = {'product_groupedby_business':product_groupedby_business,'average_b2c':average_b2c,'sum_b2c':sum_b2c,'count_b2c':count_b2c,'average_b2b':average_b2b,'sum_b2b':sum_b2b,'count_b2b':count_b2b,'b2c_stats':b2c_stats,'b2b_stats':b2b_stats,'action_b2b':action_b2b,'action_b2c':action_b2c,'product':product}
 	return render(request, 'polls/index.html', context)
 
 	

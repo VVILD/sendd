@@ -75,21 +75,26 @@ th, td {
 <table style="width:100%">
   <tr>
     <td><b>Date<b></td>
-    <td><b># orders</b></td>		
+    <td><b># orders</b></td>        
+    <td><b>shipping_cost</b></td>        
+    <td><b>cod_cost</b></td>        
+    <td><b>return_cost</b></td>        
     <td><b>Revenue</b></td>
-    <td><b>Ticket_size</b></td>
   </tr>
 
 
 
-{% if b2b_stats %}
+{% if product %}
     
-    {% for stat in b2b_stats %}
+    {% for x in product %}
     	<tr>
-        {% for s in stat %}
-        	<td>{{ s }}</td>
-    	{% endfor %}
-
+        <td>{{x.day}}</td>
+        <td>{{x.count}}</td>
+<td>{{x.shipping_sum}}</td>
+<td>{{x.cod_sum}}</td>
+<td>{{x.return_sum}}</td>
+<td>{{x.cod_sum|add:x.shipping_sum|add:x.return_sum}}</td>
+<td>{{x.cod_sum|add:x.shipping_sum|add:x.return_sum}}</td>
     	</tr>
         	
     {% endfor %}
