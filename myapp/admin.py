@@ -98,59 +98,59 @@ class OrderAdmin(admin.ModelAdmin):
 	)
 	'''  # passing variables to change_list view
 
-    def changelist_view(self, request, extra_context=None):
-        extra_context = extra_context or {}
+    # def changelist_view(self, request, extra_context=None):
+    #     extra_context = extra_context or {}
         
-        cs=False
-        op=False
-        try:
-            print "jkjkjkjkjkjkjkjkjkjk"
-            print "see"
-            profile=Profile.objects.get(user=request.user)
-            usertype=profile.usertype
-            if (usertype=='C'):
-                print "jkjkjkjkjkjkjkjkjkjk"
-                cs=True
-            if (usertype=='O'):
-                op=True
-        except:
-            pass
+    #     cs=False
+    #     op=False
+    #     try:
+    #         print "jkjkjkjkjkjkjkjkjkjk"
+    #         print "see"
+    #         profile=Profile.objects.get(user=request.user)
+    #         usertype=profile.usertype
+    #         if (usertype=='C'):
+    #             print "jkjkjkjkjkjkjkjkjkjk"
+    #             cs=True
+    #         if (usertype=='O'):
+    #             op=True
+    #     except:
+    #         pass
 
-        todays_date = date.today()
+    #     todays_date = date.today()
 
-        today_min = datetime.datetime.combine(todays_date, datetime.time.min)
-        today_max = datetime.datetime.combine(todays_date, datetime.time.max)
+    #     today_min = datetime.datetime.combine(todays_date, datetime.time.min)
+    #     today_max = datetime.datetime.combine(todays_date, datetime.time.max)
 
-        o = Order.objects.filter(order_status='O').count()
-        a = Order.objects.filter(order_status='A').count()
-        p = Order.objects.filter(order_status='P').count()
-        pa = Order.objects.filter(order_status='AP').count()
-        c = Order.objects.filter(order_status='DI').count()
-        acs= Order.objects.filter().exclude(order_status='O').exclude(order_status='N').count()
-        todays_date = date.today()
-        # week_before=date.today()-datetime.timedelta(days=7)
+    #     o = Order.objects.filter(order_status='O').count()
+    #     a = Order.objects.filter(order_status='A').count()
+    #     p = Order.objects.filter(order_status='P').count()
+    #     pa = Order.objects.filter(order_status='AP').count()
+    #     c = Order.objects.filter(order_status='DI').count()
+    #     acs= Order.objects.filter().exclude(order_status='O').exclude(order_status='N').count()
+    #     todays_date = date.today()
+    #     # week_before=date.today()-datetime.timedelta(days=7)
 
-        # today min/max
-        today_min = datetime.datetime.combine(todays_date, datetime.time.min)
-        today_max = datetime.datetime.combine(todays_date, datetime.time.max)
+    #     # today min/max
+    #     today_min = datetime.datetime.combine(todays_date, datetime.time.min)
+    #     today_max = datetime.datetime.combine(todays_date, datetime.time.max)
 
-        #week min/max
-        #	date_min = datetime.datetime.combine(week_before, datetime.time.min)
-        #	date_max = datetime.datetime.combine(datetime.date.today(), datetime.time.max)
+    #     #week min/max
+    #     #	date_min = datetime.datetime.combine(week_before, datetime.time.min)
+    #     #	date_max = datetime.datetime.combine(datetime.date.today(), datetime.time.max)
 
-        #customer stats today
+    #     #customer stats today
 
-        today_orders = Order.objects.filter(Q(book_time__range=(today_min, today_max)))
-        today_shipments_correct = Shipment.objects.filter(order=today_orders).exclude(price__isnull=True).exclude(
-            price__exact='')
-        today_shipments = Shipment.objects.filter(order=today_orders)
-        average_b2c = today_shipments_correct.aggregate(Avg('price'))['price__avg']
-        sum_b2c = today_shipments_correct.aggregate(Sum('price'))['price__sum']
-        count_b2c = today_shipments.count()
-        action_b2c = today_shipments.count() - today_shipments_correct.count()
+    #     today_orders = Order.objects.filter(Q(book_time__range=(today_min, today_max)))
+    #     today_shipments_correct = Shipment.objects.filter(order=today_orders).exclude(price__isnull=True).exclude(
+    #         price__exact='')
+    #     today_shipments = Shipment.objects.filter(order=today_orders)
+    #     average_b2c = today_shipments_correct.aggregate(Avg('price'))['price__avg']
+    #     sum_b2c = today_shipments_correct.aggregate(Sum('price'))['price__sum']
+    #     count_b2c = today_shipments.count()
+    #     action_b2c = today_shipments.count() - today_shipments_correct.count()
 
-        context = {'o': o, 'a': a, 'p': p, 'c': c, 'pa': pa, 'count_b2c': count_b2c, 'sum_b2c': sum_b2c,'cs':cs,'op':op,'acs':acs}
-        return super(OrderAdmin, self).changelist_view(request, extra_context=context)
+    #     context = {'o': o, 'a': a, 'p': p, 'c': c, 'pa': pa, 'count_b2c': count_b2c, 'sum_b2c': sum_b2c,'cs':cs,'op':op,'acs':acs}
+    #     return super(OrderAdmin, self).changelist_view(request, extra_context=context)
 
 
     def get_fieldsets(self, request, obj=None):
