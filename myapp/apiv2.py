@@ -2336,7 +2336,10 @@ class PromocheckResource2(MultipartResource, ModelResource):
 
         try:
             promocode = Promocode.objects.get(pk=bundle.data['code'])
-            if promocode.is_active and (datetime.now() < promocode.expiry):
+            go = False
+            if not promocode.expiry:
+                go = True
+            if promocode.is_active and ((datetime.now() < promocode.expiry) or go):
                 if (promocode.only_for_first == 'Y'):
                     shipment = Shipment.objects.filter(order__user__phone=bundle.data['phone'], order__way='A')
                     if (shipment.count() == 0):
