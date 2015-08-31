@@ -18,7 +18,7 @@ from itertools import groupby
 
 def index(request):
 	todays_date=date.today()
-	week_before=date.today()-datetime.timedelta(days=5)
+	week_before=date.today()-datetime.timedelta(days=62)
 
 # today min/max
 	today_min = datetime.datetime.combine(todays_date, datetime.time.min)
