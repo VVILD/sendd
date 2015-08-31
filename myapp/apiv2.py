@@ -2337,7 +2337,7 @@ class PromocheckResource2(MultipartResource, ModelResource):
         try:
             promocode = Promocode.objects.get(pk=bundle.data['code'])
             go = False
-            if not promocode.expiry:
+            if promocode.expiry is None:
                 go = True
             if promocode.is_active and ((datetime.now() < promocode.expiry) or go):
                 if (promocode.only_for_first == 'Y'):
