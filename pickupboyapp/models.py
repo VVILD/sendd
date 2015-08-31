@@ -1,5 +1,6 @@
 from django.core.validators import RegexValidator
 from django.db import models
+from core.models import Warehouse
 
 __author__ = 'vatsalshah'
 
@@ -25,6 +26,7 @@ class PBUser(models.Model):
     status = models.CharField(max_length=1,
                               choices=(('A', 'Active'), ('T', 'Terminated'), ('V', 'Vacation'), ('S', 'Sabbatical')),
                               default='A')
+    warehouse = models.ForeignKey(Warehouse, null=True, blank=True)
 
     def __unicode__(self):
         return str(self.name)
