@@ -607,7 +607,7 @@ class OrderAdmin(FilterUserAdmin):
     search_fields = ['business__business_name', 'name', 'product__real_tracking_no', 'product__barcode','city','state','product__mapped_tracking_no']
     list_display = (
         'order_no', 'book_time', 'business_details', 'name', 'status', 'fedex_check','mapped_ok', 'no_of_products', 'total_shipping_cost',
-        'total_cod_cost', 'shipping_method',)
+        'total_cod_cost', 'method',)
     list_editable = ('status',)
     list_filter = ['business', 'status', 'book_time']
     actions = [make_pending, make_complete, make_cancelled, make_transit,export_as_csv_action("CSV Export", fields=['name','product__real_tracking_no'])]
@@ -788,7 +788,7 @@ class QcProductAdmin(ProductAdmin):
         return self.model.objects.filter(order__status='DI')
     list_display = (
         'real_tracking_no', 'tracking_status' ,'update_time','barcode','get_method','get_business')
-    list_filter = ['order__shipping_method','order__business']
+    list_filter = ['order__method','order__business']
     list_editable = ()
 # readonly_fields = ('order__method','drop_phone', 'drop_name', 'status', 'address','barcode','tracking_data','real_tracking_no','name','weight','cost_of_courier','price')
     search_fields = ['order__order_no', 'real_tracking_no', 'mapped_tracking_no', 'drop_phone', 'drop_name']

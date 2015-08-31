@@ -157,7 +157,7 @@ class Order(models.Model):
         ('P', 'pending'), ('C', 'complete'), ('N', 'cancelled'), ('D', 'in transit'), ('PU', 'pickedup'),
         ('RC', 'return/completed'), ('R', 'return'), ('DI', 'dispatched')), default='P')
 
-    shipping_method = models.CharField(max_length=1,
+    method = models.CharField(max_length=1,
                               choices=(('B', 'Bulk'), ('N', 'Normal'),),
                               blank=True, null=True)
     business = models.ForeignKey(Business)
@@ -407,7 +407,7 @@ def send_update(sender, instance, created, **kwargs):
         print "see order here"
         print instance.order
         print "see order here"
-        method = instance.order.shipping_method
+        method = instance.order.method
 
         if (instance.order.payment_method == 'C'):
             cod_price1 = (1.5 / 100) * instance.price
@@ -592,7 +592,7 @@ def send_update_order(sender, instance, created, **kwargs):
         print product.applied_weight
 
         if product.applied_weight:
-            method = instance.shipping_method
+            method = instance.method
 
             if (instance.payment_method == 'C'):
                 cod_price1 = (1.5 / 100) * product.price
