@@ -245,7 +245,7 @@ class AllotedBusinessAdmin(OPBusinessAdmin):
         return self.model.objects.filter(status='A')
 
 
-admin.site.register(AllotedBusinessAdminBusiness, AllotedBusinessAdmin)
+admin.site.register(AllotedBusiness, AllotedBusinessAdmin)
 
 
 from django.contrib.auth.admin import UserAdmin
