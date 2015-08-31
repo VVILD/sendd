@@ -239,6 +239,15 @@ class ApprovedBusinessOPAdmin(OPBusinessAdmin):
 admin.site.register(ApprovedBusinessOP, ApprovedBusinessOPAdmin)
 
 
+class AllotedBusinessAdmin(OPBusinessAdmin):
+    
+    def queryset(self, request):
+        return self.model.objects.filter(status='A')
+
+
+admin.site.register(AllotedBusinessAdminBusiness, AllotedBusinessAdmin)
+
+
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import User
 
