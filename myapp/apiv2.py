@@ -2336,19 +2336,22 @@ class PromocheckResource2(MultipartResource, ModelResource):
 
         try:
             promocode = Promocode.objects.get(pk=bundle.data['code'])
-
-            if (promocode.only_for_first == 'Y'):
-                shipment = Shipment.objects.filter(order__user__phone=bundle.data['phone'], order__way='A')
-                if (shipment.count() == 0):
-                    # everything good
+            if promocode.is_active and (datetime.now() < promocode.expiry):
+                if (promocode.only_for_first == 'Y'):
+                    shipment = Shipment.objects.filter(order__user__phone=bundle.data['phone'], order__way='A')
+                    if (shipment.count() == 0):
+                        # everything good
+                        bundle.data['promomsg'] = promocode.msg
+                        bundle.data['valid'] = 'Y'
+                    else:
+                        bundle.data['promomsg'] = "You are not a first time user"
+                        bundle.data['valid'] = 'N'
+                else:
                     bundle.data['promomsg'] = promocode.msg
                     bundle.data['valid'] = 'Y'
-                else:
-                    bundle.data['promomsg'] = "You are not a first time user"
-                    bundle.data['valid'] = 'N'
             else:
-                bundle.data['promomsg'] = promocode.msg
-                bundle.data['valid'] = 'Y'
+                bundle.data['promomsg'] = "This promo code has expired"
+                bundle.data['valid'] = 'N'
         except:
             bundle.data['promomsg'] = "Wrong promo code"
             bundle.data['valid'] = 'N'
