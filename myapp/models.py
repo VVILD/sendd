@@ -140,9 +140,10 @@ class Order(models.Model):
             
             phone=self.pb.phone
             user_phone=self.user.phone
+            order_no= self.pk
             msg0 = "http://enterprise.smsgupshup.com/GatewayAPI/rest?method=SendMessage&send_to="
             msga = str(phone)
-            msg1 = "&msg=Pickup+details+for+order+no%3A"+str(self.namemail.name)+".%0D%0AName%3A123%2C+Address%3A"+str(address)+"%2C+Mobile+No%3A"+str(user_phone)+"&msg_type=TEXT&userid=2000142364&auth_scheme=plain&password=h0s6jgB4N&format=text"
+            msg1 = "&msg=Pickup+details+for+order+no%3A"+str(order_no)+".%0D%0AName%3A"+str(self.namemail.name)+"%2C+Address%3A"+str(address)+"%2C+Mobile+No%3A"+str(user_phone)+"&msg_type=TEXT&userid=2000142364&auth_scheme=plain&password=h0s6jgB4N&format=text"
             query = ''.join([msg0, msga, msg1])
             print query
             req = requests.get(query)
