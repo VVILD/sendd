@@ -72,6 +72,8 @@ class Promocode(models.Model):
     one_time = models.CharField(max_length=1, choices=(('Y', 'yes'), ('N', 'no'),), blank=True, null=True )
     promocode_type = models.CharField(max_length=1, choices=(('P', 'percentage'), ('S', 'sum'),), blank=True, null=True)
     promocode_amount = models.FloatField(default=0.0)
+    is_active = models.BooleanField(default=False)
+    expiry = models.DateTimeField(blank=True, null=True)
 
     def __unicode__(self):
         return str(self.code)
