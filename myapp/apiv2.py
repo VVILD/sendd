@@ -1,3 +1,5 @@
+import traceback
+import sys
 from tastypie.resources import ModelResource
 from django.conf.urls import url
 from myapp.mail.bookingConfirmationMail import SendConfirmationMail
@@ -2336,10 +2338,13 @@ class PromocheckResource2(MultipartResource, ModelResource):
 
         try:
             promocode = Promocode.objects.get(pk=bundle.data['code'])
-            go = False
-            if promocode.expiry is None:
-                go = True
-            if promocode.is_active and ((datetime.now() < promocode.expiry) or go):
+            if promocode.is_active:
+                if promocode.expiry is not None:
+                    if datetime.now() > promocode.expiry:
+                        bundle.data['promomsg'] = "This promo code has expired"
+                        bundle.data['valid'] = 'N'
+                        return bundle
+
                 if (promocode.only_for_first == 'Y'):
                     shipment = Shipment.objects.filter(order__user__phone=bundle.data['phone'], order__way='A')
                     if (shipment.count() == 0):
@@ -2355,7 +2360,10 @@ class PromocheckResource2(MultipartResource, ModelResource):
             else:
                 bundle.data['promomsg'] = "This promo code has expired"
                 bundle.data['valid'] = 'N'
-        except:
+        except Exception, err:
+            print(traceback.format_exc())
+            #or
+            print(sys.exc_info()[0])
             bundle.data['promomsg'] = "Wrong promo code"
             bundle.data['valid'] = 'N'
         return bundle
