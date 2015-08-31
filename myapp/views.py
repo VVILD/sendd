@@ -71,7 +71,7 @@ def index(request):
 	
 	week_products_b2b=Product.objects.filter(order=week_orders_b2b).values('order__book_time','shipping_cost','cod_cost').exclude(shipping_cost__isnull=True)
 
-	product=Product.objects.extra(select={'day': 'date( date)'}).values('day').annotate(count=Count('pk'),shipping_sum=Sum('shipping_cost'),cod_sum=Sum('shipping_cost'),return_sum=Sum('return_cost'))
+	product=Product.objects.extra(select={'day': 'date( date)'}).values('day').annotate(count=Count('pk'),shipping_sum=Sum('shipping_cost'),cod_sum=Sum('cod_cost'),return_sum=Sum('return_cost'))
 
 	b2b_stats=[]
 	for key, values in groupby(week_products_b2b, key=lambda row: row['order__book_time'].date()):
