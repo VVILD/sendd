@@ -127,7 +127,7 @@ class Order(models.Model):
     pincode = models.CharField(max_length=30, null=True, blank=True)
     flat_no = models.CharField(max_length=100, null=True, blank=True)
     #picked_up=models.BooleanField(default=False
-    status_code=models.CharField(max_length=100, null=True, blank=True)
+    #status_code=models.CharField(max_length=100, null=True, blank=True)
     book_time = models.DateTimeField(null=True, blank=True)
     warehouse = models.ForeignKey(Warehouse, null=True, blank=True, related_name="myapp_orders")
 
@@ -150,7 +150,8 @@ class Order(models.Model):
             query = ''.join([msg0, msga, msg1])
             print query
             req = requests.get(query)
-            self.status_code=req.status_code
+            print "status_code here"
+            print req.status_code
 
         ''' On save, update timestamps '''
         z = timezone('Asia/Kolkata')
