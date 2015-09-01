@@ -120,7 +120,8 @@ class BaseBusinessAdmin(admin.ModelAdmin):
                 op=True
         except:
             pass
-
+        a = Business.objects.filter(status='A').count()
+        
         nap = Business.objects.filter(status='N').count()
         ap = Business.objects.filter(status='Y').count()
         d = Business.objects.filter(daily=True).count()
@@ -132,7 +133,7 @@ class BaseBusinessAdmin(admin.ModelAdmin):
         di= Order.objects.filter(status='DI').count()
 
 
-        context = {'cs':cs,'op':op,'nap':nap,'ap':ap,'d':d,'c':c,'p':p,'pu':pu,'di':di}
+        context = {'cs':cs,'op':op,'nap':nap,'ap':ap,'d':d,'c':c,'p':p,'pu':pu,'di':di,'a':a}
         return super(BaseBusinessAdmin, self).changelist_view(request, extra_context=context)
 
 

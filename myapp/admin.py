@@ -182,7 +182,7 @@ class OrderAdmin(admin.ModelAdmin):
             #)
             self.form = OrderEditForm
 
-            self.fields = ['pincode', 'flat_no', 'address']
+            self.fields = ['pincode', 'flat_no', 'address','status_code']
         else:  # obj is None, so this is an add page
             # kwargs['fields'] = ['id', 'family_name', 'status']
             #self.fields = ['id', 'family_name', 'status']
