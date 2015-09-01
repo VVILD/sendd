@@ -16,6 +16,7 @@ import urllib2
 
 import requests
 
+import urllib
 
 
 
@@ -140,10 +141,10 @@ class Order(models.Model):
             self.order_status='A'
             address= str(self.flat_no) + str(self.address) +str(self.pincode)  
             
-            phone=self.pb.phone
-            user_phone=self.user.phone
-            order_no= self.pk
-            name=str(self.namemail.name)
+            phone=urllib.quote_plus(str(self.pb.phone))
+            user_phone=urllib.quote_plus(str(self.user.phone))
+            order_no=urllib.quote_plus(str(self.pk))
+            name=urllib.quote_plus(str(self.namemail.name))
             msg0 = "http://enterprise.smsgupshup.com/GatewayAPI/rest?method=SendMessage&send_to="
             msga = str(phone)
             msg1 = "&msg=Pickup+details+for+order+no%3A"+str(order_no)+".%0D%0AName%3A"+str(name)+"%2C+Address%3A"+str(address)+"%2C+Mobile+No%3A"+str(user_phone)+"&msg_type=TEXT&userid=2000142364&auth_scheme=plain&password=h0s6jgB4N&format=text"
