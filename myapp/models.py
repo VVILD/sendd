@@ -16,6 +16,7 @@ import urllib2
 
 import requests
 
+import urllib
 
 
 
@@ -127,7 +128,7 @@ class Order(models.Model):
     pincode = models.CharField(max_length=30, null=True, blank=True)
     flat_no = models.CharField(max_length=100, null=True, blank=True)
     #picked_up=models.BooleanField(default=False
-
+    #status_code=models.CharField(max_length=100, null=True, blank=True)
     book_time = models.DateTimeField(null=True, blank=True)
     warehouse = models.ForeignKey(Warehouse, null=True, blank=True, related_name="myapp_orders")
 
@@ -140,16 +141,18 @@ class Order(models.Model):
             self.order_status='A'
             address= str(self.flat_no) + str(self.address) +str(self.pincode)  
             
-            phone=self.pb.phone
-            user_phone=self.user.phone
-            order_no= self.pk
+            phone=urllib.quote_plus(str(self.pb.phone))
+            user_phone=urllib.quote_plus(str(self.user.phone))
+            order_no=urllib.quote_plus(str(self.pk))
+            name=urllib.quote_plus(str(self.namemail.name))
             msg0 = "http://enterprise.smsgupshup.com/GatewayAPI/rest?method=SendMessage&send_to="
             msga = str(phone)
-            msg1 = "&msg=Pickup+details+for+order+no%3A"+str(order_no)+".%0D%0AName%3A"+str(self.namemail.name)+"%2C+Address%3A"+str(address)+"%2C+Mobile+No%3A"+str(user_phone)+"&msg_type=TEXT&userid=2000142364&auth_scheme=plain&password=h0s6jgB4N&format=text"
+            msg1 = "&msg=Pickup+details+for+order+no%3A"+str(order_no)+".%0D%0AName%3A"+str(name)+"%2C+Address%3A"+str(address)+"%2C+Mobile+No%3A"+str(user_phone)+"&msg_type=TEXT&userid=2000142364&auth_scheme=plain&password=h0s6jgB4N&format=text"
             query = ''.join([msg0, msga, msg1])
             print query
             req = requests.get(query)
-                    
+            print "status_code here"
+            print req.status_code
 
         ''' On save, update timestamps '''
         z = timezone('Asia/Kolkata')
