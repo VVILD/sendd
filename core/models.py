@@ -46,25 +46,25 @@ class Warehouse(models.Model):
         return str(self.name)
 
     def save(self, *args, **kwargs):
-        if not self.pk:
-            geolocator = googlev3.GoogleV3(api_key="AIzaSyBEfEgATQeVkoKUnaB4O9rIdX2K2Bsh63o")
-            location = geolocator.geocode("{}, India".format(self.pincode))
-            self.lat, self.long = location.latitude, location.longitude
-            super(Warehouse, self).save(*args, **kwargs)
 
-            pincodes = Pincode.objects.filter(region_name=self.city).exclude(latitude__isnull=True)
-            warehouses = Warehouse.objects.filter(city=self.city)
+        geolocator = googlev3.GoogleV3(api_key="AIzaSyBEfEgATQeVkoKUnaB4O9rIdX2K2Bsh63o")
+        location = geolocator.geocode("{}, India".format(self.pincode))
+        self.lat, self.long = location.latitude, location.longitude
+        super(Warehouse, self).save(*args, **kwargs)
 
-            for pincode in pincodes:
-                closest_warehouse = None
-                min_dist = 9999.9999
-                for warehouse in warehouses:
-                    distance = vincenty((pincode.latitude, pincode.longitude), (warehouse.lat, warehouse.long)).kilometers
-                    if distance < min_dist:
-                        min_dist = distance
-                        closest_warehouse = warehouse
-                pincode.warehouse = closest_warehouse
-                pincode.save()
+        pincodes = Pincode.objects.filter(region_name=self.city).exclude(latitude__isnull=True)
+        warehouses = Warehouse.objects.filter(city=self.city)
+
+        for pincode in pincodes:
+            closest_warehouse = None
+            min_dist = 9999.9999
+            for warehouse in warehouses:
+                distance = vincenty((pincode.latitude, pincode.longitude), (warehouse.lat, warehouse.long)).kilometers
+                if distance < min_dist:
+                    min_dist = distance
+                    closest_warehouse = warehouse
+            pincode.warehouse = closest_warehouse
+            pincode.save()
         super(Warehouse, self).save(*args, **kwargs)
 
 
