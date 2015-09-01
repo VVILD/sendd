@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 from pytz import timezone
 from push_notifications.models import GCMDevice
 from core.fedex.base_service import FedexError
-from core.models import Warehouse
+from core.models import Warehouse, Pincode
 from core.utils import state_matcher
 from core.utils.fedex_api_helper import Fedex
 from pickupboyapp.models import PBUser
@@ -157,6 +157,9 @@ class Order(models.Model):
         ind_time = datetime.now(z)
         if not self.pk:
             self.book_time = ind_time.strftime(fmt)
+        if not self.warehouse:
+            pincode = Pincode.objects.filter(pincode=self.pincode).exclude(latitude__isnull=True)
+            self.warehouse = pincode[0].warehouse
         super(Order, self).save(*args, **kwargs)
 
 

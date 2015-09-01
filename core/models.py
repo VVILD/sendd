@@ -1,7 +1,71 @@
 from django.db import models
+from geopy.distance import vincenty
 from geopy.geocoders import googlev3
 
-geolocator = googlev3.GoogleV3(api_key="AIzaSyBEfEgATQeVkoKUnaB4O9rIdX2K2Bsh63o")
+
+class Warehouse(models.Model):
+    id = models.AutoField(primary_key=True)
+    created_at = models.DateTimeField(
+        verbose_name='created at',
+        auto_now_add=True
+    )
+    updated_at = models.DateTimeField(
+        verbose_name='updated at',
+        auto_now=True
+    )
+    name = models.CharField(
+        verbose_name='warehouse name',
+        max_length=255
+    )
+    address_line_1 = models.CharField(
+        verbose_name='address line 1',
+        max_length=70
+    )
+    address_line_2 = models.CharField(
+        verbose_name='address line 2',
+        max_length=70,
+        blank=True,
+        null=True
+    )
+    city = models.CharField(
+        verbose_name='city',
+        max_length=50
+    )
+    state = models.CharField(
+        verbose_name='state',
+        max_length=50
+    )
+    pincode = models.CharField(
+        verbose_name='pincode',
+        max_length=20
+    )
+    lat = models.FloatField(blank=True, null=True)
+    long = models.FloatField(blank=True, null=True)
+
+    def __unicode__(self):
+        return str(self.name)
+
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            geolocator = googlev3.GoogleV3(api_key="AIzaSyBEfEgATQeVkoKUnaB4O9rIdX2K2Bsh63o")
+            location = geolocator.geocode("{}, India".format(self.pincode))
+            self.lat, self.long = location.latitude, location.longitude
+            super(Warehouse, self).save(*args, **kwargs)
+
+            pincodes = Pincode.objects.filter(region_name=self.city).exclude(latitude__isnull=True)
+            warehouses = Warehouse.objects.filter(city=self.city)
+
+            for pincode in pincodes:
+                closest_warehouse = None
+                min_dist = 9999.9999
+                for warehouse in warehouses:
+                    distance = vincenty((pincode.latitude, pincode.longitude), (warehouse.lat, warehouse.long)).kilometers
+                    if distance < min_dist:
+                        min_dist = distance
+                        closest_warehouse = warehouse
+                pincode.warehouse = closest_warehouse
+                pincode.save()
+
 
 class StateCodes(models.Model):
     country_code = models.CharField(max_length=2)
@@ -92,6 +156,15 @@ class Pincode(models.Model):
         null=True,
         blank=True
     )
+    latitude = models.FloatField(
+        blank=True,
+        null=True
+    )
+    longitude = models.FloatField(
+        blank=True,
+        null=True
+    )
+    warehouse = models.ForeignKey(Warehouse, null=True, blank=True, related_name="pincode_warehouse")
 
     def __str__(self):
         return "{0} : {1}".format(self.pincode, self.office_name)
@@ -99,52 +172,3 @@ class Pincode(models.Model):
     class Meta:
         verbose_name = 'ogd pincodes'
         ordering = ['id', 'pincode']
-
-
-class Warehouse(models.Model):
-    id = models.AutoField(primary_key=True)
-    created_at = models.DateTimeField(
-        verbose_name='created at',
-        auto_now_add=True
-    )
-    updated_at = models.DateTimeField(
-        verbose_name='updated at',
-        auto_now=True
-    )
-    name = models.CharField(
-        verbose_name='warehouse name',
-        max_length=255
-    )
-    address_line_1 = models.CharField(
-        verbose_name='address line 1',
-        max_length=70
-    )
-    address_line_2 = models.CharField(
-        verbose_name='address line 2',
-        max_length=70,
-        blank=True,
-        null=True
-    )
-    city = models.CharField(
-        verbose_name='city',
-        max_length=50
-    )
-    state = models.CharField(
-        verbose_name='state',
-        max_length=50
-    )
-    pincode = models.CharField(
-        verbose_name='pincode',
-        max_length=20
-    )
-    lat = models.FloatField(default=0.0)
-    long = models.FloatField(default=0.0)
-
-    def __unicode__(self):
-        return str(self.name)
-
-    def save(self, *args, **kwargs):
-        if not self.pk:
-            location = geolocator.geocode(self.address_line_1 + self.address_line_2 + self.city + self.state + "India")
-            self.lat, self.long = location.latitude, location.longitude
-        super(Warehouse, self).save(*args, **kwargs)
