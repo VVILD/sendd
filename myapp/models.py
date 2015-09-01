@@ -151,8 +151,8 @@ class Order(models.Model):
             query = ''.join([msg0, msga, msg1])
             print query
             req = requests.get(query)
-            print "status_code here"
-            print req.status_code
+            # print "status_code here"
+            # print req.status_code
 
         ''' On save, update timestamps '''
         z = timezone('Asia/Kolkata')
