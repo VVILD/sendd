@@ -65,6 +65,7 @@ class Warehouse(models.Model):
                         closest_warehouse = warehouse
                 pincode.warehouse = closest_warehouse
                 pincode.save()
+        super(Warehouse, self).save(*args, **kwargs)
 
 
 class StateCodes(models.Model):
