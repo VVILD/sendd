@@ -85,7 +85,7 @@ class OrderAdmin(admin.ModelAdmin):
     list_display = (
         'order_no', 'book_time', 'promocode', 'date', 'time', 'full_address', 'name_email', 'order_status', 'fedex_check', 'way',
         'pb', 'comment', 'shipments', 'send_invoice', 'warehouse')
-    list_editable = ('date', 'time', 'order_status', 'pb', 'comment',)
+    list_editable = ('date', 'time', 'order_status', 'pb', 'comment', 'warehouse')
     list_filter = ['book_time', 'status', 'pb','order_status', 'warehouse']
     raw_id_fields = ('pb', 'warehouse', )
     readonly_fields = ('code', 'send_invoice',)
