@@ -84,7 +84,7 @@ class Business(models.Model):
         #print "jkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkj"
         if not self.apikey:
             self.apikey = hashlib.sha1(str(random.getrandbits(256))).hexdigest()
-        if not self.warehouse:
+        if self.pincode:
             pincode = Pincode.objects.filter(pincode=self.pincode).exclude(latitude__isnull=True)
             self.warehouse = pincode[0].warehouse
         super(Business, self).save(*args, **kwargs)
