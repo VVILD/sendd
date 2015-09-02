@@ -2,10 +2,12 @@ import urllib
 import json
 
 
+from random import randint
 
+
+
+import datetime
 from datetime import date
-
-
 from django.contrib import admin
 from .models import *
 
@@ -124,6 +126,7 @@ class BaseBusinessAdmin(admin.ModelAdmin):
         
         nap = Business.objects.filter(status='N').count()
         ap = Business.objects.filter(status='Y').count()
+        apcs=Business.objects.filter().exclude(status='N').count()
         d = Business.objects.filter(daily=True).count()
         c = Business.objects.filter(status='C').count()
         #pa = Business.objects.filter(order_status='AP').count()
@@ -133,7 +136,7 @@ class BaseBusinessAdmin(admin.ModelAdmin):
         di= Order.objects.filter(status='DI').count()
 
 
-        context = {'cs':cs,'op':op,'nap':nap,'ap':ap,'d':d,'c':c,'p':p,'pu':pu,'di':di,'a':a}
+        context = {'cs':cs,'op':op,'nap':nap,'ap':ap,'d':d,'c':c,'p':p,'pu':pu,'di':di,'a':a,'apcs':apcs}
         return super(BaseBusinessAdmin, self).changelist_view(request, extra_context=context)
 
 
@@ -141,7 +144,7 @@ class BaseBusinessAdmin(admin.ModelAdmin):
 class BusinessAdmin(BaseBusinessAdmin):
     # search_fields=['name']
     search_fields=['username','business_name']
-    list_display = ('username', 'business_name', 'pickup_time', 'warehouse', 'pb', 'assigned_pickup_time','status', 'pending_orders','pickedup_orders','daily','comment')
+    list_display = ('username','business_name', 'pickup_time', 'warehouse', 'pb', 'assigned_pickup_time','status', 'pending_orders', 'pending_orders_today','pickedup_orders','daily','comment')
     list_editable = ('pb', 'assigned_pickup_time','daily','comment')
     raw_id_fields = ('pb', 'warehouse')
     list_filter = ['username', 'daily','pb', 'warehouse']
@@ -167,6 +170,8 @@ class BusinessAdmin(BaseBusinessAdmin):
 
     def pending_orders_today(self, obj):
         todays_date=date.today()
+        
+        import datetime
         date_max = datetime.datetime.combine(todays_date, datetime.time.max)
         date_min = datetime.datetime.combine(todays_date, datetime.time.min)
         po_count = Order.objects.filter(book_time__range=(date_min,date_max),status='P', business__username=obj.username).count()
@@ -177,7 +182,7 @@ class BusinessAdmin(BaseBusinessAdmin):
 class CSBusinessAdmin(BusinessAdmin):
     # search_fields=['name']
     search_fields=['username','business_name']
-    list_display = ('username', 'business_name', 'pickup_time','pb','assigned_pickup_time','status', 'pending_orders','pickedup_orders','daily','comment')
+    list_display = ('username', 'business_name', 'pickup_time','pb','assigned_pickup_time','status','pending_orders_today', 'pending_orders','pickedup_orders','daily','comment')
     list_editable = ('assigned_pickup_time','comment')
     list_filter = ['username', 'daily','pb']
 
@@ -185,7 +190,7 @@ class CSBusinessAdmin(BusinessAdmin):
 class OPBusinessAdmin(BusinessAdmin):
     # search_fields=['name']
     search_fields=['username','business_name']
-    list_display = ('username', 'business_name', 'pickup_time', 'pb', 'assigned_pickup_time','status', 'pending_orders','pickedup_orders','daily','comment')
+    list_display = ('username', 'business_name', 'pickup_time', 'pb', 'assigned_pickup_time','status','pending_orders_today', 'pending_orders','pickedup_orders','daily','comment')
     list_editable = ('pb',)
     raw_id_fields = ('pb',)
     list_filter = ['username', 'daily','pb']
@@ -196,12 +201,16 @@ class NotApprovedBusinessAdmin(CSBusinessAdmin):
         queryset.update(status='Y')
 
 
+
     make_approved.short_description = "approved"
+
 
     actions = [make_approved]
 
+
     def queryset(self, request):
         return self.model.objects.filter(status='N')
+
 
 
 admin.site.register(NotApprovedBusiness, NotApprovedBusinessAdmin)
@@ -210,7 +219,7 @@ admin.site.register(NotApprovedBusiness, NotApprovedBusinessAdmin)
 class ApprovedBusinessAdmin(CSBusinessAdmin):
     
     def queryset(self, request):
-        return self.model.objects.filter(status='Y')
+        return self.model.objects.filter().exclude(status='N')
 
 
 admin.site.register(ApprovedBusiness, ApprovedBusinessAdmin)

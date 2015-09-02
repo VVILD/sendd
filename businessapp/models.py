@@ -44,6 +44,12 @@ class Profile(models.Model):
 #     phone = models.CharField(max_length=50)
 from pickupboyapp.models import PBUser
 
+# class CustomBusinessManager(models.Manager):
+#     def get_query_set(self):
+#         return super(CustomerManager, self).get_query_set().annotate(models.Count('order'))
+
+from random import randint
+
 
 class Business(models.Model):
     # phone_regex = RegexValidator(regex=r'^[0-9]*$', message="Phone number must be entered in the format: '999999999'. Up to 12 digits allowed.")
@@ -74,14 +80,19 @@ class Business(models.Model):
 
     comment = models.TextField(null=True, blank=True)
     daily = models.BooleanField(default=False)
-    status = models.CharField(max_length=1, choices=(('Y', 'approved'), ('N', 'not approved'),('C', 'cancelled'),), null=True, blank=True,
+    status = models.CharField(max_length=1, choices=(('Y', 'approved'), ('N', 'not approved'),('C', 'cancelled'),('A', 'approved'),), null=True, blank=True,
     default='N')
     warehouse = models.ForeignKey(Warehouse, null=True, blank=True)
+
+
 
     def save(self, *args, **kwargs):
         #print self.tracking_no
         #print self.pk
         #print "jkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkj"
+        if self.pb and self.status=='Y':
+            self.status='A'
+
         if not self.apikey:
             self.apikey = hashlib.sha1(str(random.getrandbits(256))).hexdigest()
         if self.pincode:
