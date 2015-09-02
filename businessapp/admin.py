@@ -189,7 +189,7 @@ class CSBusinessAdmin(BusinessAdmin):
 
 class OPBusinessAdmin(BusinessAdmin):
     # search_fields=['name']
-    search_fields=['username','business_name']
+    search_fields=['username','business_name', 'order__product__real_tracking_no', 'order__product__barcode', 'order__product__mapped_tracking_no']
     list_display = ('username', 'business_name', 'warehouse', 'pickup_time', 'pb', 'assigned_pickup_time','status','pending_orders_today', 'pending_orders','pickedup_orders','daily','comment')
     list_editable = ('pb', 'warehouse')
     raw_id_fields = ('pb', 'warehouse')
