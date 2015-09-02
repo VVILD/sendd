@@ -1,6 +1,6 @@
 from django.conf.urls import patterns, include, url
 from django.contrib import admin
-from core.views import create_fedex_shipment
+from core.views import create_fedex_shipment, barcode_fedex_redirector
 from myapp.api import UserResource,AddressResource,OrderResource,ShipmentResource,XResource,LoginSessionResource,WeborderResource,PriceappResource,DateappResource,ForgotpassResource
 from tastypie.api import Api
 from django_project import settings
@@ -101,4 +101,5 @@ urlpatterns = patterns('',
     url(r'^pb_api/', include(pbv1_api.urls)),
     url(r'^pb_location/', pb_location_view, name='pb_location'),
     url(r'^create_fedex_shipment/', create_fedex_shipment, name='create_fedex'),
+    url(r'^barcode_fedex_print/(?P<barcode>[\w]{10})/$', barcode_fedex_redirector, name='fedex_barcode_redirector')
 )

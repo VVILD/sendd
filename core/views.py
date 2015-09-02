@@ -2,11 +2,12 @@ from PyPDF2 import PdfFileWriter, PdfFileReader
 import cStringIO
 from django.core.files.base import ContentFile
 from django.http import HttpResponseBadRequest
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 import base64
 from businessapp.models import Product
 from core.utils.fedex_api_helper import Fedex
 from myapp.models import Shipment
+from django.core.exceptions import ObjectDoesNotExist
 
 __author__ = 'vatsalshah'
 
@@ -26,7 +27,7 @@ def create_fedex_shipment(request):
     receiver_name = None
     receiver_phone = None
     receiver_company = None
-    receiver_address  = None
+    receiver_address = None
     receiver_city = None
     receiver_state = None
     receiver_pincode = None
@@ -42,7 +43,7 @@ def create_fedex_shipment(request):
     if client_type == 'business':
         product = Product.objects.get(pk=shipment_pk)
         # if product.fedex_outbound_label:
-        #     return HttpResponseBadRequest("Fedex Order already created")
+        # return HttpResponseBadRequest("Fedex Order already created")
         item_name = product.name
         item_weight = product.applied_weight
         # sender_name = product.order.business.name
@@ -71,12 +72,13 @@ def create_fedex_shipment(request):
         is_cod = False
         if product_type == 'C':
             is_cod = True
-        service_type, config = fedex.get_service_type(str(product.order.method), float(product.price), float(item_weight), receiver_city, is_cod)
+        service_type, config = fedex.get_service_type(str(product.order.method), float(product.price),
+                                                      float(item_weight), receiver_city, is_cod)
         item_price = product.price
     elif client_type == 'customer':
         shipment = Shipment.objects.get(pk=shipment_pk)
         # if shipment.fedex_outbound_label:
-        #     return HttpResponseBadRequest("Fedex Order already created")
+        # return HttpResponseBadRequest("Fedex Order already created")
         item_name = shipment.item_name
         item_weight = shipment.weight
         # sender_name = shipment.order.namemail.name
@@ -100,7 +102,8 @@ def create_fedex_shipment(request):
         receiver_pincode = shipment.drop_address.pincode
         receiver_country_code = 'IN'
         is_business_receiver = False
-        service_type, config = fedex.get_service_type(str(shipment.category), float(shipment.cost_of_courier), float(item_weight), receiver_city)
+        service_type, config = fedex.get_service_type(str(shipment.category), float(shipment.cost_of_courier),
+                                                      float(item_weight), receiver_city)
         item_price = shipment.cost_of_courier
 
     sender = {
@@ -143,7 +146,8 @@ def create_fedex_shipment(request):
             product.mapped_tracking_no = result['tracking_number']
             # product.actual_cost = result['shipping_cost']
             if is_cod:
-                product.fedex_cod_return_label.save(result['tracking_number']+'_COD.pdf', ContentFile(base64.b64decode(result['COD_RETURN_LABEL'])))
+                product.fedex_cod_return_label.save(result['tracking_number'] + '_COD.pdf',
+                                                    ContentFile(base64.b64decode(result['COD_RETURN_LABEL'])))
                 cod_return_label_url = str(product.fedex_cod_return_label.name).split('/')[-1]
             output = PdfFileWriter()
             f1 = ContentFile(base64.b64decode(result['OUTBOUND_LABEL']))
@@ -154,7 +158,8 @@ def create_fedex_shipment(request):
             output.addJS("this.print({bUI:true,bSilent:false,bShrinkToFit:true});")
             outputStream = cStringIO.StringIO()
             output.write(outputStream)
-            product.fedex_outbound_label.save(result['tracking_number']+'_OUT.pdf', ContentFile(outputStream.getvalue()))
+            product.fedex_outbound_label.save(result['tracking_number'] + '_OUT.pdf',
+                                              ContentFile(outputStream.getvalue()))
             outbound_label_url = str(product.fedex_outbound_label.name).split('/')[-1]
             if result["shipping_cost"]:
                 product.actual_shipping_cost = float(result["shipping_cost"])
@@ -165,7 +170,8 @@ def create_fedex_shipment(request):
             shipment.mapped_tracking_no = result['tracking_number']
             # shipment.actual_cost = result['shipping_cost']
             if is_cod:
-                shipment.fedex_cod_return_label.save(result['tracking_number']+'_COD.pdf', ContentFile(base64.b64decode(result['COD_RETURN_LABEL'])))
+                shipment.fedex_cod_return_label.save(result['tracking_number'] + '_COD.pdf',
+                                                     ContentFile(base64.b64decode(result['COD_RETURN_LABEL'])))
                 cod_return_label_url = str(shipment.fedex_cod_return_label.name).split('/')[-1]
             output = PdfFileWriter()
             f1 = ContentFile(base64.b64decode(result['OUTBOUND_LABEL']))
@@ -176,7 +182,8 @@ def create_fedex_shipment(request):
             output.addJS("this.print({bUI:true,bSilent:false,bShrinkToFit:true});")
             outputStream = cStringIO.StringIO()
             output.write(outputStream)
-            shipment.fedex_outbound_label.save(result['tracking_number']+'_OUT.pdf', ContentFile(outputStream.getvalue()))
+            shipment.fedex_outbound_label.save(result['tracking_number'] + '_OUT.pdf',
+                                               ContentFile(outputStream.getvalue()))
             outbound_label_url = str(shipment.fedex_outbound_label.name).split('/')[-1]
             if result["shipping_cost"]:
                 shipment.actual_shipping_cost = float(result["shipping_cost"])
@@ -194,3 +201,20 @@ def create_fedex_shipment(request):
         "shipping_cost": result["shipping_cost"]
     }
     return render(request, 'fedex_new_shipment.html', {"result": context})
+
+
+def barcode_fedex_redirector(request, barcode):
+    print(barcode)
+    try:
+        shipment = Shipment.objects.get(barcode=barcode)
+    except ObjectDoesNotExist:
+        try:
+            shipment = Product.objects.get(barcode=barcode)
+        except ObjectDoesNotExist:
+            return HttpResponseBadRequest("Barcode doesn't exist")
+
+    if shipment.barcode is None:
+        return HttpResponseBadRequest("Fedex order not created yet")
+
+    fedex_label = str(shipment.fedex_outbound_label.name).split('/')[-1]
+    return redirect('http://sendmates.com/static/' + fedex_label)
