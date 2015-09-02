@@ -190,10 +190,10 @@ class CSBusinessAdmin(BusinessAdmin):
 class OPBusinessAdmin(BusinessAdmin):
     # search_fields=['name']
     search_fields=['username','business_name']
-    list_display = ('username', 'business_name', 'pickup_time', 'pb', 'assigned_pickup_time','status','pending_orders_today', 'pending_orders','pickedup_orders','daily','comment')
-    list_editable = ('pb',)
-    raw_id_fields = ('pb',)
-    list_filter = ['username', 'daily','pb']
+    list_display = ('username', 'business_name', 'warehouse', 'pickup_time', 'pb', 'assigned_pickup_time','status','pending_orders_today', 'pending_orders','pickedup_orders','daily','comment')
+    list_editable = ('pb', 'warehouse')
+    raw_id_fields = ('pb', 'warehouse')
+    list_filter = ['username', 'daily','pb', 'warehouse']
 
 
 class NotApprovedBusinessAdmin(CSBusinessAdmin):

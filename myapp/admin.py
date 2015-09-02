@@ -389,9 +389,9 @@ class CSOrderAdmin(OrderAdmin):
 
 class OPOrderAdmin(OrderAdmin):
     list_display = (
-        'order_no', 'book_time', 'promocode', 'date', 'time', 'full_address', 'name_email', 'order_status','pb', 'mapped_ok','way',
+        'order_no', 'warehouse', 'book_time', 'promocode', 'date', 'time', 'full_address', 'name_email', 'order_status','pb', 'mapped_ok','way',
         'cs_comment','comment', 'shipments')
-    list_editable = ('pb', 'order_status','comment',)
+    list_editable = ('pb', 'warehouse', 'order_status','comment',)
 
 
 
