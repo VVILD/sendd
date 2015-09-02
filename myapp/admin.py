@@ -84,7 +84,7 @@ class OrderAdmin(admin.ModelAdmin):
     list_per_page = 25
     search_fields = ['user__phone', 'name', 'namemail__name', 'namemail__email', 'promocode__code', 'shipment__real_tracking_no','shipment__mapped_tracking_no','shipment__barcode','shipment__drop_phone','shipment__drop_name']
     list_display = (
-        'order_no', 'book_time', 'promocode', 'date', 'time', 'full_address', 'name_email', 'order_status', 'fedex_check', 'way',
+        'order_no', 'book_time', 'promocode', 'date', 'time', 'full_address', 'name_email', 'order_status', 'fedex_check','mapped_ok', 'way',
         'pb', 'comment', 'shipments', 'send_invoice', 'warehouse')
     list_editable = ('date', 'time', 'order_status', 'pb', 'comment', 'warehouse')
     list_filter = ['book_time', 'status', 'pb','order_status', 'warehouse']
@@ -98,6 +98,15 @@ class OrderAdmin(admin.ModelAdmin):
 			#('Invoices',{'fields':['send_invoice'], 'classes':('suit-tab','suit-tab-invoices')})
 	)
 	'''  # passing variables to change_list view
+
+    def mapped_ok(self,obj):
+        products=Shipment.objects.filter(order=obj)
+        mapped_ok=True
+        for product in products:
+            if (not product.mapped_tracking_no):
+                return False
+        return mapped_ok
+    mapped_ok.boolean = True
 
     def changelist_view(self, request, extra_context=None):
         extra_context = extra_context or {}
@@ -373,14 +382,14 @@ admin.site.register(Promocode)
 
 class CSOrderAdmin(OrderAdmin):
     list_display = (
-        'order_no', 'book_time', 'promocode', 'date', 'time', 'full_address', 'name_email', 'order_status', 'way',
+        'order_no', 'book_time', 'promocode', 'date', 'time', 'full_address', 'name_email', 'order_status','mapped_ok', 'way',
         'cs_comment', 'shipments')
     list_editable = ('date', 'time', 'order_status', 'cs_comment',)
 
 
 class OPOrderAdmin(OrderAdmin):
     list_display = (
-        'order_no', 'book_time', 'promocode', 'date', 'time', 'full_address', 'name_email', 'order_status','pb', 'way',
+        'order_no', 'book_time', 'promocode', 'date', 'time', 'full_address', 'name_email', 'order_status','pb', 'mapped_ok','way',
         'cs_comment','comment', 'shipments')
     list_editable = ('pb', 'order_status','comment',)
 
