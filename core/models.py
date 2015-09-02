@@ -1,6 +1,7 @@
 from django.db import models
 from geopy.distance import vincenty
 from geopy.geocoders import googlev3
+# from businessapp.models import Business
 
 
 class Warehouse(models.Model):
@@ -54,6 +55,8 @@ class Warehouse(models.Model):
 
         pincodes = Pincode.objects.filter(region_name=self.city).exclude(latitude__isnull=True)
         warehouses = Warehouse.objects.filter(city=self.city)
+        from businessapp.models import Business
+        businesses = Business.objects.filter(pincode__isnull=False)
 
         for pincode in pincodes:
             closest_warehouse = None
@@ -65,6 +68,11 @@ class Warehouse(models.Model):
                     closest_warehouse = warehouse
             pincode.warehouse = closest_warehouse
             pincode.save()
+
+        for business in businesses:
+            pincode_search = Pincode.objects.filter(pincode=self.pincode).exclude(latitude__isnull=True)
+            business.warehouse = pincode_search[0].warehouse
+            business.save()
         super(Warehouse, self).save(*args, **kwargs)
 
 
