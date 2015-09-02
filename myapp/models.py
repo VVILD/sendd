@@ -162,7 +162,10 @@ class Order(models.Model):
             self.book_time = ind_time.strftime(fmt)
         if not self.warehouse:
             pincode = Pincode.objects.filter(pincode=self.pincode).exclude(latitude__isnull=True)
-            self.warehouse = pincode[0].warehouse
+            try:
+                self.warehouse = pincode[0].warehouse
+            except:
+                self.warehouse=Warehouse.objects.get(pk=1)
         super(Order, self).save(*args, **kwargs)
 
 
@@ -530,16 +533,24 @@ def send_update(sender, instance, created, **kwargs):
 # choices=(('P', 'pending'), ('C', 'complete'), ('PU', 'pickedup'), ('CA', 'cancelled'), ('R', 'return')),
 # ('P', 'pending'), ('C', 'complete'), ('N', 'cancelled'), ('D', 'in transit'), ('PU', 'pickedup')), default='P')
 # order will be pending intransit complete cancelled picked up
-    if (instance.status == 'PU') or (instance.status == 'CA'):
+    count=0
+    if ((instance.status == 'PU') or (instance.status == 'CA')) and (instance.order.order_status=='A'):
         pickedup = True
         products_in_order = Shipment.objects.filter(order=instance.order)
+        print "count of shipments"
+        print products_in_order.count()
         for product in products_in_order:
             if (product.status!='PU') & (product.status!='CA'):
                 pickedup=False
         if (pickedup):
 # signals.post_save.disconnect(send_update_order, sender=Order)
             instance.order.order_status = 'P'
+
             instance.order.save()
+            print "i was here"
+            print count
+            rturn=send_invoice_custom(instance.order)
+            print rturn
 
     if (instance.status == 'DI') or (instance.status == 'CA'):
         Dispatched = True
@@ -577,3 +588,107 @@ class Invoicesent(models.Model):
 
 
 
+def send_invoice_custom(obj):
+    valid = 1
+    e_string = ''
+    invoice_dict = {}
+    total = 0
+    order_no = obj.order_no
+    invoice_dict['orderno'] = order_no
+
+    try:
+        times = Invoicesent.objects.filter(order=obj.order_no)
+        times_count = str(times.count()) + ' invoices sent'
+    except:
+        times_count = "0 invoices sent"
+
+    try:
+        name = obj.namemail.name
+        invoice_dict['name'] = name
+    except:
+        e_string = e_string + 'name not set <br>'
+        valid = 0
+
+    try:
+        address = obj.address
+        invoice_dict['address'] = address
+    except:
+        e_string = e_string + 'address not set <br>'
+        valid = 0
+
+    try:
+        email = obj.namemail.email
+        invoice_dict['mailto'] = email
+    except:
+        e_string = e_string + 'email not set <br>'
+
+    try:
+        book_time = obj.book_time
+        invoice_dict['date'] = str(book_time)[0:10]
+    except:
+        e_string = e_string + 'time not set <br>'
+
+    try:
+        shipments = Shipment.objects.filter(order=obj.order_no)
+        number = shipments.count()
+        invoice_dict['numberofshipment'] = number
+        count = 0
+        total = 0
+        for s in shipments:
+            try:
+
+                print s.real_tracking_no
+                print s.drop_address.pincode
+                print s.weight
+                print 'check'
+
+                if s.weight is None or s.weight.strip() == '':
+                    e_string = e_string + str(s.real_tracking_no) + ' weight not set <br>'
+                    valid = 0
+                if s.drop_address.pincode is None:
+                    e_string = e_string + str(s.real_tracking_no) + ' drop_address pincode not set <br>'
+                    valid = 0
+                if s.price is None or s.price.strip() == '':
+                    e_string = e_string + str(s.real_tracking_no) + ' price not set <br>'
+                    valid = 0
+
+                try:
+                    invoice_dict['des' + str(count)] = str(s.weight) + ' kg to ' + str(s.drop_address.pincode)
+                    invoice_dict['tracking' + str(count)] = str(s.real_tracking_no)
+                    invoice_dict['price' + str(count)] = str(s.price)
+                    invoice_dict['total' + str(count)] = str(s.price)
+                    invoice_dict['quantity' + str(count)] = '1'
+                    total = total + int(s.price)
+                except Exception, e:
+                    print str(e)
+
+                count = count + 1
+            except Exception, e:
+                print str(e)
+                e_string = e_string + 'error in fetching shipments <br>'
+                valid = 0
+
+            invoice_dict['overalltotal'] = total
+
+
+    except:
+        e_string = e_string + 'number of xx shipments not set <br>'
+        valid = 0
+
+
+
+
+    #           address=obj.address
+    #           shipments = Shipment.objects.filter(order=obj.order_no)
+    #           mail_subject="a"
+    #           mail_content="ggh"
+    if (valid):
+
+        query='http://128.199.210.166/payment_invoice.php?'+urllib.urlencode(invoice_dict)
+        print query
+        return requests.get(query)
+
+        # return '%s <br> <a target="_blank" href="http://128.199.210.166/payment_invoice.php?%s">generate  and send invoice to %s</a>' % (
+        #     times_count, urllib.urlencode(invoice_dict), invoice_dict['mailto'])
+    else:
+        return e_string

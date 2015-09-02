@@ -13,6 +13,7 @@ import datetime
 from django.db.models import Avg, Sum, Q
 
 
+
 class UserAdmin(admin.ModelAdmin):
     search_fields = ['phone', 'name']
     list_display = ('phone', 'name', 'otp', 'apikey', 'email', 'time')
@@ -126,6 +127,7 @@ class OrderAdmin(admin.ModelAdmin):
         p = Order.objects.filter(order_status='P').count()
         pa = Order.objects.filter(order_status='AP').count()
         c = Order.objects.filter(order_status='DI').count()
+        completed = Order.objects.filter(order_status='C').count()
         acs= Order.objects.filter().exclude(order_status='O').exclude(order_status='N').count()
         todays_date = date.today()
         # week_before=date.today()-datetime.timedelta(days=7)
@@ -149,7 +151,7 @@ class OrderAdmin(admin.ModelAdmin):
         count_b2c = today_shipments.count()
         action_b2c = today_shipments.count() - today_shipments_correct.count()
 
-        context = {'o': o, 'a': a, 'p': p, 'c': c, 'pa': pa, 'count_b2c': count_b2c, 'sum_b2c': sum_b2c,'cs':cs,'op':op,'acs':acs}
+        context = {'o': o, 'a': a, 'p': p, 'c': c, 'pa': pa, 'count_b2c': count_b2c, 'sum_b2c': sum_b2c,'cs':cs,'op':op,'acs':acs,'completed':completed}
         return super(OrderAdmin, self).changelist_view(request, extra_context=context)
 
 
