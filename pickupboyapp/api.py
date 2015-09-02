@@ -124,6 +124,7 @@ class PickupboyResource(Resource):
                 "phone": order.phone,
                 "pincode": order.pincode,
                 "order_id": order.pk,
+                "book_time": order.book_time
             }
             detailed_order = {
                 "type": "b2b",
@@ -186,7 +187,8 @@ class PickupboyResource(Resource):
                 "promocode_type": promocode_type,
                 "promocode_amount": promocode_amount,
                 "promocode_msg":promocode_msg,
-                "promocode_code":promocode_code
+                "promocode_code":promocode_code,
+                "book_time": order.book_time
             }
             detailed_order = {
                 "type": "b2c",
