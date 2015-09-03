@@ -29,7 +29,7 @@ import urlparse
 from tastypie.authentication import Authentication
 from tastypie.http import HttpBadRequest
 from tastypie.authorization import Authorization
-from tastypie.exceptions import Unauthorized
+from tastypie.exceptions import Unauthorized, BadRequest
 from pickupboyapp.exceptions import CustomBadRequest
 
 
@@ -58,7 +58,6 @@ class urlencodeSerializer(Serializer):
 class OnlyAuthorization(Authorization):
     def read_detail(self, object_list, bundle):
         # Is the requested object owned by the user?
-        print "0kkkkkkkkkkkkkkkk"
 
         # these 2 lines due to product wanting to use this authorisation
         if (bundle.request.META["HTTP_AUTHORIZATION"] == 'A'):
@@ -70,7 +69,6 @@ class OnlyAuthorization(Authorization):
 
     def create_list(self, object_list, bundle):
         # Assuming they're auto-assigned to ``user``.
-        print '1kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk'
         return object_list
 
     def create_detail(self, object_list, bundle):
@@ -85,7 +83,6 @@ class OnlyAuthorization(Authorization):
     def update_list(self, object_list, bundle):
         allowed = []
 
-        print "fgd"
         # Since they may not all be saved, iterate over them.
         for obj in object_list:
             if obj.user == bundle.request.user:
@@ -94,7 +91,7 @@ class OnlyAuthorization(Authorization):
         return allowed
 
     def update_detail(self, object_list, bundle):
-        print "dfd"
+
         return bundle.request.META["HTTP_AUTHORIZATION"] == bundle.obj.business.apikey
 
 
@@ -250,12 +247,13 @@ class OrderResource3(ModelResource):
         resource_name = 'order'
         authorization = OnlyAuthorization()
         authentication = Authentication()
-        allowed_methods = ['post', 'patch']
+        allowed_methods = ['post', 'patch', 'put']
         always_return_data = True
         ordering = ['book_time']
 
     def hydrate(self, bundle):
         # print "sssssssss"
+        # if bundle.request.method == 'POST':
         try:
             business_obj = Business.objects.get(username=bundle.data['username'])
             bundle.data['business'] = "/bapi/v1/business/" + str(bundle.data['username']) + "/"
@@ -267,12 +265,13 @@ class OrderResource3(ModelResource):
         try:
             if len(bundle.data['phone']) is not 10:
                 raise ImmediateHttpResponse(HttpBadRequest("Enter valid phone number = 10 digits"))
-        #print "ssssssssss"
+        # print "ssssssssss"
         except:
             raise ImmediateHttpResponse(HttpBadRequest("Enter valid phone number = 10 digits"))
 
+        # if bundle.request.method == 'POST':
         for product in bundle.data['products']:
-            #    print product['barcode']
+            # print product['barcode']
             try:
                 y = Product.objects.get(barcode=product['barcode'])
                 raise ImmediateHttpResponse(HttpBadRequest("Barcode already exist. Please enter unique barcode"))
@@ -286,50 +285,86 @@ class OrderResource3(ModelResource):
 
     def dehydrate(self, bundle):
 
-        # new_bundle={}
-        # new_bundle['products']={}
-        # count=0
-        # for product in bundle.data['products']:
-        # #    print product['barcode']
-        # print product
-        #     product_pk = product.split('/')[-2]
-        #     product = Product.objects.get(pk=product_pk)
-        #     new_bundle['products'][count]={}
-        #     new_bundle['products'][count]['name']=product.name
-        #     new_bundle['products'][count]['sku']=product.sku
-        #     new_bundle['products'][count]['quantity']=product.quantity
-        #     new_bundle['products'][count]['weight']=product.weight
-        #     new_bundle['products'][count]['tracking_no']=product.real_tracking_no
-        #
-        #
-        #     count=count+1
-        #     # try:
-        #     #     y=Product.objects.get(barcode=product['barcode'])
-        #     #     raise ImmediateHttpResponse(HttpBadRequest("Barcode already exist. Please enter unique barcode"))
-        #     # except Product.DoesNotExist:
-        #     #     pass
-        #     # except KeyError:
-        #     #     pass
-        #
-        #
-        # # temp = 'sd'
-        #
-        # # bundle = {}
-        # # bundle['tracking_no']={}
-        # # bundle['tracking_no']['df'] = temp
-        #
-        # bundle=new_bundle
-        # new_bundle = {}
-        # print(bundle['order_no'])
-        products = Product.objects.filter(order__pk=bundle.data['order_no']).values("real_tracking_no", "sku", "weight",
+        products = Product.objects.filter(order__pk=bundle.data['order_no']).values("real_tracking_no", "sku",
+                                                                                    "weight",
                                                                                     "name", "quantity")
 
         new_bundle = {
             "order_no": bundle.data['order_no'],
             "products": list(products)
         }
-
         return new_bundle
+
+
+class OrderPatchResource(ModelResource):
+    business = fields.ForeignKey(BusinessResource, 'business', null=True)
+    products = fields.ToManyField("businessapp.apiv3.ProductResource3", 'product_set', related_name='product')
+    skip = True
+
+    class Meta:
+        queryset = Order.objects.all()
+        resource_name = 'order_update'
+        authorization = OnlyAuthorization()
+        authentication = Authentication()
+        allowed_methods = ['patch']
+        allowed_update_fields = ['confirmed', 'username']
+        always_return_data = True
+
+    def update_in_place(self, request, original_bundle, new_data):
+        if set(new_data.keys()) - set(self._meta.allowed_update_fields):
+            raise BadRequest(
+                'Only update on %s allowed' % ', '.join(
+                    self._meta.allowed_update_fields
+                )
+            )
+
+        return super(OrderPatchResource, self).update_in_place(
+            request, original_bundle, new_data
+        )
+
+    def hydrate(self, bundle):
+        # print "sssssssss"
+        # if bundle.request.method == 'POST':
+        try:
+            business_obj = Business.objects.get(username=bundle.data['username'])
+            bundle.data['business'] = "/bapi/v1/business/" + str(bundle.data['username']) + "/"
+        except Business.DoesNotExist:
+            raise ImmediateHttpResponse(HttpBadRequest("Username doesnt exist"))
+        except KeyError:
+            raise ImmediateHttpResponse(HttpBadRequest("Please Provide a valid username key"))
+
+        try:
+            if len(bundle.data['phone']) is not 10:
+                raise ImmediateHttpResponse(HttpBadRequest("Enter valid phone number = 10 digits"))
+        # print "ssssssssss"
+        except:
+            raise ImmediateHttpResponse(HttpBadRequest("Enter valid phone number = 10 digits"))
+
+        # try:
+        #     order = Order.objects.get(pk=bundle.data['order_no'])
+        #     if order.confirmed == bundle.data['confirmed']:
+        #         self.skip = False
+        # except:
+        #     pass
+
+        return bundle
+
+    def dehydrate(self, bundle):
+        if self.skip:
+            self.skip = False
+            return bundle
+
+        products = Product.objects.filter(order__pk=bundle.data['order_no']).values("real_tracking_no", "sku",
+                                                                                    "weight",
+                                                                                    "name", "quantity")
+
+        new_bundle = {
+            "order_no": bundle.data['order_no'],
+            "products": list(products)
+        }
+        self.skip = True
+        return new_bundle
+        # return bundle
 
 
 class ProductResource3(ModelResource):
@@ -344,7 +379,7 @@ class ProductResource3(ModelResource):
 
 
 # serializer = urlencodeSerializer()
-#        ordering = ['date']
+# ordering = ['date']
 #        allowed_methods = ['post']
 
 
@@ -371,7 +406,8 @@ class ShippingEstimateResource(Resource):
         item_weight = request.GET.get('item_weight', None)
         delivery_pincode = request.GET.get('delivery_pincode', None)
         business_username = request.GET.get('business_username', None)
-        if not all(x is not None for x in (method, payment_method, item_price, item_weight, delivery_pincode, business_username)):
+        if not all(x is not None for x in
+                   (method, payment_method, item_price, item_weight, delivery_pincode, business_username)):
             raise CustomBadRequest("error", "Missing parameter")
         lbh = request.GET.get('lbh', None)
         item_price = float(item_price)
