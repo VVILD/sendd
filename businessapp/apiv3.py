@@ -240,25 +240,24 @@ class BusinessResource(CORSModelResource):
         authorization = Authorization()
         always_return_data = True
 
-    
-
 
 class OrderResource3(ModelResource):
     business = fields.ForeignKey(BusinessResource, 'business', null=True)
     products = fields.ToManyField("businessapp.apiv3.ProductResource3", 'product_set', related_name='product')
-    
+
     class Meta:
         queryset = Order.objects.all()
         resource_name = 'order'
-        authorization =OnlyAuthorization()
-        authentication=Authentication()
+        authorization = OnlyAuthorization()
+        authentication = Authentication()
+        allowed_methods = ['post', 'patch']
         always_return_data = True
         ordering = ['book_time']
 
     def hydrate(self, bundle):
-        #print "sssssssss"
+        # print "sssssssss"
         try:
-            business_obj=Business.objects.get(username=bundle.data['username'])
+            business_obj = Business.objects.get(username=bundle.data['username'])
             bundle.data['business'] = "/bapi/v1/business/" + str(bundle.data['username']) + "/"
         except Business.DoesNotExist:
             raise ImmediateHttpResponse(HttpBadRequest("Username doesnt exist"))
@@ -271,11 +270,11 @@ class OrderResource3(ModelResource):
         #print "ssssssssss"
         except:
             raise ImmediateHttpResponse(HttpBadRequest("Enter valid phone number = 10 digits"))
-        
+
         for product in bundle.data['products']:
-        #    print product['barcode']
+            #    print product['barcode']
             try:
-                y=Product.objects.get(barcode=product['barcode'])
+                y = Product.objects.get(barcode=product['barcode'])
                 raise ImmediateHttpResponse(HttpBadRequest("Barcode already exist. Please enter unique barcode"))
             except Product.DoesNotExist:
                 pass
@@ -292,7 +291,7 @@ class OrderResource3(ModelResource):
         # count=0
         # for product in bundle.data['products']:
         # #    print product['barcode']
-        #     print product
+        # print product
         #     product_pk = product.split('/')[-2]
         #     product = Product.objects.get(pk=product_pk)
         #     new_bundle['products'][count]={}
@@ -322,7 +321,8 @@ class OrderResource3(ModelResource):
         # bundle=new_bundle
         # new_bundle = {}
         # print(bundle['order_no'])
-        products = Product.objects.filter(order__pk=bundle.data['order_no']).values("real_tracking_no", "sku", "weight", "name", "quantity")
+        products = Product.objects.filter(order__pk=bundle.data['order_no']).values("real_tracking_no", "sku", "weight",
+                                                                                    "name", "quantity")
 
         new_bundle = {
             "order_no": bundle.data['order_no'],
@@ -332,20 +332,132 @@ class OrderResource3(ModelResource):
         return new_bundle
 
 
-
 class ProductResource3(ModelResource):
-    order = fields.ToOneField(OrderResource3, 'order', null=True,)
-    
+    order = fields.ToOneField(OrderResource3, 'order', null=True, )
+
     class Meta:
         queryset = Product.objects.all()
         resource_name = 'product'
         authorization = Authorization()
         authentication = Authentication()
         always_return_data = True
-#        serializer = urlencodeSerializer()
+
+
+# serializer = urlencodeSerializer()
 #        ordering = ['date']
 #        allowed_methods = ['post']
 
+
+class ShippingEstimateResource(Resource):
+    class Meta:
+        resource_name = 'shipping_estimate'
+        authentication = Authentication()
+        authorization = OnlyAuthorization()
+
+    def prepend_urls(self):
+        return [
+            url(r"^(?P<resource_name>%s)%s$" % (self._meta.resource_name, trailing_slash()),
+                self.wrap_view('get_estimate'), name="api_get_estimate"),
+        ]
+
+    def get_estimate(self, request, **kwargs):
+        self.method_check(request, allowed=['get'])
+        self.is_authenticated(request)
+        self.throttle_check(request)
+
+        method = request.GET.get('shipping_method', None)
+        payment_method = request.GET.get('payment_method', None)
+        item_price = request.GET.get('item_price', None)
+        item_weight = request.GET.get('item_weight', None)
+        delivery_pincode = request.GET.get('delivery_pincode', None)
+        business_username = request.GET.get('business_username', None)
+        if not all(x is not None for x in (method, payment_method, item_price, item_weight, delivery_pincode, business_username)):
+            raise CustomBadRequest("error", "Missing parameter")
+        lbh = request.GET.get('lbh', None)
+        item_price = float(item_price)
+        item_weight = float(item_weight)
+
+        if (payment_method == 'C'):
+            cod_price1 = (1.5 / 100) * item_price
+            if (cod_price1 < 40):
+                cod_price = 40
+            else:
+                cod_price = cod_price1
+
+        else:
+            cod_price = 0
+
+        pincode = delivery_pincode
+        print pincode
+
+        two_digits = pincode[:2]
+        three_digits = pincode[:3]
+
+        try:
+            pricing = Pricing.objects.get(business__username=business_username)
+        except:
+            raise CustomBadRequest("error", "Business Username incorrect/Pricing for business not set")
+
+        if (method == 'N'):
+            if (three_digits == '400'):
+                price1 = pricing.normal_zone_a_0
+                price2 = pricing.normal_zone_a_1
+                price3 = pricing.normal_zone_a_2
+
+            elif (
+                                                        two_digits == '41' or two_digits == '42' or two_digits == '43' or two_digits == '44' or three_digits == '403' or two_digits == '36' or two_digits == '37' or two_digits == '38' or two_digits == '39'):
+                price1 = pricing.normal_zone_b_0
+                price2 = pricing.normal_zone_b_1
+                price3 = pricing.normal_zone_b_2
+            elif (two_digits == '56' or two_digits == '11' or three_digits == '600' or three_digits == '700'):
+                price1 = pricing.normal_zone_c_0
+                price2 = pricing.normal_zone_c_1
+                price3 = pricing.normal_zone_c_2
+
+            elif (two_digits == '78' or two_digits == '79' or two_digits == '18' or two_digits == '19'):
+                price1 = pricing.normal_zone_e_0
+                price2 = pricing.normal_zone_e_1
+                price3 = pricing.normal_zone_e_2
+            else:
+                price1 = pricing.normal_zone_d_0
+                price2 = pricing.normal_zone_d_1
+                price3 = pricing.normal_zone_d_2
+
+            if item_weight <= 0.25:
+                price = price1
+            elif item_weight <= 0.50:
+                price = price2
+            else:
+                price = price2 + math.ceil((item_weight * 2 - 1)) * price3
+
+        if (method == 'B'):
+            if (three_digits == '400'):
+                price1 = pricing.bulk_zone_a
+
+            elif (
+                                                        two_digits == '41' or two_digits == '42' or two_digits == '43' or two_digits == '44' or three_digits == '403' or two_digits == '36' or two_digits == '37' or two_digits == '38' or two_digits == '39'):
+                price1 = pricing.bulk_zone_b
+            elif (two_digits == '56' or two_digits == '11' or three_digits == '600' or three_digits == '700'):
+                price1 = pricing.bulk_zone_c
+
+            elif (two_digits == '78' or two_digits == '79' or two_digits == '18' or two_digits == '19'):
+                price1 = pricing.bulk_zone_e
+            else:
+                price1 = pricing.bulk_zone_d
+
+            if (item_weight <= 10):
+                price = price1 * 10
+            else:
+                price = price1 * item_weight
+
+        price = math.ceil(1.20 * price)
+
+        bundle = {
+            "estimated_shipping_cost": price,
+            "estimated_cod_cost": cod_price
+        }
+        self.log_throttled_access(request)
+        return self.create_response(request, bundle)
 
 
 
