@@ -215,6 +215,10 @@ def barcode_fedex_redirector(request, barcode):
 
     if shipment.barcode is None:
         return HttpResponseBadRequest("Fedex order not created yet")
-
-    fedex_label = str(shipment.fedex_outbound_label.name).split('/')[-1]
-    return redirect('http://sendmates.com/static/' + fedex_label)
+    if shipment.fedex_outbound_label is None:
+        return HttpResponseBadRequest("Fedex order not created yet")
+    static_url = 'http://sendmates.com/static/'
+    labels = [static_url + str(shipment.fedex_outbound_label.name).split('/')[-1]]
+    if shipment.fedex_cod_return_label is not None:
+        labels.append(static_url + str(shipment.fedex_cod_return_label.name).split('/')[-1])
+    return render(request, 'fedex_print.html', {"urlList": labels})

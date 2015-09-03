@@ -1,0 +1,24 @@
+﻿<!DOCTYPE html>
+    <head lang="en">
+        <meta charset="UTF-8">
+        {% load staticfiles %}
+        <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+        <title>Fedex Barcode Redirector</title>
+    </head>
+	<body>
+	{%for url in urlList%}
+			<a href="{{url}}" id="url{{forloop.counter}}" target="_blank">URL{{forloop.counter}}</a>
+	{% endfor%}
+	</body>
+	<script>
+        $(document).ready(function(){
+
+            var atags = document.getElementsByTagName('a');
+            atags[0].target='_self';
+            for(counter = 0 ; counter<atags.length;counter++)
+            {
+                atags[counter].click();
+            }
+        });
+	</script>
+<html>
