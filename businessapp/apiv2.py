@@ -280,8 +280,6 @@ class OrderResource(CORSModelResource):
 
 
     def build_filters(self, filters=None):
-        print "shit"
-        print filters
         if filters is None:
             filters = {}
         orm_filters = super(OrderResource, self).build_filters(filters)
@@ -292,28 +290,25 @@ class OrderResource(CORSModelResource):
 
     def apply_filters(self, request, orm_filters):
         base_object_list = super(OrderResource, self).apply_filters(request, {})
-        print orm_filters
         if 'q' in orm_filters:
             return base_object_list.filter(business__username=orm_filters['q']).exclude(status='N')
-        print base_object_list
         return base_object_list
 
 
     def hydrate(self, bundle):
         try:
             override_method = bundle.request.META['HTTP_X_HTTP_METHOD_OVERRIDE']
-            print "changed to PATCH"
         except:
             override_method = 'none'
-            print "hello"
 
         if bundle.request.META['REQUEST_METHOD'] == 'POST' and override_method == 'PATCH':
-            print "patch"
             return bundle
 
     def dehydrate(self, bundle):
         pk = bundle.data['resource_uri'].split('/')[4]
         products = Product.objects.filter(order__pk=pk)
+        bundle.data['business'] = bundle.obj.business
+        bundle.data['allowed_actual_tracking'] = bundle.obj.business.show_tracking_company
         bundle.data['products'] = [product.__dict__ for product in products]
         return bundle
 
