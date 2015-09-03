@@ -287,40 +287,49 @@ class OrderResource3(ModelResource):
 
     def dehydrate(self, bundle):
 
-        new_bundle={}
-        new_bundle['products']={}
-        count=0
-        for product in bundle.data['products']:
-        #    print product['barcode']
-            print product
-            product_pk = product.split('/')[-2]
-            product = Product.objects.get(pk=product_pk)
-            new_bundle['products'][count]={}
-            new_bundle['products'][count]['name']=product.name
-            new_bundle['products'][count]['sku']=product.sku
-            new_bundle['products'][count]['quantity']=product.quantity
-            new_bundle['products'][count]['weight']=product.weight
-            new_bundle['products'][count]['tracking_no']=product.real_tracking_no
+        # new_bundle={}
+        # new_bundle['products']={}
+        # count=0
+        # for product in bundle.data['products']:
+        # #    print product['barcode']
+        #     print product
+        #     product_pk = product.split('/')[-2]
+        #     product = Product.objects.get(pk=product_pk)
+        #     new_bundle['products'][count]={}
+        #     new_bundle['products'][count]['name']=product.name
+        #     new_bundle['products'][count]['sku']=product.sku
+        #     new_bundle['products'][count]['quantity']=product.quantity
+        #     new_bundle['products'][count]['weight']=product.weight
+        #     new_bundle['products'][count]['tracking_no']=product.real_tracking_no
+        #
+        #
+        #     count=count+1
+        #     # try:
+        #     #     y=Product.objects.get(barcode=product['barcode'])
+        #     #     raise ImmediateHttpResponse(HttpBadRequest("Barcode already exist. Please enter unique barcode"))
+        #     # except Product.DoesNotExist:
+        #     #     pass
+        #     # except KeyError:
+        #     #     pass
+        #
+        #
+        # # temp = 'sd'
+        #
+        # # bundle = {}
+        # # bundle['tracking_no']={}
+        # # bundle['tracking_no']['df'] = temp
+        #
+        # bundle=new_bundle
+        # new_bundle = {}
+        # print(bundle['order_no'])
+        products = Product.objects.filter(order__pk=bundle.data['order_no']).values("real_tracking_no", "sku", "weight", "name", "quantity")
 
+        new_bundle = {
+            "order_no": bundle.data['order_no'],
+            "products": list(products)
+        }
 
-            count=count+1
-            # try:
-            #     y=Product.objects.get(barcode=product['barcode'])
-            #     raise ImmediateHttpResponse(HttpBadRequest("Barcode already exist. Please enter unique barcode"))
-            # except Product.DoesNotExist:
-            #     pass
-            # except KeyError:
-            #     pass
-
-
-        # temp = 'sd'
-
-        # bundle = {}
-        # bundle['tracking_no']={}
-        # bundle['tracking_no']['df'] = temp
-
-        bundle=new_bundle
-        return bundle
+        return new_bundle
 
 
 

@@ -166,7 +166,7 @@ class Order(models.Model):
     book_time = models.DateTimeField(null=True, blank=True)
     status = models.CharField(max_length=2, choices=(
         ('P', 'pending'), ('C', 'complete'), ('N', 'cancelled'), ('D', 'in transit'), ('PU', 'pickedup'),
-        ('RC', 'return/completed'), ('R', 'return'), ('DI', 'dispatched')), default='P')
+        ('RC', 'return/completed'), ('R', 'return'), ('DI', 'dispatched'), ('BR', 'booking received')), default='P')
 
     method = models.CharField(max_length=1,
                               choices=(('B', 'Bulk'), ('N', 'Normal'),),
