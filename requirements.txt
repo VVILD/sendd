@@ -1,3 +1,5 @@
+easypost
+aftership
 cffi==1.1.2
 cryptography==0.9.3
 Django==1.7.5
