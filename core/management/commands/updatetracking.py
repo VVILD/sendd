@@ -1,5 +1,6 @@
 import logging
 from django.core.management import BaseCommand
+from core.fedex.config import FedexConfig
 from core.fedex.services.track_service import FedexTrackRequest
 
 __author__ = 'vatsalshah'
@@ -12,12 +13,17 @@ class Command(BaseCommand):
         # Set this to the INFO level to see the response from Fedex printed in stdout.
         logging.basicConfig(level=logging.INFO)
 
+        FEDEX_CONFIG_INDIA = FedexConfig(key='jFdC6SAqFS9vz7gY',
+                                         password='6bxCaeVdszjUo2iHw5R3tbrBu',
+                                         account_number='677853204',
+                                         meter_number='108284345',
+                                         use_test_server=False)
         # NOTE: TRACKING IS VERY ERRATIC ON THE TEST SERVERS. YOU MAY NEED TO USE
         # PRODUCTION KEYS/PASSWORDS/ACCOUNT #.
         # We're using the FedexConfig object from example_config.py in this dir.
-        track = FedexTrackRequest(CONFIG_OBJ)
+        track = FedexTrackRequest(FEDEX_CONFIG_INDIA)
         track.TrackPackageIdentifier.Type = 'TRACKING_NUMBER_OR_DOORTAG'
-        track.TrackPackageIdentifier.Value = '798114182456'
+        track.TrackPackageIdentifier.Value = '781269402645'
 
         # Fires off the request, sets the 'response' attribute on the object.
         track.send_request()
