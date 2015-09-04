@@ -1,3 +1,4 @@
+import ast
 import logging
 from django.core.management.base import BaseCommand
 from businessapp.models import Product
@@ -24,6 +25,7 @@ class Command(BaseCommand):
                                      account_number='677853204',
                                      meter_number='108284345',
                                      use_test_server=False)
+    logging.basicConfig(level=logging.DEBUG)
 
     @staticmethod
     def remove_non_ascii_1(raw_text):
@@ -33,14 +35,13 @@ class Command(BaseCommand):
         products, client_type = tp[0], tp[1]
         result = []
         # Set this to the INFO level to see the response from Fedex printed in stdout.
-        logging.basicConfig(level=logging.INFO)
         # NOTE: TRACKING IS VERY ERRATIC ON THE TEST SERVERS. YOU MAY NEED TO USE
         # PRODUCTION KEYS/PASSWORDS/ACCOUNT #.
         # We're using the FedexConfig object from example_config.py in this dir.
         track = FedexTrackRequest(self.FEDEX_CONFIG_INDIA)
         for product in products:
             if product.tracking_data:
-                tracking_data = list(product.tracking_data)
+                tracking_data = ast.literal_eval(product.tracking_data)
             else:
                 tracking_data = []
             original_length = len(tracking_data)
@@ -53,11 +54,6 @@ class Command(BaseCommand):
 
                 for match in track.response.TrackDetails:
                     for event in match.Events:
-                        tracking_data.append({
-                            "status": event.EventDescription,
-                            "date": event.Timestamp,
-                            "location": event.ArrivalLocation
-                        })
                         if event.EventType == 'RS':
                             product.status = 'R'
                             product.return_cost = product.shipping_cost
@@ -82,20 +78,48 @@ class Command(BaseCommand):
                                 else:
                                     order.status = 'C'
                                 order.save()
-
-                if len(tracking_data) > 0 and len(tracking_data) != original_length:
-                    product.tracking_data = json.dumps(tracking_data)
-                    product.save()
-                result.append({
-                    "company": 'fedex',
-                    "tracking_no": product.mapped_tracking_no,
-                    "updated": True
-                })
+                        if original_length > 0:
+                            if tracking_data[-1]['date'] != event.Timestamp.strftime('%Y-%m-%d %H:%M:%S'):
+                                tracking_data.append({
+                                    "status": event.EventDescription,
+                                    "date": event.Timestamp.strftime('%Y-%m-%d %H:%M:%S'),
+                                    "location": event.ArrivalLocation
+                                })
+                                product.tracking_data = json.dumps(tracking_data)
+                                product.save()
+                                result.append({
+                                    "company": 'fedex',
+                                    "tracking_no": product.mapped_tracking_no,
+                                    "updated": True,
+                                    "error": False
+                                })
+                            else:
+                                result.append({
+                                    "company": 'fedex',
+                                    "tracking_no": product.mapped_tracking_no,
+                                    "updated": False,
+                                    "error": False
+                                })
+                        else:
+                            tracking_data.append({
+                                "status": event.EventDescription,
+                                "date": event.Timestamp.strftime('%Y-%m-%d %H:%M:%S'),
+                                "location": event.ArrivalLocation
+                            })
+                            product.tracking_data = json.dumps(tracking_data)
+                            product.save()
+                            result.append({
+                                "company": 'fedex',
+                                "tracking_no": product.mapped_tracking_no,
+                                "updated": True,
+                                "error": False
+                            })
             except:
                 result.append({
                     "company": 'fedex',
                     "tracking_no": product.mapped_tracking_no,
-                    "updated": False
+                    "updated": False,
+                    "error": True
                 })
         return result
 
@@ -116,13 +140,15 @@ class Command(BaseCommand):
                 result.append({
                     "company": company,
                     "tracking_no": product.mapped_tracking_no,
-                    "updated": True
+                    "updated": True,
+                    "error": False
                 })
             else:
                 result.append({
                     "company": company,
                     "tracking_no": product.mapped_tracking_no,
-                    "updated": False
+                    "updated": False,
+                    "error": True
                 })
             for x in data['tracking']['checkpoints']:
                 y1 = str(x['checkpoint_time'])
@@ -186,19 +212,21 @@ class Command(BaseCommand):
             order__order_status='D')
         fedex_track_queue.append((fedex_customer_shipments, 'customer'))
 
-        with futures.ThreadPoolExecutor(max_workers=5) as executor:
-            futures_track = (executor.submit(self.aftership_track, item) for item in aftership_track_queue)
-            for result in futures.as_completed(futures_track):
-                if result.exception() is not None:
-                    print('%s' % result.exception())
-                else:
-                    print(result.result())
+        if len(aftership_track_queue) > 0:
+            with futures.ThreadPoolExecutor(max_workers=5) as executor:
+                futures_track = (executor.submit(self.aftership_track, item) for item in aftership_track_queue)
+                for result in futures.as_completed(futures_track):
+                    if result.exception() is not None:
+                        print('%s' % result.exception())
+                    else:
+                        print(result.result())
 
-        with futures.ThreadPoolExecutor(max_workers=5) as executor:
-            futures_track = (executor.submit(self.fedex_track, item) for item in fedex_track_queue)
-            for result in futures.as_completed(futures_track):
-                if result.exception() is not None:
-                    print('%s' % result.exception())
-                else:
-                    print(result.result())
+        if len(fedex_track_queue) > 0:
+            with futures.ThreadPoolExecutor(max_workers=5) as executor:
+                futures_track = (executor.submit(self.fedex_track, item) for item in fedex_track_queue)
+                for result in futures.as_completed(futures_track):
+                    if result.exception() is not None:
+                        print('%s' % result.exception())
+                    else:
+                        print(result.result())
 
