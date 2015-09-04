@@ -187,6 +187,18 @@ class Command(BaseCommand):
         fedex_track_queue.append((fedex_customer_shipments, 'customer'))
 
         with futures.ThreadPoolExecutor(max_workers=5) as executor:
-            for result in executor.map(self.aftership_track, aftership_track_queue):
-                print(str(result))
+            futures_track = (executor.submit(self.aftership_track, item) for item in aftership_track_queue)
+            for result in futures.as_completed(futures_track):
+                if result.exception() is not None:
+                    print('%s' % result.exception())
+                else:
+                    print(result.result())
+
+        with futures.ThreadPoolExecutor(max_workers=5) as executor:
+            futures_track = (executor.submit(self.fedex_track, item) for item in fedex_track_queue)
+            for result in futures.as_completed(futures_track):
+                if result.exception() is not None:
+                    print('%s' % result.exception())
+                else:
+                    print(result.result())
 
