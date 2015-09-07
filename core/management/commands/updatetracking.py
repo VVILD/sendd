@@ -1,5 +1,6 @@
 import ast
 import logging
+from optparse import make_option
 from django.core.management.base import BaseCommand
 from businessapp.models import Product
 from core.fedex.config import FedexConfig
@@ -13,6 +14,17 @@ from concurrent import futures
 
 class Command(BaseCommand):
     help = 'Updates tracking info for all the services'
+
+    option_list = BaseCommand.option_list + (
+        make_option(
+            "-w",
+            "--workers",
+            dest="workers",
+            help="Number of workers",
+            metavar="WRKS"
+        ),
+    )
+
     company_map = {
         'B': 'bluedart',
         'A': 'aramex',
@@ -219,8 +231,13 @@ class Command(BaseCommand):
         for fedex_customer_shipment in fedex_customer_shipments:
             fedex_track_queue.append((fedex_customer_shipment, 'customer'))
 
+        if options['workers'] is None:
+            workers = 1
+        else:
+            workers = int(options['workers'])
+
         if len(aftership_track_queue) > 0:
-            with futures.ThreadPoolExecutor(max_workers=100) as executor:
+            with futures.ThreadPoolExecutor(max_workers=workers) as executor:
                 futures_track = (executor.submit(self.aftership_track, item) for item in aftership_track_queue)
                 for result in futures.as_completed(futures_track):
                     if result.exception() is not None:
@@ -229,7 +246,7 @@ class Command(BaseCommand):
                         print(result.result())
 
         if len(fedex_track_queue) > 0:
-            with futures.ThreadPoolExecutor(max_workers=100) as executor:
+            with futures.ThreadPoolExecutor(max_workers=workers) as executor:
                 futures_track = (executor.submit(self.fedex_track, item) for item in fedex_track_queue)
                 for result in futures.as_completed(futures_track):
                     if result.exception() is not None:
