@@ -305,6 +305,12 @@ class OrderResource(CORSModelResource):
             return bundle
 
     def dehydrate(self, bundle):
+        try:
+            override_method = bundle.request.META['HTTP_X_HTTP_METHOD_OVERRIDE']
+        except:
+            override_method = 'none'
+        if bundle.request.META['REQUEST_METHOD'] == 'POST' and override_method == 'PATCH':
+            return bundle
         pk = bundle.data['resource_uri'].split('/')[4]
         products = Product.objects.filter(order__pk=pk)
         bundle.data['business'] = bundle.obj.business
