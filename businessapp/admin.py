@@ -5,14 +5,13 @@ import json
 from random import randint
 
 
-
 import datetime
 from datetime import date
 from django.contrib import admin
 from .models import *
 
 from django.http import HttpResponse, HttpResponseRedirect
-
+from django.db.models import Avg, Count, F, Max, Min, Sum, Q, Prefetch
 from django.db.models import Sum
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
@@ -144,54 +143,113 @@ class BaseBusinessAdmin(admin.ModelAdmin):
 class BusinessAdmin(BaseBusinessAdmin):
     # search_fields=['name']
     search_fields=['username','business_name']
-    list_display = ('username','business_name', 'pickup_time', 'warehouse', 'pb', 'assigned_pickup_time','status', 'pending_orders', 'pending_orders_today','pickedup_orders','daily','comment')
-    list_editable = ('pb', 'assigned_pickup_time','daily','comment')
+    list_display = ('username','business_name', 'pickup_time', 'warehouse', 'pb', 'assigned_pickup_time','status', 'pending_orders_total', 'pending_orders','pickedup_orders','dispatched_orders','daily','cs_comment','ff_comment')
+    list_editable = ('pb', 'assigned_pickup_time','daily','cs_comment','ff_comment')
     raw_id_fields = ('pb', 'warehouse')
     list_filter = ['username', 'daily','pb', 'warehouse']
 
-    def make_approved(modeladmin, request, queryset):
-        queryset.update(status='Y')
 
+    
 
-    make_approved.short_description = "Mark business as approved"
-
-    actions=[make_approved]
-
-    def pending_orders(self, obj):
-        po_count = Order.objects.filter(status='P', business__username=obj.username).count()
-        return '<a href="/admin/businessapp/order/?q=&business__username__exact=%s&status__exact=P"> %s </a>' % (
-            obj.username, po_count)
-
-    pending_orders.allow_tags = True
-    def pickedup_orders(self, obj):
-        po_count = Order.objects.filter(status='PU', business__username=obj.username).count()
-        return '<a href="/admin/businessapp/order/?q=&business__username__exact=%s&status__exact=PU"> %s </a>' % (obj.username, po_count)
-    pickedup_orders.allow_tags = True
-
-    def pending_orders_today(self, obj):
+    def queryset(self, request):
+#total_order
+#pick_order
+#pending_count
+#transit_count
+#dispatch_count
         todays_date=date.today()
-        
         import datetime
         date_max = datetime.datetime.combine(todays_date, datetime.time.max)
         date_min = datetime.datetime.combine(todays_date, datetime.time.min)
-        po_count = Order.objects.filter(book_time__range=(date_min,date_max),status='P', business__username=obj.username).count()
-        return '<a href="/admin/businessapp/order/?q=&business__username__exact=%s&status__exact=P"> %s </a>' % (obj.username, po_count)
-    pending_orders_today.allow_tags = True
+        
+
+
+        return Business.objects.extra(select={
+            'pending': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.business_id = businessapp_business.username and businessapp_order.status='P' ",
+            'picked': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.business_id = businessapp_business.username and businessapp_order.status='PU' ",
+            'transit': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.business_id = businessapp_business.username and businessapp_order.status='D' ",
+            'dispatch': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.business_id = businessapp_business.username and businessapp_order.status='DI' ",
+            'pending_today': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.business_id = businessapp_business.username and businessapp_order.status='P' and businessapp_order.book_time BETWEEN %s AND %s",
+            'pickedup_today': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.business_id = businessapp_business.username and businessapp_order.status='PU' and businessapp_order.book_time BETWEEN %s AND %s",
+            'dispatched_today': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.business_id = businessapp_business.username and businessapp_order.status='DI' and businessapp_order.book_time BETWEEN %s AND %s",},
+            select_params=(date_min,date_max,date_min,date_max,date_min,date_max,),
+            )
+
+
+# Business.objects.extra(select={'pending': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.business_id = businessapp_business.username and businessapp_order.status='P' ",'picked': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.business_id = businessapp_business.username and businessapp_order.status='PU' ",'transit': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.business_id = businessapp_business.username and businessapp_order.status='D' ",'dispatch': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.business_id = businessapp_business.username and businessapp_order.status='DI' ",'pending_today': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.business_id = businessapp_business.username and businessapp_order.status='P' and businessapp_order.book_time BETWEEN '2015-09-07 00:00:00' AND '2015-09-07 23:59:59'",},)
+
+
+    def pricing_ok(self,obj):
+        try:
+            Pricing.objects.get(business=obj.username)
+            return True
+        except:
+            return False
+    pricing_ok.boolean = True
+
+
+    def pending_orders_total(self, obj):
+
+        return '<a href="/admin/businessapp/order/?q=&business__username__exact=%s&status__exact=P"> %s </a>' % (
+            obj.username, obj.pending)
+
+    pending_orders_total.allow_tags = True
+    pending_orders_total.admin_order_field='pending'
+
+    def pickedup_orders(self, obj):
+        return '<a href="/admin/businessapp/order/?q=&business__username__exact=%s&status__exact=PU"> %s </a>' % (obj.username, obj.pickedup_today)
+    pickedup_orders.allow_tags = True
+    pickedup_orders.admin_order_field='pickedup_today'
+
+    def dispatched_orders(self, obj):
+        return '<a href="/admin/businessapp/order/?q=&business__username__exact=%s&status__exact=DI"> %s </a>' % (obj.username, obj.dispatched_today)
+    dispatched_orders.allow_tags = True
+    dispatched_orders.admin_order_field='dispatched_today'
+
+
+    def pending_orders(self, obj):
+        return '<a href="/admin/businessapp/order/?q=&business__username__exact=%s&status__exact=P"> %s </a>' % (obj.username, obj.pending_today)
+    pending_orders.allow_tags = True
+    pending_orders.admin_order_field = 'pending_today'
 
 
 class CSBusinessAdmin(BusinessAdmin):
     # search_fields=['name']
     search_fields=['username','business_name']
-    list_display = ('username', 'business_name', 'pickup_time','pb','assigned_pickup_time','status','pending_orders_today', 'pending_orders','pickedup_orders','daily','comment')
-    list_editable = ('assigned_pickup_time','comment')
+    list_display = ( 'business_name','contact_mob','contact_office', 'pickup_time','pb','assigned_pickup_time','status','pending_orders_total', 'pending_orders','pickedup_orders','dispatched_orders','daily','cs_comment','pricing_ok')
+    list_editable = ('assigned_pickup_time','cs_comment')
     list_filter = ['username', 'daily','pb']
+
+    def queryset(self, request):
+#total_order
+#pick_order
+#pending_count
+#transit_count
+#dispatch_count
+        todays_date=date.today()
+        import datetime
+        date_max = datetime.datetime.combine(todays_date, datetime.time.max)
+        date_min = datetime.datetime.combine(todays_date, datetime.time.min)
+        
+
+
+        return Business.objects.extra(select={
+            'pending': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.business_id = businessapp_business.username and businessapp_order.status='P' ",
+            'picked': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.business_id = businessapp_business.username and businessapp_order.status='PU' ",
+            'transit': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.business_id = businessapp_business.username and businessapp_order.status='D' ",
+            'dispatch': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.business_id = businessapp_business.username and businessapp_order.status='DI' ",
+            'pending_today': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.business_id = businessapp_business.username and businessapp_order.status='P' and businessapp_order.book_time BETWEEN %s AND %s",
+            'pickedup_today': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.business_id = businessapp_business.username and businessapp_order.status='PU' and businessapp_order.book_time BETWEEN %s AND %s",
+            'dispatched_today': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.business_id = businessapp_business.username and businessapp_order.status='DI' and businessapp_order.book_time BETWEEN %s AND %s",},
+            select_params=(date_min,date_max,date_min,date_max,date_min,date_max,),
+            )
 
 
 class OPBusinessAdmin(BusinessAdmin):
     # search_fields=['name']
     search_fields=['username','business_name']
-    list_display = ('username', 'business_name', 'warehouse', 'pickup_time', 'pb', 'assigned_pickup_time','status','pending_orders_today', 'pending_orders','pickedup_orders','daily','comment')
-    list_editable = ('pb', 'warehouse')
+    list_display = ( 'business_name', 'warehouse', 'pickup_time', 'pb', 'assigned_pickup_time','status','pending_orders_total', 'pending_orders','pickedup_orders','dispatched_orders','cs_comment','ff_comment')
+    list_editable = ('pb', 'warehouse','ff_comment')
     raw_id_fields = ('pb', 'warehouse')
     list_filter = ['username', 'daily','pb', 'warehouse']
 
@@ -202,15 +260,23 @@ class NotApprovedBusinessAdmin(CSBusinessAdmin):
 
 
 
-    make_approved.short_description = "approved"
+    make_approved.short_description = "approve"
 
 
     actions = [make_approved]
+    actions_on_bottom = True
+    actions_on_top = False
 
 
     def queryset(self, request):
-        return self.model.objects.filter(status='N')
+        qs = super(CSBusinessAdmin, self).queryset(request)
+        qs = qs.filter(status='N')
+        return qs
 
+
+    # def queryset(self, request):
+
+    #     return Business.objects.raw('SELECT `businessapp_business`.`username`, `businessapp_business`.`apikey`, `businessapp_business`.`business_name`, `businessapp_business`.`password`, `businessapp_business`.`email`, `businessapp_business`.`name`, `businessapp_business`.`contact_mob`, `businessapp_business`.`contact_office`, `businessapp_business`.`pickup_time`, `businessapp_business`.`address`, `businessapp_business`.`city`, `businessapp_business`.`state`, `businessapp_business`.`pincode`, `businessapp_business`.`company_name`, `businessapp_business`.`website`, `businessapp_business`.`businessmanager_id`, `businessapp_business`.`show_tracking_company`, `businessapp_business`.`pb_id`, `businessapp_business`.`assigned_pickup_time`, `businessapp_business`.`comment`, `businessapp_business`.`daily`, `businessapp_business`.`status`, `businessapp_business`.`warehouse_id`, COUNT(`businessapp_order`.`status`) AS `total_order` ,count(case when `businessapp_order`.`status` = 'PU' then 1 end) as pick_order,count(case when `businessapp_order`.`status` = 'P' then 1 end) as pending_count, count(case when `businessapp_order`.`status` = 'D' then 1 end) as transit_count,count(case when `businessapp_order`.`status` = 'DI' then 1 end) as dispatch_count  FROM `businessapp_business` INNER JOIN `businessapp_order` ON ( `businessapp_business`.`username` = `businessapp_order`.`business_id` ) GROUP BY `businessapp_business`.`username` ORDER BY NULL')
 
 
 admin.site.register(NotApprovedBusiness, NotApprovedBusinessAdmin)
@@ -218,8 +284,24 @@ admin.site.register(NotApprovedBusiness, NotApprovedBusinessAdmin)
 
 class ApprovedBusinessAdmin(CSBusinessAdmin):
     
+
+
+    def make_not_approved(modeladmin, request, queryset):
+        queryset.update(status='N')
+
+    make_not_approved.short_description = "make not approve"
+
+
+    actions = [make_not_approved]
+
+    actions_on_bottom = True
+    actions_on_top = False
+
+
     def queryset(self, request):
-        return self.model.objects.filter().exclude(status='N')
+        qs = super(CSBusinessAdmin, self).queryset(request)
+        qs = qs.exclude(status='N')
+        return qs
 
 
 admin.site.register(ApprovedBusiness, ApprovedBusinessAdmin)
@@ -242,8 +324,25 @@ admin.site.register(CancelledBusiness, CancelledBusinessAdmin)
 
 class ApprovedBusinessOPAdmin(OPBusinessAdmin):
     
+    def make_complete(modeladmin, request, queryset):
+        queryset.update(status='N')
+
+
+
+    make_complete.short_description = "make complete"
+
+
+    actions = [make_complete]
+
+    actions_on_bottom = True
+    actions_on_top = False
+
+
+    
     def queryset(self, request):
-        return self.model.objects.filter(status='Y')
+        qs = super(OPBusinessAdmin, self).queryset(request)
+        qs = qs.filter(status='Y')
+        return qs
 
 
 admin.site.register(ApprovedBusinessOP, ApprovedBusinessOPAdmin)
@@ -252,7 +351,9 @@ admin.site.register(ApprovedBusinessOP, ApprovedBusinessOPAdmin)
 class AllotedBusinessAdmin(OPBusinessAdmin):
     
     def queryset(self, request):
-        return self.model.objects.filter(status='A')
+        qs = super(OPBusinessAdmin, self).queryset(request)
+        qs = qs.filter(status='A')
+        return qs
 
 
 admin.site.register(AllotedBusiness, AllotedBusinessAdmin)
