@@ -496,6 +496,35 @@ class ShippingEstimateResource(Resource):
         return self.create_response(request, bundle)
 
 
+class TrackingResource(CORSResource):
+    class Meta:
+        resource_name = 'tracking'
+        authentication = Authentication()
+        authorization = Authorization()
 
+    def prepend_urls(self):
+        return [
+            url(r"^(?P<resource_name>%s)/(?P<tracking_id>\w+)%s$" % (self._meta.resource_name, trailing_slash()),
+                self.wrap_view('tracking'), name="api_tracking"),
+        ]
 
+    @csrf_exempt
+    def tracking(self, request, tracking_id, **kwargs):
+        self.method_check(request, allowed=['get'])
+        self.is_authenticated(request)
+        self.throttle_check(request)
 
+        if not tracking_id:
+            raise CustomBadRequest(
+                code="request_invalid",
+                message="No tracking_id found. Please supply tracking_id as a GET URL parameter")
+        elif str(tracking_id).startswith('SE') or str(tracking_id).startswith('se'):
+            product = Product.objects.get(barcode=tracking_id)
+        elif str(tracking_id).startswith('B'):
+            product = Product.objects.get(real_tracking_no=tracking_id)
+        else:
+            product = Shipment.objects.get(real_tracking_no=tracking_id)
+
+        bundle = {"tracking_data": product.tracking_data}
+        self.log_throttled_access(request)
+        return self.create_response(request, bundle)
