@@ -264,8 +264,8 @@ class NotApprovedBusinessAdmin(CSBusinessAdmin):
 
 
     actions = [make_approved]
-    actions_on_bottom = True
-    actions_on_top = False
+    actions_on_bottom = False
+    actions_on_top = True
 
 
     def queryset(self, request):
@@ -294,8 +294,8 @@ class ApprovedBusinessAdmin(CSBusinessAdmin):
 
     actions = [make_not_approved]
 
-    actions_on_bottom = True
-    actions_on_top = False
+    actions_on_bottom = False
+    actions_on_top = True
 
 
     def queryset(self, request):
@@ -324,18 +324,18 @@ admin.site.register(CancelledBusiness, CancelledBusinessAdmin)
 
 class ApprovedBusinessOPAdmin(OPBusinessAdmin):
     
-    def make_complete(modeladmin, request, queryset):
-        queryset.update(status='N')
+    def make_alloted(modeladmin, request, queryset):
+        queryset.update(status='A')
 
 
 
-    make_complete.short_description = "make complete"
+    make_alloted.short_description = "make alloted"
 
 
-    actions = [make_complete]
+    actions = [make_alloted]
 
-    actions_on_bottom = True
-    actions_on_top = False
+    actions_on_bottom = False
+    actions_on_top = True
 
 
     
@@ -349,6 +349,18 @@ admin.site.register(ApprovedBusinessOP, ApprovedBusinessOPAdmin)
 
 
 class AllotedBusinessAdmin(OPBusinessAdmin):
+
+    def make_complete(modeladmin, request, queryset):
+        queryset.update(status='N')
+
+
+
+    make_complete.short_description = "make complete"
+
+    actions_on_bottom = False
+    actions_on_top = True
+
+
     
     def queryset(self, request):
         qs = super(OPBusinessAdmin, self).queryset(request)
