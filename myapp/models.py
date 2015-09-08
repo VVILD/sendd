@@ -265,17 +265,24 @@ class Shipment(models.Model):
 
     __original_tracking_data = None
     update_time=models.DateTimeField(null=True, blank=True)
+    dispatch_time=models.DateTimeField(null=True, blank=True)
+
     def __init__(self, *args, **kwargs):
         super(Shipment, self).__init__(*args, **kwargs)
         self.__original_tracking_data = self.tracking_data
 
     def save(self, *args, **kwargs):
 
+        z = timezone('Asia/Kolkata')
+        fmt = '%Y-%m-%d %H:%M:%S'
+        ind_time = datetime.now(z)
+        time = ind_time.strftime(fmt)
+
+        if self.mapped_tracking_no:
+            self.status='DI'
+            self.dispatch_time=time
+
         if self.tracking_data != self.__original_tracking_data:
-            z = timezone('Asia/Kolkata')
-            fmt = '%Y-%m-%d %H:%M:%S'
-            ind_time = datetime.now(z)
-            time = ind_time.strftime(fmt)
             self.update_time=time
 
 

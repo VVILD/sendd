@@ -26,7 +26,7 @@ def print_html(arr):
 
 
 class PickupboyAdmin(admin.ModelAdmin):
-    search_fields = ['pincodes__pincode']
+    search_fields = ['pincodes__pincode','name']
     list_display = ('name', 'pincodes_pref', 'alloted_times')
 
     def pincodes_pref(self, obj):

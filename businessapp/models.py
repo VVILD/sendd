@@ -78,7 +78,9 @@ class Business(models.Model):
     #     # Use UserManager to get the create_user method, etc.
     #     objects = UserManager()
 
-    comment = models.TextField(null=True, blank=True)
+    cs_comment = models.TextField(null=True, blank=True)
+    ff_comment = models.TextField(null=True, blank=True)
+    
     daily = models.BooleanField(default=False)
     status = models.CharField(max_length=1, choices=(('Y', 'approved'), ('N', 'not approved'),('C', 'cancelled'),('A', 'approved'),), null=True, blank=True,
     default='N')
@@ -180,6 +182,7 @@ class Order(models.Model):
 
     def save(self, *args, **kwargs):
         ''' On save, update timestamps '''
+        
         z = timezone('Asia/Kolkata')
         fmt = '%Y-%m-%d %H:%M:%S'
         ind_time = datetime.now(z)
@@ -227,11 +230,24 @@ class Product(models.Model):
 
     __original_tracking_data = None
     update_time=models.DateTimeField(null=True, blank=True)
+    dispatch_time=models.DateTimeField(null=True, blank=True)
+    
+
     def __init__(self, *args, **kwargs):
         super(Product, self).__init__(*args, **kwargs)
         self.__original_tracking_data = self.tracking_data
 
     def save(self, *args, **kwargs):
+        z = timezone('Asia/Kolkata')
+        fmt = '%Y-%m-%d %H:%M:%S'
+        ind_time = datetime.now(z)
+        time = ind_time.strftime(fmt)
+
+
+        if self.mapped_tracking_no:
+            self.status='DI'
+            self.dispatch_time=time
+
 
         if self.tracking_data != self.__original_tracking_data:
             z = timezone('Asia/Kolkata')
