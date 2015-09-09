@@ -908,7 +908,7 @@ class QcShipmentAdmin(ShipmentAdmin):
     readonly_fields = ('category','drop_phone', 'drop_name', 'status', 'address','barcode','tracking_data','parcel_details','real_tracking_no','name','weight','cost_of_courier','price')
      
     list_display = (
-        'order','tracking_no','company','book_time','dispatch_time','get_customer','drop_name','drop_phone', 'tracking_status','last_location' ,'update_time','expected_delivery_date','category','qc_comment')
+        'order','tracking_no','company','book_time','dispatch_time','get_customer','drop_name','drop_phone', 'tracking_status','last_location' ,'update_time','expected_delivery_date','category','last_updated','qc_comment')
     #list_filter = ['order__method','order__business']
     list_editable = ('qc_comment',)
 # readonly_fields = ('order__method','drop_phone', 'drop_name', 'status', 'address','barcode','tracking_data','real_tracking_no','name','weight','cost_of_courier','price')
@@ -944,6 +944,7 @@ class QcShipmentAdmin(ShipmentAdmin):
         else:
             return obj.mapped_tracking_no
     tracking_no.admin_order_field = 'mapped_tracking_no' #Allows column order sorting
+    tracking_no.allow_tags=True
 
     def last_location(self, obj):
 #pk=obj.namemail.pk
@@ -969,5 +970,23 @@ class QcShipmentAdmin(ShipmentAdmin):
             return obj.order.book_time + timedelta(days=3)
     expected_delivery_date.short_description='expected delivery date'
 
+    def last_updated(self,obj):
+        import datetime
+        z = timezone('Asia/Kolkata')
+        fmt = '%Y-%m-%d %H:%M:%S'
+        ind_time = datetime.datetime.now(z)
+        time = ind_time.strftime(fmt)
+        print obj.update_time
+        z = timezone('Asia/Kolkata')
+        #fmt = '%Y-%m-%d %H:%M:%S'
+        ind_time = datetime.datetime.now(z)
+        try:
+            diff_time=ind_time-obj.update_time
+            total_seconds = int(diff_time.total_seconds())
+            hours, remainder = divmod(total_seconds,60*60)
+            minutes, seconds = divmod(remainder,60)
+            return '%s hours,%s mins' %(hours, minutes)
+        except:
+            return '-'
 
 admin.site.register(QcShipment, QcShipmentAdmin)

@@ -961,7 +961,8 @@ class QcProductAdmin(ProductAdmin):
         else:
             return obj.mapped_tracking_no
     tracking_no.admin_order_field = 'mapped_tracking_no' #Allows column order sorting
-
+    tracking_no.allow_tags=True
+    
     def expected_delivery_date(self,obj):
         if (obj.order.method=='B'):
             return obj.date + timedelta(days=6)
