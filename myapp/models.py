@@ -266,7 +266,9 @@ class Shipment(models.Model):
     __original_tracking_data = None
     update_time=models.DateTimeField(null=True, blank=True)
     dispatch_time=models.DateTimeField(null=True, blank=True)
+    
 
+    
     def __init__(self, *args, **kwargs):
         super(Shipment, self).__init__(*args, **kwargs)
         self.__original_tracking_data = self.tracking_data
@@ -278,7 +280,7 @@ class Shipment(models.Model):
         ind_time = datetime.now(z)
         time = ind_time.strftime(fmt)
 
-        if self.mapped_tracking_no:
+        if self.mapped_tracking_no and (self.status=='PU' or self.status=='DI' or self.status=='P'):
             self.status='DI'
             self.dispatch_time=time
 

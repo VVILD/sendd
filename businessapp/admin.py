@@ -148,7 +148,9 @@ class BusinessAdmin(BaseBusinessAdmin):
     raw_id_fields = ('pb', 'warehouse')
     list_filter = ['username', 'daily','pb', 'warehouse']
 
-
+    actions = [export_as_csv_action("CSV Export", fields=['username','business_name','apikey','name','email','contact_mob','contact_office','address','city','state','pincode'])]
+    actions_on_bottom = False
+    actions_on_top = True
     
 
     def queryset(self, request):
@@ -351,7 +353,7 @@ admin.site.register(ApprovedBusinessOP, ApprovedBusinessOPAdmin)
 class AllotedBusinessAdmin(OPBusinessAdmin):
 
     def make_complete(modeladmin, request, queryset):
-        queryset.update(status='N')
+        queryset.update(status='N',pb=None)
 
 
 
@@ -360,7 +362,7 @@ class AllotedBusinessAdmin(OPBusinessAdmin):
     actions_on_bottom = False
     actions_on_top = True
 
-
+    actions = [make_complete]
     
     def queryset(self, request):
         qs = super(OPBusinessAdmin, self).queryset(request)
