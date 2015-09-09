@@ -231,7 +231,8 @@ class Product(models.Model):
     __original_tracking_data = None
     update_time=models.DateTimeField(null=True, blank=True)
     dispatch_time=models.DateTimeField(null=True, blank=True)
-    
+    def __unicode__(self):
+        return str(self.pk)
 
     def __init__(self, *args, **kwargs):
         super(Product, self).__init__(*args, **kwargs)
@@ -244,8 +245,11 @@ class Product(models.Model):
         time = ind_time.strftime(fmt)
 
 
-        if self.mapped_tracking_no:
+        if self.mapped_tracking_no and (self.status=='PU' or self.status=='DI' or self.status=='P'):
+            #print "i was here-----------------------------------------------------------------------"
+            #print self.status
             self.status='DI'
+
             self.dispatch_time=time
 
 
@@ -526,11 +530,13 @@ def send_update(sender, instance, created, **kwargs):
             if product.status != 'C':
                 #print "false check"
                 complete = False
-
+            #    print "1aaa"
             elif product.status != 'R':
                 return_value = False
+            #    print "2aaa"
             elif (product.status != 'R' & product.status != 'C'):
                 other_case = True
+            #    print "3aaa"
 
         signals.post_save.disconnect(send_update_order, sender=Order)
 

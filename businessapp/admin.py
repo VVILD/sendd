@@ -444,7 +444,7 @@ class ProductAdmin(admin.ModelAdmin):
     list_filter=['order__business']
     readonly_fields = (
         'name', 'quantity', 'sku', 'price', 'weight', 'applied_weight', 'real_tracking_no', 'order',
-        'kartrocket_order', 'shipping_cost', 'cod_cost', 'status', 'date', 'fedex_check','barcode')
+        'kartrocket_order', 'shipping_cost', 'cod_cost', 'date', 'fedex_check','barcode')
 
 
     fieldsets = (
