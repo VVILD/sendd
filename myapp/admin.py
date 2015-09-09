@@ -84,7 +84,7 @@ class OrderAdmin(admin.ModelAdmin):
     list_per_page = 25
     search_fields = ['user__phone', 'name', 'namemail__name', 'namemail__email', 'promocode__code', 'shipment__real_tracking_no','shipment__mapped_tracking_no','shipment__barcode','shipment__drop_phone','shipment__drop_name']
     list_display = (
-        'order_no', 'book_time', 'promocode', 'date', 'time', 'full_address', 'name_email', 'order_status', 'fedex_check','mapped_ok', 'way',
+        'order_no', 'book_time', 'promocode', 'date', 'time', 'full_address', 'name_email', 'order_status','mapped_ok', 'way',
         'pb', 'comment', 'shipments', 'send_invoice', 'warehouse')
     list_editable = ('date', 'time', 'order_status', 'pb', 'comment', 'warehouse')
     list_filter = ['book_time', 'status', 'pb','order_status', 'warehouse']
@@ -332,14 +332,6 @@ class OrderAdmin(admin.ModelAdmin):
         else:
             return e_string
 
-    def fedex_check(self, obj):
-        status = 'Pass'
-        products = Shipment.objects.filter(order=obj)
-        for product in products:
-            if product.fedex_check != 'P':
-                status = product.get_fedex_check_display()
-        return status
-
     send_invoice.allow_tags = True
 
 
@@ -546,12 +538,12 @@ class ShipmentAdmin(admin.ModelAdmin):
     list_display = (
         'real_tracking_no', 'name', 'cost_of_courier', 'weight', 'mapped_tracking_no', 'company', 'parcel_details',
         'price',
-        'category', 'drop_phone', 'drop_name', 'status', 'address', 'print_invoice', 'generate_order', 'barcode', 'img',)
+        'category', 'drop_phone', 'drop_name', 'status', 'address', 'print_invoice', 'generate_order', 'fedex','barcode', 'img',)
     list_filter = ['category']
     list_editable = (
         'name', 'cost_of_courier', 'weight', 'mapped_tracking_no', 'company', 'price', 'category', 'drop_phone',
         'drop_name', 'barcode', 'img',)
-    readonly_fields = ('fedex_check', 'real_tracking_no', 'print_invoice', 'generate_order', 'parcel_details', 'address', 'fedex')
+    readonly_fields = ('real_tracking_no', 'print_invoice', 'generate_order', 'fedex','parcel_details', 'address', 'fedex')
 
     fieldsets = (
         ('Basic Information', {'fields': ['real_tracking_no', 'parcel_details', ('category', 'status')],
@@ -564,7 +556,7 @@ class ShipmentAdmin(admin.ModelAdmin):
         #('Destination Address', {'fields':['drop_name','drop_phone','drop_flat_no','locality','city','state','drop_pincode','country'] , 'classes':['collapse',]})
         ('Destination Address',
          {'fields': [('drop_name', 'drop_phone'), 'address', ], 'classes': ('suit-tab', 'suit-tab-general')}),
-        ('Actions', {'fields': ['fedex_check', 'print_invoice', 'generate_order', 'fedex'], 'classes': ('suit-tab', 'suit-tab-general')}),
+        ('Actions', {'fields': ['print_invoice', 'generate_order', 'fedex'], 'classes': ('suit-tab', 'suit-tab-general')}),
         ('Tracking', {'fields': ['tracking_data'], 'classes': ('suit-tab', 'suit-tab-tracking')})
     )
 
@@ -690,14 +682,6 @@ class ShipmentAdmin(admin.ModelAdmin):
 
 
     def generate_order(self, obj):
-        #neworder=GCMDevice.objects.create(registration_id='fdgfdgfdsgfsfdg')
-        #device = GCMDevice.objects.get(registration_id='APA91bGKEsBkDFeODXaS0coILc__0qPaWA6etPbK3fiWad2vluI_Q_EQVw9wocFgqCufbJy43PPXxhr7TB2QMx4QSHCgvBoq2l9dzxGRGX0Mnx6V9pPH2p2lAP93XZKyKjVWRu1PIvwd')
-        #print "dsa"
-        #devicorder.e.send_message("wadhwsdfdsa")
-        #print device
-        #device = GCMDevice.objects.get(registration_id='APA91bFT-KrRjrc6fWp8KPHDCATa5dgWCmCIARc_ESElyQ2yLKCoVVJAa477on0VtxDaZtvZCAdMerld7lLyr_TW3F3xoUUCqv1zmzr3JnVJrt5EvnoolR2p6J5pgC3ks4jF6o6_5ITE')
-        #device.send_message("harsh bahut bada chakka hai.harsh", extra={"tracking_no": "S134807P31","url":"http://128.199.159.90/static/IMG_20150508_144433.jpeg"})
-        #device.send_message("harsh bahut bada chakka hai.harsh")
 
         valid = 1
         try:
@@ -739,7 +723,6 @@ class ShipmentAdmin(admin.ModelAdmin):
                     error_string = error_string + 'item_name not set<br>'
                     valid = 0
             except:
-                print 's'
                 error_string = error_string + 'item_name not set<br>'
                 valid = 0
 
@@ -748,14 +731,10 @@ class ShipmentAdmin(admin.ModelAdmin):
 
                 if (str(price) != '' and str(price) != 'None'):
                     string = string + 'price=' + str(price) + '&'
-                    print "jkjkjkjkjkjkjkjkjkjk"
-                    print price
-                    print "jkjkjkjkjkjkjkjkjkjk"
                 else:
                     error_string = error_string + 'item_cost not set<br>'
                     valid = 0
             except:
-                print 's'
                 error_string = error_string + 'item_cost not set<br>'
                 valid = 0
 
@@ -768,7 +747,6 @@ class ShipmentAdmin(admin.ModelAdmin):
                     valid = 0
 
             except:
-                print 's'
                 error_string = error_string + 'item_weight not set<br>'
                 valid = 0
 
@@ -780,7 +758,6 @@ class ShipmentAdmin(admin.ModelAdmin):
                     error_string = error_string + 'drop_phone not set<br>'
                     valid = 0
             except:
-                print 's'
                 error_string = error_string + 'drop_phone not set<br>'
                 valid = 0
 
@@ -788,7 +765,6 @@ class ShipmentAdmin(admin.ModelAdmin):
                 address1 = str(address.flat_no) + str(address.locality)
                 string = string + 'address=' + str(address1) + '&'
             except:
-                print 's'
                 error_string = error_string + 'address not set<br>'
                 valid = 0
 
@@ -798,7 +774,6 @@ class ShipmentAdmin(admin.ModelAdmin):
             except:
                 error_string = error_string + 'city not set<br>'
                 valid = 0
-                print 'k'
 
             try:
                 state = address.state
@@ -806,7 +781,6 @@ class ShipmentAdmin(admin.ModelAdmin):
             except:
                 error_string = error_string + 'state not set<br>'
                 valid = 0
-                print 's'
 
             try:
                 pincode = address.pincode
@@ -814,15 +788,9 @@ class ShipmentAdmin(admin.ModelAdmin):
             except:
                 error_string = error_string + 'pincode not set<br>'
                 valid = 0
-                print 's'
-
-
-
-            #message="Hi " + user.name +", \n Greetings from DoorMint!,Our service provider ' "  + serviceprovider_name + "' (" + serviceprovider_number +") will reach you on "+book_date +" at "+str_time+" for "+ service1_name + "( "+service2_name+"). Call 9022662244, if you need help . Thanks for choosing us!"
-            #message=urllib.quote(message)
 
         except:
-            print 's'
+            pass
 
         if (valid):
             return 'All good!<br><a href="http://order.sendmates.com/?%s" target="_blank" >Create Normal Order</a> <br> <a href="http://order.sendmates.com/cod/?%s" target="_blank" >Create Cod Order</a>' % (
@@ -834,18 +802,56 @@ class ShipmentAdmin(admin.ModelAdmin):
 
     def fedex(self, obj):
         params = urllib.urlencode({'shipment_pk': obj.pk, 'client_type': "customer"})
-        if not obj.weight:
-            return "Enter item weight"
-        elif obj.fedex_check != 'P' and obj.fedex_check is not None and obj.fedex_check != 'R':
-            return "Fedex Check Failed" + '<br> <h2 style="color:red">' + obj.get_fedex_check_display() + '</h2>'
-        else:
-            if obj.fedex_outbound_label:
-                return '<a href="/static/%s" target="_blank">%s</a>' % (str(obj.fedex_outbound_label.name).split('/')[-1], "Print Outbound Label") + '<br><a style="color:red" href="/create_fedex_shipment/?%s" target="_blank">%s</a>' % (params, "Re-Create Order")
+
+        if not obj.drop_address.state:
+            return "Enter state"
+
+        if not state_matcher.is_state(obj.drop_address.state):
+            closest_state = state_matcher.get_closest_state(obj.drop_address.state)
+            if closest_state:
+                obj.drop_address.state = closest_state[0]
+                obj.drop_address.save()
             else:
-                if obj.fedex_check != 'R':
-                    return '<a href="/create_fedex_shipment/?%s" target="_blank">%s</a>' % (params, "Create Order")
-                else:
-                    return '<a href="/create_fedex_shipment/?%s" target="_blank">%s</a>' % (params, "Create Order") + '<h2 style="color:red">Restricted States</h2>'
+                return '<h2 style="color:red">Enter a valid state</h2>'
+
+        if not obj.drop_address.pincode:
+            return "Enter pincode"
+
+        db_pincode = Pincode.objects.filter(pincode=obj.drop_address.pincode)
+
+        if db_pincode:
+            if not db_pincode[0].fedex_servicable:
+                return '<h2 style="color:red">Not Servicable</h2>'
+            elif db_pincode[0].fedex_oda_opa:
+                return '<h2 style="color:red">ODA</h2>'
+        else:
+            return '<h2 style="color:red">Enter a valid pincode</h2>'
+
+        if not obj.weight:
+            return "Enter applied weight"
+
+        if not obj.cost_of_courier:
+            return "Enter item value"
+
+        if obj.drop_address.state == 'Kerala' and obj.category == 'E':
+            return '<h2 style="color:red">Not Servicable</h2>'
+
+        if obj.drop_address.state == 'West Bengal' and float(obj.cost_of_courier) > 1000:
+            return '<h2 style="color:red">Not Servicable</h2>'
+
+        if obj.fedex_outbound_label:
+            if obj.drop_address.state == 'Gujarat' and obj.category == 'E':
+                return '<a href="/static/%s" target="_blank">%s</a>' % (str(obj.fedex_outbound_label.name).split('/')[-1], "Print Outbound Label") + '<br><a style="color:red" href="/create_fedex_shipment/?%s" target="_blank">%s</a>' % (params, "Re-Create Order") + '<br><br><a href="http://commercialtax.gujarat.gov.in/vatwebsite/download/form/403.pdf" target="_blank">%s</a>' % "Print Form 403"
+            else:
+                return '<a href="/static/%s" target="_blank">%s</a>' % (str(obj.fedex_outbound_label.name).split('/')[-1], "Print Outbound Label") + '<br><a style="color:red" href="/create_fedex_shipment/?%s" target="_blank">%s</a>' % (params, "Re-Create Order")
+
+        if obj.drop_address.state == 'Gujarat' and obj.category == 'E':
+            return '<a href="/create_fedex_shipment/?%s" target="_blank">%s</a>' % (params, "Create Order") + '<br> <br><a href="http://commercialtax.gujarat.gov.in/vatwebsite/download/form/403.pdf" target="_blank">%s</a>' % "Print Form 403"
+
+        if state_matcher.is_restricted(obj.drop_address.state) and not obj.is_document:
+            return '<a href="/create_fedex_shipment/?%s" target="_blank">%s</a>' % (params, "Create Order") + '<br> <h2 style="color:red">Restricted States</h2>'
+
+        return '<a href="/create_fedex_shipment/?%s" target="_blank">%s</a>' % (params, "Create Order")
     fedex.allow_tags = True
 
 
