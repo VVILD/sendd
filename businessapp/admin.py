@@ -353,7 +353,7 @@ admin.site.register(ApprovedBusinessOP, ApprovedBusinessOPAdmin)
 class AllotedBusinessAdmin(OPBusinessAdmin):
 
     def make_complete(modeladmin, request, queryset):
-        queryset.update(status='N')
+        queryset.update(status='N',pb=None)
 
 
 
@@ -362,7 +362,7 @@ class AllotedBusinessAdmin(OPBusinessAdmin):
     actions_on_bottom = False
     actions_on_top = True
 
-
+    actions = [make_complete]
     
     def queryset(self, request):
         qs = super(OPBusinessAdmin, self).queryset(request)
