@@ -133,12 +133,12 @@ class Command(BaseCommand):
                             "updated": True,
                             "error": False
                         }
-        except:
+        except Exception,e:
             result = {
                 "company": 'fedex',
                 "tracking_no": product.mapped_tracking_no,
                 "updated": False,
-                "error": True
+                "error": str(e)
             }
         return result
 
