@@ -91,8 +91,12 @@ class Command(BaseCommand):
                             order.save()
                     if original_length > 0:
                         if tracking_data[-1]['date'] != event.Timestamp.strftime('%Y-%m-%d %H:%M:%S'):
+                            if match.StatusCode == "DE":
+                                event_desc = "Delivery Exception (" + event.EventDescription + ")"
+                            else:
+                                event_desc = event.EventDescription
                             tracking_data.append({
-                                "status": event.EventDescription,
+                                "status": event_desc,
                                 "date": event.Timestamp.strftime('%Y-%m-%d %H:%M:%S'),
                                 "location": event.ArrivalLocation
                             })
@@ -112,8 +116,12 @@ class Command(BaseCommand):
                                 "error": False
                             }
                     else:
+                        if match.StatusCode == "DE":
+                            event_desc = "Delivery Exception (" + event.EventDescription + ")"
+                        else:
+                            event_desc = event.EventDescription
                         tracking_data.append({
-                            "status": event.EventDescription,
+                            "status": event_desc,
                             "date": event.Timestamp.strftime('%Y-%m-%d %H:%M:%S'),
                             "location": event.ArrivalLocation
                         })
