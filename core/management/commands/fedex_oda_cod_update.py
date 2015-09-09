@@ -21,6 +21,16 @@ class Command(BaseCommand):
         ),
     )
 
+    option_list = option_list + (
+        make_option(
+            "-w",
+            "--workers",
+            dest="workers",
+            help="Number of workers",
+            metavar="WRKS"
+        ),
+    )
+
     @staticmethod
     def update_db(row):
         if row['ODA-OPA / Regular Classification (Dom +Intl)'] == 'Regular':
@@ -61,10 +71,15 @@ class Command(BaseCommand):
         if not file_exists:
             CommandError("Path doesn't exist. Please provide a valid path")
 
+        if options['workers'] is None:
+            workers = 5
+        else:
+            workers = int(options['workers'])
+
         with open(file_path) as csvfile:
             reader = csv.DictReader(csvfile)
 
-            with futures.ThreadPoolExecutor(max_workers=50) as executor:
+            with futures.ThreadPoolExecutor(max_workers=workers) as executor:
                 futures_track = (executor.submit(self.update_db, item) for item in reader)
                 for result in futures.as_completed(futures_track):
                     if result.exception() is not None:
