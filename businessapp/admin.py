@@ -441,12 +441,12 @@ admin.site.register(LoginSession)
 
 class ProductAdmin(admin.ModelAdmin):
     search_fields = ['name', 'real_tracking_no']
-    list_display = ('name', 'price', 'weight', 'status', 'fedex_check', 'real_tracking_no', 'order', 'barcode','date',)
+    list_display = ('name', 'price', 'weight', 'status', 'real_tracking_no', 'order', 'barcode','date',)
     list_editable = ('status', )
     list_filter=['order__business']
     readonly_fields = (
         'name', 'quantity', 'sku', 'price', 'weight', 'applied_weight', 'real_tracking_no', 'order',
-        'kartrocket_order', 'shipping_cost', 'cod_cost', 'status', 'date', 'fedex_check','barcode')
+        'kartrocket_order', 'shipping_cost', 'cod_cost', 'status', 'date', 'barcode')
 
 
     fieldsets = (
@@ -500,14 +500,13 @@ class ProductInline(admin.TabularInline):
     exclude = ['sku', 'weight', 'real_tracking_no', 'tracking_data']
     readonly_fields = ('product_info', 'weight', 'shipping_cost', 'generate_order', 'fedex',)
     fields = (
-        'product_info', 'name', 'quantity', 'price', 'weight', 'applied_weight', 'generate_order', 'fedex')
+        'product_info', 'name', 'quantity', 'price', 'weight', 'applied_weight', 'is_document', 'generate_order', 'fedex')
     extra = 0
 
     def product_info(self, obj):
         return '<b>Name:</b>' + str(obj.name) + '<br>' + '<b>Quantity:</b>' + str(
             obj.quantity) + '<br>' + 'SKU: ' + str(obj.sku) + '<br>' + '<b>Price:</b>' + str(
-            obj.price) + '<br>' + "<b>Fedex check:</b>" + str(
-            obj.get_fedex_check_display()) + '<br>' + "<b>tracking_no:</b>" + str(
+            obj.price) + '<br>' + "<b>tracking_no:</b>" + str(
             obj.real_tracking_no) + '<br>' + "<b>kartrocket_order:</b>" + str(
             obj.kartrocket_order) + '<br>' + "<b>Mapped_tracking_no:</b>" + str(
             obj.mapped_tracking_no) + '<br>'+ "<b>status</b>" + str(
@@ -525,21 +524,12 @@ class ProductInline(admin.TabularInline):
 
 
     def generate_order(self, obj):
-        #neworder=GCMDevice.objects.create(registration_id='fdgfdgfdsgfsfdg')
-        #device = GCMDevice.objects.get(registration_id='APA91bGKEsBkDFeODXaS0coILc__0qPaWA6etPbK3fiWad2vluI_Q_EQVw9wocFgqCufbJy43PPXxhr7TB2QMx4QSHCgvBoq2l9dzxGRGX0Mnx6V9pPH2p2lAP93XZKyKjVWRu1PIvwd')
-        #print "dsa"
-        #devicorder.e.send_message("wadhwsdfdsa")
-        #print device
-        #device = GCMDevice.objects.get(registration_id='APA91bFT-KrRjrc6fWp8KPHDCATa5dgWCmCIARc_ESElyQ2yLKCoVVJAa477on0VtxDaZtvZCAdMerld7lLyr_TW3F3xoUUCqv1zmzr3JnVJrt5EvnoolR2p6J5pgC3ks4jF6o6_5ITE')
-        #device.send_message("harsh bahut bada chakka hai.harsh", extra={"tracking_no": "S134807P31","url":"http://128.199.159.90/static/IMG_20150508_144433.jpeg"})
-        #device.send_message("harsh bahut bada chakka hai.harsh")
 
         valid = 1
         try:
             string = ''
             product = Product.objects.get(pk=obj.pk)
             order = product.order
-            print order
             error_string = ''
             try:
                 shipmentid = product.real_tracking_no
@@ -568,7 +558,6 @@ class ProductInline(admin.TabularInline):
                     error_string = error_string + 'item_name not set<br>'
                     valid = 0
             except:
-                print 's'
                 error_string = error_string + 'item_name not set<br>'
                 valid = 0
 
@@ -577,14 +566,10 @@ class ProductInline(admin.TabularInline):
 
                 if (str(price) != '' and str(price) != 'None'):
                     string = string + 'price=' + str(price) + '&'
-                    print "jkjkjkjkjkjkjkjkjkjk"
-                    print price
-                    print "jkjkjkjkjkjkjkjkjkjk"
                 else:
                     error_string = error_string + 'item_cost not set<br>'
                     valid = 0
             except:
-                print 's'
                 error_string = error_string + 'item_cost not set<br>'
                 valid = 0
 
@@ -597,7 +582,6 @@ class ProductInline(admin.TabularInline):
                     valid = 0
 
             except:
-                print 's'
                 error_string = error_string + 'item_weight not set<br>'
                 valid = 0
 
@@ -609,7 +593,6 @@ class ProductInline(admin.TabularInline):
                     error_string = error_string + 'drop_phone not set<br>'
                     valid = 0
             except:
-                print 's'
                 error_string = error_string + 'drop_phone not set<br>'
                 valid = 0
 
@@ -617,7 +600,6 @@ class ProductInline(admin.TabularInline):
                 address1 = str(order.address1)
                 string = string + 'address=' + str(address1) + '&'
             except:
-                print 's'
                 error_string = error_string + 'address 1 not set<br>'
                 valid = 0
 
@@ -625,7 +607,6 @@ class ProductInline(admin.TabularInline):
                 address2 = str(order.address2)
                 string = string + 'address1=' + str(address2) + '&'
             except:
-                print 's'
                 error_string = error_string + 'address 2 not set<br>'
                 valid = 0
 
@@ -635,7 +616,6 @@ class ProductInline(admin.TabularInline):
             except:
                 error_string = error_string + 'city not set<br>'
                 valid = 0
-                print 'k'
 
             try:
                 state = order.state
@@ -643,7 +623,6 @@ class ProductInline(admin.TabularInline):
             except:
                 error_string = error_string + 'state not set<br>'
                 valid = 0
-                print 's'
 
             try:
                 pincode = order.pincode
@@ -651,15 +630,9 @@ class ProductInline(admin.TabularInline):
             except:
                 error_string = error_string + 'pincode not set<br>'
                 valid = 0
-                print 's'
-
-
-
-            #message="Hi " + user.name +", \n Greetings from DoorMint!,Our service provider ' "  + serviceprovider_name + "' (" + serviceprovider_number +") will reach you on "+book_date +" at "+str_time+" for "+ service1_name + "( "+service2_name+"). Call 9022662244, if you need help . Thanks for choosing us!"
-            #message=urllib.quote(message)
 
         except:
-            print 's'
+            pass
 
         if (valid):
             return 'All good!<br><a href="http://order.sendmates.com/baindex.php?%s" target="_blank" >Create Normal Order</a> <br> <a href="http://order.sendmates.com/cod/?%s" target="_blank" >Create Cod Order</a>' % (
@@ -671,20 +644,65 @@ class ProductInline(admin.TabularInline):
 
     def fedex(self, obj):
         params = urllib.urlencode({'shipment_pk': obj.pk, 'client_type': "business"})
+
+        if not obj.order.state:
+            return "Enter state"
+
+        if not state_matcher.is_state(obj.order.state):
+            closest_state = state_matcher.get_closest_state(obj.order.state)
+            if closest_state:
+                obj.order.state = closest_state[0]
+                obj.order.save()
+            else:
+                return '<h2 style="color:red">Enter a valid state</h2>'
+
+        if not obj.order.pincode:
+            return "Enter pincode"
+
+        db_pincode = Pincode.objects.filter(pincode=obj.order.pincode)
+
+        if db_pincode:
+            if not db_pincode[0].fedex_servicable:
+                return '<h2 style="color:red">Not Servicable</h2>'
+            elif db_pincode[0].fedex_oda_opa:
+                return '<h2 style="color:red">ODA</h2>'
+        else:
+            return '<h2 style="color:red">Enter a valid pincode</h2>'
+
+        if obj.order.payment_method == 'C':
+            if not db_pincode[0].fedex_cod_service:
+                return '<h2 style="color:red">Not COD Servicable</h2>'
+
         if not obj.applied_weight:
             return "Enter applied weight"
-        elif obj.fedex_check != 'P' and obj.fedex_check is not None and obj.fedex_check != 'R':
-            return "Fedex Check Failed" + '<br> <h2 style="color:red">' + obj.get_fedex_check_display() + '</h2>'
-        else:
-            if obj.fedex_outbound_label and obj.fedex_cod_return_label:
-                return '<a href="/static/%s" target="_blank">%s</a>' % (str(obj.fedex_outbound_label.name).split('/')[-1], "Print Outbound Label")+'<br>'+ '<a href="/static/%s" target="_blank">%s</a>' % (str(obj.fedex_cod_return_label.name).split('/')[-1], "Print COD Return Label") + '<br><a style="color:red" href="/create_fedex_shipment/?%s" target="_blank">%s</a>' % (params, "Re-Create Order")
-            elif obj.fedex_outbound_label:
-                return '<a href="/static/%s" target="_blank">%s</a>' % (str(obj.fedex_outbound_label.name).split('/')[-1], "Print Outbound Label") + '<br><a style="color:red" href="/create_fedex_shipment/?%s" target="_blank">%s</a>' % (params, "Re-Create Order")
+
+        if not obj.price:
+            return "Enter item value"
+
+        if obj.order.state == 'Kerala' and obj.order.method == 'B':
+            return '<h2 style="color:red">Not Servicable</h2>'
+
+        if obj.order.state == 'West Bengal' and float(obj.price) > 1000:
+            return '<h2 style="color:red">Not Servicable</h2>'
+
+        if obj.fedex_outbound_label and obj.fedex_cod_return_label:
+            if obj.order.state == 'Gujarat' and obj.order.method == 'B':
+                return '<a href="/static/%s" target="_blank">%s</a>' % (str(obj.fedex_outbound_label.name).split('/')[-1], "Print Outbound Label")+'<br><br>'+ '<a href="/static/%s" target="_blank">%s</a>' % (str(obj.fedex_cod_return_label.name).split('/')[-1], "Print COD Return Label") + '<br><br><a style="color:red" href="/create_fedex_shipment/?%s" target="_blank">%s</a>' % (params, "Re-Create Order") + '<br><br><a href="http://commercialtax.gujarat.gov.in/vatwebsite/download/form/403.pdf" target="_blank">%s</a>' % "Print Form 403"
             else:
-                if obj.fedex_check != 'R':
-                    return '<a href="/create_fedex_shipment/?%s" target="_blank">%s</a>' % (params, "Create Order")
-                else:
-                    return '<a href="/create_fedex_shipment/?%s" target="_blank">%s</a>' % (params, "Create Order") + '<h2 style="color:red">Restricted States</h2>'
+                return '<a href="/static/%s" target="_blank">%s</a>' % (str(obj.fedex_outbound_label.name).split('/')[-1], "Print Outbound Label")+'<br><br>'+ '<a href="/static/%s" target="_blank">%s</a>' % (str(obj.fedex_cod_return_label.name).split('/')[-1], "Print COD Return Label") + '<br><br><a style="color:red" href="/create_fedex_shipment/?%s" target="_blank">%s</a>' % (params, "Re-Create Order")
+        elif obj.fedex_outbound_label:
+            if obj.order.state == 'Gujarat' and obj.order.method == 'B':
+                return '<a href="/static/%s" target="_blank">%s</a>' % (str(obj.fedex_outbound_label.name).split('/')[-1], "Print Outbound Label") + '<br><a style="color:red" href="/create_fedex_shipment/?%s" target="_blank">%s</a>' % (params, "Re-Create Order") + '<br><br><a href="http://commercialtax.gujarat.gov.in/vatwebsite/download/form/403.pdf" target="_blank">%s</a>' % "Print Form 403"
+            else:
+                return '<a href="/static/%s" target="_blank">%s</a>' % (str(obj.fedex_outbound_label.name).split('/')[-1], "Print Outbound Label") + '<br><a style="color:red" href="/create_fedex_shipment/?%s" target="_blank">%s</a>' % (params, "Re-Create Order")
+
+        if obj.order.state == 'Gujarat' and obj.order.method == 'B':
+            return '<a href="/create_fedex_shipment/?%s" target="_blank">%s</a>' % (params, "Create Order") + '<br> <br><a href="http://commercialtax.gujarat.gov.in/vatwebsite/download/form/403.pdf" target="_blank">%s</a>' % "Print Form 403"
+
+        if state_matcher.is_restricted(obj.order.state) and not obj.is_document:
+            return '<a href="/create_fedex_shipment/?%s" target="_blank">%s</a>' % (params, "Create Order") + '<br> <h2 style="color:red">Restricted States</h2>'
+
+        return '<a href="/create_fedex_shipment/?%s" target="_blank">%s</a>' % (params, "Create Order")
 
     fedex.allow_tags = True
 
@@ -740,7 +758,7 @@ class OrderAdmin(FilterUserAdmin):
     inlines = (ProductInline,)
     search_fields = ['business__business_name', 'name', 'product__real_tracking_no', 'product__barcode','city','state','product__mapped_tracking_no']
     list_display = (
-        'order_no', 'book_time', 'business_details', 'name', 'status', 'fedex_check','mapped_ok', 'no_of_products', 'total_shipping_cost',
+        'order_no', 'book_time', 'business_details', 'name', 'status','mapped_ok', 'no_of_products', 'total_shipping_cost',
         'total_cod_cost', 'method',)
     list_editable = ('status',)
     list_filter = ['business', 'status', 'book_time']
@@ -788,14 +806,6 @@ class OrderAdmin(FilterUserAdmin):
 
     def business_details(self, obj):
         return '<a href="/admin/businessapp/business/%s/">%s</a>' % (obj.business.username, obj.business.business_name)
-
-    def fedex_check(self, obj):
-        status = 'Pass'
-        products = Product.objects.filter(order=obj)
-        for product in products:
-            if product.fedex_check != 'P':
-                status = product.get_fedex_check_display()
-        return status
 
     business_details.allow_tags = True
 

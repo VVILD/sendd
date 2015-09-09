@@ -224,9 +224,8 @@ class Product(models.Model):
     fedex_cod_return_label = models.FileField(upload_to='shipment/', blank=True, null=True)
     fedex_outbound_label = models.FileField(upload_to='shipment/', blank=True, null=True)
     actual_shipping_cost = models.FloatField(default=0.0)
-    fedex_check = models.CharField(max_length=1,
-                                   choices=(('I', 'Integrity Check'), ('O', 'ODA'), ('R', 'Restricted States'), ('P', 'Pass'), ('S', 'State Integrity Check'), ('A', 'Address Integrity Check'), ('N', 'Not Servicable'), ('Z', 'Invalid Pincode')),
-                                   null=True, blank=True)
+    is_document = models.BooleanField(default=False)
+    is_fragile = models.BooleanField(default=False)
 
     __original_tracking_data = None
     update_time=models.DateTimeField(null=True, blank=True)
@@ -291,124 +290,6 @@ class Product(models.Model):
 
         if (self.barcode is not None) and (len(self.barcode) > 12 or len(self.barcode) < 10):
             raise ValidationError("Barcode length should be 10")
-
-        try:
-            if self.applied_weight:
-                fedex = Fedex()
-                item_name = self.name
-                item_weight = self.applied_weight
-                # sender_name = self.order.business.name
-                # sender_company = self.order.business.business_name
-                # sender_phone = self.order.business.contact_mob
-                # sender_address = self.order.business.address
-                # sender_address1, sender_address2 = sender_address[:len(sender_address) / 2], sender_address[
-                #                                                                              len(sender_address) / 2:]
-                # sender_city = self.order.business.city
-                # sender_state = self.order.business.state
-                # sender_pincode = self.order.business.pincode
-                # sender_country_code = 'IN'
-                is_business_sender = True
-                receiver_name = self.order.name
-                receiver_company = None
-                receiver_phone = self.order.phone
-                receiver_address1 = self.order.address1
-                receiver_address2 = self.order.address2
-                receiver_address = receiver_address1 + receiver_address2
-                receiver_city = self.order.city
-                receiver_state = self.order.state
-                receiver_pincode = self.order.pincode
-                receiver_country_code = 'IN'
-                is_business_receiver = False
-                product_type = self.order.payment_method
-                is_cod = False
-                if product_type == 'C':
-                    is_cod = True
-                service_type, config=fedex.get_service_type(str(self.order.method), float(self.price), float(item_weight), receiver_city, is_cod)
-                item_price = self.price
-
-                sender = {
-                    # "name": sender_name,
-                    # "company": sender_company,
-                    # "phone": sender_phone,
-                    # "address1": sender_address1,
-                    # "address2": sender_address2,
-                    # "city": sender_city,
-                    # "state": sender_state,
-                    # "pincode": sender_pincode,
-                    # "is_business": is_business_sender,
-                    # "country_code": sender_country_code,
-                    "is_cod": is_cod
-                }
-                receiver = {
-                    "name": receiver_name,
-                    "company": receiver_company,
-                    "phone": receiver_phone,
-                    # "address1": receiver_address1,
-                    # "address2": receiver_address2,
-                    "address": receiver_address,
-                    "city": receiver_city,
-                    "state": receiver_state,
-                    "pincode": receiver_pincode,
-                    "is_business": is_business_receiver,
-                    "country_code": receiver_country_code
-                }
-                item = {
-                    "name": item_name,
-                    "weight": item_weight,
-                    "price": item_price
-                }
-                # dropoff_type = 'REGULAR_PICKUP'
-
-                try:
-                    result = fedex.is_oda(sender, receiver, item, config, service_type)
-
-                    if result:
-                        self.fedex_check = 'O'
-                    elif receiver_state in ('Uttar Pradesh', 'Madhya Pradesh', 'Bihar', 'Jharkhand'):
-                        self.fedex_check = 'R'
-                    else:
-                        self.fedex_check = 'P'
-                except ObjectDoesNotExist:
-                    closest_state = state_matcher.get_closest_state(receiver_state)
-                    if closest_state:
-                        try:
-                            receiver['state'] = closest_state[0]
-                            result = fedex.is_oda(sender, receiver, item, config, service_type)
-                            if result:
-                                self.fedex_check = 'O'
-                            elif receiver_state in ('Uttar Pradesh', 'Madhya Pradesh', 'Bihar', 'Jharkhand'):
-                                self.fedex_check = 'R'
-                            else:
-                                self.fedex_check = 'P'
-                            self.order.state = receiver["state"]
-                            self.order.save()
-                        except ObjectDoesNotExist:
-                            self.fedex_check = 'S'
-                        except ValidationError:
-                            self.fedex_check = 'A'
-                            print "H"
-                        except FedexError as e:
-                            if e.error_code == '868' or e.error_code == '711':
-                                self.fedex_check = 'N'
-                            elif e.error_code == '521':
-                                self.fedex_check = 'Z'
-                            else:
-                                raise e
-                    else:
-                        self.fedex_check = 'S'
-                except ValidationError:
-                    self.fedex_check = 'A'
-                    print "H"
-                except FedexError as e:
-                    if e.error_code == '868' or e.error_code == '711':
-                        self.fedex_check = 'N'
-                    elif e.error_code == '521':
-                        self.fedex_check = 'Z'
-                    else:
-                        raise e
-
-        except:
-            pass
 
         super(Product, self).save(*args, **kwargs)
         self.__original_tracking_data = self.tracking_data

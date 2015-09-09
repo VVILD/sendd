@@ -87,6 +87,10 @@ bv3_api.register(ShippingEstimateResource())
 bv3_api.register(OrderPatchResource())
 bv3_api.register(TrackingResourceV3())
 
+from core.api import PincodeResource
+pv1_api = Api(api_name='v1')
+pv1_api.register(PincodeResource())
+
 
 urlpatterns = patterns('',
     # Examples:
@@ -99,6 +103,7 @@ urlpatterns = patterns('',
     url(r'^bapi/', include(bv1_api.urls)),
     url(r'^bapi/', include(bv2_api.urls)),
     url(r'^bapi/', include(bv3_api.urls)),
+    url(r'^papi/', include(pv1_api.urls)),
     url(r'^stats/', include('myapp.urls')),       
     url(r'^pb_api/', include(pbv1_api.urls)),
     url(r'^pb_location/', pb_location_view, name='pb_location'),
