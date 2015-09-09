@@ -898,12 +898,17 @@ class QcShipmentAdmin(ShipmentAdmin):
     def queryset(self, request):
         return self.model.objects.filter(order__order_status='DI')
     
-    list_display = (
-    'real_tracking_no', 'tracking_status' ,'update_time','parcel_details','category', 'drop_phone', 'drop_name', 'address','barcode')
-    list_filter = ['category']
-    list_editable = ()
+
     readonly_fields = ('category','drop_phone', 'drop_name', 'status', 'address','barcode','tracking_data','parcel_details','real_tracking_no','name','weight','cost_of_courier','price')
+     
+    list_display = (
+        'order','real_tracking_no','mapped_tracking_no','company','book_time','dispatch_time','get_customer','drop_name','drop_phone', 'tracking_status','last_location' ,'update_time','barcode','category','qc_comment')
+    #list_filter = ['order__method','order__business']
+    list_editable = ('qc_comment',)
+# readonly_fields = ('order__method','drop_phone', 'drop_name', 'status', 'address','barcode','tracking_data','real_tracking_no','name','weight','cost_of_courier','price')
     search_fields = ['order__order_no', 'real_tracking_no', 'mapped_tracking_no', 'drop_phone', 'drop_name']
+    
+
     fieldsets = (
     ('Basic Information', {'fields': ['real_tracking_no', 'parcel_details', ('category', 'status')],
     'classes': ('suit-tab', 'suit-tab-general')}),
@@ -924,6 +929,23 @@ class QcShipmentAdmin(ShipmentAdmin):
         return json.loads(obj.tracking_data)[-1]['status']
     tracking_status.allow_tags = True
     tracking_status.admin_order_field = 'tracking_data'
+
+    def last_location(self, obj):
+#pk=obj.namemail.pk
+        return json.loads(obj.tracking_data)[-1]['location']
+    last_location.allow_tags = True
+    last_location.admin_order_field = 'tracking_data'
+
+    def get_customer(self, obj):
+#pk=obj.namemail.pk
+        return str(obj.order.user) + '|'+str (obj.order.namemail.name)+ '|'+str (obj.order.namemail.email) 
+    get_customer.allow_tags = True
+
+    def book_time(self, obj):
+#pk=obj.namemail.pk
+        return str(obj.order.book_time) 
+    book_time.allow_tags = True
+    book_time.admin_order_field = 'order__date'
 
 
 

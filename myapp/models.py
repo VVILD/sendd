@@ -267,6 +267,7 @@ class Shipment(models.Model):
     update_time=models.DateTimeField(null=True, blank=True)
     dispatch_time=models.DateTimeField(null=True, blank=True)
     
+    qc_comment=models.TextField(null=True, blank=True)
 
     
     def __init__(self, *args, **kwargs):

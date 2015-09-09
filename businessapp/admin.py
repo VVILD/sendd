@@ -921,11 +921,18 @@ class QcProductAdmin(ProductAdmin):
     def queryset(self, request):
         return self.model.objects.filter(order__status='DI')
     list_display = (
-        'real_tracking_no', 'tracking_status' ,'update_time','barcode','get_method','get_business')
+        'order_no','real_tracking_no','mapped_tracking_no','company','date','dispatch_time','get_business','sent_to', 'tracking_status','last_location' ,'update_time','barcode','get_method','qc_comment')
     list_filter = ['order__method','order__business']
-    list_editable = ()
+    list_editable = ('qc_comment',)
 # readonly_fields = ('order__method','drop_phone', 'drop_name', 'status', 'address','barcode','tracking_data','real_tracking_no','name','weight','cost_of_courier','price')
     search_fields = ['order__order_no', 'real_tracking_no', 'mapped_tracking_no', 'drop_phone', 'drop_name']
+    
+    def order_no(self, obj):
+        return '<a href="/admin/businessapp/order/%s/">%s</a>' % (obj.order.pk, obj.order.pk)
+    order_no.allow_tags = True
+    order_no.admin_order_field = 'order'
+
+
     def get_method(self, obj):
         if (obj.order.method=='B'):
             return 'Bulk'
@@ -935,11 +942,22 @@ class QcProductAdmin(ProductAdmin):
             return 'None'
     get_method.admin_order_field = 'order__method' #Allows column order sorting
     get_method.short_description = 'method'
+
     def tracking_status(self, obj):
 #pk=obj.namemail.pk
         return json.loads(obj.tracking_data)[-1]['status']
     tracking_status.allow_tags = True
     tracking_status.admin_order_field = 'tracking_data'
+
+    def sent_to(self,obj):
+        return obj.order.name
+
+
+    def last_location(self, obj):
+#pk=obj.namemail.pk
+        return json.loads(obj.tracking_data)[-1]['location']
+    last_location.allow_tags = True
+    last_location.admin_order_field = 'tracking_data'
 
     def get_business(self, obj):
         return obj.order.business
