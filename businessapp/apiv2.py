@@ -660,4 +660,8 @@ class BarcodeAllotmentResource(CORSModelResource):
         if bundle.request.method == 'PATCH':
             bundle.data['business'] = bundle.data['username']
 
+        if bundle.request.method == 'GET':
+            bundle.data['business'] = bundle.obj.business
+            bundle.data['business_username'] = bundle.obj.business.username
+
         return bundle
