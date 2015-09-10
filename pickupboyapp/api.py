@@ -90,7 +90,8 @@ class PickupboyResource(Resource):
         result = []
         customer_pending_orders = CustomerOrder.objects.filter(pb__phone=pb_ph, order_status='A',
                                                                date=datetime.date.today()).order_by("time")
-        business_pending_orders = BusinessOrder.objects.filter(business__pb__phone=pb_ph, status='P')
+        business_pending_orders = BusinessOrder.objects.filter(business__pb__phone=pb_ph, status='P',
+                                                               business__is_completed=False)
         alloted_businesses = Business.objects.filter(pb__phone=pb_ph, is_completed=False).exclude(order__status='P')
 
         for order in business_pending_orders:
@@ -195,13 +196,13 @@ class PickupboyResource(Resource):
                 })
             promocode_type = None
             promocode_amount = None
-            promocode_code= None
-            promocode_msg=None
+            promocode_code = None
+            promocode_msg = None
             if order.promocode:
                 if order.promocode.promocode_type:
                     promocode_type = order.promocode.promocode_type
                     promocode_code = order.promocode.code
-                    promocode_msg =order.promocode.msg
+                    promocode_msg = order.promocode.msg
                 if order.promocode.promocode_amount:
                     promocode_amount = order.promocode.promocode_amount
             order_repr = {
@@ -213,8 +214,8 @@ class PickupboyResource(Resource):
                 "user": order.user,
                 "promocode_type": promocode_type,
                 "promocode_amount": promocode_amount,
-                "promocode_msg":promocode_msg,
-                "promocode_code":promocode_code,
+                "promocode_msg": promocode_msg,
+                "promocode_code": promocode_code,
                 "book_time": order.book_time
             }
             detailed_order = {

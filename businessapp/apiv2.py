@@ -619,3 +619,41 @@ class InvoiceResource(CORSResource):
         bundle.sort(key=lambda x: int(x[0]))
         self.log_throttled_access(request)
         return self.create_response(request, bundle)
+
+
+class BusinessBarcodeResource(ModelResource):
+    class Meta:
+        queryset = Business.objects.all()
+        resource_name = 'business'
+        authorization = Authorization()
+        always_return_data = True
+
+
+class BarcodeAllotmentResource(CORSModelResource):
+    business = fields.ForeignKey(BusinessBarcodeResource, 'business', null=True)
+
+    class Meta:
+        resource_name = 'barcode_allotment'
+        object_class = Barcode
+        queryset = Barcode.objects.all()
+        authorization = OnlyAuthorization()
+        authentication = Authentication()
+        allowed_methods = ['post', 'patch', 'put']
+        always_return_data = True
+
+    def hydrate(self, bundle):
+
+        try:
+            business_obj = Business.objects.get(username=bundle.data['username'])
+            bundle.data['business'] = "/bapi/v1/business/" + str(bundle.data['username']) + "/"
+        except Business.DoesNotExist:
+            raise ImmediateHttpResponse(HttpBadRequest("Username doesnt exist"))
+        except KeyError:
+            raise ImmediateHttpResponse(HttpBadRequest("Please Provide a valid username key"))
+
+        return bundle
+
+    def dehydrate(self, bundle):
+        bundle.data['business'] = bundle.data['username']
+
+        return bundle
