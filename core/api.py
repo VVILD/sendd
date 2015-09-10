@@ -1,13 +1,13 @@
 from tastypie.authentication import Authentication
 from tastypie.authorization import Authorization
 from tastypie.constants import ALL
-from tastypie.resources import ModelResource
 from core.models import Pincode
+from businessapp.apiv3 import CORSModelResource
 
 __author__ = 'vatsalshah'
 
 
-class PincodeResource(ModelResource):
+class PincodeResource(CORSModelResource):
     class Meta:
         resource_name = 'pincode'
         authentication = Authentication()
