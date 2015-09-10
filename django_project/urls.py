@@ -78,7 +78,7 @@ bv2_api.register(TrackingResource())
 bv2_api.register(SearchResource())
 bv2_api.register(OrderResource2())
 
-from businessapp.apiv3 import ProductResource3, OrderResource3, ShippingEstimateResource, OrderPatchResource
+from businessapp.apiv3 import ProductResource3, OrderResource3, ShippingEstimateResource, OrderPatchResource, BusinessPatchResource
 from businessapp.apiv3 import TrackingResource as TrackingResourceV3
 bv3_api = Api(api_name='v3')
 bv3_api.register(ProductResource3())
@@ -86,6 +86,7 @@ bv3_api.register(OrderResource3())
 bv3_api.register(ShippingEstimateResource())
 bv3_api.register(OrderPatchResource())
 bv3_api.register(TrackingResourceV3())
+bv3_api.register(BusinessPatchResource())
 
 from core.api import PincodeResource
 pv1_api = Api(api_name='v1')

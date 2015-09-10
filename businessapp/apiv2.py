@@ -235,7 +235,6 @@ class BusinessResource(CORSModelResource):
     class Meta:
         queryset = Business.objects.all()
         resource_name = 'business'
-        # excludes = ['password']
         authorization = Authorization()
         always_return_data = True
 
@@ -247,12 +246,8 @@ class BusinessResource(CORSModelResource):
         try:
             business = Business.objects.get(pk=pk)
         except:
-            print "fuck"
             bundle.data["msg"] = 'notregistered'
             return bundle
-
-
-        # pk=bundle.data['resource_uri'].split('/')[4]
 
         try:
             bundle.data['manager'] = business.businessmanager.user.first_name + business.businessmanager.user.first_name 
@@ -261,8 +256,7 @@ class BusinessResource(CORSModelResource):
         except:
             bundle.data['manager'] = 'Ankush Sharma'
             bundle.data['manager_number'] = '8080772210'
-        # u = User.objects.get(username='ankit')
-        # print u.businessmanager.phone
+
         return bundle
 
 
