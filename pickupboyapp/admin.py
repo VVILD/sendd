@@ -46,7 +46,7 @@ class PickupboyAdmin(admin.ModelAdmin):
     def alloted_times(self, obj):
         cust_orders = Order.objects.filter(pb=obj, order_status='A',
                                            date=datetime.date.today()).order_by("time").values("time")
-        business = Business.objects.filter(pb=obj).values("assigned_pickup_time")
+        business = Business.objects.filter(pb=obj, assigned_pickup_time__isnull=False).values("assigned_pickup_time")
         cust_t = [(order['time'], 'Customer') for order in cust_orders]
         business_t = [(bo['assigned_pickup_time'], 'Business') for bo in business]
         all_t = cust_t + business_t
