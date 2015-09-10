@@ -4,7 +4,7 @@ import json
 
 from random import randint
 
-
+from datetime import timedelta
 import datetime
 from datetime import date
 from django.contrib import admin
@@ -931,11 +931,18 @@ class QcProductAdmin(ProductAdmin):
     def queryset(self, request):
         return self.model.objects.filter(order__status='DI')
     list_display = (
-        'real_tracking_no', 'tracking_status' ,'update_time','barcode','get_method','get_business')
+        'order_no','tracking_no','company','book_date','dispatch_time','get_business','sent_to', 'tracking_status','last_location' ,'expected_delivery_date','last_updated','qc_comment')
     list_filter = ['order__method','order__business']
-    list_editable = ()
+    list_editable = ('qc_comment',)
 # readonly_fields = ('order__method','drop_phone', 'drop_name', 'status', 'address','barcode','tracking_data','real_tracking_no','name','weight','cost_of_courier','price')
     search_fields = ['order__order_no', 'real_tracking_no', 'mapped_tracking_no', 'drop_phone', 'drop_name']
+    
+    def order_no(self, obj):
+        return '<a href="/admin/businessapp/order/%s/">%s</a>' % (obj.order.pk, obj.order.pk)
+    order_no.allow_tags = True
+    order_no.admin_order_field = 'order'
+
+
     def get_method(self, obj):
         if (obj.order.method=='B'):
             return 'Bulk'
@@ -945,11 +952,63 @@ class QcProductAdmin(ProductAdmin):
             return 'None'
     get_method.admin_order_field = 'order__method' #Allows column order sorting
     get_method.short_description = 'method'
+
+    def tracking_no(self, obj):
+        if (obj.company=='B'):
+            return '<a href="http://www.bluedart.com/servlet/RoutingServlet?handler=tnt&action=awbquery&awb=awb&numbers=%s">%s</a>' % (obj.mapped_tracking_no, obj.mapped_tracking_no)
+        elif (obj.company=='F'):
+            return '<a href="https://www.fedex.com/apps/fedextrack/?action=track&trackingnumber=%s">%s</a>' % (obj.mapped_tracking_no, obj.mapped_tracking_no)
+        else:
+            return obj.mapped_tracking_no
+    tracking_no.admin_order_field = 'mapped_tracking_no' #Allows column order sorting
+    tracking_no.allow_tags=True
+    
+    def expected_delivery_date(self,obj):
+        if (obj.order.method=='B'):
+            return obj.date + timedelta(days=6)
+        elif (obj.order.method=='N'):
+            return obj.date + timedelta(days=3)
+        else:
+            return 'None'
+    expected_delivery_date.short_description='expected delivery date'
+
     def tracking_status(self, obj):
 #pk=obj.namemail.pk
         return json.loads(obj.tracking_data)[-1]['status']
     tracking_status.allow_tags = True
     tracking_status.admin_order_field = 'tracking_data'
+
+    def sent_to(self,obj):
+        return obj.order.name
+
+    def book_date(self,obj):
+        return obj.date
+    book_date.admin_order_field='date'
+
+    def last_updated(self,obj):
+        import datetime
+        z = timezone('Asia/Kolkata')
+        fmt = '%Y-%m-%d %H:%M:%S'
+        ind_time = datetime.datetime.now(z)
+        time = ind_time.strftime(fmt)
+        print obj.update_time
+        z = timezone('Asia/Kolkata')
+        #fmt = '%Y-%m-%d %H:%M:%S'
+        ind_time = datetime.datetime.now(z)
+        try:
+            diff_time=obj.update_time-ind_time
+            total_seconds = int(diff_time.total_seconds())
+            hours, remainder = divmod(total_seconds,60*60)
+            minutes, seconds = divmod(remainder,60)
+            return '%s hours,%s mins' %(hours, minutes)
+        except:
+            return '-'
+
+    def last_location(self, obj):
+#pk=obj.namemail.pk
+        return json.loads(obj.tracking_data)[-1]['location']
+    last_location.allow_tags = True
+    last_location.admin_order_field = 'tracking_data'
 
     def get_business(self, obj):
         return obj.order.business

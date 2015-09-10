@@ -230,6 +230,9 @@ class Product(models.Model):
     __original_tracking_data = None
     update_time=models.DateTimeField(null=True, blank=True)
     dispatch_time=models.DateTimeField(null=True, blank=True)
+
+    qc_comment=models.TextField(null=True, blank=True)
+
     def __unicode__(self):
         return str(self.pk)
 
