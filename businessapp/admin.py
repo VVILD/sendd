@@ -991,18 +991,18 @@ class QcProductAdmin(ProductAdmin):
         fmt = '%Y-%m-%d %H:%M:%S'
         ind_time = datetime.datetime.now(z)
         time = ind_time.strftime(fmt)
-        print obj.update_time
         z = timezone('Asia/Kolkata')
         #fmt = '%Y-%m-%d %H:%M:%S'
         ind_time = datetime.datetime.now(z)
         try:
-            diff_time=obj.update_time-ind_time
+            diff_time=ind_time-obj.update_time
             total_seconds = int(diff_time.total_seconds())
             hours, remainder = divmod(total_seconds,60*60)
             minutes, seconds = divmod(remainder,60)
             return '%s hours,%s mins' %(hours, minutes)
         except:
             return '-'
+    last_updated.admin_order_field='update_time'
 
     def last_location(self, obj):
 #pk=obj.namemail.pk

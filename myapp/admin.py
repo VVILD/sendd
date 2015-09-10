@@ -988,5 +988,7 @@ class QcShipmentAdmin(ShipmentAdmin):
             return '%s hours,%s mins' %(hours, minutes)
         except:
             return '-'
+    last_updated.admin_order_field='update_time'
 
+    
 admin.site.register(QcShipment, QcShipmentAdmin)
