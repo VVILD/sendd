@@ -252,18 +252,17 @@ class Product(models.Model):
         time = ind_time.strftime(fmt)
 
 
-        if self.mapped_tracking_no and (self.status=='PU' or self.status=='DI' or self.status=='P'):
+        if self.mapped_tracking_no and (self.status=='PU' or self.status=='D' or self.status=='P'):
             #print "i was here-----------------------------------------------------------------------"
             #print self.status
             self.status='DI'
-
             self.dispatch_time=time
 
 
         if self.tracking_data != self.__original_tracking_data:
             z = timezone('Asia/Kolkata')
             fmt = '%Y-%m-%d %H:%M:%S'
-            ind_time = datetime.now(z)
+            ind_time = dategtime.now(z)
             time = ind_time.strftime(fmt)
             self.update_time=time
         
@@ -321,7 +320,7 @@ def send_update(sender, instance, created, **kwargs):
 
     # order will be pending intransit complete cancelled picked up
 
-
+    products_in_order = Product.objects.filter(order=instance.order)
 
     if instance.applied_weight:
         method = instance.order.method
@@ -412,9 +411,6 @@ def send_update(sender, instance, created, **kwargs):
         other_case = False
         #		print "in complete loop"
 
-        products_in_order = Product.objects.filter(order=instance.order)
-        print "count"
-        print products_in_order.count()
         for product in products_in_order:
             if product.status != 'C':
                 #print "false check"
@@ -454,7 +450,6 @@ def send_update(sender, instance, created, **kwargs):
     if (instance.status == 'PU') or (instance.status == 'CA'):
     	#print "33333333333333333333333333333333333333333333	"
     	pickedup = True
-    	products_in_order = Product.objects.filter(order=instance.order)
         for product in products_in_order:
         	if (product.status!='PU') & (product.status!='CA'):
         		pickedup=False
@@ -468,7 +463,6 @@ def send_update(sender, instance, created, **kwargs):
     if (instance.status == 'DI') or (instance.status == 'CA'):
         #print "33333333333333333333333333333333333333333333    "
         Dispatched = True
-        products_in_order = Product.objects.filter(order=instance.order)
         for product in products_in_order:
             if (product.status!='DI') & (product.status!='CA'):
                 Dispatched=False
@@ -479,6 +473,19 @@ def send_update(sender, instance, created, **kwargs):
             instance.order.save()
             signals.post_save.connect(send_update_order, sender=Order)
 
+
+
+    if (instance.status=='CA'):
+        Cancelled=True
+        for product in products_in_order:
+            if (product.status!='CA'):
+                Cancelled=False
+        if (Cancelled):
+# signals.post_save.disconnect(send_update_order, sender=Order)
+            signals.post_save.disconnect(send_update_order, sender=Order)        
+            instance.order.status = 'N'
+            instance.order.save()
+            signals.post_save.connect(send_update_order, sender=Order)
 
 
 post_save.connect(send_update, sender=Product)

@@ -438,10 +438,11 @@ def send_update(sender, instance, created, **kwargs):
 # choices=(('P', 'pending'), ('C', 'complete'), ('PU', 'pickedup'), ('CA', 'cancelled'), ('R', 'return')),
 # ('P', 'pending'), ('C', 'complete'), ('N', 'cancelled'), ('D', 'in transit'), ('PU', 'pickedup')), default='P')
 # order will be pending intransit complete cancelled picked up
+    products_in_order = Shipment.objects.filter(order=instance.order)
+        
     count=0
     if ((instance.status == 'PU') or (instance.status == 'CA')) and (instance.order.order_status=='A'):
         pickedup = True
-        products_in_order = Shipment.objects.filter(order=instance.order)
         print "count of shipments"
         print products_in_order.count()
         for product in products_in_order:
@@ -459,7 +460,6 @@ def send_update(sender, instance, created, **kwargs):
 
     if (instance.status == 'DI') or (instance.status == 'CA'):
         Dispatched = True
-        products_in_order = Shipment.objects.filter(order=instance.order)
         for product in products_in_order:
             if (product.status!='DI') & (product.status!='CA'):
                 Dispatched=False
@@ -467,6 +467,19 @@ def send_update(sender, instance, created, **kwargs):
 # signals.post_save.disconnect(send_update_order, sender=Order)
             instance.order.order_status = 'DI'
             instance.order.save()
+
+
+    if (instance.status=='CA'):
+        Cancelled=True
+        for product in products_in_order:
+            if (product.status!='CA'):
+                Cancelled=False
+        if (Cancelled):
+# signals.post_save.disconnect(send_update_order, sender=Order)
+            instance.order.order_status = 'N'
+            instance.order.save()
+        
+
 # signals.post_save.connect(send_update_order, sender=Order)
 post_save.connect(send_update, sender=Shipment)
 

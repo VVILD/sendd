@@ -903,7 +903,7 @@ class QcShipmentAdmin(ShipmentAdmin):
     readonly_fields = ('category','drop_phone', 'drop_name', 'status', 'address','barcode','tracking_data','parcel_details','real_tracking_no','name','weight','cost_of_courier','price')
      
     list_display = (
-        'order','tracking_no','company','book_time','dispatch_time','get_customer','drop_name','drop_phone', 'tracking_status','last_location' ,'update_time','expected_delivery_date','category','last_updated','qc_comment')
+        'order','tracking_nos','company','book_time','dispatch_time','get_customer','drop_name','drop_phone', 'tracking_status','last_location' ,'update_time','expected_delivery_date','category','last_updated','qc_comment')
     #list_filter = ['order__method','order__business']
     list_editable = ('qc_comment',)
 # readonly_fields = ('order__method','drop_phone', 'drop_name', 'status', 'address','barcode','tracking_data','real_tracking_no','name','weight','cost_of_courier','price')
@@ -931,15 +931,15 @@ class QcShipmentAdmin(ShipmentAdmin):
     tracking_status.allow_tags = True
     tracking_status.admin_order_field = 'tracking_data'
 
-    def tracking_no(self, obj):
+    def tracking_nos(self, obj):
         if (obj.company=='B'):
             return '<a href="http://www.bluedart.com/servlet/RoutingServlet?handler=tnt&action=awbquery&awb=awb&numbers=%s">%s</a>' % (obj.mapped_tracking_no, obj.mapped_tracking_no)
         elif (obj.company=='F'):
             return '<a href="https://www.fedex.com/apps/fedextrack/?action=track&trackingnumber=%s">%s</a>' % (obj.mapped_tracking_no, obj.mapped_tracking_no)
         else:
             return obj.mapped_tracking_no
-    tracking_no.admin_order_field = 'mapped_tracking_no' #Allows column order sorting
-    tracking_no.allow_tags=True
+    tracking_nos.admin_order_field = 'mapped_tracking_no' #Allows column order sorting
+    tracking_nos.allow_tags=True
 
     def last_location(self, obj):
 #pk=obj.namemail.pk
@@ -985,5 +985,5 @@ class QcShipmentAdmin(ShipmentAdmin):
             return '-'
     last_updated.admin_order_field='update_time'
 
-    
+
 admin.site.register(QcShipment, QcShipmentAdmin)

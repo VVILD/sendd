@@ -990,17 +990,8 @@ class QcProductAdmin(ProductAdmin):
         #fmt = '%Y-%m-%d %H:%M:%S'
         ind_time = datetime.datetime.now(z)
         try:
-            print "-----------"
-            print ind_time.replace(second=0, microsecond=0,tzinfo=None)
-            print obj.update_time.replace(second=0, microsecond=0,tzinfo=None)
-            print "----------->>"
-            
             diff_time=ind_time.replace(second=0, microsecond=0,tzinfo=None)-obj.update_time.replace(second=0, microsecond=0,tzinfo=None)
-            print diff_time
-            print type(diff_time)
             total_seconds = int(diff_time.total_seconds())
-            print ">>>",
-            print total_seconds 
             hours, remainder = divmod(total_seconds,60*60)
             minutes, seconds = divmod(remainder,60)
             return '%s hours,%s mins' %(hours, minutes)
