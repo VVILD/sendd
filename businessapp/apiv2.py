@@ -296,6 +296,7 @@ class OrderResource(CORSModelResource):
             override_method = 'none'
 
         if bundle.request.META['REQUEST_METHOD'] == 'POST' and override_method == 'PATCH':
+            print "i was here"
             return bundle
 
     def dehydrate(self, bundle):
@@ -304,6 +305,7 @@ class OrderResource(CORSModelResource):
         except:
             override_method = 'none'
         if bundle.request.META['REQUEST_METHOD'] == 'POST' and override_method == 'PATCH':
+            print "i was here2"
             return bundle
         pk = bundle.data['resource_uri'].split('/')[4]
         products = Product.objects.filter(order__pk=pk)
