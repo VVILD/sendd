@@ -74,6 +74,7 @@ class Business(models.Model):
     show_tracking_company = models.CharField(max_length=1, choices=(('Y', 'yes'), ('N', 'no'),), null=True, blank=True,
                                              default='N')
     pb = models.ForeignKey(PBUser, null=True, blank=True)
+    is_completed = models.BooleanField(default=False)
     assigned_pickup_time = models.TimeField(null=True, blank=True)
     #     # Use UserManager to get the create_user method, etc.
     #     objects = UserManager()
@@ -700,3 +701,18 @@ class Changepass(models.Model):
         if not self.pk:
             self.time = ind_time.strftime(fmt)
         super(Changepass, self).save(*args, **kwargs)
+
+
+class Barcode(models.Model):
+    created_at = models.DateTimeField(
+        verbose_name='created at',
+        auto_now_add=True
+    )
+    value = models.CharField(null=True, blank=True, default=None, max_length=12, unique=True)
+    business = models.ForeignKey(Business, related_name="alloted_barcodes")
+
+    def save(self, *args, **kwargs):
+        if (self.value is not None) and (len(self.value) > 12 or len(self.value) < 10):
+            raise ValidationError("Barcode length should be 10")
+
+        super(Barcode, self).save(*args, **kwargs)

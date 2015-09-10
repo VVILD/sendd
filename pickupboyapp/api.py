@@ -90,7 +90,9 @@ class PickupboyResource(Resource):
         result = []
         customer_pending_orders = CustomerOrder.objects.filter(pb__phone=pb_ph, order_status='A',
                                                                date=datetime.date.today()).order_by("time")
-        business_pending_orders = BusinessOrder.objects.filter(business__pb__phone=pb_ph, status='P')
+        business_pending_orders = BusinessOrder.objects.filter(business__pb__phone=pb_ph, status='P',
+                                                               business__is_completed=False)
+        alloted_businesses = Business.objects.filter(pb__phone=pb_ph, is_completed=False).exclude(order__status='P')
 
         for order in business_pending_orders:
             business = Business.objects.get(pk=order.business.pk)
@@ -134,6 +136,32 @@ class PickupboyResource(Resource):
             if len(detailed_order['shipments']) > 0:
                 result.append(detailed_order)
 
+        for business in alloted_businesses:
+            order_transformed = {
+                "b_business_name": business.business_name,
+                "b_username": business.username,
+                "b_address": business.address,
+                "b_contact_mob": business.contact_mob,
+                "b_contact_office": business.contact_office,
+                "b_name": business.name,
+                "pickup_time": business.assigned_pickup_time,
+                "b_pincode": business.pincode,
+                "b_city": business.city,
+                "b_state": business.state,
+                "address1": None,
+                "address2": None,
+                "name": None,
+                "phone": None,
+                "pincode": None,
+                "order_id": None,
+                "book_time": None
+            }
+            detailed_order = {
+                "type": "b2b",
+                "order": order_transformed,
+                "shipments": None
+            }
+            result.append(detailed_order)
         for order in customer_pending_orders:
             shipments = []
             for shipment in Shipment.objects.filter(order=order, status='P'):
@@ -168,13 +196,13 @@ class PickupboyResource(Resource):
                 })
             promocode_type = None
             promocode_amount = None
-            promocode_code= None
-            promocode_msg=None
+            promocode_code = None
+            promocode_msg = None
             if order.promocode:
                 if order.promocode.promocode_type:
                     promocode_type = order.promocode.promocode_type
                     promocode_code = order.promocode.code
-                    promocode_msg =order.promocode.msg
+                    promocode_msg = order.promocode.msg
                 if order.promocode.promocode_amount:
                     promocode_amount = order.promocode.promocode_amount
             order_repr = {
@@ -186,8 +214,8 @@ class PickupboyResource(Resource):
                 "user": order.user,
                 "promocode_type": promocode_type,
                 "promocode_amount": promocode_amount,
-                "promocode_msg":promocode_msg,
-                "promocode_code":promocode_code,
+                "promocode_msg": promocode_msg,
+                "promocode_code": promocode_code,
                 "book_time": order.book_time
             }
             detailed_order = {

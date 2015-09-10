@@ -235,7 +235,6 @@ class BusinessResource(CORSModelResource):
     class Meta:
         queryset = Business.objects.all()
         resource_name = 'business'
-        # excludes = ['password']
         authorization = Authorization()
         always_return_data = True
 
@@ -247,12 +246,8 @@ class BusinessResource(CORSModelResource):
         try:
             business = Business.objects.get(pk=pk)
         except:
-            print "fuck"
             bundle.data["msg"] = 'notregistered'
             return bundle
-
-
-        # pk=bundle.data['resource_uri'].split('/')[4]
 
         try:
             bundle.data['manager'] = business.businessmanager.user.first_name + business.businessmanager.user.first_name 
@@ -261,8 +256,7 @@ class BusinessResource(CORSModelResource):
         except:
             bundle.data['manager'] = 'Ankush Sharma'
             bundle.data['manager_number'] = '8080772210'
-        # u = User.objects.get(username='ankit')
-        # print u.businessmanager.phone
+
         return bundle
 
 
@@ -625,3 +619,45 @@ class InvoiceResource(CORSResource):
         bundle.sort(key=lambda x: int(x[0]))
         self.log_throttled_access(request)
         return self.create_response(request, bundle)
+
+
+class BusinessBarcodeResource(ModelResource):
+    class Meta:
+        queryset = Business.objects.all()
+        resource_name = 'business'
+        authorization = Authorization()
+        always_return_data = True
+
+
+class BarcodeAllotmentResource(CORSModelResource):
+    business = fields.ForeignKey(BusinessBarcodeResource, 'business', null=True)
+
+    class Meta:
+        resource_name = 'barcode_allotment'
+        object_class = Barcode
+        queryset = Barcode.objects.all()
+        authorization = Authorization()
+        authentication = Authentication()
+        allowed_methods = ['post', 'patch', 'put', 'get']
+        always_return_data = True
+        filtering = {
+            "value": ALL
+        }
+
+    def hydrate(self, bundle):
+
+        try:
+            business_obj = Business.objects.get(username=bundle.data['username'])
+            bundle.data['business'] = "/bapi/v1/business/" + str(bundle.data['username']) + "/"
+        except Business.DoesNotExist:
+            raise ImmediateHttpResponse(HttpBadRequest("Username doesnt exist"))
+        except KeyError:
+            raise ImmediateHttpResponse(HttpBadRequest("Please Provide a valid username key"))
+
+        return bundle
+
+    def dehydrate(self, bundle):
+        if bundle.request.method == 'PATCH':
+            bundle.data['business'] = bundle.data['username']
+
+        return bundle

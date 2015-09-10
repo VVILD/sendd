@@ -528,3 +528,27 @@ class TrackingResource(CORSResource):
         bundle = {"tracking_data": product.tracking_data}
         self.log_throttled_access(request)
         return self.create_response(request, bundle)
+
+
+class BusinessPatchResource(CORSModelResource):
+    class Meta:
+        resource_name = 'business_patch'
+        object_class = Business
+        queryset = Business.objects.all()
+        authorization = Authorization()
+        authentication = Authentication()
+        allowed_methods = ['patch']
+        allowed_update_fields = ['is_completed']
+        # always_return_data = True
+
+    def update_in_place(self, request, original_bundle, new_data):
+        if set(new_data.keys()) - set(self._meta.allowed_update_fields):
+            raise BadRequest(
+                'Only update on %s allowed' % ', '.join(
+                    self._meta.allowed_update_fields
+                )
+            )
+
+        return super(BusinessPatchResource, self).update_in_place(
+            request, original_bundle, new_data
+        )
