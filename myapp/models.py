@@ -59,6 +59,14 @@ class Address(models.Model):
             str(self.flat_no) + ',' + str(self.locality) + ',' + str(self.city) + ',' + str(self.state) + ',' + str(
                 self.country) + ',' + str(self.pincode))
 
+    def save(self, *args, **kwargs):
+        if not state_matcher.is_state(self.state):
+            closest_state = state_matcher.get_closest_state(self.state)
+            if closest_state:
+                self.state = closest_state[0]
+        super(Address, self).save(*args, **kwargs)
+
+
 
 class Namemail(models.Model):
     nm_no = models.AutoField(primary_key=True)
