@@ -107,6 +107,52 @@ class Business(models.Model):
     def __unicode__(self):
         return str(self.business_name)
 
+
+class AddressDetails(models.Model):
+    """
+    AddressDetails model. Foreign key to SenddUser.
+    """
+    id = models.AutoField(primary_key=True)
+    created_at = models.DateTimeField(
+        verbose_name='created at',
+        auto_now_add=True
+    )
+    updated_at = models.DateTimeField(
+        verbose_name='updated at',
+        auto_now=True
+    )
+    business = models.ForeignKey(
+        to=Business,
+        related_name="pickup_addresses"
+    )
+    address = models.CharField(
+        verbose_name='address',
+        max_length=120,
+        blank=True,
+        null=True
+    )
+    city = models.CharField(
+        verbose_name='city',
+        max_length=50
+    )
+    state = models.CharField(
+        verbose_name='state',
+        max_length=50
+    )
+    pincode = models.CharField(
+        verbose_name='pincode',
+        max_length=20
+    )
+    default = models.BooleanField(default=False)
+
+    def __str__(self):
+        return "\n".join([self.address, self.city])
+
+    class Meta:
+        verbose_name = 'Address details'
+        verbose_name_plural = 'Address details'
+
+
 class NotApprovedBusiness(Business):
     class Meta:
         proxy = True
@@ -175,6 +221,7 @@ class Order(models.Model):
                               choices=(('B', 'Bulk'), ('N', 'Normal'),),
                               blank=True, null=True)
     business = models.ForeignKey(Business)
+    pickup_address = models.ForeignKey(AddressDetails, null=True, blank=True)
 
 
     def __unicode__(self):
