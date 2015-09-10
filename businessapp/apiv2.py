@@ -667,3 +667,52 @@ class BarcodeAllotmentResource(CORSModelResource):
             bundle.data['business_username'] = bundle.obj.business.username
 
         return bundle
+
+
+class BarcodeFetchResource(CORSResource):
+    class Meta:
+        resource_name = 'barcode_fetch'
+        authentication = Authentication()
+        authorization = Authorization()
+
+    def prepend_urls(self):
+        return [
+            url(r"^(?P<resource_name>%s)%s$" % (self._meta.resource_name, trailing_slash()),
+                self.wrap_view('check_barcode'), name="api_check_barcode"),
+        ]
+
+    def check_barcode(self, request, **kwargs):
+        self.method_check(request, allowed=['get'])
+        self.is_authenticated(request)
+        self.throttle_check(request)
+
+        barcode = request.GET.get('barcode', '')
+        if not barcode:
+            raise CustomBadRequest(
+                code="request_invalid",
+                message="No barcode found. Please supply barcode as a GET parameter")
+
+        try:
+            product = Product.objects.get(barcode=barcode)
+            product_exists = True
+        except ObjectDoesNotExist:
+            product_exists = False
+
+        try:
+            barcode_assoc = Barcode.objects.get(value=barcode)
+            barcode_associated = True
+            business_username = barcode_assoc.business.username
+            business_name = barcode_assoc.business.name
+        except ObjectDoesNotExist:
+            barcode_associated = False
+            business_username = None
+            business_name = None
+
+        bundle = {
+            "barcode_associated": barcode_associated,
+            "product_exists": product_exists,
+            "business_username": business_username,
+            "business_name": business_name
+        }
+        self.log_throttled_access(request)
+        return self.create_response(request, bundle)

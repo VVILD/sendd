@@ -159,7 +159,7 @@ class PickupboyResource(Resource):
             detailed_order = {
                 "type": "b2b",
                 "order": order_transformed,
-                "shipments": None
+                "shipments": []
             }
             result.append(detailed_order)
         for order in customer_pending_orders:
