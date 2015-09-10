@@ -636,10 +636,13 @@ class BarcodeAllotmentResource(CORSModelResource):
         resource_name = 'barcode_allotment'
         object_class = Barcode
         queryset = Barcode.objects.all()
-        authorization = OnlyAuthorization()
+        authorization = Authorization()
         authentication = Authentication()
-        allowed_methods = ['post', 'patch', 'put']
+        allowed_methods = ['post', 'patch', 'put', 'get']
         always_return_data = True
+        filtering = {
+            "value": ALL
+        }
 
     def hydrate(self, bundle):
 
@@ -654,6 +657,7 @@ class BarcodeAllotmentResource(CORSModelResource):
         return bundle
 
     def dehydrate(self, bundle):
-        bundle.data['business'] = bundle.data['username']
+        if bundle.request.method == 'PATCH':
+            bundle.data['business'] = bundle.data['username']
 
         return bundle
