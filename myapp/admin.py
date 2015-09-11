@@ -900,7 +900,7 @@ class QcShipmentAdmin(ShipmentAdmin):
         return self.model.objects.filter(order__order_status='DI').exclude(status='C')
     
 
-    readonly_fields = ('category','drop_phone', 'drop_name', 'status', 'address','barcode','tracking_data','parcel_details','real_tracking_no','name','weight','cost_of_courier','price')
+    readonly_fields = ('category','drop_phone', 'drop_name', 'status', 'address','barcode','parcel_details','real_tracking_no','name','weight','cost_of_courier','price')
      
     list_display = (
         'order','tracking_nos','company','book_time','dispatch_time','customer_details','drop_name','drop_phone', 'tracking_status','last_location' ,'expected_delivery_date','category','last_updated','qc_comment')
@@ -980,7 +980,10 @@ class QcShipmentAdmin(ShipmentAdmin):
             total_seconds = int(diff_time.total_seconds())
             hours, remainder = divmod(total_seconds,60*60)
             minutes, seconds = divmod(remainder,60)
-            return '%s hours,%s mins' %(hours, minutes)
+            if (hours<24):
+                return '%s hours,%s mins' %(hours, minutes)
+            else:
+                return '%s days %s hours,%s mins' %(hours/24,hours%24, minutes)
         except:
             return '-'
     last_updated.admin_order_field='update_time'

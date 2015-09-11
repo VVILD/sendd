@@ -994,7 +994,10 @@ class QcProductAdmin(ProductAdmin):
             total_seconds = int(diff_time.total_seconds())
             hours, remainder = divmod(total_seconds,60*60)
             minutes, seconds = divmod(remainder,60)
-            return '%s hours,%s mins' %(hours, minutes)
+            if (hours<24):
+                return '%s hours,%s mins' %(hours, minutes)
+            else:
+                return '%s days %s hours,%s mins' %(hours/24,hours%24, minutes)
         except:
             return '-'
     last_updated.admin_order_field='update_time'
