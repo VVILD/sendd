@@ -165,9 +165,21 @@ curl --dump-header - -H "Content-Type: application/json" -X POST --data '{ "user
 
 curl --dump-header - -H "Content-Type: application/json" -X POST --data '{ "username": "newuser3", "name": "asd" , "phone":"8879006197","street_address":"office no 307, powai plaza","city":"mumbai","state":"maharashtra" ,"pincode":"400076","country":"india" , "payment_method":"F" ,"pname":"['clothes','books']","pprice":"['50','60']" ,"pweight":"['2','7']" }' http://127.0.0.1:8000/bapi/v1/product/
 
+ curl --dump-header - -H "Content-Type: application/json" -H "Authorization:6ed60c6239887562a5a32f37ac0c76729fcfa859" -X POST --data '{"username":"holachefrakhi", "customer_name":"anand", "phone":"9371433382", "address1":"Navi mumbai", "address2":"mumbai", "city":"mumbai", "state":"maharashtra", "country":"india", "payment_method":"F", "shipping_method":"N", "name":"Rakhi", "price":"100" , "pincode":"400076"}' http://sendmates.com/bapi/v2/product/
 
 
 
+ curl --dump-header - -H "Content-Type: application/json" -H "Authorization:6ed60c6239887562a5a32f37ac0c76729fcfa859" -X POST --data '{ "username": "holachefrakhi", "customer_name": "sargun" , "phone":"8879006197","reference_id":"SE487","email":"sargungu@gmail.com","address1":"office no 307, powai plaza","address2":"near Hiranandani gardens","city":"mumbai","state":"maharashtra" ,"pincode":"400076","country":"india" , "payment_method":"F" ,"name":"clothes","price":50 ,"weight":"1" ,"shipping_method":"N" }' http://sendmates.com/bapi/v2/product/
+
+
+
+ curl --dump-header - -H "Content-Type: application/json" -H "Authorization:6ed60c6239887562a5a32f37ac0c76729fcfa859" -X POST --data '{ "business": "holachefrakhi", "customer_name": "sargun" , "phone":"8879006197","reference_id":"SE487","email":"sargungu@gmail.com","address1":"office no 307, powai plaza","address2":"near Hiranandani gardens","city":"mumbai","state":"maharashtra" ,"pincode":"400076","country":"india" , "payment_method":"F" ,"name":"clothes","price":50 ,"weight":"1" ,"shipping_method":"N" }' http://sendmates.com/bapi/v2/product/
+
+
+ curl --dump-header - -H "Content-Type: application/json" -H "Authorization:6ed60c6239887562a5a32f37ac0c76729fcfa859" -X POST --data '{ "business": "holachefrakhi", "customer_name": "sargun" , "phone":"8879006197","reference_id":"SE487","email":"sargungu@gmail.com","address1":"office no 307, powai plaza","address2":"near Hiranandani gardens","city":"mumbai","state":"maharashtra" ,"pincode":"400076","country":"india" , "payment_method":"F" ,"name":"clothes","price":50 ,"weight":"1" ,"shipping_method":"N" }' http://127.0.0.1:8000/bapi/v2/product/
+
+
+ curl --dump-header - -H "Content-Type: application/json" -H "Authorization:A" -X POST --data '{ "username": "test", "customer_name": "sargun" , "phone":"8879006197","reference_id":"SE487","email":"sargungu@gmail.com","address1":"office no 307, powai plaza","address2":"near Hiranandani gardens","city":"mumbai","state":"maharashtra" ,"pincode":"400076","country":"india" , "payment_method":"F" ,"name":"clothes","price":50 ,"weight":"1" ,"shipping_method":"N","applied_weight":"0.5" }' http://sendmates.com/bapi/v2/product/
 
 
 
@@ -313,3 +325,9 @@ curl --dump-header - -H "Content-Type: application/json" -X POST --data '{ "user
 
 cat /home/sargun/Downloads/kantessh.pub | ssh root@128.199.92.173 "mkdir -p ~/.ssh && cat >> ~/.ssh/authorized_keys"
 
+cat /home/sargun/Downloads/id_rsa.pub | ssh root@128.199.210.166 "mkdir -p ~/.ssh && cat >> ~/.ssh/authorized_keys"	
+
+128.199.210.166
+cat /home/sargun/Downloads/harsh.pub | ssh root@128.199.152.4 "mkdir -p ~/.ssh && cat >> ~/.ssh/authorized_keys"
+
+	128.199.152.4

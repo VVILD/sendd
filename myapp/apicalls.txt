@@ -127,7 +127,7 @@ curl -F "phone=1" -F "password=q" http://localhost:8000/api/v1/loginsession/
 curl --dump-header - -H "Content-Type: application/json" -X POST --data '{ "user": "/api/v1/user/8879006197" }' http://localhost:8000/api/v1/loginsession/
 
 
-curl --dump-header - -H "Content-Type: application/json" -X POST --data '{ "item_details": "tatti" , "pickup_location": "tatti" , "number": "123" , "pincode": "213213" }' http://localhost:8000/api/v1/weborder/
+curl --dump-header - -H "Content-Type: application/json" -X POST --data '{"sender_name": "sargun","sender_email": "sargun@sendd.co","item_details": "tatti","pickup_location": "tatti","sender_number": "123","pickup_pincode": "213213","recipient_name": "amit","recipient_phone": "1234","destination_address1": "119,nehru park","destination_address2": "near sardarpura","destination_city": "jodhpur","destination_state": "raj","destination_country": "india","destination_pincode": "342003"}' http://localhost:8000/api/v1/weborder/
 
 
 curl --dump-header - -H "Content-Type: application/json" -X POST --data '{ "pincode": "400076" ,"weight":"6" ,"l":"5" ,"b":"1", "h":"1" }' http://localhost:8000/api/v1/priceapp/

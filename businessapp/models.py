@@ -87,6 +87,8 @@ class Business(models.Model):
     default='N')
     warehouse = models.ForeignKey(Warehouse, null=True, blank=True)
 
+    class Meta:
+        ordering = ['business_name',]
 
 
     def save(self, *args, **kwargs):
@@ -235,7 +237,7 @@ class Product(models.Model):
     qc_comment=models.TextField(null=True, blank=True)
 
     def __unicode__(self):
-        return str(self.pk)
+        return str(self.name)
 
     def __init__(self, *args, **kwargs):
         super(Product, self).__init__(*args, **kwargs)
