@@ -560,7 +560,7 @@ class BusinessPatchResource(CORSModelResource):
 
 
 
-class OrderCancelResource(CORSResource):
+class OrderCancelResource(CORSModelResource):
     products = fields.ToManyField("businessapp.apiv3.ProductResource3", 'product_set', related_name='product')
     skip = True
 
