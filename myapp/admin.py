@@ -807,12 +807,7 @@ class ShipmentAdmin(admin.ModelAdmin):
             return "Enter state"
 
         if not state_matcher.is_state(obj.drop_address.state):
-            closest_state = state_matcher.get_closest_state(obj.drop_address.state)
-            if closest_state:
-                obj.drop_address.state = closest_state[0]
-                obj.drop_address.save()
-            else:
-                return '<h2 style="color:red">Enter a valid state</h2>'
+            return '<h2 style="color:red">Enter a valid state</h2>'
 
         if not obj.drop_address.pincode:
             return "Enter pincode"

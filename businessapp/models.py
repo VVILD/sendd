@@ -191,6 +191,10 @@ class Order(models.Model):
         ind_time = datetime.now(z)
         if not self.pk:
             self.book_time = ind_time.strftime(fmt)
+        if not state_matcher.is_state(self.state):
+            closest_state = state_matcher.get_closest_state(self.state)
+            if closest_state:
+                self.state = closest_state[0]
         super(Order, self).save(*args, **kwargs)
 
 

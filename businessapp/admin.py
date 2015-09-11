@@ -649,12 +649,7 @@ class ProductInline(admin.TabularInline):
             return "Enter state"
 
         if not state_matcher.is_state(obj.order.state):
-            closest_state = state_matcher.get_closest_state(obj.order.state)
-            if closest_state:
-                obj.order.state = closest_state[0]
-                obj.order.save()
-            else:
-                return '<h2 style="color:red">Enter a valid state</h2>'
+            return '<h2 style="color:red">Enter a valid state</h2>'
 
         if not obj.order.pincode:
             return "Enter pincode"
