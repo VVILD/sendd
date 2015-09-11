@@ -264,7 +264,7 @@ class Product(models.Model):
         if self.tracking_data != self.__original_tracking_data:
             z = timezone('Asia/Kolkata')
             fmt = '%Y-%m-%d %H:%M:%S'
-            ind_time = dategtime.now(z)
+            ind_time = datetime.now(z)
             time = ind_time.strftime(fmt)
             self.update_time=time
         
