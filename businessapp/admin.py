@@ -924,7 +924,7 @@ admin.site.register(RemittanceProductComplete, RemittanceProductCompleteAdmin)
 
 class QcProductAdmin(ProductAdmin):
     def queryset(self, request):
-        return self.model.objects.filter(order__status='DI').exclude(status='C')
+        return self.model.objects.filter(Q(order__status='DI')| Q(order__status='R')).exclude(status='C')
     list_display = (
         'order_no','tracking_no','company','book_date','dispatch_time','get_business','sent_to', 'tracking_status','last_location' ,'expected_delivery_date','last_updated','qc_comment')
     list_filter = ['order__method','order__business']

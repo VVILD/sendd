@@ -896,8 +896,9 @@ admin.site.register(Priceapp)
 
 
 class QcShipmentAdmin(ShipmentAdmin):
+    
     def queryset(self, request):
-        return self.model.objects.filter(order__order_status='DI').exclude(status='C')
+        return self.model.objects.filter(Q(order__order_status='DI')| Q(order__order_status='R')).exclude(status='C')
     
 
     readonly_fields = ('category','drop_phone', 'drop_name', 'status', 'address','barcode','parcel_details','real_tracking_no','name','weight','cost_of_courier','price')
