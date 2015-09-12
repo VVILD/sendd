@@ -60,10 +60,11 @@ class OnlyAuthorization(Authorization):
         # Is the requested object owned by the user?
 
         # these 2 lines due to product wanting to use this authorisation
-        if (bundle.request.META["HTTP_AUTHORIZATION"] == 'A'):
-            return True
         try:
-            return bundle.request.META["HTTP_AUTHORIZATION"] == bundle.obj.business.apikey
+            if (bundle.request.META["HTTP_AUTHORIZATION"] == 'A'):
+                return True
+
+            return bundle.obj.business.apikey == bundle.request.META["HTTP_AUTHORIZATION"]
         except:
             return False
 
@@ -91,10 +92,14 @@ class OnlyAuthorization(Authorization):
         return allowed
 
     def update_detail(self, object_list, bundle):
+        try:
+            if (bundle.request.META["HTTP_AUTHORIZATION"] == 'A'):
+                return True
 
-        return bundle.request.META["HTTP_AUTHORIZATION"] == bundle.obj.business.apikey
-
-
+            return bundle.obj.business.apikey == bundle.request.META["HTTP_AUTHORIZATION"]
+        except:
+            return False
+        
     def delete_list(self, object_list, bundle):
         # Sorry user, no deletes for you!
         raise Unauthorized("Sorry, no deletes.")
@@ -552,3 +557,92 @@ class BusinessPatchResource(CORSModelResource):
         return super(BusinessPatchResource, self).update_in_place(
             request, original_bundle, new_data
         )
+
+
+
+class OrderCancelResource(CORSModelResource):
+    products = fields.ToManyField("businessapp.apiv3.ProductResource3", 'product_set', related_name='product')
+    skip = True
+
+    class Meta:
+        queryset = Order.objects.all()
+        resource_name = 'order_cancel'
+        authorization = OnlyAuthorization()
+        authentication = Authentication()
+        allowed_methods = ['patch']
+        allowed_update_fields = ['status', 'username']
+        always_return_data = True
+
+    def update_in_place(self, request, original_bundle, new_data):
+        if set(new_data.keys()) - set(self._meta.allowed_update_fields):
+            raise BadRequest(
+                'Only update on %s allowed' % ', '.join(
+                    self._meta.allowed_update_fields
+                )
+            )
+
+        return super(OrderCancelResource, self).update_in_place(
+            request, original_bundle, new_data
+        )
+
+
+    def dehydrate(self, bundle):
+        if self.skip:
+            self.skip = False
+            return bundle
+
+        products = Product.objects.filter(order__pk=bundle.data['order_no']).values("real_tracking_no", "sku",
+                                                                                    "weight",
+                                                                                    "name", "quantity", "price", "status")
+
+        new_bundle = {
+            "order_no": bundle.data['order_no'],
+            "products": list(products)
+        }
+        self.skip = True
+        return new_bundle
+
+class PincodecheckResource3(CORSResource):
+    class Meta:
+        resource_name = 'pending_orders'
+        authentication = Authentication()
+        authorization = Authorization()
+
+    def hydrate(self,bundle):
+
+        try:
+            zipcode=Zipcode.objects.get(pincode=bundle.data['pincode'])
+            bundle.data['valid']=1
+        except:
+            bundle.data['valid']=0
+            bundle.data['msg']='we dont have pickup service available in your desired pickup location.'
+
+        return bundle
+
+
+class PickupboyResource(Resource):
+    class Meta:
+        resource_name = 'check_pincode'
+        authentication = Authentication()
+        authorization = Authorization()
+
+    def prepend_urls(self):
+        return [
+            url(r"^(?P<resource_name>%s)%s$" % (self._meta.resource_name, trailing_slash()),
+                self.wrap_view('check_pincode'), name="api_pending_orders"),
+        ]
+
+    def check_pincode(self, request, **kwargs):
+        self.method_check(request, allowed=['get'])
+        self.is_authenticated(request)
+        self.throttle_check(request)
+
+        pincode = request.GET.get('pincode', '')
+        if not pincode:
+            raise CustomBadRequest(
+                code="request_invalid",
+                message="No pickupboy found. Please supply pb_ph as a GET parameter")
+
+        bundle={"valid":True}
+        self.log_throttled_access(request)
+        return self.create_response(request, bundle)

@@ -924,13 +924,13 @@ admin.site.register(RemittanceProductComplete, RemittanceProductCompleteAdmin)
 
 class QcProductAdmin(ProductAdmin):
     def queryset(self, request):
-        return self.model.objects.filter(order__status='DI')
+        return self.model.objects.filter(Q(order__status='DI')| Q(order__status='R')).exclude(status='C')
     list_display = (
         'order_no','tracking_no','company','book_date','dispatch_time','get_business','sent_to', 'tracking_status','last_location' ,'expected_delivery_date','last_updated','qc_comment')
     list_filter = ['order__method','order__business']
     list_editable = ('qc_comment',)
 # readonly_fields = ('order__method','drop_phone', 'drop_name', 'status', 'address','barcode','tracking_data','real_tracking_no','name','weight','cost_of_courier','price')
-    search_fields = ['order__order_no', 'real_tracking_no', 'mapped_tracking_no', 'drop_phone', 'drop_name']
+    search_fields = ['order__order_no', 'real_tracking_no', 'mapped_tracking_no','tracking_data' ]
     
     def order_no(self, obj):
         return '<a href="/admin/businessapp/order/%s/">%s</a>' % (obj.order.pk, obj.order.pk)
@@ -994,7 +994,10 @@ class QcProductAdmin(ProductAdmin):
             total_seconds = int(diff_time.total_seconds())
             hours, remainder = divmod(total_seconds,60*60)
             minutes, seconds = divmod(remainder,60)
-            return '%s hours,%s mins' %(hours, minutes)
+            if (hours<24):
+                return '%s hours,%s mins' %(hours, minutes)
+            else:
+                return '%s days %s hours,%s mins' %(hours/24,hours%24, minutes)
         except:
             return '-'
     last_updated.admin_order_field='update_time'
