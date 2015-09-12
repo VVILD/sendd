@@ -445,7 +445,7 @@ class Fedex:
             else:
                 return 'FEDEX_EXPRESS_SAVER', FEDEX_CONFIG_INTRA_MUMBAI
         elif selected_type in ('P', 'S', 'N'):
-            if is_cod or item_value > 5000:
+            if is_cod or item_value > 5000 or item_weight > 31:
                 return 'STANDARD_OVERNIGHT', FEDEX_CONFIG_INDIA
             else:
                 return 'PRIORITY_OVERNIGHT', FEDEX_CONFIG_INDIA
