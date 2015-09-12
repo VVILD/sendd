@@ -90,14 +90,14 @@ class Command(BaseCommand):
                                 order.status = 'C'
                             order.save()
                     if original_length > 0:
-                        if tracking_data[-1]['date'] != event.Timestamp.strftime('%Y-%m-%d %H:%M:%S'):
+                        if tracking_data[-1]['date'] != (event.Timestamp + datetime.timedelta(hours=5, minutes=30)).strftime('%Y-%m-%d %H:%M:%S'):
                             if match.StatusCode == "DE":
                                 event_desc = "Delivery Exception (" + event.EventDescription + ")"
                             else:
                                 event_desc = event.EventDescription
                             tracking_data.append({
                                 "status": event_desc,
-                                "date": (event.Timestamp+ datetime.timedelta(hours=5,minutes=30)).strftime('%Y-%m-%d %H:%M:%S'),
+                                "date": (event.Timestamp + datetime.timedelta(hours=5, minutes=30)).strftime('%Y-%m-%d %H:%M:%S'),
                                 "location": event.ArrivalLocation
                             })
                             product.tracking_data = json.dumps(tracking_data)
