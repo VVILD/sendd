@@ -306,6 +306,7 @@ class Shipment(models.Model):
             time = ind_time.strftime(fmt)
             self.update_time = ind_time.strftime(fmt)
             time = str(time)
+            self.update_time=ind_time.strftime(fmt)
             self.tracking_data = "[{\"status\": \"Booking Received\", \"date\"	: \"" + time + " \", \"location\": \"Mumbai (Maharashtra)\"}]"
             print self.tracking_data
             print self.status
