@@ -87,6 +87,8 @@ class Business(models.Model):
     default='N')
     warehouse = models.ForeignKey(Warehouse, null=True, blank=True)
 
+    class Meta:
+        ordering = ['business_name',]
 
 
     def save(self, *args, **kwargs):
@@ -239,7 +241,7 @@ class Product(models.Model):
     qc_comment=models.TextField(null=True, blank=True)
 
     def __unicode__(self):
-        return str(self.pk)
+        return str(self.name)
 
     def __init__(self, *args, **kwargs):
         super(Product, self).__init__(*args, **kwargs)
@@ -262,7 +264,7 @@ class Product(models.Model):
         if self.tracking_data != self.__original_tracking_data:
             z = timezone('Asia/Kolkata')
             fmt = '%Y-%m-%d %H:%M:%S'
-            ind_time = dategtime.now(z)
+            ind_time = datetime.now(z)
             time = ind_time.strftime(fmt)
             self.update_time=time
         

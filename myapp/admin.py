@@ -896,19 +896,20 @@ admin.site.register(Priceapp)
 
 
 class QcShipmentAdmin(ShipmentAdmin):
+    
     def queryset(self, request):
-        return self.model.objects.filter(order__order_status='DI')
+        return self.model.objects.filter(Q(order__order_status='DI')| Q(order__order_status='R')).exclude(status='C')
     
 
-    readonly_fields = ('category','drop_phone', 'drop_name', 'status', 'address','barcode','tracking_data','parcel_details','real_tracking_no','name','weight','cost_of_courier','price')
+    readonly_fields = ('category','drop_phone', 'drop_name', 'status', 'address','barcode','parcel_details','real_tracking_no','name','weight','cost_of_courier','price')
      
     list_display = (
-        'order','tracking_nos','company','book_time','dispatch_time','get_customer','drop_name','drop_phone', 'tracking_status','last_location' ,'update_time','expected_delivery_date','category','last_updated','qc_comment')
+        'order','tracking_nos','company','book_time','dispatch_time','customer_details','drop_name','drop_phone', 'tracking_status','last_location' ,'expected_delivery_date','category','last_updated','qc_comment')
     #list_filter = ['order__method','order__business']
     list_editable = ('qc_comment',)
 # readonly_fields = ('order__method','drop_phone', 'drop_name', 'status', 'address','barcode','tracking_data','real_tracking_no','name','weight','cost_of_courier','price')
-    search_fields = ['order__order_no', 'real_tracking_no', 'mapped_tracking_no', 'drop_phone', 'drop_name']
-    
+    search_fields = ['order__order_no', 'real_tracking_no', 'mapped_tracking_no', 'drop_phone', 'drop_name','tracking_data']
+    list_filter=('company',)
 
     fieldsets = (
     ('Basic Information', {'fields': ['real_tracking_no', 'parcel_details', ('category', 'status')],
@@ -947,16 +948,16 @@ class QcShipmentAdmin(ShipmentAdmin):
     last_location.allow_tags = True
     last_location.admin_order_field = 'tracking_data'
 
-    def get_customer(self, obj):
+    def customer_details(self, obj):
 #pk=obj.namemail.pk
-        return str(obj.order.user) + '|'+str (obj.order.namemail.name)+ '|'+str (obj.order.namemail.email) 
-    get_customer.allow_tags = True
+        return str (obj.order.namemail.name) + '<br>'+str(obj.order.user)+ '<br>'+str (obj.order.namemail.email) 
+    customer_details.allow_tags = True
 
     def book_time(self, obj):
 #pk=obj.namemail.pk
-        return str(obj.order.book_time) 
+        return str(obj.order.book_time.replace(second=0, microsecond=0,tzinfo=None)) 
     book_time.allow_tags = True
-    book_time.admin_order_field = 'order__date'
+    book_time.admin_order_field = 'order__book_time'
 
     def expected_delivery_date(self,obj):
         if (obj.category=='E'):
@@ -964,6 +965,7 @@ class QcShipmentAdmin(ShipmentAdmin):
         else:
             return obj.order.book_time + timedelta(days=3)
     expected_delivery_date.short_description='expected delivery date'
+    expected_delivery_date.admin_order_field = 'order__book_time'
 
     def last_updated(self,obj):
         import datetime
@@ -971,16 +973,18 @@ class QcShipmentAdmin(ShipmentAdmin):
         fmt = '%Y-%m-%d %H:%M:%S'
         ind_time = datetime.datetime.now(z)
         time = ind_time.strftime(fmt)
-        print obj.update_time
         z = timezone('Asia/Kolkata')
         #fmt = '%Y-%m-%d %H:%M:%S'
         ind_time = datetime.datetime.now(z)
         try:
-            diff_time=ind_time-obj.update_time
+            diff_time=ind_time.replace(second=0, microsecond=0,tzinfo=None)-obj.update_time.replace(second=0, microsecond=0,tzinfo=None)
             total_seconds = int(diff_time.total_seconds())
             hours, remainder = divmod(total_seconds,60*60)
             minutes, seconds = divmod(remainder,60)
-            return '%s hours,%s mins' %(hours, minutes)
+            if (hours<24):
+                return '%s hours,%s mins' %(hours, minutes)
+            else:
+                return '%s days %s hours,%s mins' %(hours/24,hours%24, minutes)
         except:
             return '-'
     last_updated.admin_order_field='update_time'

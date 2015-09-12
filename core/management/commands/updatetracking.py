@@ -10,7 +10,7 @@ import aftership
 import json
 from django.db.models import Q
 from concurrent import futures
-
+import datetime
 
 class Command(BaseCommand):
     help = 'Updates tracking info for all the services'
@@ -97,7 +97,7 @@ class Command(BaseCommand):
                                 event_desc = event.EventDescription
                             tracking_data.append({
                                 "status": event_desc,
-                                "date": event.Timestamp.strftime('%Y-%m-%d %H:%M:%S'),
+                                "date": (event.Timestamp+ datetime.timedelta(hours=5,minutes=30)).strftime('%Y-%m-%d %H:%M:%S'),
                                 "location": event.ArrivalLocation
                             })
                             product.tracking_data = json.dumps(tracking_data)
