@@ -601,3 +601,48 @@ class OrderCancelResource(CORSModelResource):
         }
         self.skip = True
         return new_bundle
+
+class PincodecheckResource3(CORSResource):
+    class Meta:
+        resource_name = 'pending_orders'
+        authentication = Authentication()
+        authorization = Authorization()
+
+    def hydrate(self,bundle):
+
+        try:
+            zipcode=Zipcode.objects.get(pincode=bundle.data['pincode'])
+            bundle.data['valid']=1
+        except:
+            bundle.data['valid']=0
+            bundle.data['msg']='we dont have pickup service available in your desired pickup location.'
+
+        return bundle
+
+
+class PickupboyResource(Resource):
+    class Meta:
+        resource_name = 'check_pincode'
+        authentication = Authentication()
+        authorization = Authorization()
+
+    def prepend_urls(self):
+        return [
+            url(r"^(?P<resource_name>%s)%s$" % (self._meta.resource_name, trailing_slash()),
+                self.wrap_view('check_pincode'), name="api_pending_orders"),
+        ]
+
+    def check_pincode(self, request, **kwargs):
+        self.method_check(request, allowed=['get'])
+        self.is_authenticated(request)
+        self.throttle_check(request)
+
+        pincode = request.GET.get('pincode', '')
+        if not pincode:
+            raise CustomBadRequest(
+                code="request_invalid",
+                message="No pickupboy found. Please supply pb_ph as a GET parameter")
+
+        bundle={"valid":True}
+        self.log_throttled_access(request)
+        return self.create_response(request, bundle)
