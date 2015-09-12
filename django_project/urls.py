@@ -90,6 +90,16 @@ bv3_api.register(OrderPatchResource())
 bv3_api.register(TrackingResourceV3())
 bv3_api.register(BusinessPatchResource())
 
+from businessapp.apiv4 import BusinessResource as BusinessResourceV4
+from businessapp.apiv4 import OrderResource as OrderResourceV4
+from businessapp.apiv4 import ProductResource as ProductResourceV4
+from businessapp.apiv4 import BusinessPickupAddressResource
+bv4_api = Api(api_name='v4')
+bv4_api.register(BusinessResourceV4())
+bv4_api.register(BusinessPickupAddressResource())
+bv4_api.register(ProductResourceV4())
+bv4_api.register(OrderResourceV4())
+
 from core.api import PincodeResource
 pv1_api = Api(api_name='v1')
 pv1_api.register(PincodeResource())
@@ -106,6 +116,7 @@ urlpatterns = patterns('',
     url(r'^bapi/', include(bv1_api.urls)),
     url(r'^bapi/', include(bv2_api.urls)),
     url(r'^bapi/', include(bv3_api.urls)),
+    url(r'^bapi/', include(bv4_api.urls)),
     url(r'^papi/', include(pv1_api.urls)),
     url(r'^stats/', include('myapp.urls')),       
     url(r'^pb_api/', include(pbv1_api.urls)),
