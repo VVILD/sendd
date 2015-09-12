@@ -129,7 +129,7 @@ class AddressDetails(models.Model):
     )
     address = models.CharField(
         verbose_name='address',
-        max_length=120,
+        max_length=315,
         blank=True,
         null=True
     )
