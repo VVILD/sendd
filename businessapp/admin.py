@@ -924,7 +924,7 @@ admin.site.register(RemittanceProductComplete, RemittanceProductCompleteAdmin)
 
 class QcProductAdmin(ProductAdmin):
     def queryset(self, request):
-        return self.model.objects.filter(Q(order__status='DI')| Q(order__status='R')).exclude(status='C')
+        return self.model.objects.filter(Q(order__status='DI')| Q(order__status='R')).exclude(status='C').exclude(order__business='ecell').exclude(order__business='ghasitaram')
     list_display = (
         'order_no','tracking_no','company','book_date','dispatch_time','get_business','sent_to', 'tracking_status','last_location' ,'expected_delivery_date','last_updated','qc_comment')
     list_filter = ['order__method','order__business']
@@ -950,9 +950,9 @@ class QcProductAdmin(ProductAdmin):
 
     def tracking_no(self, obj):
         if (obj.company=='B'):
-            return '<a href="http://www.bluedart.com/servlet/RoutingServlet?handler=tnt&action=awbquery&awb=awb&numbers=%s">%s</a>' % (obj.mapped_tracking_no, obj.mapped_tracking_no)
+            return '<a href="http://www.bluedart.com/servlet/RoutingServlet?handler=tnt&action=awbquery&awb=awb&numbers=%s" target="_blank">%s</a>' % (obj.mapped_tracking_no, obj.mapped_tracking_no)
         elif (obj.company=='F'):
-            return '<a href="https://www.fedex.com/apps/fedextrack/?action=track&trackingnumber=%s">%s</a>' % (obj.mapped_tracking_no, obj.mapped_tracking_no)
+            return '<a href="https://www.fedex.com/apps/fedextrack/?action=track&trackingnumber=%s" target="_blank" >%s</a> ' % (obj.mapped_tracking_no, obj.mapped_tracking_no)
         else:
             return obj.mapped_tracking_no
     tracking_no.admin_order_field = 'mapped_tracking_no' #Allows column order sorting

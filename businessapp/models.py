@@ -258,6 +258,7 @@ class Product(models.Model):
             #print "i was here-----------------------------------------------------------------------"
             #print self.status
             self.status='DI'
+            self.update_time=time
             self.dispatch_time=time
 
 
@@ -276,6 +277,7 @@ class Product(models.Model):
             time = ind_time.strftime(fmt)
             self.date = ind_time.strftime(fmt)
             time = str(time)
+            self.update_time=ind_time.strftime(fmt)
             self.tracking_data = "[{\"status\": \"Booking Received\", \"date\"	: \"" + time + " \", \"location\": \"Mumbai (Maharashtra)\"}]"
             print self.tracking_data
             #print self.status

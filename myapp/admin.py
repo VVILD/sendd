@@ -934,9 +934,9 @@ class QcShipmentAdmin(ShipmentAdmin):
 
     def tracking_nos(self, obj):
         if (obj.company=='B'):
-            return '<a href="http://www.bluedart.com/servlet/RoutingServlet?handler=tnt&action=awbquery&awb=awb&numbers=%s">%s</a>' % (obj.mapped_tracking_no, obj.mapped_tracking_no)
+            return '<a href="http://www.bluedart.com/servlet/RoutingServlet?handler=tnt&action=awbquery&awb=awb&numbers=%s" target="_blank">%s</a>' % (obj.mapped_tracking_no, obj.mapped_tracking_no)
         elif (obj.company=='F'):
-            return '<a href="https://www.fedex.com/apps/fedextrack/?action=track&trackingnumber=%s">%s</a>' % (obj.mapped_tracking_no, obj.mapped_tracking_no)
+            return '<a href="https://www.fedex.com/apps/fedextrack/?action=track&trackingnumber=%s" target="_blank">%s</a>' % (obj.mapped_tracking_no, obj.mapped_tracking_no)
         else:
             return obj.mapped_tracking_no
     tracking_nos.admin_order_field = 'mapped_tracking_no' #Allows column order sorting

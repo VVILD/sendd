@@ -620,7 +620,8 @@ class PincodecheckResource3(CORSResource):
         return bundle
 
 
-class PickupboyResource(Resource):
+class PincodecheckResource(Resource):
+    goodpincodes = ['400076', '400072', '400078', '400077', '400080', '400079', '400069', '400086']
     class Meta:
         resource_name = 'check_pincode'
         authentication = Authentication()
@@ -641,8 +642,15 @@ class PickupboyResource(Resource):
         if not pincode:
             raise CustomBadRequest(
                 code="request_invalid",
-                message="No pickupboy found. Please supply pb_ph as a GET parameter")
+                message="No pincode found. Please supply pincode as a GET parameter")
 
-        bundle={"valid":True}
+        
+        if pincode in self.goodpincodes:
+            valid = True
+        else:
+            valid = True
+
+
+        bundle={"valid":valid}
         self.log_throttled_access(request)
         return self.create_response(request, bundle)
