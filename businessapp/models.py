@@ -258,6 +258,7 @@ class Product(models.Model):
             #print "i was here-----------------------------------------------------------------------"
             #print self.status
             self.status='DI'
+            self.update_time=time
             self.dispatch_time=time
 
 

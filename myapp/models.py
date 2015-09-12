@@ -292,6 +292,7 @@ class Shipment(models.Model):
 
         if self.mapped_tracking_no and (self.status=='PU' or self.status=='DI' or self.status=='P'):
             self.status='DI'
+            self.update_time=time
             self.dispatch_time=time
 
         if self.tracking_data != self.__original_tracking_data:
@@ -306,7 +307,6 @@ class Shipment(models.Model):
             time = ind_time.strftime(fmt)
             self.update_time = ind_time.strftime(fmt)
             time = str(time)
-            self.update_time=ind_time.strftime(fmt)
             self.tracking_data = "[{\"status\": \"Booking Received\", \"date\"	: \"" + time + " \", \"location\": \"Mumbai (Maharashtra)\"}]"
             print self.tracking_data
             print self.status
