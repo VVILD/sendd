@@ -646,9 +646,9 @@ class PincodecheckResource(Resource):
 
         
         if pincode in self.goodpincodes:
-            valid = 1
+            valid = True
         else:
-            valid = 1
+            valid = True
 
 
         bundle={"valid":valid}
