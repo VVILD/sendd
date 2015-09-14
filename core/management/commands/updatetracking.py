@@ -45,6 +45,16 @@ class Command(BaseCommand):
     @staticmethod
     def remove_non_ascii_1(raw_text):
         return ''.join(i for i in raw_text if ord(i) < 128)
+    
+
+    #takes string object as param
+    # return numbe of hours away from today
+    @staticmethod
+    def hours_gone(string_date):
+        date_obj=datetime.datetime.strptime(string_date,"%Y-%m-%d %H:%M:%S")
+        now=datetime.datetime.now()
+        return (now-date_obj).total_seconds()//3600
+
 
     def fedex_track(self, tp):
         product, client_type = tp[0], tp[1]
@@ -118,6 +128,13 @@ class Command(BaseCommand):
                                 "error": False
                             }
                         else:
+                            hours=self.hours_gone(tracking_data[-1]['date'])
+                            if (hours>12):
+                                product.warning=True
+                                print product.pk
+                                print "warning ayi hai"
+                                product.save()
+
                             result = {
                                 "company": 'fedex',
                                 "tracking_no": product.mapped_tracking_no,
