@@ -1,3 +1,4 @@
+import uuid
 from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 from django.db import models
@@ -159,8 +160,6 @@ class Order(models.Model):
     name = models.CharField(max_length=100, null=True, blank=True)
     phone = models.CharField(max_length=12)
     email = models.EmailField(max_length=75, null=True, blank=True)
-    #address=models.CharField(max_length = 300)
-    #flat_no=models.CharField(max_length = 100,null=True,blank =True)
     address1 = models.CharField(max_length=300, null=True, blank=True)
     address2 = models.CharField(max_length=300, null=True, blank=True)
     city = models.CharField(max_length=50, null=True, blank=True)
@@ -176,6 +175,7 @@ class Order(models.Model):
     method = models.CharField(max_length=1,
                               choices=(('B', 'Bulk'), ('N', 'Normal'),),
                               blank=True, null=True)
+    master_tracking_number = models.CharField(max_length=10, blank=True, null=True)
     business = models.ForeignKey(Business)
 
 
@@ -191,6 +191,11 @@ class Order(models.Model):
         ind_time = datetime.now(z)
         if not self.pk:
             self.book_time = ind_time.strftime(fmt)
+            super(Order, self).save(*args, **kwargs)
+            order_no = self.pk + 1000
+            if str(order_no) > 4:
+                order_no = str(order_no)[:4]
+            self.master_tracking_number = 'M' + order_no + str(uuid.uuid4().get_hex().upper()[:5])
         if not state_matcher.is_state(self.state):
             closest_state = state_matcher.get_closest_state(self.state)
             if closest_state:
@@ -258,8 +263,6 @@ class Product(models.Model):
 
 
         if self.mapped_tracking_no and (self.status=='PU' or self.status=='D' or self.status=='P'):
-            #print "i was here-----------------------------------------------------------------------"
-            #print self.status
             self.status='DI'
             self.update_time=time
             self.dispatch_time=time
@@ -277,7 +280,6 @@ class Product(models.Model):
                 self.warning=True
         
         if not self.pk:
-            print self.pk
             z = timezone('Asia/Kolkata')
             fmt = '%Y-%m-%d %H:%M:%S'
             ind_time = datetime.now(z)
@@ -286,20 +288,14 @@ class Product(models.Model):
             time = str(time)
             self.update_time=ind_time.strftime(fmt)
             self.tracking_data = "[{\"status\": \"Booking Received\", \"date\"	: \"" + time + " \", \"location\": \"Mumbai (Maharashtra)\"}]"
-            print self.tracking_data
-            #print self.status
             super(Product, self).save(*args, **kwargs)
-            print self.pk
             alphabet = random.choice('BDQP')
             no1 = random.choice('1234567890')
             no2 = random.choice('1234567890')
             no = int(self.pk) + 134528
             trackingno = 'B' + str(no) + str(alphabet) + str(no1) + str(no2)
-            print trackingno
             self.real_tracking_no = trackingno
 
-            #p = Pricing.objects.create(amount_charged_by_courier=0, amount_spent_in_packingpickup=0,amount_paid=0)
-            #self.pricing=p
             kwargs['force_update'] = True
             kwargs['force_insert'] = False
 
