@@ -19,7 +19,7 @@ from core.models import Warehouse, Pincode
 from core.utils import state_matcher
 from core.utils.fedex_api_helper import Fedex
 from django.core.exceptions import ObjectDoesNotExist
-
+import json
 
 class Profile(models.Model):
     user = models.OneToOneField(User)
@@ -287,7 +287,8 @@ class Product(models.Model):
 
     qc_comment=models.TextField(null=True, blank=True)
     tracking_history = models.TextField(null=True, blank=True)
-
+    warning = models.BooleanField(default=False)
+    last_tracking_status=models.CharField(max_length=300, null=True, blank=True)
 
     def __unicode__(self):
         return str(self.name)
@@ -310,13 +311,17 @@ class Product(models.Model):
             self.update_time=time
             self.dispatch_time=time
 
-
+        # whenever tracking data changes
         if self.tracking_data != self.__original_tracking_data:
             z = timezone('Asia/Kolkata')
             fmt = '%Y-%m-%d %H:%M:%S'
             ind_time = datetime.now(z)
             time = ind_time.strftime(fmt)
             self.update_time=time
+            self.last_tracking_status=json.loads(self.tracking_data)[-1]['status']
+            #Warnings rule definations
+            if ('exception' in self.last_tracking_status):
+                self.warning=True
         
         if not self.pk:
             print self.pk
