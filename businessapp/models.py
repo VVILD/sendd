@@ -239,6 +239,8 @@ class Product(models.Model):
     dispatch_time=models.DateTimeField(null=True, blank=True)
 
     qc_comment=models.TextField(null=True, blank=True)
+    tracking_history = models.TextField(null=True, blank=True)
+
 
     def __unicode__(self):
         return str(self.name)
