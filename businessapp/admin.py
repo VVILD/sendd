@@ -926,8 +926,8 @@ class QcProductAdmin(ProductAdmin):
     def queryset(self, request):
         return self.model.objects.filter(Q(order__status='DI')| Q(order__status='R')).exclude(status='C').exclude(order__business='ecell').exclude(order__business='ghasitaram')
     list_display = (
-        'order_no','tracking_no','company','book_date','dispatch_time','get_business','sent_to', 'tracking_status','last_location' ,'expected_delivery_date','last_updated','warning','last_tracking_status','qc_comment')
-    list_filter = ['order__method','order__business','last_tracking_status']
+        'order_no','tracking_no','company','book_date','dispatch_time','get_business','sent_to', 'tracking_status','last_location' ,'expected_delivery_date','last_updated','last_tracking_status','qc_comment')
+    list_filter = ['order__method','order__business','last_tracking_status','warning']
     list_editable = ('qc_comment',)
 # readonly_fields = ('order__method','drop_phone', 'drop_name', 'status', 'address','barcode','tracking_data','real_tracking_no','name','weight','cost_of_courier','price')
     search_fields = ['order__order_no', 'real_tracking_no', 'mapped_tracking_no','tracking_data' ]
@@ -1012,6 +1012,11 @@ class QcProductAdmin(ProductAdmin):
         return obj.order.business
     get_business.short_description = 'business'
     get_business.admin_order_field = 'order__business'
+
+    def suit_row_attributes(self, obj, request):
+        css_class = {False: 'success',True: 'error',}.get(obj.warning)
+        if css_class:
+            return {'class': css_class, 'data': obj.name}
 
 
 admin.site.register(QcProduct, QcProductAdmin)
