@@ -223,7 +223,7 @@ class Order(models.Model):
                               choices=(('B', 'Bulk'), ('N', 'Normal'),),
                               blank=True, null=True)
     business = models.ForeignKey(Business)
-    pickup_address = models.ForeignKey(AddressDetails, null=True, blank=True)
+    pickup_address = models.ForeignKey(AddressDetails, null=True, blank=True, related_name='orders')
 
 
     def __unicode__(self):

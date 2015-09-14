@@ -189,6 +189,14 @@ class BaseCorsResource(Resource):
         response = super(BaseCorsResource, self).put_detail(request, **kwargs)
         return self.add_cors_headers(response, True)
 
+    def delete_list(self, request, **kwargs):
+        response = super(BaseCorsResource, self).delete_list(request, **kwargs)
+        return self.add_cors_headers(response, True)
+
+    def delete_detail(self, request, **kwargs):
+        response = super(BaseCorsResource, self).delete_detail(request, **kwargs)
+        return self.add_cors_headers(response, True)
+
     def method_check(self, request, allowed=None):
         """
           Check for an OPTIONS request. If so return the Allow- headers
