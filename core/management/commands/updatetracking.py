@@ -1,6 +1,7 @@
 import ast
 import logging
 from optparse import make_option
+import re
 from django.core.management.base import BaseCommand
 from businessapp.models import Product
 from core.fedex.config import FedexConfig
@@ -31,6 +32,8 @@ class Command(BaseCommand):
         'DT': 'dtdc',
         'I': 'india-post'
     }
+    REMOVE_LIST = ["fedex", "to fedex"]
+    remove_regex = remove = '|'.join(REMOVE_LIST)
     aftership_api = aftership.APIv4('c46ba2ea-5a3e-43c9-bda6-793365ec1ebb')
     FEDEX_CONFIG_INDIA = FedexConfig(key='jFdC6SAqFS9vz7gY',
                                      password='6bxCaeVdszjUo2iHw5R3tbrBu',
@@ -95,10 +98,16 @@ class Command(BaseCommand):
                                 event_desc = "Delivery Exception (" + event.EventDescription + ")"
                             else:
                                 event_desc = event.EventDescription
+                            regex = re.compile(r'\b('+self.remove_regex+r')\b', flags=re.IGNORECASE)
+                            event_desc = regex.sub("", event_desc)
+                            if 'City' in event.Address:
+                                location = event.Address.City
+                            else:
+                                location = '--'
                             tracking_data.append({
                                 "status": event_desc,
                                 "date": (event.Timestamp + datetime.timedelta(hours=5, minutes=30)).strftime('%Y-%m-%d %H:%M:%S'),
-                                "location": event.ArrivalLocation
+                                "location": location
                             })
                             product.tracking_data = json.dumps(tracking_data)
                             product.save()
@@ -120,10 +129,16 @@ class Command(BaseCommand):
                             event_desc = "Delivery Exception (" + event.EventDescription + ")"
                         else:
                             event_desc = event.EventDescription
+                        regex = re.compile(r'\b('+self.remove_regex+r')\b', flags=re.IGNORECASE)
+                        event_desc = regex.sub("", event_desc)
+                        if 'City' in event.Address:
+                            location = event.Address.City
+                        else:
+                            location = '--'
                         tracking_data.append({
                             "status": event_desc,
-                            "date": event.Timestamp.strftime('%Y-%m-%d %H:%M:%S'),
-                            "location": event.ArrivalLocation
+                            "date": (event.Timestamp + datetime.timedelta(hours=5, minutes=30)).strftime('%Y-%m-%d %H:%M:%S'),
+                            "location": location
                         })
                         product.tracking_data = json.dumps(tracking_data)
                         product.save()
@@ -214,27 +229,25 @@ class Command(BaseCommand):
         # Track Bluedart shipments for businesses and customers
         business_shipments = Product.objects.filter(
             (Q(company='B') | Q(company='A') | Q(company='DT') | Q(company='I')) & (
-                Q(status='P') | Q(status='DI'))).exclude(order__status='C')
+                Q(status='P') | Q(status='DI'))).exclude(Q(order__status='C')| Q(order__status='N'))
 
         for business_shipment in business_shipments:
             aftership_track_queue.append((business_shipment, 'business'))
 
         customer_shipments = Shipment.objects.filter(
             (Q(company='B') | Q(company='A') | Q(company='DT') | Q(company='I')) & (
-                Q(status='P') | Q(status='DI'))).exclude(order__order_status='D')
+                Q(status='P') | Q(status='DI'))).exclude( Q(order__order_status='N')| Q(order__order_status='D'))
 
         for customer_shipment in customer_shipments:
             aftership_track_queue.append((customer_shipment, 'customer'))
 
         fedex_track_queue = []
-        fedex_business_shipments = Product.objects.filter(Q(company='F') & (Q(status='P') | Q(status='DI'))).exclude(
-            order__status='C')
+        fedex_business_shipments = Product.objects.filter(Q(company='F') & (Q(status='P') | Q(status='DI'))).exclude(Q(order__status='C')| Q(order__status='N'))
 
         for fedex_business_shipment in fedex_business_shipments:
             fedex_track_queue.append((fedex_business_shipment, 'business'))
 
-        fedex_customer_shipments = Shipment.objects.filter(Q(company='F') & (Q(status='P') | Q(status='DI'))).exclude(
-            order__order_status='D')
+        fedex_customer_shipments = Shipment.objects.filter(Q(company='F') & (Q(status='P') | Q(status='DI'))).exclude( Q(order__order_status='N')| Q(order__order_status='D'))
 
         for fedex_customer_shipment in fedex_customer_shipments:
             fedex_track_queue.append((fedex_customer_shipment, 'customer'))

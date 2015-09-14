@@ -286,6 +286,8 @@ class Product(models.Model):
     dispatch_time=models.DateTimeField(null=True, blank=True)
 
     qc_comment=models.TextField(null=True, blank=True)
+    tracking_history = models.TextField(null=True, blank=True)
+
 
     def __unicode__(self):
         return str(self.name)
@@ -305,6 +307,7 @@ class Product(models.Model):
             #print "i was here-----------------------------------------------------------------------"
             #print self.status
             self.status='DI'
+            self.update_time=time
             self.dispatch_time=time
 
 
@@ -323,6 +326,7 @@ class Product(models.Model):
             time = ind_time.strftime(fmt)
             self.date = ind_time.strftime(fmt)
             time = str(time)
+            self.update_time=ind_time.strftime(fmt)
             self.tracking_data = "[{\"status\": \"Booking Received\", \"date\"	: \"" + time + " \", \"location\": \"Mumbai (Maharashtra)\"}]"
             print self.tracking_data
             #print self.status

@@ -277,6 +277,7 @@ class Shipment(models.Model):
     dispatch_time=models.DateTimeField(null=True, blank=True)
     
     qc_comment=models.TextField(null=True, blank=True)
+    tracking_history = models.TextField(null=True, blank=True)
 
     
     def __init__(self, *args, **kwargs):
@@ -292,6 +293,7 @@ class Shipment(models.Model):
 
         if self.mapped_tracking_no and (self.status=='PU' or self.status=='DI' or self.status=='P'):
             self.status='DI'
+            self.update_time=time
             self.dispatch_time=time
 
         if self.tracking_data != self.__original_tracking_data:

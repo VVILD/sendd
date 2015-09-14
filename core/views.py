@@ -143,6 +143,8 @@ def create_fedex_shipment(request):
     outbound_label_url = None
     if result['status'] != 'ERROR':
         if client_type == 'business':
+            if (product.mapped_tracking_no):
+                product.tracking_history= str(product.tracking_history) + ',' + str(product.mapped_tracking_no)
             product.mapped_tracking_no = result['tracking_number']
             # product.actual_cost = result['shipping_cost']
             if is_cod:
@@ -167,6 +169,8 @@ def create_fedex_shipment(request):
             product.company = 'F'
             product.save()
         elif client_type == 'customer':
+            if (shipment.mapped_tracking_no):
+                shipment.tracking_history=str(shipment.tracking_history) + ',' + str(shipment.mapped_tracking_no)
             shipment.mapped_tracking_no = result['tracking_number']
             # shipment.actual_cost = result['shipping_cost']
             if is_cod:
@@ -189,6 +193,7 @@ def create_fedex_shipment(request):
                 shipment.actual_shipping_cost = float(result["shipping_cost"])
             shipment.status = 'DI'
             shipment.company = 'F'
+
             shipment.save()
     context = {
         "status": result['status'],
