@@ -278,6 +278,8 @@ class Shipment(models.Model):
     
     qc_comment=models.TextField(null=True, blank=True)
     tracking_history = models.TextField(null=True, blank=True)
+    warning = models.BooleanField(default=False)
+    last_tracking_status=models.CharField(max_length=300, null=True, blank=True)
 
     
     def __init__(self, *args, **kwargs):
@@ -295,6 +297,11 @@ class Shipment(models.Model):
             self.status='DI'
             self.update_time=time
             self.dispatch_time=time
+            self.last_tracking_status=json.loads(self.tracking_data)[-1]['status']
+            #Warnings rule definations
+            if ('exception' in self.last_tracking_status):
+                self.warning=True
+            
 
         if self.tracking_data != self.__original_tracking_data:
             self.update_time=time
