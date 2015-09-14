@@ -644,11 +644,27 @@ class PincodecheckResource(Resource):
                 code="request_invalid",
                 message="No pincode found. Please supply pincode as a GET parameter")
 
+        try:
+            length=len(str(pincode))
+            int_pincode=int(pincode)
+        except:
+            raise CustomBadRequest(
+                code="request_invalid",
+                message="enter correct pincode")
+        if (length!=6):
+            raise CustomBadRequest(
+                code="request_invalid",
+                message="enter correct pincode length")
+
+
+
+
         
-        if pincode in self.goodpincodes:
+
+        if (pincode[:4] =='4000'):
             valid = True
         else:
-            valid = True
+            valid = False
 
 
         bundle={"valid":valid}
