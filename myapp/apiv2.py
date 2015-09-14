@@ -2378,14 +2378,6 @@ class InvoicesentResource2(MultipartResource, ModelResource):
         authorization = Authorization()
         always_return_data = True
 
-    def hydrate(self, bundle):
-        order_pk = bundle.data['order'].split('/')[-2]
-        order = Order.objects.get(pk=order_pk)
-        order.order_status = "C"
-        order.save()
-
-        return bundle
-
 
 class PincodecheckResource2(MultipartResource, ModelResource):
     class Meta:
