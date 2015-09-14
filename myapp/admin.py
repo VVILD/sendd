@@ -557,7 +557,7 @@ class ShipmentAdmin(admin.ModelAdmin):
         ('Destination Address',
          {'fields': [('drop_name', 'drop_phone'), 'address', ], 'classes': ('suit-tab', 'suit-tab-general')}),
         ('Actions', {'fields': ['print_invoice', 'generate_order', 'fedex'], 'classes': ('suit-tab', 'suit-tab-general')}),
-        ('Tracking', {'fields': ['tracking_data'], 'classes': ('suit-tab', 'suit-tab-tracking')})
+        ('Tracking', {'fields': ['tracking_data','tracking_history'], 'classes': ('suit-tab', 'suit-tab-tracking')})
     )
 
     suit_form_tabs = (('general', 'General'), ('tracking', 'Tracking'))
