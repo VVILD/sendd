@@ -204,7 +204,7 @@ class BaseCorsResource(Resource):
             response['Access-Control-Allow-Origin'] = '*'
             response[
                 'Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-Requested-With, X-CSRFToken, X-HTTP-Method-Override'
-            response['Access-Control-Allow-Methods'] = "POST"
+            response['Access-Control-Allow-Methods'] = "POST, GET, DELETE, PATCH, PUT"
             response['Allow'] = allows
             raise ImmediateHttpResponse(response=response)
 
