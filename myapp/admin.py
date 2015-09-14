@@ -539,7 +539,7 @@ class ShipmentAdmin(admin.ModelAdmin):
         'real_tracking_no', 'name', 'cost_of_courier', 'weight', 'mapped_tracking_no', 'company', 'parcel_details',
         'price',
         'category', 'drop_phone', 'drop_name', 'status', 'address', 'print_invoice', 'generate_order', 'fedex','barcode', 'img',)
-    list_filter = ['category']
+    list_filter = ['category','last_tracking_status']
     list_editable = (
         'name', 'cost_of_courier', 'weight', 'mapped_tracking_no', 'company', 'price', 'category', 'drop_phone',
         'drop_name', 'barcode', 'img',)

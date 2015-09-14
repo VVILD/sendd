@@ -443,7 +443,7 @@ class ProductAdmin(admin.ModelAdmin):
     search_fields = ['name', 'real_tracking_no']
     list_display = ('name', 'price', 'weight', 'status', 'real_tracking_no', 'order', 'barcode','date',)
     list_editable = ('status', )
-    list_filter=['order__business']
+    list_filter=['order__business','last_tracking_status']
     readonly_fields = (
         'name', 'quantity', 'sku', 'price', 'weight', 'applied_weight', 'real_tracking_no', 'order',
         'kartrocket_order', 'shipping_cost', 'cod_cost', 'status', 'date', 'barcode')
