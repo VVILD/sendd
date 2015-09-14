@@ -15,7 +15,7 @@ from pickupboyapp.models import PBUser
 import urllib2
 
 import requests
-
+import json
 import urllib
 
 
@@ -301,7 +301,7 @@ class Shipment(models.Model):
             #Warnings rule definations
             if ('exception' in self.last_tracking_status):
                 self.warning=True
-            
+
 
         if self.tracking_data != self.__original_tracking_data:
             self.update_time=time
