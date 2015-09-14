@@ -390,7 +390,17 @@ class OrderPatchReferenceResource(Resource):
         if not 'update' in update_ids:
             raise CustomBadRequest("error", 'Please supply a valid json in the format {"update":["ID1", "ID2", "ID3"]}')
 
-        db_objs = Order.objects.filter(reference_id__in=update_ids['update'])
+        if not 'username' in update_ids:
+            raise CustomBadRequest("error", 'Please supply a username')
+
+        try:
+            business_obj = Business.objects.get(username=update_ids['username'])
+        except Business.DoesNotExist:
+            raise CustomBadRequest("error", "Username doesn't exist")
+        except KeyError:
+            raise CustomBadRequest("error", 'Please supply a valid username')
+
+        db_objs = Order.objects.filter(reference_id__in=update_ids['update'], business=business_obj)
         updated_orders = []
         for db_obj in db_objs:
             db_obj.confirmed = True
