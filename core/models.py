@@ -86,11 +86,7 @@ class Pincode(models.Model):
     """
     Model for pincodes. Synced with OGD database
     """
-    id = models.PositiveIntegerField(
-        verbose_name='id',
-        primary_key=True,
-        unique=True
-    )
+    id = models.AutoField(primary_key=True)
     created_at = models.DateTimeField(
         verbose_name='created at',
         auto_now_add=True

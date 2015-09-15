@@ -42,22 +42,40 @@ class Command(BaseCommand):
         else:
             cod_servicable = False
         db_objs = Pincode.objects.filter(pincode=row['Postal Code'])
-        count = 0
-        pincode = None
-        for obj in db_objs:
-            obj.fedex_oda_opa = is_oda
-            obj.fedex_cod_service = cod_servicable
-            obj.fedex_servicable = True
-            obj.save()
-            pincode = obj.pincode
-            count += 1
-        if pincode is None:
-            updated = False
+        if len(db_objs) > 0:
+            count = 0
+            pincode = None
+            for obj in db_objs:
+                obj.fedex_oda_opa = is_oda
+                obj.fedex_cod_service = cod_servicable
+                obj.fedex_servicable = True
+                obj.save()
+                pincode = obj.pincode
+                count += 1
+            if pincode is None:
+                updated = False
+            else:
+                updated = True
+            added = False
         else:
-            updated = True
+            new_obj = Pincode(
+                pincode=row['Postal Code'],
+                district_name=row['City Name'],
+                state_name=row['State'],
+                fedex_oda_opa=is_oda,
+                fedex_cod_service=cod_servicable,
+                fedex_servicable=True
+            )
+            new_obj.save()
+            updated = False
+            added = True
+            count = 1
+            pincode = row['Postal Code']
+
         return {
             "pincode": pincode,
             "count": count,
+            "added": added,
             "updated": updated,
             "is_oda": is_oda,
             "cod_servicable": cod_servicable
@@ -69,7 +87,7 @@ class Command(BaseCommand):
         file_path = options['path']
         file_exists = os.path.exists(file_path)
         if not file_exists:
-            CommandError("Path doesn't exist. Please provide a valid path")
+            raise CommandError("Path doesn't exist. Please provide a valid path")
 
         if options['workers'] is None:
             workers = 5

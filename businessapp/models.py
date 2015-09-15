@@ -196,10 +196,11 @@ class Order(models.Model):
             if str(order_no) > 4:
                 order_no = str(order_no)[:4]
             self.master_tracking_number = 'M' + order_no + str(uuid.uuid4().get_hex().upper()[:5])
-        if not state_matcher.is_state(self.state):
-            closest_state = state_matcher.get_closest_state(self.state)
-            if closest_state:
-                self.state = closest_state[0]
+        if self.state:
+            if not state_matcher.is_state(self.state):
+                closest_state = state_matcher.get_closest_state(self.state)
+                if closest_state:
+                    self.state = closest_state[0]
         super(Order, self).save(*args, **kwargs)
 
 
