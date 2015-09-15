@@ -853,12 +853,12 @@ class ShipmentAdmin(admin.ModelAdmin):
 admin.site.register(Shipment, ShipmentAdmin)
 
 
-# class ZipcodeAdmin(admin.ModelAdmin):
-#     list_display = ('pincode', 'city', 'state', 'zone', 'cod', 'fedex', 'aramex', 'delhivery', 'ecom', 'firstflight')
-#     search_fields = ['pincode']
-#
-#
-# admin.site.register(Zipcode, ZipcodeAdmin)
+class ZipcodeAdmin(admin.ModelAdmin):
+    list_display = ('pincode', 'city', 'state', 'zone', 'cod', 'fedex', 'aramex', 'delhivery', 'ecom', 'firstflight')
+    search_fields = ['pincode']
+
+
+admin.site.register(Zipcode, ZipcodeAdmin)
 
 
 class XAdmin(admin.ModelAdmin):
@@ -901,7 +901,7 @@ class QcShipmentAdmin(ShipmentAdmin):
         return self.model.objects.filter(Q(order__order_status='DI')| Q(order__order_status='R')).exclude(status='C')
     
 
-    readonly_fields = ('category','drop_phone', 'drop_name', 'status', 'address','barcode','parcel_details','real_tracking_no','name','weight','cost_of_courier','price')
+    readonly_fields = ('category','drop_phone', 'drop_name','address','barcode','parcel_details','real_tracking_no','name','weight','cost_of_courier','price')
      
     list_display = (
         'order','tracking_nos','company','book_time','dispatch_time','customer_details','drop_name','drop_phone', 'tracking_status','last_location' ,'expected_delivery_date','last_updated','last_tracking_status','qc_comment')
@@ -909,7 +909,7 @@ class QcShipmentAdmin(ShipmentAdmin):
     list_editable = ('qc_comment',)
 # readonly_fields = ('order__method','drop_phone', 'drop_name', 'status', 'address','barcode','tracking_data','real_tracking_no','name','weight','cost_of_courier','price')
     search_fields = ['order__order_no', 'real_tracking_no', 'mapped_tracking_no', 'drop_phone', 'drop_name','tracking_data']
-    list_filter=('company','last_tracking_status','warning',)
+    list_filter=('company','last_tracking_status','warning','company')
 
     fieldsets = (
     ('Basic Information', {'fields': ['real_tracking_no', 'parcel_details', ('category', 'status')],
@@ -955,7 +955,8 @@ class QcShipmentAdmin(ShipmentAdmin):
 
     def book_time(self, obj):
 #pk=obj.namemail.pk
-        return str(obj.order.book_time.replace(second=0, microsecond=0,tzinfo=None)) 
+        fmt = '%B.%d,%Y %H:%M'
+        return obj.order.book_time.replace(second=0, microsecond=0,tzinfo=None).strftime(fmt)
     book_time.allow_tags = True
     book_time.admin_order_field = 'order__book_time'
 
@@ -966,6 +967,7 @@ class QcShipmentAdmin(ShipmentAdmin):
             return obj.order.book_time + timedelta(days=3)
     expected_delivery_date.short_description='expected delivery date'
     expected_delivery_date.admin_order_field = 'order__book_time'
+
 
     def last_updated(self,obj):
         import datetime
