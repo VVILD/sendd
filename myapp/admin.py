@@ -909,7 +909,7 @@ class QcShipmentAdmin(ShipmentAdmin):
     list_editable = ('qc_comment',)
 # readonly_fields = ('order__method','drop_phone', 'drop_name', 'status', 'address','barcode','tracking_data','real_tracking_no','name','weight','cost_of_courier','price')
     search_fields = ['order__order_no', 'real_tracking_no', 'mapped_tracking_no', 'drop_phone', 'drop_name','tracking_data']
-    list_filter=('company','last_tracking_status','warning',)
+    list_filter=('company','last_tracking_status','warning','company')
 
     fieldsets = (
     ('Basic Information', {'fields': ['real_tracking_no', 'parcel_details', ('category', 'status')],
