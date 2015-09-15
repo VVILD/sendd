@@ -81,6 +81,7 @@ class OnlyAuthorization(Authorization):
             return bundle.obj.business.apikey == bundle.request.META["HTTP_AUTHORIZATION"]
         except:
             return False
+
     def update_list(self, object_list, bundle):
         allowed = []
 
@@ -250,7 +251,7 @@ class BusinessResource(CORSModelResource):
             return bundle
 
         try:
-            bundle.data['manager'] = business.businessmanager.user.first_name + business.businessmanager.user.first_name 
+            bundle.data['manager'] = business.businessmanager.user.first_name + business.businessmanager.user.first_name
             bundle.data['manager_number'] = business.businessmanager.phone
 
         except:
@@ -333,18 +334,28 @@ class TrackingResource(CORSResource):
         self.is_authenticated(request)
         self.throttle_check(request)
 
+        master = False
         if not tracking_id:
             raise CustomBadRequest(
                 code="request_invalid",
                 message="No tracking_id found. Please supply tracking_id as a GET URL parameter")
-        elif str(tracking_id).startswith('SE') or str(tracking_id).startswith('se'):
-            product = Product.objects.get(barcode=tracking_id)
-        elif str(tracking_id).startswith('B'):
-            product = Product.objects.get(real_tracking_no=tracking_id)
+        elif str(tracking_id).lower().startswith('m'):
+            products = Product.objects.filter(order__master_tracking_number=tracking_id).values("real_tracking_no",
+                                                                                                "tracking_data")
+            master = True
+        elif str(tracking_id).lower().startswith('se'):
+            products = Product.objects.filter(barcode=tracking_id).values("real_tracking_no", "tracking_data")
+        elif str(tracking_id).lower().startswith('b'):
+            products = Product.objects.filter(real_tracking_no=tracking_id).values("real_tracking_no", "tracking_data")
         else:
-            product = Shipment.objects.get(real_tracking_no=tracking_id)
+            products = Shipment.objects.filter(real_tracking_no=tracking_id).values("real_tracking_no", "tracking_data")
 
-        bundle = {"tracking_data": product.tracking_data}
+        for product in products:
+            product['tracking_data'] = json.loads(product['tracking_data'])
+        bundle = {
+            "master": master,
+            "shipments": list(products)
+        }
         self.log_throttled_access(request)
         return self.create_response(request, bundle)
 
@@ -519,7 +530,8 @@ class SearchResource(CORSResource):
             raise CustomBadRequest(
                 code="request_invalid",
                 message="No date found. Please supply date as a GET parameter")
-        orders = Order.objects.filter(business__username=business_username, book_time__gte=start_date, book_time__lt=end_date)
+        orders = Order.objects.filter(business__username=business_username, book_time__gte=start_date,
+                                      book_time__lt=end_date)
         result = []
         for order in orders:
             products = Product.objects.filter(order__pk=order.pk)

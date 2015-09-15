@@ -99,7 +99,7 @@ class OnlyAuthorization(Authorization):
             return bundle.obj.business.apikey == bundle.request.META["HTTP_AUTHORIZATION"]
         except:
             return False
-        
+
     def delete_list(self, object_list, bundle):
         # Sorry user, no deletes for you!
         raise Unauthorized("Sorry, no deletes.")
@@ -257,8 +257,6 @@ class OrderResource3(ModelResource):
         ordering = ['book_time']
 
     def hydrate(self, bundle):
-        # print "sssssssss"
-        # if bundle.request.method == 'POST':
         try:
             business_obj = Business.objects.get(username=bundle.data['username'])
             bundle.data['business'] = "/bapi/v1/business/" + str(bundle.data['username']) + "/"
@@ -270,13 +268,10 @@ class OrderResource3(ModelResource):
         try:
             if len(bundle.data['phone']) is not 10:
                 raise ImmediateHttpResponse(HttpBadRequest("Enter valid phone number = 10 digits"))
-        # print "ssssssssss"
         except:
             raise ImmediateHttpResponse(HttpBadRequest("Enter valid phone number = 10 digits"))
 
-        # if bundle.request.method == 'POST':
         for product in bundle.data['products']:
-            # print product['barcode']
             try:
                 y = Product.objects.get(barcode=product['barcode'])
                 raise ImmediateHttpResponse(HttpBadRequest("Barcode already exist. Please enter unique barcode"))
@@ -296,6 +291,9 @@ class OrderResource3(ModelResource):
 
         new_bundle = {
             "order_no": bundle.data['order_no'],
+            "reference_id": bundle.data['reference_id'],
+            "master_tracking_no": bundle.data['master_tracking_number'],
+            "is_confirmed": bundle.data['confirmed'],
             "products": list(products)
         }
         return new_bundle
@@ -328,8 +326,6 @@ class OrderPatchResource(ModelResource):
         )
 
     def hydrate(self, bundle):
-        # print "sssssssss"
-        # if bundle.request.method == 'POST':
         try:
             business_obj = Business.objects.get(username=bundle.data['username'])
             bundle.data['business'] = "/bapi/v1/business/" + str(bundle.data['username']) + "/"
@@ -341,16 +337,8 @@ class OrderPatchResource(ModelResource):
         try:
             if len(bundle.data['phone']) is not 10:
                 raise ImmediateHttpResponse(HttpBadRequest("Enter valid phone number = 10 digits"))
-        # print "ssssssssss"
         except:
             raise ImmediateHttpResponse(HttpBadRequest("Enter valid phone number = 10 digits"))
-
-        # try:
-        #     order = Order.objects.get(pk=bundle.data['order_no'])
-        #     if order.confirmed == bundle.data['confirmed']:
-        #         self.skip = False
-        # except:
-        #     pass
 
         return bundle
 
@@ -365,11 +353,73 @@ class OrderPatchResource(ModelResource):
 
         new_bundle = {
             "order_no": bundle.data['order_no'],
+            "reference_id": bundle.data['reference_id'],
+            "master_tracking_no": bundle.data['master_tracking_number'],
+            "is_confirmed": bundle.data['confirmed'],
             "products": list(products)
         }
         self.skip = True
         return new_bundle
-        # return bundle
+
+
+class OrderPatchReferenceResource(Resource):
+    class Meta:
+        resource_name = 'confirm_orders'
+        authentication = Authentication()
+        authorization = OnlyAuthorization()
+
+    def prepend_urls(self):
+        return [
+            url(r"^(?P<resource_name>%s)%s$" % (self._meta.resource_name, trailing_slash()),
+                self.wrap_view('confirm_orders'), name="api_confirm_orders"),
+        ]
+
+    def confirm_orders(self, request, **kwargs):
+        self.method_check(request, allowed=['patch'])
+        self.is_authenticated(request)
+        self.throttle_check(request)
+
+        if not request.body:
+            raise CustomBadRequest("error", 'Please supply a valid json in the format {"update":["ID1", "ID2", "ID3"]}')
+
+        try:
+            update_ids = json.loads(request.body)
+        except:
+            raise CustomBadRequest("error", 'Please supply a valid json in the format {"update":["ID1", "ID2", "ID3"]}')
+
+        if not 'update' in update_ids:
+            raise CustomBadRequest("error", 'Please supply a valid json in the format {"update":["ID1", "ID2", "ID3"]}')
+
+        if not 'username' in update_ids:
+            raise CustomBadRequest("error", 'Please supply a username')
+
+        try:
+            business_obj = Business.objects.get(username=update_ids['username'])
+        except Business.DoesNotExist:
+            raise CustomBadRequest("error", "Username doesn't exist")
+        except KeyError:
+            raise CustomBadRequest("error", 'Please supply a valid username')
+
+        db_objs = Order.objects.filter(reference_id__in=update_ids['update'], business=business_obj)
+        updated_orders = []
+        for db_obj in db_objs:
+            db_obj.confirmed = True
+            db_obj.save()
+            products = Product.objects.filter(order__pk=db_obj.order_no).values("real_tracking_no", "sku",
+                                                                                "weight",
+                                                                                "name", "quantity", "price")
+            updated_orders.append({
+                "order_no": db_obj.order_no,
+                "reference_id": db_obj.reference_id,
+                "master_tracking_no": db_obj.master_tracking_number,
+                "is_confirmed": db_obj.confirmed,
+                "products": list(products)
+            })
+
+        bundle = {"updated_orders": updated_orders}
+
+        self.log_throttled_access(request)
+        return self.create_response(request, bundle)
 
 
 class ProductResource3(ModelResource):
@@ -381,11 +431,6 @@ class ProductResource3(ModelResource):
         authorization = Authorization()
         authentication = Authentication()
         always_return_data = True
-
-
-# serializer = urlencodeSerializer()
-# ordering = ['date']
-#        allowed_methods = ['post']
 
 
 class ShippingEstimateResource(Resource):
@@ -559,7 +604,6 @@ class BusinessPatchResource(CORSModelResource):
         )
 
 
-
 class OrderCancelResource(CORSModelResource):
     products = fields.ToManyField("businessapp.apiv3.ProductResource3", 'product_set', related_name='product')
     skip = True
@@ -593,7 +637,8 @@ class OrderCancelResource(CORSModelResource):
 
         products = Product.objects.filter(order__pk=bundle.data['order_no']).values("real_tracking_no", "sku",
                                                                                     "weight",
-                                                                                    "name", "quantity", "price", "status")
+                                                                                    "name", "quantity", "price",
+                                                                                    "status")
 
         new_bundle = {
             "order_no": bundle.data['order_no'],
@@ -602,26 +647,28 @@ class OrderCancelResource(CORSModelResource):
         self.skip = True
         return new_bundle
 
+
 class PincodecheckResource3(CORSResource):
     class Meta:
         resource_name = 'pending_orders'
         authentication = Authentication()
         authorization = Authorization()
 
-    def hydrate(self,bundle):
+    def hydrate(self, bundle):
 
         try:
-            zipcode=Zipcode.objects.get(pincode=bundle.data['pincode'])
-            bundle.data['valid']=1
+            zipcode = Zipcode.objects.get(pincode=bundle.data['pincode'])
+            bundle.data['valid'] = 1
         except:
-            bundle.data['valid']=0
-            bundle.data['msg']='we dont have pickup service available in your desired pickup location.'
+            bundle.data['valid'] = 0
+            bundle.data['msg'] = 'we dont have pickup service available in your desired pickup location.'
 
         return bundle
 
 
 class PincodecheckResource(Resource):
     goodpincodes = ['400076', '400072', '400078', '400077', '400080', '400079', '400069', '400086']
+
     class Meta:
         resource_name = 'check_pincode'
         authentication = Authentication()
@@ -645,28 +692,22 @@ class PincodecheckResource(Resource):
                 message="No pincode found. Please supply pincode as a GET parameter")
 
         try:
-            length=len(str(pincode))
-            int_pincode=int(pincode)
+            length = len(str(pincode))
+            int_pincode = int(pincode)
         except:
             raise CustomBadRequest(
                 code="request_invalid",
                 message="enter correct pincode")
-        if (length!=6):
+        if (length != 6):
             raise CustomBadRequest(
                 code="request_invalid",
                 message="enter correct pincode length")
 
-
-
-
-        
-
-        if (pincode[:4] =='4000'):
+        if (pincode[:4] == '4000'):
             valid = True
         else:
             valid = False
 
-
-        bundle={"valid":valid}
+        bundle = {"valid": valid}
         self.log_throttled_access(request)
         return self.create_response(request, bundle)
