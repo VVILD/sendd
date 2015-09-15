@@ -133,9 +133,9 @@ class BaseBusinessAdmin(admin.ModelAdmin):
         p= Order.objects.filter(status='P').count()
         pu= Order.objects.filter(status='PU').count()
         di= Order.objects.filter(status='DI').count()
+        un= Order.objects.filter(status__in=['PU','D']).count()
 
-
-        context = {'cs':cs,'op':op,'nap':nap,'ap':ap,'d':d,'c':c,'p':p,'pu':pu,'di':di,'a':a,'apcs':apcs}
+        context = {'cs':cs,'op':op,'nap':nap,'ap':ap,'d':d,'c':c,'p':p,'pu':pu,'di':di,'a':a,'apcs':apcs,'un':un}
         return super(BaseBusinessAdmin, self).changelist_view(request, extra_context=context)
 
 
