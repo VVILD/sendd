@@ -103,7 +103,8 @@ class Business(models.Model):
             self.apikey = hashlib.sha1(str(random.getrandbits(256))).hexdigest()
         if self.pincode:
             pincode = Pincode.objects.filter(pincode=self.pincode).exclude(latitude__isnull=True)
-            self.warehouse = pincode[0].warehouse
+            if len(pincode) > 0:
+                self.warehouse = pincode[0].warehouse
         super(Business, self).save(*args, **kwargs)
 
 
@@ -196,10 +197,11 @@ class Order(models.Model):
             if str(order_no) > 4:
                 order_no = str(order_no)[:4]
             self.master_tracking_number = 'M' + order_no + str(uuid.uuid4().get_hex().upper()[:5])
-        if not state_matcher.is_state(self.state):
-            closest_state = state_matcher.get_closest_state(self.state)
-            if closest_state:
-                self.state = closest_state[0]
+        if self.state:
+            if not state_matcher.is_state(self.state):
+                closest_state = state_matcher.get_closest_state(self.state)
+                if closest_state:
+                    self.state = closest_state[0]
         super(Order, self).save(*args, **kwargs)
 
 
