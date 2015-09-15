@@ -955,7 +955,8 @@ class QcShipmentAdmin(ShipmentAdmin):
 
     def book_time(self, obj):
 #pk=obj.namemail.pk
-        return str(obj.order.book_time.replace(second=0, microsecond=0,tzinfo=None)) 
+        fmt = '%B,%Y-%m-%d %H:%M:%S'
+        return obj.order.book_time.replace(second=0, microsecond=0,tzinfo=None).strftime(fmt)
     book_time.allow_tags = True
     book_time.admin_order_field = 'order__book_time'
 
@@ -966,6 +967,7 @@ class QcShipmentAdmin(ShipmentAdmin):
             return obj.order.book_time + timedelta(days=3)
     expected_delivery_date.short_description='expected delivery date'
     expected_delivery_date.admin_order_field = 'order__book_time'
+
 
     def last_updated(self,obj):
         import datetime

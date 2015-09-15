@@ -666,7 +666,7 @@ class PincodecheckResource3(CORSResource):
         return bundle
 
 
-class PincodecheckResource(Resource):
+class PincodecheckResource(CORSResource):
     goodpincodes = ['400076', '400072', '400078', '400077', '400080', '400079', '400069', '400086']
 
     class Meta:
