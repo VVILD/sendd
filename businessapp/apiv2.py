@@ -714,7 +714,7 @@ class BarcodeFetchResource(CORSResource):
             barcode_assoc = Barcode.objects.get(value=barcode)
             barcode_associated = True
             business_username = barcode_assoc.business.username
-            business_name = barcode_assoc.business.name
+            business_name = barcode_assoc.business.business_name
         except ObjectDoesNotExist:
             barcode_associated = False
             business_username = None
