@@ -31,6 +31,7 @@ import logging
 from pickupboyapp.exceptions import CustomBadRequest
 from tastypie.utils import trailing_slash
 import redis
+from dateutil.parser import parse
 
 config = {
     'host': 'localhost',
@@ -1820,8 +1821,7 @@ class OrderResource2(MultipartResource, ModelResource):
         bundle.data['user'] = "/api/v2/user/" + str(bundle.data['user']) + "/"
         cust = User.objects.get(pk=pk)
 
-        check_time = datetime.combine(bundle.data['date'], datetime.strptime(bundle.data['time'],
-                                                                                      "%I:%M %p").time())
+        check_time = datetime.combine(parse(str(bundle.data['date'])).date(), datetime.strptime(bundle.data['time'], "%I:%M %p").time())
         offline = Offline.objects.filter(start__lte=check_time, end__gte=check_time, active=True).values("message")
         if len(offline) > 0:
             raise CustomBadRequest(
