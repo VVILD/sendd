@@ -1,5 +1,5 @@
 from django.contrib import admin
-from core.models import Warehouse, Pincode
+from core.models import Warehouse, Pincode, Offline
 
 __author__ = 'vatsalshah'
 
@@ -22,3 +22,9 @@ class PincodeAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Pincode, PincodeAdmin)
+
+
+class OfflineAdmin(admin.ModelAdmin):
+    pass
+
+admin.site.register(Offline, OfflineAdmin)

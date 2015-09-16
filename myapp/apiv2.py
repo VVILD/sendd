@@ -2,6 +2,7 @@ import traceback
 import sys
 from tastypie.resources import ModelResource
 from django.conf.urls import url
+from core.models import Offline
 from myapp.mail.bookingConfirmationMail import SendConfirmationMail
 from myapp.models import *
 from tastypie.authorization import Authorization
@@ -1817,58 +1818,47 @@ class OrderResource2(MultipartResource, ModelResource):
         pk = int(bundle.data['user'])
 
         bundle.data['user'] = "/api/v2/user/" + str(bundle.data['user']) + "/"
-        print bundle.data['user']
         cust = User.objects.get(pk=pk)
 
-        # promocode
+        offline = Offline.objects.filter(start__lte=bundle['date'], end__gte=bundle['date']).values("message")
+        if len(offline) > 0:
+            raise CustomBadRequest(
+                code="offline",
+                message=offline[0]['message']
+            )
 
-        # print int(bundle.data['user'])
         try:
             promocode = Promocode.objects.get(pk=bundle.data['code'])
-
-            print '1'
 
             if (promocode.only_for_first == 'Y'):
 
                 shipment = Shipment.objects.filter(order__user__phone=pk, order__way='A')  # pk is the number
-                print "normal"
-                print shipment.count
-                print "with bracket"
-                print shipment.count()
+
                 if (shipment.count() == 0):
                     # everything good
                     bundle.data['promocode'] = "/api/v2/promocode/" + str(promocode.pk) + "/"
                     print str(bundle.data['code'])
                     bundle.data['valid'] = 'Y'
                 else:
-                    print "purane users"
                     bundle.data['promomsg'] = "You are not a first time user"
-                    # bundle.data['valid']='N'
             else:
                 bundle.data['promocode'] = "/api/v2/promocode/" + str(promocode.pk) + "/"
-                print str(bundle.data['code'])
-                # bundle.data['valid']='Y'
         except:
             bundle.data['promomsg'] = "Wrong promo code"
-            # bundle.data['valid']='N'
-            print '2'
-        # print bundle.data['promocode']
 
-        # create nameemail
         try:
             newnamemail = Namemail.objects.filter(user=cust, name=bundle.data['name'], email=bundle.data['email'])
             if (newnamemail.count() == 0):
                 newnamemail = Namemail.objects.create(user=cust, name=bundle.data['name'], email=bundle.data['email'])
                 newnamemail.save()
                 nm_pk = newnamemail.pk
-            # bundle.obj = Address(address="nick", locality = "", password,timezone.now(),"od_test")
             else:
                 for x in newnamemail:
                     nm_pk = x.pk
             bundle.data['namemail'] = "/api/v2/namemail/" + str(nm_pk) + "/"
 
         except:
-            print "cool shit"
+            pass
 
         return bundle
 

@@ -180,3 +180,12 @@ class Pincode(models.Model):
     class Meta:
         verbose_name = 'ogd pincodes'
         ordering = ['id', 'pincode']
+
+
+class Offline(models.Model):
+    start = models.DateTimeField()
+    end = models.DateTimeField()
+    message = models.TextField()
+
+    def __str__(self):
+        return self.message
