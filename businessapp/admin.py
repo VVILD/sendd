@@ -774,6 +774,12 @@ class OrderAdmin(FilterUserAdmin):
     actions = [make_pending, make_complete, make_cancelled, make_transit,export_as_csv_action("CSV Export", fields=['name','product__real_tracking_no'])]
     readonly_fields=('master_tracking_number',)
 
+
+    def change_view(self, request, object_id, form_url='', extra_context=None):        
+        extra_context = extra_context or {}
+        extra_context['x'] = object_id
+        return super(OrderAdmin, self).change_view(request, object_id, form_url, extra_context=extra_context)
+
     def mapped_ok(self,obj):
         products=Product.objects.filter(order=obj)
         mapped_ok=True
