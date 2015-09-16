@@ -1820,7 +1820,7 @@ class OrderResource2(MultipartResource, ModelResource):
         bundle.data['user'] = "/api/v2/user/" + str(bundle.data['user']) + "/"
         cust = User.objects.get(pk=pk)
 
-        offline = Offline.objects.filter(start__lte=bundle['date'], end__gte=bundle['date']).values("message")
+        offline = Offline.objects.filter(start__lte=bundle.data['date'], end__gte=bundle.data['date']).values("message")
         if len(offline) > 0:
             raise CustomBadRequest(
                 code="offline",
