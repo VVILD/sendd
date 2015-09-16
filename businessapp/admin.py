@@ -148,7 +148,7 @@ class BusinessAdmin(BaseBusinessAdmin):
     raw_id_fields = ('pb', 'warehouse')
     list_filter = ['username', 'daily','pb', 'warehouse']
 
-    actions = [export_as_csv_action("CSV Export", fields=['username','business_name','apikey','name','email','contact_mob','contact_office','address','city','state','pincode'])]
+    #actions = [export_as_csv_action("CSV Export", fields=['username','business_name','apikey','name','email','contact_mob','contact_office','address','city','state','pincode'])]
     actions_on_bottom = False
     actions_on_top = True
     
@@ -441,9 +441,9 @@ admin.site.register(LoginSession)
 
 class ProductAdmin(admin.ModelAdmin):
     search_fields = ['name', 'real_tracking_no']
-    list_display = ('name', 'price', 'weight', 'status', 'real_tracking_no', 'order', 'barcode','date',)
+    list_display = ('name', 'price', 'weight', 'status', 'real_tracking_no', 'order', 'barcode','date','last_tracking_status',)
     list_editable = ('status', )
-    list_filter=['order__business','last_tracking_status']
+    list_filter=['order__business','last_tracking_status','company','status']
     readonly_fields = (
         'name', 'quantity', 'sku', 'price', 'weight', 'applied_weight', 'real_tracking_no', 'order',
         'kartrocket_order', 'shipping_cost', 'cod_cost', 'status', 'date', 'barcode')
@@ -475,6 +475,17 @@ class PricingAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Pricing,PricingAdmin)
+
+
+
+class BarcodeAdmin(admin.ModelAdmin):
+    # search_fields=['name']
+    list_filter=('business',)
+    list_display=('value','created_at','business')
+
+
+admin.site.register(Barcode,BarcodeAdmin)
+
 
 # admin.site.register(BusinessManager)
 
@@ -761,7 +772,7 @@ class OrderAdmin(FilterUserAdmin):
     list_editable = ('status',)
     list_filter = ['business', 'status', 'book_time']
     actions = [make_pending, make_complete, make_cancelled, make_transit,export_as_csv_action("CSV Export", fields=['name','product__real_tracking_no'])]
-
+    readonly_fields=('master_tracking_number',)
 
     def mapped_ok(self,obj):
         products=Product.objects.filter(order=obj)
@@ -1023,3 +1034,5 @@ class QcProductAdmin(ProductAdmin):
 
 
 admin.site.register(QcProduct, QcProductAdmin)
+
+
