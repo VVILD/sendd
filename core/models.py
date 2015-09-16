@@ -186,6 +186,7 @@ class Offline(models.Model):
     start = models.DateTimeField()
     end = models.DateTimeField()
     message = models.TextField()
+    active = models.BooleanField(default=False)
 
     def __str__(self):
         return self.message
