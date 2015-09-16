@@ -469,9 +469,6 @@ admin.site.register(Forgotpass)
 class PricingAdmin(admin.ModelAdmin):
     # search_fields=['name']
     list_filter=('business__username','business__business_name')
-    def render_change_form(self, request, context, *args, **kwargs):
-         context['adminform'].form.fields['business'].queryset = Business.objects.filter(pricing__isnull=True)
-         return super(PricingAdmin, self).render_change_form(request, context, args, kwargs)         
 
 
 admin.site.register(Pricing,PricingAdmin)
