@@ -476,6 +476,17 @@ class PricingAdmin(admin.ModelAdmin):
 
 admin.site.register(Pricing,PricingAdmin)
 
+
+
+class BarcodeAdmin(admin.ModelAdmin):
+    # search_fields=['name']
+    list_filter=('business',)
+    list_display=('value','created_at','business')
+
+
+admin.site.register(Barcode,BarcodeAdmin)
+
+
 # admin.site.register(BusinessManager)
 
 
@@ -761,7 +772,7 @@ class OrderAdmin(FilterUserAdmin):
     list_editable = ('status',)
     list_filter = ['business', 'status', 'book_time']
     actions = [make_pending, make_complete, make_cancelled, make_transit,export_as_csv_action("CSV Export", fields=['name','product__real_tracking_no'])]
-
+    readonly_fields=('master_tracking_number',)
 
     def mapped_ok(self,obj):
         products=Product.objects.filter(order=obj)
@@ -1023,3 +1034,5 @@ class QcProductAdmin(ProductAdmin):
 
 
 admin.site.register(QcProduct, QcProductAdmin)
+
+
