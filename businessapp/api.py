@@ -640,7 +640,7 @@ class ProductResource(CORSModelResource):
 						#print len(bundle.data['array'])
 
 						for x in range (0,len(bundle.data['pname'])-1):
-							product =Product.objects.create(order=order,name=bundle.data['pname'][x],weight=bundle.data['pweight'][x],price=bundle.data['pprice'][x],sku=bundle.data['psku'][x],quantity=bundle.data['pquantity'][x])
+							product =Product.objects.create(order=order,name=bundle.data['pname'][x],weight=bundle.data['pweight'][x],price=bundle.data['pprice'][x],sku=bundle.data['psku'][x],quantity=bundle.data['pquantity'][x],barcode=bundle.data['pbarcode'][x])
 					except:
 						bundle.data['errormsg']='error creating product'
 			except Exception,e:
@@ -656,6 +656,7 @@ class ProductResource(CORSModelResource):
 	#			bundle.data['method']=str(bundle.data['pmethod'][x])
 				bundle.data['sku']=str(bundle.data['psku'][x])
 				bundle.data['quantity']=str(bundle.data['pquantity'][x])
+				bundle.data['barcode']=str(bundle.data['pbarcode'][x])
 			else:
 				bundle.data['name']=str(bundle.data['pname'])
 				bundle.data['weight']=str(bundle.data['pweight'])
@@ -663,6 +664,7 @@ class ProductResource(CORSModelResource):
 	#			bundle.data['method']=str(bundle.data['pmethod'])
 				bundle.data['sku']=str(bundle.data['psku'])
 				bundle.data['quantity']=str(bundle.data['pquantity'])
+				bundle.data['barcode']=str(bundle.data['pbarcode'])
 
 
 
