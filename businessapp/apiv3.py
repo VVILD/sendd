@@ -243,7 +243,7 @@ class BusinessResource(CORSModelResource):
         always_return_data = True
 
 
-class OrderResource3(ModelResource):
+class OrderResource3(CORSModelResource):
     business = fields.ForeignKey(BusinessResource, 'business', null=True)
     products = fields.ToManyField("businessapp.apiv3.ProductResource3", 'product_set', related_name='product')
 
@@ -299,7 +299,7 @@ class OrderResource3(ModelResource):
         return new_bundle
 
 
-class OrderPatchResource(ModelResource):
+class OrderPatchResource(CORSModelResource):
     business = fields.ForeignKey(BusinessResource, 'business', null=True)
     products = fields.ToManyField("businessapp.apiv3.ProductResource3", 'product_set', related_name='product')
     skip = True
@@ -362,7 +362,7 @@ class OrderPatchResource(ModelResource):
         return new_bundle
 
 
-class OrderPatchReferenceResource(Resource):
+class OrderPatchReferenceResource(CORSModelResource):
     class Meta:
         resource_name = 'confirm_orders'
         authentication = Authentication()
@@ -433,7 +433,7 @@ class ProductResource3(ModelResource):
         always_return_data = True
 
 
-class ShippingEstimateResource(Resource):
+class ShippingEstimateResource(CORSResource):
     class Meta:
         resource_name = 'shipping_estimate'
         authentication = Authentication()
