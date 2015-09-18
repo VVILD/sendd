@@ -9,7 +9,6 @@ import json
 from django.http import HttpResponse
 
 import datetime
-
 from datetime import date
 import datetime
 from django.db.models import Avg
