@@ -100,9 +100,9 @@ class Business(models.Model):
         #print "jkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkj"
         if self.pb and self.status=='Y':
             self.status='A'
-            address= str(self.address)  
+            address=urllib.quote_plus(str(self.address))  
             phone=urllib.quote_plus(str(self.pb.phone))
-            user_phone=urllib.quote_plus(str(self.contact_office)+','+str(self.contact_mob))
+            user_phone=urllib.quote_plus(str(self.contact_office)+str(self.contact_mob))
             order_no=urllib.quote_plus(str(self.pk))
             name=urllib.quote_plus(str(self.name))
             msg0 = "http://enterprise.smsgupshup.com/GatewayAPI/rest?method=SendMessage&send_to="
