@@ -123,7 +123,7 @@ class BaseBusinessAdmin(admin.ModelAdmin):
             pass
         a = Business.objects.filter(status='A').count()
         
-        nap = Business.objects.filter(status='N').count()
+        nap = Order.objects.filter(business__status='N',status='P').count()
         ap = Business.objects.filter(status='Y').count()
         apcs=Business.objects.filter().exclude(status='N').count()
         d = Business.objects.filter(daily=True).count()
