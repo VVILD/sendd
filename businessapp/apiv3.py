@@ -189,6 +189,14 @@ class BaseCorsResource(Resource):
         response = super(BaseCorsResource, self).put_detail(request, **kwargs)
         return self.add_cors_headers(response, True)
 
+    def patch_list(self, request, **kwargs):
+        response = super(BaseCorsResource, self).patch_list(request, **kwargs)
+        return self.add_cors_headers(response, True)
+
+    def patch_detail(self, request, **kwargs):
+        response = super(BaseCorsResource, self).patch_detail(request, **kwargs)
+        return self.add_cors_headers(response, True)
+
     def method_check(self, request, allowed=None):
         """
           Check for an OPTIONS request. If so return the Allow- headers
@@ -204,7 +212,7 @@ class BaseCorsResource(Resource):
             response['Access-Control-Allow-Origin'] = '*'
             response[
                 'Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-Requested-With, X-CSRFToken, X-HTTP-Method-Override'
-            response['Access-Control-Allow-Methods'] = "POST"
+            response['Access-Control-Allow-Methods'] = "POST, PATCH, PUT, GET"
             response['Allow'] = allows
             raise ImmediateHttpResponse(response=response)
 
