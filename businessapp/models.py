@@ -86,7 +86,7 @@ class Business(models.Model):
     ff_comment = models.TextField(null=True, blank=True)
     
     daily = models.BooleanField(default=False)
-    status = models.CharField(max_length=1, choices=(('Y', 'approved'), ('N', 'not approved'),('C', 'cancelled'),('A', 'approved'),), null=True, blank=True,
+    status = models.CharField(max_length=1, choices=(('Y', 'approved'), ('N', 'not approved'),('C', 'cancelled'),('A', 'alloted'),), null=True, blank=True,
     default='N')
     warehouse = models.ForeignKey(Warehouse, null=True, blank=True)
 
