@@ -29,6 +29,12 @@ class PickupboyAdmin(admin.ModelAdmin):
     search_fields = ['pincodes__pincode','name']
     list_display = ('name', 'pincodes_pref', 'alloted_times')
 
+
+    def queryset(self, request):
+        qs = super(PickupboyAdmin, self).queryset(request)
+        qs = qs.filter(status='A')
+        return qs
+
     def pincodes_pref(self, obj):
         return "\n".join([p.pincode for p in obj.pincodes.all()])
 
