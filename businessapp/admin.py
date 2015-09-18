@@ -123,7 +123,7 @@ class BaseBusinessAdmin(admin.ModelAdmin):
             pass
         a = Business.objects.filter(status='A').count()
         
-        nap = Business.objects.filter(status='N').count()
+        nap = Order.objects.filter(business__status='N',status='P').count()
         ap = Business.objects.filter(status='Y').count()
         apcs=Business.objects.filter().exclude(status='N').count()
         d = Business.objects.filter(daily=True).count()
@@ -134,8 +134,9 @@ class BaseBusinessAdmin(admin.ModelAdmin):
         pu= Order.objects.filter(status='PU').count()
         di= Order.objects.filter(status='DI').count()
         un= Order.objects.filter(status__in=['PU','D']).count()
+        picked= Business.objects.filter(is_completed=True).count()
 
-        context = {'cs':cs,'op':op,'nap':nap,'ap':ap,'d':d,'c':c,'p':p,'pu':pu,'di':di,'a':a,'apcs':apcs,'un':un}
+        context = {'cs':cs,'op':op,'nap':nap,'ap':ap,'d':d,'c':c,'p':p,'pu':pu,'di':di,'a':a,'apcs':apcs,'un':un,'picked':picked}
         return super(BaseBusinessAdmin, self).changelist_view(request, extra_context=context)
 
 
@@ -352,8 +353,31 @@ admin.site.register(ApprovedBusinessOP, ApprovedBusinessOPAdmin)
 
 class AllotedBusinessAdmin(OPBusinessAdmin):
 
+    def make_pickedup(modeladmin, request, queryset):
+        queryset.update(is_completed=True)
+
+
+
+    make_pickedup.short_description = "make pickedup"
+
+    actions_on_bottom = False
+    actions_on_top = True
+
+    actions = [make_pickedup]
+    
+    def queryset(self, request):
+        qs = super(OPBusinessAdmin, self).queryset(request)
+        qs = qs.filter(status='A')
+        return qs
+
+
+admin.site.register(AllotedBusiness, AllotedBusinessAdmin)
+
+
+class PickedupBusinessAdmin(OPBusinessAdmin):
+
     def make_complete(modeladmin, request, queryset):
-        queryset.update(status='N',pb=None)
+        queryset.update(status='N',pb=None,is_completed=False)
 
 
 
@@ -366,11 +390,13 @@ class AllotedBusinessAdmin(OPBusinessAdmin):
     
     def queryset(self, request):
         qs = super(OPBusinessAdmin, self).queryset(request)
-        qs = qs.filter(status='A')
+        qs = qs.filter(is_completed=True)
         return qs
 
 
-admin.site.register(AllotedBusiness, AllotedBusinessAdmin)
+admin.site.register(PickedupBusiness, PickedupBusinessAdmin)
+
+
 
 
 from django.contrib.auth.admin import UserAdmin
@@ -469,9 +495,6 @@ admin.site.register(Forgotpass)
 class PricingAdmin(admin.ModelAdmin):
     # search_fields=['name']
     list_filter=('business__username','business__business_name')
-    def render_change_form(self, request, context, *args, **kwargs):
-         context['adminform'].form.fields['business'].queryset = Business.objects.filter(pricing__isnull=True)
-         return super(PricingAdmin, self).render_change_form(request, context, args, kwargs)         
 
 
 admin.site.register(Pricing,PricingAdmin)
@@ -773,6 +796,12 @@ class OrderAdmin(FilterUserAdmin):
     list_filter = ['business', 'status', 'book_time']
     actions = [make_pending, make_complete, make_cancelled, make_transit,export_as_csv_action("CSV Export", fields=['name','product__real_tracking_no'])]
     readonly_fields=('master_tracking_number',)
+
+
+    def change_view(self, request, object_id, form_url='', extra_context=None):        
+        extra_context = extra_context or {}
+        extra_context['x'] = object_id
+        return super(OrderAdmin, self).change_view(request, object_id, form_url, extra_context=extra_context)
 
     def mapped_ok(self,obj):
         products=Product.objects.filter(order=obj)

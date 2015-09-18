@@ -21,6 +21,8 @@ from core.utils import state_matcher
 from core.utils.fedex_api_helper import Fedex
 from django.core.exceptions import ObjectDoesNotExist
 import json
+import urllib
+import requests
 
 class Profile(models.Model):
     user = models.OneToOneField(User)
@@ -98,6 +100,17 @@ class Business(models.Model):
         #print "jkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkj"
         if self.pb and self.status=='Y':
             self.status='A'
+            address= str(self.address)  
+            phone=urllib.quote_plus(str(self.pb.phone))
+            user_phone=urllib.quote_plus(str(self.contact_office)+','+str(self.contact_mob))
+            order_no=urllib.quote_plus(str(self.pk))
+            name=urllib.quote_plus(str(self.name))
+            msg0 = "http://enterprise.smsgupshup.com/GatewayAPI/rest?method=SendMessage&send_to="
+            msga = str(phone)
+            msg1 = "&msg=Pickup+details+for+order+no%3A"+str(order_no)+".%0D%0AName%3A"+str(name)+"%2C+Address%3A"+str(address)+"%2C+Mobile+No%3A"+str(user_phone)+"&msg_type=TEXT&userid=2000142364&auth_scheme=plain&password=h0s6jgB4N&format=text"
+            query = ''.join([msg0, msga, msg1])
+            print query
+            req = requests.get(query)
 
         if not self.apikey:
             self.apikey = hashlib.sha1(str(random.getrandbits(256))).hexdigest()
@@ -124,6 +137,10 @@ class ApprovedBusinessOP(Business):
         proxy = True
 
 class AllotedBusiness(Business):
+    class Meta:
+        proxy = True
+
+class PickedupBusiness(Business):
     class Meta:
         proxy = True
 
