@@ -134,8 +134,9 @@ class BaseBusinessAdmin(admin.ModelAdmin):
         pu= Order.objects.filter(status='PU').count()
         di= Order.objects.filter(status='DI').count()
         un= Order.objects.filter(status__in=['PU','D']).count()
+        picked= Business.objects.filter(is_completed=True).count()
 
-        context = {'cs':cs,'op':op,'nap':nap,'ap':ap,'d':d,'c':c,'p':p,'pu':pu,'di':di,'a':a,'apcs':apcs,'un':un}
+        context = {'cs':cs,'op':op,'nap':nap,'ap':ap,'d':d,'c':c,'p':p,'pu':pu,'di':di,'a':a,'apcs':apcs,'un':un,'picked':picked}
         return super(BaseBusinessAdmin, self).changelist_view(request, extra_context=context)
 
 
@@ -352,8 +353,31 @@ admin.site.register(ApprovedBusinessOP, ApprovedBusinessOPAdmin)
 
 class AllotedBusinessAdmin(OPBusinessAdmin):
 
+    def make_pickedup(modeladmin, request, queryset):
+        queryset.update(is_completed=True)
+
+
+
+    make_pickedup.short_description = "make pickedup"
+
+    actions_on_bottom = False
+    actions_on_top = True
+
+    actions = [make_pickedup]
+    
+    def queryset(self, request):
+        qs = super(OPBusinessAdmin, self).queryset(request)
+        qs = qs.filter(status='A')
+        return qs
+
+
+admin.site.register(AllotedBusiness, AllotedBusinessAdmin)
+
+
+class PickedupBusinessAdmin(OPBusinessAdmin):
+
     def make_complete(modeladmin, request, queryset):
-        queryset.update(status='N',pb=None)
+        queryset.update(status='N',pb=None,is_completed=False)
 
 
 
@@ -366,11 +390,13 @@ class AllotedBusinessAdmin(OPBusinessAdmin):
     
     def queryset(self, request):
         qs = super(OPBusinessAdmin, self).queryset(request)
-        qs = qs.filter(status='A')
+        qs = qs.filter(is_completed=True)
         return qs
 
 
-admin.site.register(AllotedBusiness, AllotedBusinessAdmin)
+admin.site.register(PickedupBusiness, PickedupBusinessAdmin)
+
+
 
 
 from django.contrib.auth.admin import UserAdmin
