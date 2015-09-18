@@ -423,7 +423,7 @@ class OrderPatchReferenceResource(CORSModelResource):
 
 
 class ProductResource3(ModelResource):
-    order = fields.ToOneField(OrderResource3, 'order', null=True, )
+    order = fields.ToOneField(OrderResource3, 'order')
 
     class Meta:
         queryset = Product.objects.all()
