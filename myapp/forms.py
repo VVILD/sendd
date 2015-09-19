@@ -28,9 +28,20 @@ class NewShipmentForm(ModelForm):
 
 
 class NewShipmentAddForm(ModelForm):
-    xx=forms.CharField(max_length=50)
+    addressline1=forms.CharField(max_length=200,required=False)
+    addressline2=forms.CharField(max_length=200,required=False)
+    pincode=forms.CharField(max_length=50,required=False)
+    city=forms.CharField(max_length=50,required=False)
+    state=forms.CharField(max_length=50,required=False)
+    country=forms.CharField(max_length=50,required=False)
     class Meta():
         model = Shipment
+
+
+    # def process(self):
+    #     address = Address.objects.create(flat_no=addressline1, locality=addressline2, city=city, state=state,
+    #                                      pincode=pincode, country=country)
+    #     self.cleaned_data.address=address
 
     
 
