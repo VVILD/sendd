@@ -1,0 +1,118 @@
+{% extends "admin/change_list.html" %}
+{% block content %}
+
+<script>
+(function ($) {
+
+    function fix_actions() {
+        var container = $('div.actions');
+
+        if (container.find('option').length < 10) {
+            container.find('label, button').hide();
+
+            var buttons = $('<div></div>')
+                .prependTo(container)
+                .css('display', 'inline')
+                .addClass('class', 'action-buttons');
+
+            container.find('option:gt(0)').each(function () {
+                $('<button>')
+                    .appendTo(buttons)
+                    .attr('name', this.value)
+                    .addClass('button')
+                    .text(this.text)
+                    .click(function () {
+                        container.find('select')
+                            .find(':selected').attr('selected', '').end()
+                            .find('[value=' + this.name + ']').attr('selected', 'selected');
+                        $('#changelist-form button[name="index"]').click();
+                    });
+            });
+        }
+    };
+
+    $(function () {
+        fix_actions();
+    });
+})(django.jQuery);
+
+</script>
+{% if cs %}
+
+
+<center>
+<a class="btn btn-info" href="/admin/businessapp/notapprovedbusiness/"><span class="badge">{{nap}}</span> Not Approved</a>
+<a class="btn btn-info" href="/admin/businessapp/approvedbusiness/"><span class="badge">{{apcs}}</span>Approved</a>
+<a class="btn btn-info" href="/admin/businessapp/cancelledbusiness/"><span class="badge">{{c}}</span>cancelled</a>
+<a class="btn btn-info" href="/admin/businessapp/dailybusiness/"><span class="badge">{{d}}</span>daily</a>
+<a class="btn btn-info" href="/admin/businessapp/order/?q=&status__exact=P"><span class="badge">{{p}}</span>Pending orders </a>
+<a class="btn btn-info" href="/admin/businessapp/order/">Search orders</a>
+
+</center>
+<br>
+<br>
+
+
+
+<!-- <div class="col-md-6">Today Customers Orders
+<br>
+<li># orders: {{count_b2c}}</li>
+<li>Total revenue: {{sum_b2c}}</li>
+</div> -->
+{% elif op %}
+<center>
+<div class="row">
+<a class="btn btn-info" href="/admin/businessapp/approvedbusinessop/"><span class="badge">{{ap}}</span> Approved business</a>
+<a class="btn btn-info" href="/admin/businessapp/allotedbusiness/"><span class="badge">{{a}}</span> Alloted business</a>
+<a class="btn btn-info" href="/admin/businessapp/pickedupbusiness/"><span class="badge">{{picked}}</span> picked up business</a>
+
+<a class="btn btn-info" href="/admin/businessapp/order/?q=&status__exact=P"><span class="badge">{{p}}</span>Pending orders </a>
+<a class="btn btn-info" href="/admin/businessapp/order/?q=&status__exact=PU"><span class="badge">{{pu}}</span>Picked up orders</a>
+<a class="btn btn-info" href="/admin/businessapp/order/?q=&status__exact=DI"><span class="badge">{{di}}</span>Dispatched orders</a>
+<a class="btn btn-info" href="/admin/businessapp/order/">Search orders</a>
+<a class="btn btn-error" href="/admin/businessapp/order/?status__in=PU,D"><span class="badge">{{un}}</span>Unresolved Orders</a>
+
+<br>
+<br>
+</div>
+</center>
+{%else%}
+
+<center>
+Customer support links
+<a class="btn btn-info" href="/admin/businessapp/notapprovedbusiness/?o=-9"><span class="badge">{{nap}}</span> Not Approved</a>
+<a class="btn btn-info" href="/admin/businessapp/approvedbusiness/"><span class="badge">{{apcs}}</span>Approved</a>
+<a class="btn btn-info" href="/admin/businessapp/cancelledbusiness/"><span class="badge">{{c}}</span>cancelled</a>
+<a class="btn btn-info" href="/admin/businessapp/dailybusiness/"><span class="badge">{{d}}</span>daily</a>
+<a class="btn btn-info" href="/admin/businessapp/order/?q=&status__exact=P"><span class="badge">{{p}}</span>Pending orders </a>
+<a class="btn btn-info" href="/admin/businessapp/order/">Search orders</a>
+
+</center>
+<br>
+<br>
+
+
+<center>
+Fullfillment executive link
+<div class="row">
+<a class="btn btn-info" href="/admin/businessapp/approvedbusinessop/"><span class="badge">{{ap}}</span> Approved business</a>
+<a class="btn btn-info" href="/admin/businessapp/allotedbusiness/"><span class="badge">{{a}}</span> Alloted business</a>
+<a class="btn btn-info" href="/admin/businessapp/pickedupbusiness/"><span class="badge">{{picked}}</span> picked up business</a>
+
+<a class="btn btn-info" href="/admin/businessapp/order/?q=&status__exact=P"><span class="badge">{{p}}</span>Pending orders </a>
+<a class="btn btn-info" href="/admin/businessapp/order/?q=&status__exact=PU"><span class="badge">{{pu}}</span>Picked up orders</a>
+<a class="btn btn-info" href="/admin/businessapp/order/?q=&status__exact=DI"><span class="badge">{{di}}</span>Dispatched orders</a>
+<a class="btn btn-info" href="/admin/businessapp/order/">Search orders</a>
+<a class="btn btn-error" href="/admin/businessapp/order/?status__in=PU,D"><span class="badge">{{un}}</span>Unresolved Orders</a>
+<br>
+<br>
+</div>
+</center>
+
+
+{% endif %}
+
+
+
+{{ block.super }}
+{% endblock %}

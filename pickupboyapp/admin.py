@@ -6,7 +6,7 @@ from .models import *
 from myapp.models import Order
 from businessapp.models import Business
 from .api import time_map
-
+import reversion
 
 def print_html(arr):
     head = """
@@ -25,7 +25,7 @@ def print_html(arr):
     return head + body + end
 
 
-class PickupboyAdmin(admin.ModelAdmin):
+class PickupboyAdmin(reversion.VersionAdmin):
     search_fields = ['pincodes__pincode','name']
     list_display = ('name', 'pincodes_pref', 'alloted_times')
 
@@ -79,7 +79,7 @@ class PickupboyAdmin(admin.ModelAdmin):
 admin.site.register(PBUser, PickupboyAdmin)
 
 
-class PBPincodeAdmin(admin.ModelAdmin):
+class PBPincodeAdmin(reversion.VersionAdmin):
     pass
 
 

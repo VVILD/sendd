@@ -1,7 +1,8 @@
 import urllib
 import json
 
-
+from django.contrib.admin.models import LogEntry, CHANGE
+from django.contrib.contenttypes.models import ContentType
 from random import randint
 
 from datetime import timedelta
@@ -9,12 +10,124 @@ import datetime
 from datetime import date
 from django.contrib import admin
 from .models import *
+import reversion
 
 from django.http import HttpResponse, HttpResponseRedirect
 from django.db.models import Avg, Count, F, Max, Min, Sum, Q, Prefetch
 from django.db.models import Sum
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
+
+from django.contrib import admin
+from django.contrib.admin.models import LogEntry, ADDITION, CHANGE, DELETION
+from django.utils.html import escape
+from django.core.urlresolvers import reverse, NoReverseMatch
+from django.contrib.auth.models import User
+
+action_names = {
+    ADDITION: 'Addition',
+    CHANGE:   'Change',
+    DELETION: 'Deletion',
+}
+
+class FilterBase(admin.SimpleListFilter):
+    def queryset(self, request, queryset):
+        if self.value():
+            dictionary = dict(((self.parameter_name, self.value()),))
+            return queryset.filter(**dictionary)
+
+class ActionFilter(FilterBase):
+    title = 'action'
+    parameter_name = 'action_flag'
+    def lookups(self, request, model_admin):
+        return action_names.items()
+
+
+class UserFilter(FilterBase):
+    """Use this filter to only show current users, who appear in the log."""
+    title = 'user'
+    parameter_name = 'user_id'
+    def lookups(self, request, model_admin):
+        return tuple((u.id, u.username)
+            for u in User.objects.filter(pk__in =
+                LogEntry.objects.values_list('user_id').distinct())
+        )
+
+class AdminFilter(UserFilter):
+    """Use this filter to only show current Superusers."""
+    title = 'admin'
+    def lookups(self, request, model_admin):
+        return tuple((u.id, u.username) for u in User.objects.filter(is_superuser=True))
+
+class StaffFilter(UserFilter):
+    """Use this filter to only show current Staff members."""
+    title = 'staff'
+    def lookups(self, request, model_admin):
+        return tuple((u.id, u.username) for u in User.objects.filter(is_staff=True))
+
+
+class LogEntryAdmin(admin.ModelAdmin):
+
+    date_hierarchy = 'action_time'
+
+    readonly_fields = ('user','content_type','object_repr','object_id','change_message')
+
+    list_filter = [
+        UserFilter,
+        ActionFilter,
+        'content_type',
+        # 'user',
+    ]
+
+    search_fields = [
+        'object_repr',
+        'change_message'
+    ]
+
+
+    list_display = [
+        'action_time',
+        'user',
+        'content_type',
+        'object_link',
+        'action_flag',
+        'action_description',
+        'change_message',
+    ]
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return request.user.is_superuser and request.method != 'POST'
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def object_link(self, obj):
+        ct = obj.content_type
+        repr_ = escape(obj.object_repr)
+        try:
+            href = reverse('admin:%s_%s_change' % (ct.app_label, ct.model), args=[obj.object_id])
+            link = u'<a href="%s">%s</a>' % (href, repr_)
+        except NoReverseMatch:
+            link = repr_
+        return link if obj.action_flag != DELETION else repr_
+    object_link.allow_tags = True
+    object_link.admin_order_field = 'object_repr'
+    object_link.short_description = u'object'
+
+    def queryset(self, request):
+        return super(LogEntryAdmin, self).queryset(request) \
+            .prefetch_related('content_type')
+
+    def action_description(self, obj):
+        return action_names[obj.action_flag]
+    action_description.short_description = 'Action'
+
+
+admin.site.register(LogEntry, LogEntryAdmin)
+
 
 class ProfileInline(admin.StackedInline):
     model = Profile
@@ -102,7 +215,9 @@ def export_as_csv_action(description="Export selected objects as CSV file",
 # <a class="btn btn-info" href="/admin/businessapp/order/?q=&status__exact=DI"><span class="badge">{{di}}</span>Dispatched orders</a>
 # <br>
 # <br>
-class BaseBusinessAdmin(admin.ModelAdmin):
+class BaseBusinessAdmin(reversion.VersionAdmin):
+
+    
 
     def changelist_view(self, request, extra_context=None):
         extra_context = extra_context or {}
@@ -259,6 +374,15 @@ class OPBusinessAdmin(BusinessAdmin):
 
 class NotApprovedBusinessAdmin(CSBusinessAdmin):
     def make_approved(modeladmin, request, queryset):
+        ct = ContentType.objects.get_for_model(queryset.model)
+        for obj in queryset:
+            LogEntry.objects.log_action(
+                user_id=request.user.id, 
+                content_type_id=ct.pk,
+                object_id=obj.pk,
+                object_repr=str(obj.pk),
+                action_flag=CHANGE,
+                change_message="action button : business status changed to approved")        
         queryset.update(status='Y')
 
 
@@ -290,6 +414,15 @@ class ApprovedBusinessAdmin(CSBusinessAdmin):
 
 
     def make_not_approved(modeladmin, request, queryset):
+        ct = ContentType.objects.get_for_model(queryset.model)
+        for obj in queryset:
+            LogEntry.objects.log_action(
+                user_id=request.user.id, 
+                content_type_id=ct.pk,
+                object_id=obj.pk,
+                object_repr=str(obj.pk),
+                action_flag=CHANGE,
+                change_message="action button : business status changed to not approved")
         queryset.update(status='N')
 
     make_not_approved.short_description = "make not approve"
@@ -328,6 +461,15 @@ admin.site.register(CancelledBusiness, CancelledBusinessAdmin)
 class ApprovedBusinessOPAdmin(OPBusinessAdmin):
     
     def make_alloted(modeladmin, request, queryset):
+        ct = ContentType.objects.get_for_model(queryset.model)
+        for obj in queryset:
+            LogEntry.objects.log_action(
+                user_id=request.user.id, 
+                content_type_id=ct.pk,
+                object_id=obj.pk,
+                object_repr=str(obj.pk),
+                action_flag=CHANGE,
+                change_message="action button : business status changed to alloted")
         queryset.update(status='A')
 
 
@@ -354,6 +496,15 @@ admin.site.register(ApprovedBusinessOP, ApprovedBusinessOPAdmin)
 class AllotedBusinessAdmin(OPBusinessAdmin):
 
     def make_pickedup(modeladmin, request, queryset):
+        ct = ContentType.objects.get_for_model(queryset.model)
+        for obj in queryset:
+            LogEntry.objects.log_action(
+                user_id=request.user.id, 
+                content_type_id=ct.pk,
+                object_id=obj.pk,
+                object_repr=str(obj.pk),
+                action_flag=CHANGE,
+                change_message="action button : business status changed to picked up")
         queryset.update(is_completed=True)
 
 
@@ -377,6 +528,15 @@ admin.site.register(AllotedBusiness, AllotedBusinessAdmin)
 class PickedupBusinessAdmin(OPBusinessAdmin):
 
     def make_complete(modeladmin, request, queryset):
+        ct = ContentType.objects.get_for_model(queryset.model)
+        for obj in queryset:
+            LogEntry.objects.log_action(
+                user_id=request.user.id, 
+                content_type_id=ct.pk,
+                object_id=obj.pk,
+                object_repr=str(obj.pk),
+                action_flag=CHANGE,
+                change_message="action button : business status changed to complete")
         queryset.update(status='N',pb=None,is_completed=False)
 
 
@@ -401,34 +561,6 @@ admin.site.register(PickedupBusiness, PickedupBusinessAdmin)
 
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import User
-
-
-def make_complete(modeladmin, request, queryset):
-    queryset.update(status='C')
-
-
-make_complete.short_description = "Mark selected orders as Complete"
-
-
-def make_transit(modeladmin, request, queryset):
-    queryset.update(status='D')
-
-
-make_complete.short_description = "Mark selected orders as In Transit"
-
-
-def make_pending(modeladmin, request, queryset):
-    queryset.update(status='P')
-
-
-make_pending.short_description = "Mark selected orders as Pending"
-
-
-def make_cancelled(modeladmin, request, queryset):
-    queryset.update(status='N')
-
-
-make_cancelled.short_description = "Mark selected orders as Cancelled"
 
 from django.forms import ModelForm, Textarea, HiddenInput
 from django import forms
@@ -465,7 +597,7 @@ admin.site.register(Business, BusinessAdmin)
 admin.site.register(LoginSession)
 
 
-class ProductAdmin(admin.ModelAdmin):
+class ProductAdmin(reversion.VersionAdmin):
     search_fields = ['name', 'real_tracking_no']
     list_display = ('name', 'price', 'weight', 'status', 'real_tracking_no', 'order', 'barcode','date','last_tracking_status',)
     list_editable = ('status', )
@@ -492,7 +624,7 @@ admin.site.register(Product, ProductAdmin)
 admin.site.register(Payment)
 admin.site.register(Forgotpass)
 
-class PricingAdmin(admin.ModelAdmin):
+class PricingAdmin(reversion.VersionAdmin):
     # search_fields=['name']
     list_filter=('business__username','business__business_name')
 
@@ -501,7 +633,7 @@ admin.site.register(Pricing,PricingAdmin)
 
 
 
-class BarcodeAdmin(admin.ModelAdmin):
+class BarcodeAdmin(reversion.VersionAdmin):
     # search_fields=['name']
     list_filter=('business',)
     list_display=('value','created_at','business')
@@ -875,7 +1007,7 @@ reference_id=models.CharField(max_length=100)
 admin.site.register(Order, OrderAdmin)
 
 '''
-class ShipmentAdmin(admin.ModelAdmin):
+class ShipmentAdmin(reversion.VersionAdmin):
 	list_per_page = 10
 	form=ShipmentForm
 
@@ -902,7 +1034,7 @@ class ShipmentAdmin(admin.ModelAdmin):
 '''
 from daterange_filter.filter import DateRangeFilter
 
-class RemittanceProductPendingAdmin(admin.ModelAdmin):
+class RemittanceProductPendingAdmin(reversion.VersionAdmin):
     list_filter=['order__business',('date', DateRangeFilter),]
     list_editable=['remittance',]
     list_display = (
@@ -933,7 +1065,7 @@ class RemittanceProductPendingAdmin(admin.ModelAdmin):
 
 admin.site.register(RemittanceProductPending, RemittanceProductPendingAdmin)
 
-class RemittanceProductCompleteAdmin(admin.ModelAdmin):
+class RemittanceProductCompleteAdmin(reversion.VersionAdmin):
     list_filter=['order__business',('date', DateRangeFilter),]
     list_editable=['remittance',]
     list_display = (
@@ -965,7 +1097,11 @@ class RemittanceProductCompleteAdmin(admin.ModelAdmin):
 admin.site.register(RemittanceProductComplete, RemittanceProductCompleteAdmin)
 
 
+reversion.VersionAdmin.change_list_template='businessapp/templates/admin/businessapp/change_list.html'
+
 class QcProductAdmin(ProductAdmin):
+
+    change_list_template='businessapp/templates/admin/businessapp/qcproduct/change_list.html'
     def queryset(self, request):
         return self.model.objects.filter(Q(order__status='DI')| Q(order__status='R')).exclude(status='C').exclude(order__business='ecell').exclude(order__business='ghasitaram').exclude(order__business='holachef')
     list_display = (
