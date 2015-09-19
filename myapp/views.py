@@ -8,6 +8,9 @@ from businessapp.models import Product,Business
 import json
 from django.http import HttpResponse
 
+from myapp.forms import NewShipmentForm
+from django.views.generic.edit import FormView
+
 import datetime
 from datetime import date
 import datetime
@@ -184,3 +187,41 @@ def vote(request):
 	context = {'products':products,'cod_products':cod_products}
 
 	return render(request, 'polls/index3.html', context)
+
+
+class NewShipmentView(FormView):
+
+	template_name='newshipment.html'
+	form_class=NewShipmentForm
+
+	def form_valid(self, form):
+
+		return super(NewShipmentView, self).form_valid(form)
+
+
+from django.shortcuts import render
+from django.http import HttpResponseRedirect
+
+
+def get_name(request):
+    # if this is a POST request we need to process the form data
+    if request.method == 'POST':
+        # create a form instance and populate it with data from the request:
+        form = NewShipmentForm(request.POST)
+        print "hi"
+        # check whether it's valid:
+        if form.is_valid():
+            # process the data in form.cleaned_data as required
+            # ...
+            # redirect to a new URL:
+            print "hi2"
+        
+            return HttpResponseRedirect('/thanks/')
+
+    # if a GET (or any other method) we'll create a blank form
+    elif request.method=='GET':
+        print "hi3"
+        
+        form = NewShipmentForm()
+
+    return render(request, 'newshipment.html', {'form': form})

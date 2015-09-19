@@ -19,6 +19,27 @@ class OrderEditForm(ModelForm):
     class Meta:
         model = Order
 
+class NewShipmentForm(ModelForm):
+    #xx=forms.CharField(max_length=50)
+    class Meta():
+        model = Shipment
+    #    fields =  ['xx']
+#           exclude=['last_tracking_status','qc_comment','tracking_history']
+
+
+class NewShipmentAddForm(ModelForm):
+    xx=forms.CharField(max_length=50)
+    class Meta():
+        model = Shipment
+
+    
+
+
+# class RegisterEmailForm(RegisterBaseForm):
+# first_name = forms.CharField(max_length=User._meta.get_field('first_name').max_length)
+# last_name = forms.CharField(max_length=User._meta.get_field('last_name').max_length)
+# class Meta(RegisterBaseForm.Meta):
+# fields = RegisterBaseForm.Meta.fields + ('first_name', 'last_name')
 
 class OrderForm(ModelForm):
     phone_regex2 = RegexValidator(regex=r'^[0-9]{10,11}$',

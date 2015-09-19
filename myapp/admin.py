@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import *
-from myapp.forms import ShipmentForm, OrderForm, OrderEditForm
+from myapp.forms import ShipmentForm, OrderForm, OrderEditForm,NewShipmentForm,NewShipmentAddForm
 from businessapp.models import Profile
 import reversion
 import json
@@ -610,22 +610,56 @@ class ShipmentAdmin(reversion.VersionAdmin):
         'drop_name', 'barcode', 'img',)
     readonly_fields = ('real_tracking_no', 'print_invoice', 'generate_order', 'fedex','parcel_details', 'address', 'fedex')
 
-    fieldsets = (
-        ('Basic Information', {'fields': ['real_tracking_no', 'parcel_details', ('category', 'status')],
-                               'classes': ('suit-tab', 'suit-tab-general')}),
-        ('Parcel Information',
-         {'fields': [('name', 'weight', 'cost_of_courier'), ], 'classes': ('suit-tab', 'suit-tab-general')}),
-        ('Amount paid', {'fields': ['price', ], 'classes': ('suit-tab', 'suit-tab-general')}),
-        ('Tracking Information',
-         {'fields': [('mapped_tracking_no', 'company'), 'kartrocket_order'], 'classes': ('suit-tab', 'suit-tab-general')}),
-        #('Destination Address', {'fields':['drop_name','drop_phone','drop_flat_no','locality','city','state','drop_pincode','country'] , 'classes':['collapse',]})
-        ('Destination Address',
-         {'fields': [('drop_name', 'drop_phone'), 'address', ], 'classes': ('suit-tab', 'suit-tab-general')}),
-        ('Actions', {'fields': ['print_invoice', 'generate_order', 'fedex'], 'classes': ('suit-tab', 'suit-tab-general')}),
-        ('Tracking', {'fields': ['tracking_data','tracking_history'], 'classes': ('suit-tab', 'suit-tab-tracking')})
-    )
+    # fieldsets = (
+    #     ('Basic Information', {'fields': ['real_tracking_no', 'parcel_details', ('category', 'status')],
+    #                            'classes': ('suit-tab', 'suit-tab-general')}),
+    #     ('Parcel Information',
+    #      {'fields': [('name', 'weight', 'cost_of_courier'), ], 'classes': ('suit-tab', 'suit-tab-general')}),
+    #     ('Amount paid', {'fields': ['price', ], 'classes': ('suit-tab', 'suit-tab-general')}),
+    #     ('Tracking Information',
+    #      {'fields': [('mapped_tracking_no', 'company'), 'kartrocket_order'], 'classes': ('suit-tab', 'suit-tab-general')}),
+    #     #('Destination Address', {'fields':['drop_name','drop_phone','drop_flat_no','locality','city','state','drop_pincode','country'] , 'classes':['collapse',]})
+    #     ('Destination Address',
+    #      {'fields': [('drop_name', 'drop_phone'), 'address', ], 'classes': ('suit-tab', 'suit-tab-general')}),
+    #     ('Actions', {'fields': ['print_invoice', 'generate_order', 'fedex'], 'classes': ('suit-tab', 'suit-tab-general')}),
+    #     ('Tracking', {'fields': ['tracking_data','tracking_history'], 'classes': ('suit-tab', 'suit-tab-tracking')}),
+    #     ('Order', {'fields': ['order'], 'classes': ('suit-tab', 'suit-tab-order')})
+    # )
 
-    suit_form_tabs = (('general', 'General'), ('tracking', 'Tracking'))
+    # suit_form_tabs = (('general', 'General'), ('tracking', 'Tracking'), ('order', 'Order'))
+
+
+    def get_form(self, request, obj=None, **kwargs):
+        if not obj:  #add
+            self.form=NewShipmentAddForm
+
+
+        elif obj: #change
+            self.form = NewShipmentForm
+
+            self.fieldsets = (
+                ('Basic Information', {'fields': ['real_tracking_no', 'parcel_details', ('category', 'status')],
+                                       'classes': ('suit-tab', 'suit-tab-general')}),
+                ('Parcel Information',
+                 {'fields': [('name', 'weight', 'cost_of_courier'), ], 'classes': ('suit-tab', 'suit-tab-general')}),
+                ('Amount paid', {'fields': ['price', ], 'classes': ('suit-tab', 'suit-tab-general')}),
+                ('Tracking Information',
+                 {'fields': [('mapped_tracking_no', 'company'), 'kartrocket_order'], 'classes': ('suit-tab', 'suit-tab-general')}),
+                #('Destination Address', {'fields':['drop_name','drop_phone','drop_flat_no','locality','city','state','drop_pincode','country'] , 'classes':['collapse',]})
+                ('Destination Address',
+                 {'fields': [('drop_name', 'drop_phone'), 'address', ], 'classes': ('suit-tab', 'suit-tab-general')}),
+                ('Actions', {'fields': ['print_invoice', 'generate_order', 'fedex'], 'classes': ('suit-tab', 'suit-tab-general')}),
+                ('Tracking', {'fields': ['tracking_data','tracking_history'], 'classes': ('suit-tab', 'suit-tab-tracking')}),
+                ('Order', {'fields': ['order'], 'classes': ('suit-tab', 'suit-tab-order')})
+            )
+
+            self.suit_form_tabs = (('general', 'General'), ('tracking', 'Tracking'), ('order', 'Order'))
+
+
+
+        return super(ShipmentAdmin, self).get_form(request, obj, **kwargs)
+
+
 
 
     def response_change(self, request, obj):
