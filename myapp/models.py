@@ -55,9 +55,7 @@ class Address(models.Model):
     country = models.CharField(max_length=30, null=True, blank=True)
 
     def __unicode__(self):
-        return str(
-            str(self.flat_no) + ',' + str(self.locality) + ',' + str(self.city) + ',' + str(self.state) + ',' + str(
-                self.country) + ',' + str(self.pincode))
+        return 'pk:'str(self.pk)
 
     def save(self, *args, **kwargs):
         if not state_matcher.is_state(self.state):
