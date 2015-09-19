@@ -926,7 +926,7 @@ class OrderAdmin(FilterUserAdmin):
         'total_cod_cost', 'method',)
     list_editable = ('status',)
     list_filter = ['business', 'status', 'book_time']
-    actions = [make_pending, make_complete, make_cancelled, make_transit,export_as_csv_action("CSV Export", fields=['name','product__real_tracking_no'])]
+    actions = [export_as_csv_action("CSV Export", fields=['name','product__real_tracking_no'])]
     readonly_fields=('master_tracking_number',)
 
 
