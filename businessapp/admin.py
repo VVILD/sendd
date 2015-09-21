@@ -1111,6 +1111,15 @@ class QcProductAdmin(ProductAdmin):
 # readonly_fields = ('order__method','drop_phone', 'drop_name', 'status', 'address','barcode','tracking_data','real_tracking_no','name','weight','cost_of_courier','price')
     search_fields = ['order__order_no', 'real_tracking_no', 'mapped_tracking_no','tracking_data' ]
     
+    fieldsets = (
+        ('Tracking_details', {'fields': ['mapped_tracking_no', 'company','real_tracking_no','kartrocket_order','qc_comment'], 'classes': ('suit-tab', 'suit-tab-general')}),
+        ('General', {'fields': ['name', 'quantity','sku','price','weight','applied_weight','status','date','remittance','order'], 'classes': ('suit-tab', 'suit-tab-general')}),
+        ('Cost', {'fields': ['shipping_cost', 'cod_cost','return_cost'], 'classes': ('suit-tab', 'suit-tab-general')}),
+        ('Tracking', {'fields': ['tracking_data'], 'classes': ('suit-tab', 'suit-tab-tracking')}),
+        ('Barcode', {'fields': ['barcode','tracking_history'], 'classes': ('suit-tab', 'suit-tab-barcode')}),
+    )
+
+
     def order_no(self, obj):
         return '<a href="/admin/businessapp/order/%s/">%s</a>' % (obj.order.pk, obj.order.pk)
     order_no.allow_tags = True

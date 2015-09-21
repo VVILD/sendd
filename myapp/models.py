@@ -38,7 +38,7 @@ class User(models.Model):
         z = timezone('Asia/Kolkata')
         fmt = '%Y-%m-%d %H:%M:%S'
         ind_time = datetime.now(z)
-        self.time = ind_time.strftime(fmt)
+        self.time = ind_time
         super(User, self).save(*args, **kwargs)
 
 
@@ -308,7 +308,7 @@ class Shipment(models.Model):
             z = timezone('Asia/Kolkata')
             fmt = '%Y-%m-%d %H:%M:%S'
             ind_time = datetime.now(z)
-            time = ind_time.strftime(fmt)
+            time = ind_time
             self.update_time = ind_time
             time = str(time)
             self.tracking_data = "[{\"status\": \"Booking Received\", \"date\"	: \"" + time + " \", \"location\": \"Mumbai (Maharashtra)\"}]"
@@ -349,7 +349,7 @@ class Forgotpass(models.Model):
         z = timezone('Asia/Kolkata')
         fmt = '%Y-%m-%d %H:%M:%S'
         ind_time = datetime.now(z)
-        self.time = ind_time.strftime(fmt)
+        self.time = ind_time
         super(Forgotpass, self).save(*args, **kwargs)
 
 
@@ -373,7 +373,7 @@ class LoginSession(models.Model):
         fmt = '%Y-%m-%d %H:%M:%S'
         ind_time = datetime.now(z)
         if not self.pk:
-            self.time = ind_time.strftime(fmt)
+            self.time = ind_time
         super(LoginSession, self).save(*args, **kwargs)
 
 
@@ -390,7 +390,7 @@ class Weborder(models.Model):
         z = timezone('Asia/Kolkata')
         fmt = '%Y-%m-%d %H:%M:%S'
         ind_time = datetime.now(z)
-        self.time = ind_time.strftime(fmt)
+        self.time = ind_time
         super(Weborder, self).save(*args, **kwargs)
 
 
