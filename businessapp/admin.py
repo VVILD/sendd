@@ -846,6 +846,10 @@ class ProductInline(admin.TabularInline):
         if obj.order.state == 'Kerala' and obj.order.method == 'B':
             return '<h2 style="color:red">Not Servicable</h2>'
 
+        # Temporary ban
+        if obj.order.state == 'Kerala' and obj.order.payment_method == 'C':
+            return '<h2 style="color:red">Kerala Temporary Ban</h2>'
+
         if obj.order.state == 'West Bengal' and float(obj.price) > 1000:
             return '<h2 style="color:red">Not Servicable</h2>'
 
