@@ -19,52 +19,31 @@ th, td {
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
 </head>
 
-<h1>Shipping cost</h1>
+<h3>
+#if pincode 400 then mumbai else ROI<br>
+#all revenue in base rate u have to add ++<br>
+#rates are 20,40,8,12<br>
+#orders without applied weight not counted orders without method not counted,without pincode not counted<br>
+</h3>
+
+<table style="width:100%">
+  <tr></tr>
+
+<td><b>Start_Date</b></td>
+<td><b>weight[Mum Premium,ROI Premium,Mum Bulk,ROI Bulk]</b></td>
+<td><b>Revenue[Mum Premium,ROI Premium,Mum Bulk,ROI Bulk]</b></td>
+<td><b>Count[Mum Premium,ROI Premium,Mum Bulk,ROI Bulk]</b></td>
+
+  </tr>
+{% for key in results %}
+<tr>
+{% for x in key %}
+
+<td>{{x}}</td>
 
 
 
 
-{% if products %}
-
-
-{% for key in products  %}
-<u><b>    {{key.order__business}}</b></u>
-    <li>{{ key.total_cod_cost }}: cod_cost </li>
-    <li>{{ key.total_shipping_cost }}: shipping_cost </li>
-    <li>{{ key.total_no }}: no of orders </li>
-
-    <br>
-    <br>
 {% endfor %}
-    
-    
-{% else %}
-    <p>No polls are available.</p>
-{% endif %}
-
-
-<h1>Cod remittance</h1>
-
-  
-
-
-
-{% if cod_products %}
-   
-    {% for key in cod_products %}
-
-   <u><b>  {{key.order__business}}</b></u>
-        <li><b>{{ key.remittance }}: remittance amount</b>
-         <li><b>{{ key.total_no }}: total_no</b>
-
-         <br>
-         <br>
-    {% endfor %}
-    
-{% else %}
-    <p>No polls are available.</p>
-{% endif %}
-
-
-
-
+</tr>
+{% endfor %}

@@ -2384,14 +2384,14 @@ class PincodecheckResource2(MultipartResource, ModelResource):
     def hydrate(self, bundle):
 
         goodpincodes = ['400076', '400072', '400078', '400077', '400080', '400079', '400069', '400086']
+        
+        pincode=bundle.data['pincode']
+        if (pincode[:4] == '4000'):
+            bundle.data['valid'] = 1
+        else:
+            bundle.data['valid'] = 0
+            bundle.data['msg'] = 'we dont have pickup service available in your desired pickup location.'
 
-        # if bundle.data['pincode'] in goodpincodes:
-        #     bundle.data['valid'] = 1
-        # else:
-        #     bundle.data['valid'] = 0
-        #     bundle.data['msg'] = 'we dont have pickup service available in your desired pickup location.'
-
-        bundle.data['valid'] = 1
         return bundle
 
 

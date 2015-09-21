@@ -38,7 +38,7 @@ class User(models.Model):
         z = timezone('Asia/Kolkata')
         fmt = '%Y-%m-%d %H:%M:%S'
         ind_time = datetime.now(z)
-        self.time = ind_time.strftime(fmt)
+        self.time = ind_time
         super(User, self).save(*args, **kwargs)
 
 
@@ -55,9 +55,7 @@ class Address(models.Model):
     country = models.CharField(max_length=30, null=True, blank=True)
 
     def __unicode__(self):
-        return str(
-            str(self.flat_no) + ',' + str(self.locality) + ',' + str(self.city) + ',' + str(self.state) + ',' + str(
-                self.country) + ',' + str(self.pincode))
+        return 'pk:'+str(self.pk)
 
     def save(self, *args, **kwargs):
         if not state_matcher.is_state(self.state):
@@ -167,7 +165,7 @@ class Order(models.Model):
         fmt = '%Y-%m-%d %H:%M:%S'
         ind_time = datetime.now(z)
         if not self.pk:
-            self.book_time = ind_time.strftime(fmt)
+            self.book_time = ind_time
         if not self.warehouse:
             pincode = Pincode.objects.filter(pincode=self.pincode).exclude(latitude__isnull=True)
             try:
@@ -288,11 +286,9 @@ class Shipment(models.Model):
 
     def save(self, *args, **kwargs):
 
-        z = timezone('Asia/Kolkata')
         fmt = '%Y-%m-%d %H:%M:%S'
-        ind_time = datetime.now(z)
-        time = ind_time.strftime(fmt)
-
+        ind_time = datetime.now()
+        time = ind_time
         if self.mapped_tracking_no and (self.status=='PU' or self.status=='DI' or self.status=='P'):
             self.status='DI'
             self.update_time=time
@@ -312,8 +308,8 @@ class Shipment(models.Model):
             z = timezone('Asia/Kolkata')
             fmt = '%Y-%m-%d %H:%M:%S'
             ind_time = datetime.now(z)
-            time = ind_time.strftime(fmt)
-            self.update_time = ind_time.strftime(fmt)
+            time = ind_time
+            self.update_time = ind_time
             time = str(time)
             self.tracking_data = "[{\"status\": \"Booking Received\", \"date\"	: \"" + time + " \", \"location\": \"Mumbai (Maharashtra)\"}]"
             print self.tracking_data
@@ -353,7 +349,7 @@ class Forgotpass(models.Model):
         z = timezone('Asia/Kolkata')
         fmt = '%Y-%m-%d %H:%M:%S'
         ind_time = datetime.now(z)
-        self.time = ind_time.strftime(fmt)
+        self.time = ind_time
         super(Forgotpass, self).save(*args, **kwargs)
 
 
@@ -377,7 +373,7 @@ class LoginSession(models.Model):
         fmt = '%Y-%m-%d %H:%M:%S'
         ind_time = datetime.now(z)
         if not self.pk:
-            self.time = ind_time.strftime(fmt)
+            self.time = ind_time
         super(LoginSession, self).save(*args, **kwargs)
 
 
@@ -394,7 +390,7 @@ class Weborder(models.Model):
         z = timezone('Asia/Kolkata')
         fmt = '%Y-%m-%d %H:%M:%S'
         ind_time = datetime.now(z)
-        self.time = ind_time.strftime(fmt)
+        self.time = ind_time
         super(Weborder, self).save(*args, **kwargs)
 
 

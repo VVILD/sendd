@@ -8,6 +8,9 @@ from businessapp.models import Product,Business
 import json
 from django.http import HttpResponse
 
+from myapp.forms import NewShipmentForm
+from django.views.generic.edit import FormView
+
 import datetime
 from datetime import date
 import datetime
@@ -173,14 +176,91 @@ def vote(request):
 	
 	#for july
 
-	start_date = datetime.datetime(2015, 7, 1, 0, 0)
-	end_date= datetime.datetime(2015, 7, 31, 23, 59)
-	orders_b2b =BOrder.objects.filter(Q(book_time__range=(start_date,end_date))&(Q(status='C') | Q(status='PU')| Q(status='D')))
-	
-	products=Product.objects.filter(order=orders_b2b).values('order__business').annotate(total_shipping_cost=Sum('shipping_cost'),total_cod_cost=Sum('cod_cost'),total_no=Count('shipping_cost'))
+#if pincode 400 then mumbai else ROI
+#all revenue in base rate u have to add ++
+#rates are 20,40,8,12
+#orders without applied weight not counted orders without method not counted,without pincode not counted
+	start_date_main = datetime.datetime(2015, 8, 10)
+	results=[]
+	for num in range(0,10):
+		week_start_date=start_date_main+ datetime.timedelta(days=7*num)
+		row=[]
+		row.append(week_start_date)
+		start_date=datetime.datetime.combine(row[0], datetime.time.min)
+		end_date=row[0]+datetime.timedelta(days=6)
+		end_date=datetime.datetime.combine(end_date, datetime.time.max)
+		print start_date
 
-	cod_products=Product.objects.filter(order=orders_b2b,order__payment_method='C').values('order__business').annotate(remittance=Sum('price'),total_no=Count('price'))
+		week_orders_b2b =BOrder.objects.filter(Q(book_time__range=(start_date,end_date)))
+		week_products_b2b=Product.objects.filter(Q(order=week_orders_b2b)&(Q(applied_weight__isnull=False)))
 
-	context = {'products':products,'cod_products':cod_products}
+		sum_weight=[0,0,0,0]
+		sum_revenue=[0,0,0,0]
+		count=[0,0,0,0]
+		rates=[20,40,8,12]
+		try:
+			for x in week_products_b2b:
+				weight= round(x.applied_weight * 2) / 2
+				if x.order.pincode[:3]=='400':
+					if x.order.method=='N':
+						key=0
+					else:
+						key=2
+				else:
+					if x.order.method=='N':
+						key=1
+					else:
+						key=3
+
+				sum_weight[key]=sum_weight[key]+weight
+				sum_revenue[key]=sum_revenue[key]+weight*2*rates[key] 
+				count[key]=count[key]+1
+		except:
+			pass
+
+		row.append(sum_weight)
+		row.append(sum_revenue)
+		row.append(count)
+		results.append(row)
+
+	context = {'results':results}
 
 	return render(request, 'polls/index3.html', context)
+
+
+class NewShipmentView(FormView):
+
+	template_name='newshipment.html'
+	form_class=NewShipmentForm
+
+	def form_valid(self, form):
+
+		return super(NewShipmentView, self).form_valid(form)
+
+
+from django.shortcuts import render
+from django.http import HttpResponseRedirect
+
+
+def get_name(request):
+    # if this is a POST request we need to process the form data
+    if request.method == 'POST':
+        # create a form instance and populate it with data from the request:
+        form = NewShipmentForm(request.POST)
+        print "hi"
+        # check whether it's valid:
+        if form.is_valid():
+            # process the data in form.cleaned_data as required
+            # ...
+            # redirect to a new URL:
+            print "hi2"
+        
+            return HttpResponseRedirect('/thanks/')
+
+    # if a GET (or any other method) we'll create a blank form
+    elif request.method=='GET':
+        print "hi3"
+        
+        form = NewShipmentForm()
+
+    return render(request, 'newshipment.html', {'form': form})

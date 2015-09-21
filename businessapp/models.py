@@ -100,9 +100,9 @@ class Business(models.Model):
         #print "jkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkj"
         if self.pb and self.status=='Y':
             self.status='A'
-            address= str(self.address)  
+            address=urllib.quote_plus(str(self.address))  
             phone=urllib.quote_plus(str(self.pb.phone))
-            user_phone=urllib.quote_plus(str(self.contact_office)+','+str(self.contact_mob))
+            user_phone=urllib.quote_plus(str(self.contact_office)+str(self.contact_mob))
             order_no=urllib.quote_plus(str(self.pk))
             name=urllib.quote_plus(str(self.name))
             msg0 = "http://enterprise.smsgupshup.com/GatewayAPI/rest?method=SendMessage&send_to="
@@ -208,7 +208,7 @@ class Order(models.Model):
         fmt = '%Y-%m-%d %H:%M:%S'
         ind_time = datetime.now(z)
         if not self.pk:
-            self.book_time = ind_time.strftime(fmt)
+            self.book_time = ind_time
             super(Order, self).save(*args, **kwargs)
             order_no = self.pk + 1000
             if str(order_no) > 4:
@@ -278,7 +278,7 @@ class Product(models.Model):
         z = timezone('Asia/Kolkata')
         fmt = '%Y-%m-%d %H:%M:%S'
         ind_time = datetime.now(z)
-        time = ind_time.strftime(fmt)
+        time = ind_time
 
 
         if self.mapped_tracking_no and (self.status=='PU' or self.status=='D' or self.status=='P'):
@@ -291,7 +291,7 @@ class Product(models.Model):
             z = timezone('Asia/Kolkata')
             fmt = '%Y-%m-%d %H:%M:%S'
             ind_time = datetime.now(z)
-            time = ind_time.strftime(fmt)
+            time = ind_time
             self.update_time=time
             self.last_tracking_status=json.loads(self.tracking_data)[-1]['status']
             #Warnings rule definations
@@ -302,10 +302,10 @@ class Product(models.Model):
             z = timezone('Asia/Kolkata')
             fmt = '%Y-%m-%d %H:%M:%S'
             ind_time = datetime.now(z)
-            time = ind_time.strftime(fmt)
-            self.date = ind_time.strftime(fmt)
+            time = ind_time
+            self.date = ind_time
             time = str(time)
-            self.update_time=ind_time.strftime(fmt)
+            self.update_time=ind_time
             self.tracking_data = "[{\"status\": \"Booking Received\", \"date\"	: \"" + time + " \", \"location\": \"Mumbai (Maharashtra)\"}]"
             super(Product, self).save(*args, **kwargs)
             alphabet = random.choice('BDQP')

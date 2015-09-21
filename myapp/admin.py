@@ -1,8 +1,8 @@
 from django.contrib import admin
 from .models import *
-from myapp.forms import ShipmentForm, OrderForm, OrderEditForm
+from myapp.forms import ShipmentForm, OrderForm, OrderEditForm,NewShipmentForm,NewShipmentAddForm
 from businessapp.models import Profile
-
+import reversion
 import json
 # Register your models here.
 from django.http import HttpResponse, HttpResponseRedirect
@@ -13,8 +13,10 @@ import datetime
 from django.db.models import Avg, Sum, Q
 from datetime import timedelta
 
+from django.contrib.admin.models import LogEntry, CHANGE 
+from django.contrib.contenttypes.models import ContentType
 
-class UserAdmin(admin.ModelAdmin):
+class UserAdmin(reversion.VersionAdmin):
     search_fields = ['phone', 'name']
     list_display = ('phone', 'name', 'otp', 'apikey', 'email', 'time')
     list_editable = ('name',)
@@ -23,7 +25,7 @@ class UserAdmin(admin.ModelAdmin):
 admin.site.register(User, UserAdmin)
 
 
-class AddressAdmin(admin.ModelAdmin):
+class AddressAdmin(reversion.VersionAdmin):
     def response_change(self, request, obj):
         print self
         print "sdddddddddddddddddddddddddddd"
@@ -37,7 +39,7 @@ class AddressAdmin(admin.ModelAdmin):
 admin.site.register(Address, AddressAdmin)
 
 
-class NamemailAdmin(admin.ModelAdmin):
+class NamemailAdmin(reversion.VersionAdmin):
     def response_change(self, request, obj):
         print self
         print "sdddddddddddddddddddddddddddd"
@@ -66,20 +68,16 @@ class ShipmentInline(admin.TabularInline):
 '''
 
 
-class PickupboyAdmin(admin.ModelAdmin):
-    search_fields = ['name', 'phone']
-    list_display = ['name', 'phone']
-    pass
-
 
 # admin.site.register(Pickupboy,PickupboyAdmin)
 
 
 
 
-class OrderAdmin(admin.ModelAdmin):
+class OrderAdmin(reversion.VersionAdmin):
     # inlines=(ShipmentInline,)
     #actions_on_top = True
+    change_list_template='myapp/templates/admin/myapp/change_list.html'
     save_as = True
     list_per_page = 25
     search_fields = ['user__phone', 'name', 'namemail__name', 'namemail__email', 'promocode__code', 'shipment__real_tracking_no','shipment__mapped_tracking_no','shipment__barcode','shipment__drop_phone','shipment__drop_name']
@@ -363,6 +361,9 @@ class OrderAdmin(admin.ModelAdmin):
         for x in shipments:
             output = output + '<a href ="/admin/myapp/shipment/' + str(
                 x.pk) + '/" target="_blank" >' + str(x.real_tracking_no) + '</a> <br>'
+
+        output=output+ '<br><a href="/admin/myapp/shipment/add/?order=%s" onclick="return showAddAnotherPopup(this);">Add Shipment</a>' % (obj.pk)
+
         return output
 
     shipments.allow_tags = True  # <img src="https://farm8.staticflickr.com/7042/6873010155_d4160a32a2_s.jpg" onmouseover="this.width='500'; this.height='500'" onmouseout="this.width='100'; this.height='100'">
@@ -388,7 +389,7 @@ class OPOrderAdmin(OrderAdmin):
 
 
 
-class PromocheckAdmin(admin.ModelAdmin):
+class PromocheckAdmin(reversion.VersionAdmin):
     list_per_page = 10
     list_display = ('code', 'user')
 
@@ -397,17 +398,46 @@ admin.site.register(Promocheck, PromocheckAdmin)
 
 
 def make_alloted(modeladmin, request, queryset):
+    ct = ContentType.objects.get_for_model(queryset.model)
+    for obj in queryset:
+        LogEntry.objects.log_action(
+            user_id=request.user.id, 
+            content_type_id=ct.pk,
+            object_id=obj.pk,
+            object_repr=str(obj.pk),
+            action_flag=CHANGE,
+            change_message="action button : status changed to alloted")
     queryset.update(order_status='A')
 
 
 make_alloted.short_description = "Mark selected orders as alloted"
 
 
+
+
 class ReceivedOrderAdmin(CSOrderAdmin):
     def make_approved(modeladmin, request, queryset):
+        ct = ContentType.objects.get_for_model(queryset.model)
+        for obj in queryset:
+            LogEntry.objects.log_action(
+                user_id=request.user.id, 
+                content_type_id=ct.pk,
+                object_id=obj.pk,
+                object_repr=str(obj.pk),
+                action_flag=CHANGE,
+                change_message="action button : status changed to approved") 
         queryset.update(order_status='AP')
 
     def make_cancelled(modeladmin, request, queryset):
+        ct = ContentType.objects.get_for_model(queryset.model)
+        for obj in queryset:
+            LogEntry.objects.log_action(
+                user_id=request.user.id, 
+                content_type_id=ct.pk,
+                object_id=obj.pk,
+                object_repr=str(obj.pk),
+                action_flag=CHANGE,
+                change_message="action button : status changed to cancelled") 
         queryset.update(order_status='N')
 
 
@@ -425,6 +455,15 @@ admin.site.register(ReceivedOrder, ReceivedOrderAdmin)
 
 
 def make_pickedup(modeladmin, request, queryset):
+    ct = ContentType.objects.get_for_model(queryset.model)
+    for obj in queryset:
+        LogEntry.objects.log_action(
+            user_id=request.user.id, 
+            content_type_id=ct.pk,
+            object_id=obj.pk,
+            object_repr=str(obj.pk),
+            action_flag=CHANGE,
+            change_message="action button : status changed to picked up")
     queryset.update(order_status='P')
 
 
@@ -433,6 +472,15 @@ make_alloted.short_description = "Mark selected orders as picked up"
 
 class AllotedOrderAdmin(OPOrderAdmin):
     def make_pickedup(modeladmin, request, queryset):
+        ct = ContentType.objects.get_for_model(queryset.model)
+        for obj in queryset:
+            LogEntry.objects.log_action(
+                user_id=request.user.id, 
+                content_type_id=ct.pk,
+                object_id=obj.pk,
+                object_repr=str(obj.pk),
+                action_flag=CHANGE,
+                change_message="action button : status changed to picked up")
         queryset.update(order_status='P')
 
 
@@ -459,6 +507,15 @@ admin.site.register(DispatchedOrder, DispatchedOrderAdmin)
 
 class PickedupOrderAdmin(OPOrderAdmin):
     def make_dispatched(modeladmin, request, queryset):
+        ct = ContentType.objects.get_for_model(queryset.model)
+        for obj in queryset:
+            LogEntry.objects.log_action(
+                user_id=request.user.id, 
+                content_type_id=ct.pk,
+                object_id=obj.pk,
+                object_repr=str(obj.pk),
+                action_flag=CHANGE,
+                change_message="action button : status changed to dispatched")        
         queryset.update(order_status='DI')
 
 
@@ -477,6 +534,15 @@ admin.site.register(PickedupOrder, PickedupOrderAdmin)
 
 class ApprovedOrderAdmin(OPOrderAdmin):
     def make_Alloted(modeladmin, request, queryset):
+        ct = ContentType.objects.get_for_model(queryset.model)
+        for obj in queryset:
+            LogEntry.objects.log_action(
+                user_id=request.user.id, 
+                content_type_id=ct.pk,
+                object_id=obj.pk,
+                object_repr=str(obj.pk),
+                action_flag=CHANGE,
+                change_message="action button : status changed to alloted")        
         queryset.update(order_status='A')
 
 
@@ -530,7 +596,9 @@ class QueryOrderAdmin(OrderAdmin):
 admin.site.register(QueryOrder, QueryOrderAdmin)
 
 
-class ShipmentAdmin(admin.ModelAdmin):
+class ShipmentAdmin(reversion.VersionAdmin):
+    change_list_template='myapp/templates/admin/myapp/change_list.html'
+
     list_per_page = 10
     form = ShipmentForm
 
@@ -545,22 +613,73 @@ class ShipmentAdmin(admin.ModelAdmin):
         'drop_name', 'barcode', 'img',)
     readonly_fields = ('real_tracking_no', 'print_invoice', 'generate_order', 'fedex','parcel_details', 'address', 'fedex')
 
-    fieldsets = (
-        ('Basic Information', {'fields': ['real_tracking_no', 'parcel_details', ('category', 'status')],
-                               'classes': ('suit-tab', 'suit-tab-general')}),
-        ('Parcel Information',
-         {'fields': [('name', 'weight', 'cost_of_courier'), ], 'classes': ('suit-tab', 'suit-tab-general')}),
-        ('Amount paid', {'fields': ['price', ], 'classes': ('suit-tab', 'suit-tab-general')}),
-        ('Tracking Information',
-         {'fields': [('mapped_tracking_no', 'company'), 'kartrocket_order'], 'classes': ('suit-tab', 'suit-tab-general')}),
-        #('Destination Address', {'fields':['drop_name','drop_phone','drop_flat_no','locality','city','state','drop_pincode','country'] , 'classes':['collapse',]})
-        ('Destination Address',
-         {'fields': [('drop_name', 'drop_phone'), 'address', ], 'classes': ('suit-tab', 'suit-tab-general')}),
-        ('Actions', {'fields': ['print_invoice', 'generate_order', 'fedex'], 'classes': ('suit-tab', 'suit-tab-general')}),
-        ('Tracking', {'fields': ['tracking_data','tracking_history'], 'classes': ('suit-tab', 'suit-tab-tracking')})
-    )
+    # fieldsets = (
+    #     ('Basic Information', {'fields': ['real_tracking_no', 'parcel_details', ('category', 'status')],
+    #                            'classes': ('suit-tab', 'suit-tab-general')}),
+    #     ('Parcel Information',
+    #      {'fields': [('name', 'weight', 'cost_of_courier'), ], 'classes': ('suit-tab', 'suit-tab-general')}),
+    #     ('Amount paid', {'fields': ['price', ], 'classes': ('suit-tab', 'suit-tab-general')}),
+    #     ('Tracking Information',
+    #      {'fields': [('mapped_tracking_no', 'company'), 'kartrocket_order'], 'classes': ('suit-tab', 'suit-tab-general')}),
+    #     #('Destination Address', {'fields':['drop_name','drop_phone','drop_flat_no','locality','city','state','drop_pincode','country'] , 'classes':['collapse',]})
+    #     ('Destination Address',
+    #      {'fields': [('drop_name', 'drop_phone'), 'address', ], 'classes': ('suit-tab', 'suit-tab-general')}),
+    #     ('Actions', {'fields': ['print_invoice', 'generate_order', 'fedex'], 'classes': ('suit-tab', 'suit-tab-general')}),
+    #     ('Tracking', {'fields': ['tracking_data','tracking_history'], 'classes': ('suit-tab', 'suit-tab-tracking')}),
+    #     ('Order', {'fields': ['order'], 'classes': ('suit-tab', 'suit-tab-order')})
+    # )
 
-    suit_form_tabs = (('general', 'General'), ('tracking', 'Tracking'))
+    # suit_form_tabs = (('general', 'General'), ('tracking', 'Tracking'), ('order', 'Order'))
+
+    def get_form(self, request, obj=None, **kwargs):
+        if not obj:  #add
+            self.form=NewShipmentAddForm
+            self.fieldsets = (
+                ('Basic Information', {'fields': ['real_tracking_no', 'parcel_details', ('category', 'status')],
+                                       'classes': ('suit-tab', 'suit-tab-general')}),
+                ('Parcel Information',
+                 {'fields': [('name', 'weight', 'cost_of_courier'), ], 'classes': ('suit-tab', 'suit-tab-general')}),
+                ('Amount paid', {'fields': ['price', ], 'classes': ('suit-tab', 'suit-tab-general')}),
+                ('Tracking Information',
+                 {'fields': [('mapped_tracking_no', 'company'), 'kartrocket_order'], 'classes': ('suit-tab', 'suit-tab-Tracking')}),
+                #('Destination Address', {'fields':['drop_name','drop_phone','drop_flat_no','locality','city','state','drop_pincode','country'] , 'classes':['collapse',]})
+                ('Destination Address',
+                 {'fields': [('drop_name', 'drop_phone'),'addressline1','addressline2','pincode','city','state','country' ], 'classes': ('suit-tab', 'suit-tab-general')}),
+                ('Actions', {'fields': ['print_invoice', 'generate_order', 'fedex'], 'classes': ('suit-tab', 'suit-tab-Tracking')}),
+                ('Tracking', {'fields': ['tracking_data','tracking_history'], 'classes': ('suit-tab', 'suit-tab-tracking')}),
+                ('Order', {'fields': ['order','drop_address'], 'classes': ('suit-tab', 'suit-tab-order')})
+            )
+
+            self.suit_form_tabs = (('general', 'General'), ('tracking', 'Tracking'), ('order', 'Order'))
+
+
+
+        elif obj: #change
+            self.form = NewShipmentForm
+
+            self.fieldsets = (
+                ('Basic Information', {'fields': ['real_tracking_no', 'parcel_details', ('category', 'status')],
+                                       'classes': ('suit-tab', 'suit-tab-general')}),
+                ('Parcel Information',
+                 {'fields': [('name', 'weight', 'cost_of_courier'), ], 'classes': ('suit-tab', 'suit-tab-general')}),
+                ('Amount paid', {'fields': ['price', ], 'classes': ('suit-tab', 'suit-tab-general')}),
+                ('Tracking Information',
+                 {'fields': [('mapped_tracking_no', 'company'), 'kartrocket_order'], 'classes': ('suit-tab', 'suit-tab-general')}),
+                #('Destination Address', {'fields':['drop_name','drop_phone','drop_flat_no','locality','city','state','drop_pincode','country'] , 'classes':['collapse',]})
+                ('Destination Address',
+                 {'fields': [('drop_name', 'drop_phone'),'address', ], 'classes': ('suit-tab', 'suit-tab-general')}),
+                ('Actions', {'fields': ['print_invoice', 'generate_order', 'fedex'], 'classes': ('suit-tab', 'suit-tab-general')}),
+                ('Tracking', {'fields': ['tracking_data','tracking_history'], 'classes': ('suit-tab', 'suit-tab-tracking')}),
+                ('Order', {'fields': ['order'], 'classes': ('suit-tab', 'suit-tab-order')})
+            )
+
+            self.suit_form_tabs = (('general', 'General'), ('tracking', 'Tracking'), ('order', 'Order'))
+
+
+
+        return super(ShipmentAdmin, self).get_form(request, obj, **kwargs)
+
+
 
 
     def response_change(self, request, obj):
@@ -853,7 +972,7 @@ class ShipmentAdmin(admin.ModelAdmin):
 admin.site.register(Shipment, ShipmentAdmin)
 
 
-class ZipcodeAdmin(admin.ModelAdmin):
+class ZipcodeAdmin(reversion.VersionAdmin):
     list_display = ('pincode', 'city', 'state', 'zone', 'cod', 'fedex', 'aramex', 'delhivery', 'ecom', 'firstflight')
     search_fields = ['pincode']
 
@@ -861,7 +980,7 @@ class ZipcodeAdmin(admin.ModelAdmin):
 admin.site.register(Zipcode, ZipcodeAdmin)
 
 
-class XAdmin(admin.ModelAdmin):
+class XAdmin(reversion.VersionAdmin):
     list_display = ('Name', 'C', 'thumbnail')
 
     def thumbnail(self, obj):
@@ -878,7 +997,8 @@ admin.site.register(X, XAdmin)
 admin.site.register(Forgotpass)
 
 
-class LoginSessionAdmin(admin.ModelAdmin):
+class LoginSessionAdmin(reversion.VersionAdmin):
+    change_list_template='myapp/templates/admin/myapp/change_list.html'
     list_display = ('time', 'success', 'user')
     list_filter = ['time']
 
@@ -886,7 +1006,9 @@ class LoginSessionAdmin(admin.ModelAdmin):
 admin.site.register(LoginSession, LoginSessionAdmin)
 
 
-class WeborderAdmin(admin.ModelAdmin):
+class WeborderAdmin(reversion.VersionAdmin):
+    change_list_template='myapp/templates/admin/myapp/change_list.html'
+
     list_display = ('item_details', 'pickup_location', 'pincode', 'number', 'time')
 
 
@@ -895,8 +1017,11 @@ admin.site.register(Weborder, WeborderAdmin)
 admin.site.register(Priceapp)
 
 
+
+
 class QcShipmentAdmin(ShipmentAdmin):
-    
+
+    change_list_template='myapp/templates/admin/myapp/qcshipment/change_list.html'    
     def queryset(self, request):
         return self.model.objects.filter(Q(order__order_status='DI')| Q(order__order_status='R')).exclude(status='C')
     
