@@ -34,16 +34,34 @@ class NewShipmentAddForm(ModelForm):
     city=forms.CharField(max_length=50,required=False)
     state=forms.CharField(max_length=50,required=False)
     country=forms.CharField(max_length=50,required=False)
-    class Meta():
+    print "qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq"
+    class Meta:
         model = Shipment
 
 
-    # def process(self):
-    #     address = Address.objects.create(flat_no=addressline1, locality=addressline2, city=city, state=state,
-    #                                      pincode=pincode, country=country)
-    #     self.cleaned_data.address=address
+    def clean(self):
+        
+        addressline1=self.cleaned_data['addressline1']
+        addressline2=self.cleaned_data['addressline2']
+        pincode=self.cleaned_data['pincode']
+        city=self.cleaned_data['city']
+        state=self.cleaned_data['state']
+        country=self.cleaned_data['country']
 
-    
+                
+        address = Address.objects.create(flat_no=addressline1, locality=addressline2, city=city, state=state,
+                                         pincode=pincode, country=country)
+
+        pk=address.pk
+
+        self.cleaned_data['drop_address']=Address.objects.get(pk=pk)
+
+    # def save(self, commit=True):
+    #     address = Address.objects.create(flat_no=addressline1, locality=addressline2, city=city, state=state,
+    #                                       pincode=pincode, country=country)
+    #     shipment = Shipment(item_name=item_details, order=order, drop_name=drop_name,
+    #                                        drop_phone=drop_phone, drop_address=address)
+    #     shipment.save()
 
 
 # class RegisterEmailForm(RegisterBaseForm):

@@ -286,11 +286,9 @@ class Shipment(models.Model):
 
     def save(self, *args, **kwargs):
 
-        z = timezone('Asia/Kolkata')
         fmt = '%Y-%m-%d %H:%M:%S'
-        ind_time = datetime.now(z)
-        time = ind_time.strftime(fmt)
-
+        ind_time = datetime.now()
+        time = ind_time
         if self.mapped_tracking_no and (self.status=='PU' or self.status=='DI' or self.status=='P'):
             self.status='DI'
             self.update_time=time
@@ -311,7 +309,7 @@ class Shipment(models.Model):
             fmt = '%Y-%m-%d %H:%M:%S'
             ind_time = datetime.now(z)
             time = ind_time.strftime(fmt)
-            self.update_time = ind_time.strftime(fmt)
+            self.update_time = ind_time
             time = str(time)
             self.tracking_data = "[{\"status\": \"Booking Received\", \"date\"	: \"" + time + " \", \"location\": \"Mumbai (Maharashtra)\"}]"
             print self.tracking_data
