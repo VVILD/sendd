@@ -55,9 +55,7 @@ class Address(models.Model):
     country = models.CharField(max_length=30, null=True, blank=True)
 
     def __unicode__(self):
-        return str(
-            str(self.flat_no) + ',' + str(self.locality) + ',' + str(self.city) + ',' + str(self.state) + ',' + str(
-                self.country) + ',' + str(self.pincode))
+        return 'pk:'+str(self.pk)
 
     def save(self, *args, **kwargs):
         if not state_matcher.is_state(self.state):
@@ -288,11 +286,9 @@ class Shipment(models.Model):
 
     def save(self, *args, **kwargs):
 
-        z = timezone('Asia/Kolkata')
         fmt = '%Y-%m-%d %H:%M:%S'
-        ind_time = datetime.now(z)
-        time = ind_time.strftime(fmt)
-
+        ind_time = datetime.now()
+        time = ind_time
         if self.mapped_tracking_no and (self.status=='PU' or self.status=='DI' or self.status=='P'):
             self.status='DI'
             self.update_time=time
@@ -313,7 +309,7 @@ class Shipment(models.Model):
             fmt = '%Y-%m-%d %H:%M:%S'
             ind_time = datetime.now(z)
             time = ind_time.strftime(fmt)
-            self.update_time = ind_time.strftime(fmt)
+            self.update_time = ind_time
             time = str(time)
             self.tracking_data = "[{\"status\": \"Booking Received\", \"date\"	: \"" + time + " \", \"location\": \"Mumbai (Maharashtra)\"}]"
             print self.tracking_data
