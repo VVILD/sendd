@@ -278,7 +278,7 @@ class Product(models.Model):
         z = timezone('Asia/Kolkata')
         fmt = '%Y-%m-%d %H:%M:%S'
         ind_time = datetime.now(z)
-        time = ind_time.strftime(fmt)
+        time = ind_time
 
 
         if self.mapped_tracking_no and (self.status=='PU' or self.status=='D' or self.status=='P'):
@@ -291,7 +291,7 @@ class Product(models.Model):
             z = timezone('Asia/Kolkata')
             fmt = '%Y-%m-%d %H:%M:%S'
             ind_time = datetime.now(z)
-            time = ind_time.strftime(fmt)
+            time = ind_time
             self.update_time=time
             self.last_tracking_status=json.loads(self.tracking_data)[-1]['status']
             #Warnings rule definations
@@ -302,10 +302,10 @@ class Product(models.Model):
             z = timezone('Asia/Kolkata')
             fmt = '%Y-%m-%d %H:%M:%S'
             ind_time = datetime.now(z)
-            time = ind_time.strftime(fmt)
-            self.date = ind_time.strftime(fmt)
+            time = ind_time
+            self.date = ind_time
             time = str(time)
-            self.update_time=ind_time.strftime(fmt)
+            self.update_time=ind_time
             self.tracking_data = "[{\"status\": \"Booking Received\", \"date\"	: \"" + time + " \", \"location\": \"Mumbai (Maharashtra)\"}]"
             super(Product, self).save(*args, **kwargs)
             alphabet = random.choice('BDQP')
