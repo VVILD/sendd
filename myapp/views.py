@@ -198,22 +198,25 @@ def vote(request):
 		sum_revenue=[0,0,0,0]
 		count=[0,0,0,0]
 		rates=[20,40,8,12]
-		for x in week_products_b2b:
-			weight= round(x.applied_weight * 2) / 2
-			if x.order.pincode[:3]=='400':
-				if x.order.method=='N':
-					key=0
+		try:
+			for x in week_products_b2b:
+				weight= round(x.applied_weight * 2) / 2
+				if x.order.pincode[:3]=='400':
+					if x.order.method=='N':
+						key=0
+					else:
+						key=2
 				else:
-					key=2
-			else:
-				if x.order.method=='N':
-					key=1
-				else:
-					key=3
+					if x.order.method=='N':
+						key=1
+					else:
+						key=3
 
-			sum_weight[key]=sum_weight[key]+weight
-			sum_revenue[key]=sum_revenue[key]+weight*2*rates[key] 
-			count[key]=count[key]+1
+				sum_weight[key]=sum_weight[key]+weight
+				sum_revenue[key]=sum_revenue[key]+weight*2*rates[key] 
+				count[key]=count[key]+1
+		except:
+			pass
 
 		row.append(sum_weight)
 		row.append(sum_revenue)
