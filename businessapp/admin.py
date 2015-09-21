@@ -249,7 +249,7 @@ class BaseBusinessAdmin(reversion.VersionAdmin):
         pu= Order.objects.filter(status='PU').count()
         di= Order.objects.filter(status='DI').count()
         un= Order.objects.filter(status__in=['PU','D']).count()
-        picked= Business.objects.filter(is_completed=True).count()
+        picked= Business.objects.filter(is_completed=True,status='A').count()
 
         context = {'cs':cs,'op':op,'nap':nap,'ap':ap,'d':d,'c':c,'p':p,'pu':pu,'di':di,'a':a,'apcs':apcs,'un':un,'picked':picked}
         return super(BaseBusinessAdmin, self).changelist_view(request, extra_context=context)
@@ -550,7 +550,7 @@ class PickedupBusinessAdmin(OPBusinessAdmin):
     
     def queryset(self, request):
         qs = super(OPBusinessAdmin, self).queryset(request)
-        qs = qs.filter(is_completed=True)
+        qs = qs.filter(is_completed=True,status='A')
         return qs
 
 
