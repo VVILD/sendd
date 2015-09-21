@@ -2392,7 +2392,6 @@ class PincodecheckResource2(MultipartResource, ModelResource):
             bundle.data['valid'] = 0
             bundle.data['msg'] = 'we dont have pickup service available in your desired pickup location.'
 
-        bundle.data['valid'] = 1
         return bundle
 
 
