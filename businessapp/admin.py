@@ -236,7 +236,7 @@ class BaseBusinessAdmin(reversion.VersionAdmin):
                 op=True
         except:
             pass
-        a = Business.objects.filter(status='A').count()
+        a = Business.objects.filter(status='A',is_completed=False).count()
         
         nap = Order.objects.filter(business__status='N',status='P').count()
         ap = Business.objects.filter(status='Y').count()
@@ -518,7 +518,7 @@ class AllotedBusinessAdmin(OPBusinessAdmin):
     
     def queryset(self, request):
         qs = super(OPBusinessAdmin, self).queryset(request)
-        qs = qs.filter(status='A')
+        qs = qs.filter(status='A',is_completed=False)
         return qs
 
 
