@@ -180,16 +180,16 @@ def vote(request):
 #all revenue in base rate u have to add ++
 #rates are 20,40,8,12
 #orders without applied weight not counted orders without method not counted,without pincode not counted
-	start_date = datetime.datetime(2015, 8, 10)
+	start_date_main = datetime.datetime(2015, 8, 10)
 	results=[]
 	for num in range(0,10):
-		week_start_date=start_date+ datetime.timedelta(days=7*num)
+		week_start_date=start_date_main+ datetime.timedelta(days=7*num)
 		row=[]
 		row.append(week_start_date)
 		start_date=datetime.datetime.combine(row[0], datetime.time.min)
 		end_date=row[0]+datetime.timedelta(days=6)
 		end_date=datetime.datetime.combine(end_date, datetime.time.max)
-
+		print start_date
 
 		week_orders_b2b =BOrder.objects.filter(Q(book_time__range=(start_date,end_date)))
 		week_products_b2b=Product.objects.filter(Q(order=week_orders_b2b)&(Q(applied_weight__isnull=False)))
