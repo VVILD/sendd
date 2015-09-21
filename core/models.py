@@ -56,7 +56,7 @@ class Warehouse(models.Model):
         pincodes = Pincode.objects.filter(region_name=self.city).exclude(latitude__isnull=True)
         warehouses = Warehouse.objects.filter(city=self.city)
         from businessapp.models import Business
-        businesses = Business.objects.filter(pincode__isnull=False)
+        businesses = Business.objects.filter(pincode__isnull=False).exclude(pincode=u'')
 
         for pincode in pincodes:
             closest_warehouse = None
