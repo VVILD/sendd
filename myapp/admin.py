@@ -694,6 +694,7 @@ class ShipmentAdmin(reversion.VersionAdmin):
 
         return HttpResponseRedirect(request.build_absolute_uri('/admin/myapp/shipment/'+ str(obj.pk) + '/'))
 
+
     def address(self, obj):
         try:
             address = obj.drop_address
@@ -1019,7 +1020,7 @@ admin.site.register(Priceapp)
 
 
 
-class QcShipmentAdmin(ShipmentAdmin):
+class QcShipmentAdmin(reversion.VersionAdmin):
 
     change_list_template='myapp/templates/admin/myapp/qcshipment/change_list.html'    
     def queryset(self, request):
@@ -1036,20 +1037,23 @@ class QcShipmentAdmin(ShipmentAdmin):
     search_fields = ['order__order_no', 'real_tracking_no', 'mapped_tracking_no', 'drop_phone', 'drop_name','tracking_data']
     list_filter=('company','last_tracking_status','warning','company')
 
+
     fieldsets = (
-    ('Basic Information', {'fields': ['real_tracking_no', 'parcel_details', ('category', 'status')],
-    'classes': ('suit-tab', 'suit-tab-general')}),
-    ('Parcel Information',
-    {'fields': [('name', 'weight', 'cost_of_courier'), ], 'classes': ('suit-tab', 'suit-tab-general')}),
-    ('Amount paid', {'fields': ['price', ], 'classes': ('suit-tab', 'suit-tab-general')}),
-    ('Tracking Information',
-    {'fields': [('mapped_tracking_no', 'company'), 'kartrocket_order'], 'classes': ('suit-tab', 'suit-tab-general')}),
-    #('Destination Address', {'fields':['drop_name','drop_phone','drop_flat_no','locality','city','state','drop_pincode','country'] , 'classes':['collapse',]})
-    ('Destination Address',
-    {'fields': [('drop_name', 'drop_phone'), 'address', ], 'classes': ('suit-tab', 'suit-tab-general')}),
-    ('Tracking', {'fields': ['tracking_data'], 'classes': ('suit-tab', 'suit-tab-tracking')})
-    )
-    suit_form_tabs = (('general', 'General'), ('tracking', 'Tracking'))
+            ('Basic Information', {'fields': ['real_tracking_no', 'parcel_details', ('category', 'status')],
+                                   'classes': ('suit-tab', 'suit-tab-general')}),
+            ('Parcel Information',
+             {'fields': [('name', 'weight', 'cost_of_courier'), ], 'classes': ('suit-tab', 'suit-tab-general')}),
+            ('Amount paid', {'fields': ['price', ], 'classes': ('suit-tab', 'suit-tab-general')}),
+            ('Tracking Information',
+             {'fields': [('mapped_tracking_no', 'company'), 'kartrocket_order'], 'classes': ('suit-tab', 'suit-tab-general')}),
+            #('Destination Address', {'fields':['drop_name','drop_phone','drop_flat_no','locality','city','state','drop_pincode','country'] , 'classes':['collapse',]})
+            ('Destination Address',
+             {'fields': [('drop_name', 'drop_phone'),'address', ], 'classes': ('suit-tab', 'suit-tab-general')}),
+            ('Tracking', {'fields': ['tracking_data','tracking_history'], 'classes': ('suit-tab', 'suit-tab-tracking')}),
+            ('Order', {'fields': ['order'], 'classes': ('suit-tab', 'suit-tab-order')})
+        )
+
+    suit_form_tabs = (('general', 'General'), ('tracking', 'Tracking'), ('order', 'Order'))
     
     def tracking_status(self, obj):
     #pk=obj.namemail.pk
@@ -1092,6 +1096,30 @@ class QcShipmentAdmin(ShipmentAdmin):
             return obj.order.book_time + timedelta(days=3)
     expected_delivery_date.short_description='expected delivery date'
     expected_delivery_date.admin_order_field = 'order__book_time'
+
+    def parcel_details(self, obj):
+        name = str(obj.img)
+        print name
+        if (name == ''):
+            return str(obj.item_name)
+        name_mod = name[9:]
+        full_url = 'http://128.199.159.90/static/' + name_mod
+        return '<img src="%s" width=60 height=60 onmouseover="this.width=\'500\'; this.height=\'500\'" onmouseout="this.width=\'100\'; this.height=\'100\'" />' % (
+            full_url)
+
+    parcel_details.allow_tags = True
+    
+    def address(self, obj):
+        try:
+            address = obj.drop_address
+            pk = address.pk
+            add = str(address.flat_no) + ',' + str(address.locality) + ',' + str(address.city) + ',' + str(
+                address.state) + '-' + str(address.pincode)
+            return '<a href="/admin/myapp/address/%s/" onclick="return showAddAnotherPopup(this);">%s</a>' % (pk, add)
+        except:
+            return "no add"
+
+    address.allow_tags = True
 
 
     def last_updated(self,obj):
