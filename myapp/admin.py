@@ -361,6 +361,9 @@ class OrderAdmin(reversion.VersionAdmin):
         for x in shipments:
             output = output + '<a href ="/admin/myapp/shipment/' + str(
                 x.pk) + '/" target="_blank" >' + str(x.real_tracking_no) + '</a> <br>'
+
+        output=output+ '<br><a href="/admin/myapp/shipment/add/?order=%s" onclick="return showAddAnotherPopup(this);">Add Shipment</a>' % (obj.pk)
+
         return output
 
     shipments.allow_tags = True  # <img src="https://farm8.staticflickr.com/7042/6873010155_d4160a32a2_s.jpg" onmouseover="this.width='500'; this.height='500'" onmouseout="this.width='100'; this.height='100'">
@@ -638,11 +641,11 @@ class ShipmentAdmin(reversion.VersionAdmin):
                  {'fields': [('name', 'weight', 'cost_of_courier'), ], 'classes': ('suit-tab', 'suit-tab-general')}),
                 ('Amount paid', {'fields': ['price', ], 'classes': ('suit-tab', 'suit-tab-general')}),
                 ('Tracking Information',
-                 {'fields': [('mapped_tracking_no', 'company'), 'kartrocket_order'], 'classes': ('suit-tab', 'suit-tab-general')}),
+                 {'fields': [('mapped_tracking_no', 'company'), 'kartrocket_order'], 'classes': ('suit-tab', 'suit-tab-Tracking')}),
                 #('Destination Address', {'fields':['drop_name','drop_phone','drop_flat_no','locality','city','state','drop_pincode','country'] , 'classes':['collapse',]})
                 ('Destination Address',
                  {'fields': [('drop_name', 'drop_phone'),'addressline1','addressline2','pincode','city','state','country' ], 'classes': ('suit-tab', 'suit-tab-general')}),
-                ('Actions', {'fields': ['print_invoice', 'generate_order', 'fedex'], 'classes': ('suit-tab', 'suit-tab-general')}),
+                ('Actions', {'fields': ['print_invoice', 'generate_order', 'fedex'], 'classes': ('suit-tab', 'suit-tab-Tracking')}),
                 ('Tracking', {'fields': ['tracking_data','tracking_history'], 'classes': ('suit-tab', 'suit-tab-tracking')}),
                 ('Order', {'fields': ['order','drop_address'], 'classes': ('suit-tab', 'suit-tab-order')})
             )

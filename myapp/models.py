@@ -165,7 +165,7 @@ class Order(models.Model):
         fmt = '%Y-%m-%d %H:%M:%S'
         ind_time = datetime.now(z)
         if not self.pk:
-            self.book_time = ind_time.strftime(fmt)
+            self.book_time = ind_time
         if not self.warehouse:
             pincode = Pincode.objects.filter(pincode=self.pincode).exclude(latitude__isnull=True)
             try:
