@@ -447,7 +447,7 @@ class ReceivedOrderAdmin(CSOrderAdmin):
     actions = [make_approved,make_cancelled]
 
 
-    def queryset(self, request):
+    def get_queryset(self, request):
         return self.model.objects.filter(order_status='O')
 
 
@@ -488,7 +488,7 @@ class AllotedOrderAdmin(OPOrderAdmin):
 
     actions = [make_pickedup]
 
-    def queryset(self, request):
+    def get_queryset(self, request):
         return self.model.objects.filter(order_status='A')
 
 
@@ -497,7 +497,7 @@ admin.site.register(AllotedOrder, AllotedOrderAdmin)
 
 class DispatchedOrderAdmin(OPOrderAdmin):
     
-    def queryset(self, request):
+    def get_queryset(self, request):
         return self.model.objects.filter(order_status='DI')
 
 
@@ -523,7 +523,7 @@ class PickedupOrderAdmin(OPOrderAdmin):
 
     actions = [make_dispatched]
 
-    def queryset(self, request):
+    def get_queryset(self, request):
         return self.model.objects.filter(order_status='P')
 
 
@@ -550,7 +550,7 @@ class ApprovedOrderAdmin(OPOrderAdmin):
 
     actions = [make_alloted]
 
-    def queryset(self, request):
+    def get_queryset(self, request):
         return self.model.objects.filter(order_status='AP').order_by('time')
 
 
@@ -558,14 +558,14 @@ admin.site.register(ApprovedOrder, ApprovedOrderAdmin)
 
 class ApprovedOrderCsAdmin(CSOrderAdmin):
 
-    def queryset(self, request):
+    def get_queryset(self, request):
         return self.model.objects.filter().exclude(order_status='O').exclude(order_status='N').exclude(order_status='F')
 
 admin.site.register(ApprovedOrderCs, ApprovedOrderCsAdmin)
 
 
 class CompletedOrderAdmin(OrderAdmin):
-    def queryset(self, request):
+    def get_queryset(self, request):
         return self.model.objects.filter(order_status='C')
 
 
@@ -573,7 +573,7 @@ admin.site.register(CompletedOrder, CompletedOrderAdmin)
 
 
 class CancelledOrderAdmin(CSOrderAdmin):
-    def queryset(self, request):
+    def get_queryset(self, request):
         return self.model.objects.filter(order_status='N')
 
 
@@ -581,7 +581,7 @@ admin.site.register(CancelledOrder, CancelledOrderAdmin)
 
 
 class FakeOrderAdmin(OrderAdmin):
-    def queryset(self, request):
+    def get_queryset(self, request):
         return self.model.objects.filter(order_status='F')
 
 
@@ -589,7 +589,7 @@ admin.site.register(FakeOrder, FakeOrderAdmin)
 
 
 class QueryOrderAdmin(OrderAdmin):
-    def queryset(self, request):
+    def get_queryset(self, request):
         return self.model.objects.filter(order_status='Q')
 
 
@@ -1023,7 +1023,7 @@ admin.site.register(Priceapp)
 class QcShipmentAdmin(reversion.VersionAdmin):
 
     change_list_template='myapp/templates/admin/myapp/qcshipment/change_list.html'    
-    def queryset(self, request):
+    def get_queryset(self, request):
         return self.model.objects.filter(Q(order__order_status='DI')| Q(order__order_status='R')).exclude(status='C')
     
 

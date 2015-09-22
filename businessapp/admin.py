@@ -383,7 +383,7 @@ class NotApprovedBusinessAdmin(CSBusinessAdmin):
                 object_repr=str(obj.pk),
                 action_flag=CHANGE,
                 change_message="action button : business status changed to approved")        
-        queryset.update(status='Y')
+        queryset.update(status='Y',pb=None,is_completed=False)
 
 
 
