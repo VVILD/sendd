@@ -62,6 +62,7 @@ class Business(models.Model):
     password = models.CharField(max_length=300)
     email = models.EmailField(max_length=75)
     name = models.CharField(max_length=100)
+    tin = models.CharField(max_length=100, null=True, blank=True)
     contact_mob = models.CharField(max_length=15)
     contact_office = models.CharField(max_length=15, null=True, blank=True)
     pickup_time = models.CharField(max_length=1, choices=(('M', 'morning'), ('N', 'noon'), ('E', 'evening'),),

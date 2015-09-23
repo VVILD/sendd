@@ -1,7 +1,9 @@
+from django.core.exceptions import ValidationError
 from django.db import models
 from geopy.distance import vincenty
 from geopy.geocoders import googlev3
 # from businessapp.models import Business
+from core.utils import state_matcher
 
 
 class Warehouse(models.Model):
@@ -47,32 +49,41 @@ class Warehouse(models.Model):
         return str(self.name)
 
     def save(self, *args, **kwargs):
+        if self.pincode:
+            geolocator = googlev3.GoogleV3(api_key="AIzaSyBEfEgATQeVkoKUnaB4O9rIdX2K2Bsh63o")
+            location = geolocator.geocode("{}, India".format(self.pincode))
+            self.lat, self.long = location.latitude, location.longitude
+            super(Warehouse, self).save(*args, **kwargs)
 
-        geolocator = googlev3.GoogleV3(api_key="AIzaSyBEfEgATQeVkoKUnaB4O9rIdX2K2Bsh63o")
-        location = geolocator.geocode("{}, India".format(self.pincode))
-        self.lat, self.long = location.latitude, location.longitude
-        super(Warehouse, self).save(*args, **kwargs)
+            pincodes = Pincode.objects.filter(region_name=self.city).exclude(latitude__isnull=True)
+            warehouses = Warehouse.objects.filter(city=self.city)
+            from businessapp.models import Business
+            businesses = Business.objects.filter(pincode__isnull=False).exclude(pincode=u'')
 
-        pincodes = Pincode.objects.filter(region_name=self.city).exclude(latitude__isnull=True)
-        warehouses = Warehouse.objects.filter(city=self.city)
-        from businessapp.models import Business
-        businesses = Business.objects.filter(pincode__isnull=False).exclude(pincode=u'')
+            for pincode in pincodes:
+                closest_warehouse = None
+                min_dist = 9999.9999
+                for warehouse in warehouses:
+                    distance = vincenty((pincode.latitude, pincode.longitude), (warehouse.lat, warehouse.long)).kilometers
+                    if distance < min_dist:
+                        min_dist = distance
+                        closest_warehouse = warehouse
+                pincode.warehouse = closest_warehouse
+                pincode.save()
 
-        for pincode in pincodes:
-            closest_warehouse = None
-            min_dist = 9999.9999
-            for warehouse in warehouses:
-                distance = vincenty((pincode.latitude, pincode.longitude), (warehouse.lat, warehouse.long)).kilometers
-                if distance < min_dist:
-                    min_dist = distance
-                    closest_warehouse = warehouse
-            pincode.warehouse = closest_warehouse
-            pincode.save()
-
-        for business in businesses:
-            pincode_search = Pincode.objects.filter(pincode=self.pincode).exclude(latitude__isnull=True)
-            business.warehouse = pincode_search[0].warehouse
-            business.save()
+            for business in businesses:
+                pincode_search = Pincode.objects.filter(pincode=self.pincode).exclude(latitude__isnull=True)
+                business.warehouse = pincode_search[0].warehouse
+                business.save()
+        else:
+            raise ValidationError("Please enter a pincode")
+        if self.state:
+            if not state_matcher.is_state(self.state):
+                closest_state = state_matcher.get_closest_state(self.state)
+                if closest_state:
+                    self.state = closest_state[0]
+        else:
+            raise ValidationError("Please enter a state")
         super(Warehouse, self).save(*args, **kwargs)
 
 
