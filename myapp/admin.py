@@ -611,7 +611,7 @@ class ShipmentAdmin(reversion.VersionAdmin):
     list_editable = (
         'name', 'cost_of_courier', 'weight', 'mapped_tracking_no', 'company', 'price', 'category', 'drop_phone',
         'drop_name', 'barcode', 'img',)
-    readonly_fields = ('real_tracking_no', 'print_invoice', 'generate_order', 'fedex','parcel_details', 'address', 'fedex')
+    readonly_fields = ('real_tracking_no', 'print_invoice', 'generate_order', 'fedex','parcel_details', 'address', 'fedex','barcode')
 
     # fieldsets = (
     #     ('Basic Information', {'fields': ['real_tracking_no', 'parcel_details', ('category', 'status')],
@@ -669,7 +669,7 @@ class ShipmentAdmin(reversion.VersionAdmin):
                 ('Destination Address',
                  {'fields': [('drop_name', 'drop_phone'),'address', ], 'classes': ('suit-tab', 'suit-tab-general')}),
                 ('Actions', {'fields': ['print_invoice', 'generate_order', 'fedex'], 'classes': ('suit-tab', 'suit-tab-general')}),
-                ('Tracking', {'fields': ['tracking_data','tracking_history'], 'classes': ('suit-tab', 'suit-tab-tracking')}),
+                ('Tracking', {'fields': ['tracking_data','tracking_history','barcode'], 'classes': ('suit-tab', 'suit-tab-tracking')}),
                 ('Order', {'fields': ['order'], 'classes': ('suit-tab', 'suit-tab-order')})
             )
 

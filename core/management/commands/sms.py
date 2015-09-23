@@ -33,8 +33,9 @@ class Command(BaseCommand):
   def handle(self, *args, **options):
   	x=Business.objects.filter()
 
-  	try:
-		for y in x:
+	for y in x:
+		try:
+
 		    address=urllib.quote_plus(str(y.address))  
 		    phone=urllib.quote_plus(str(8879006197))
 		    user_phone=urllib.quote_plus(str(y.contact_office)+str(y.contact_mob))
@@ -46,5 +47,5 @@ class Command(BaseCommand):
 		    query = ''.join([msg0, msga, msg1])
 		    req = requests.get(query)
 		    print y.username+",",req
-	except:
-		print "failed",y.username
+		except:
+			print "failed",y.username
