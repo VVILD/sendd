@@ -15,15 +15,8 @@ __author__ = 'vatsalshah'
 def create_fedex_shipment(request):
     shipment_pk = request.GET.get('shipment_pk', None)
     client_type = request.GET.get('client_type', None)
-    # sender_name = None
-    # sender_phone = None
-    # sender_company = None
-    # sender_address1, sender_address2 = None, None
-    # sender_city = None
-    # sender_state = None
-    # sender_pincode = None
-    # sender_country_code = None
-    # is_business_sender = None
+    sender_details = None
+    warehouse = None
     receiver_name = None
     receiver_phone = None
     receiver_company = None
@@ -42,21 +35,8 @@ def create_fedex_shipment(request):
     config = None
     if client_type == 'business':
         product = Product.objects.get(pk=shipment_pk)
-        # if product.fedex_outbound_label:
-        # return HttpResponseBadRequest("Fedex Order already created")
         item_name = product.name
         item_weight = product.applied_weight
-        # sender_name = product.order.business.name
-        # sender_company = product.order.business.business_name
-        # sender_phone = product.order.business.contact_mob
-        # sender_address = product.order.business.address
-        # sender_address1, sender_address2 = sender_address[:len(sender_address) / 2], sender_address[
-        #                                                                              len(sender_address) / 2:]
-        # sender_city = product.order.business.city
-        # sender_state = product.order.business.state
-        # sender_pincode = product.order.business.pincode
-        # sender_country_code = 'IN'
-        is_business_sender = True
         receiver_name = product.order.name
         receiver_company = None
         receiver_phone = product.order.phone
@@ -70,6 +50,8 @@ def create_fedex_shipment(request):
         is_business_receiver = False
         product_type = product.order.payment_method
         is_cod = False
+        sender_details = product.order.business.__dict__
+        warehouse = product.order.business.warehouse.__dict__
         if product_type == 'C':
             is_cod = True
         service_type, config = fedex.get_service_type(str(product.order.method), float(product.price),
@@ -77,26 +59,14 @@ def create_fedex_shipment(request):
         item_price = product.price
     elif client_type == 'customer':
         shipment = Shipment.objects.get(pk=shipment_pk)
-        # if shipment.fedex_outbound_label:
-        # return HttpResponseBadRequest("Fedex Order already created")
         item_name = shipment.item_name
         item_weight = shipment.weight
-        # sender_name = shipment.order.namemail.name
-        # sender_phone = shipment.order.user.phone
-        # sender_address = shipment.order.flat_no + shipment.order.address
-        # sender_address1, sender_address2 = sender_address[:len(sender_address) / 2], sender_address[
-        #                                                                              len(sender_address) / 2:]
-        # sender_city = "Mumbai"
-        # sender_state = "Maharashtra"
-        # sender_pincode = shipment.order.pincode
-        # sender_country_code = 'IN'
-        is_business_sender = False
+        warehouse = shipment.order.warehouse.__dict__
+        sender_details = {"business_name": shipment.order.namemail.name}
         receiver_name = shipment.drop_name
         receiver_company = None
         receiver_phone = shipment.drop_phone
         receiver_address = shipment.drop_address.flat_no + shipment.drop_address.locality
-        # receiver_address1, receiver_address2 = receiver_address[:len(receiver_address) / 2], receiver_address[
-        #                                                                                      len(receiver_address) / 2:]
         receiver_city = shipment.drop_address.city
         receiver_state = shipment.drop_address.state
         receiver_pincode = shipment.drop_address.pincode
@@ -107,24 +77,14 @@ def create_fedex_shipment(request):
         item_price = shipment.cost_of_courier
 
     sender = {
-        # "name": sender_name,
-        # "company": sender_company,
-        # "phone": sender_phone,
-        # "address1": sender_address1,
-        # "address2": sender_address2,
-        # "city": sender_city,
-        # "state": sender_state,
-        # "pincode": sender_pincode,
-        # "is_business": is_business_sender,
-        # "country_code": sender_country_code,
-        "is_cod": is_cod
+        "is_cod": is_cod,
+        "sender_details": sender_details,
+        "warehouse": warehouse
     }
     receiver = {
         "name": receiver_name,
         "company": receiver_company,
         "phone": receiver_phone,
-        # "address1": receiver_address1,
-        # "address2": receiver_address2,
         "address": receiver_address,
         "city": receiver_city,
         "state": receiver_state,
@@ -137,16 +97,14 @@ def create_fedex_shipment(request):
         "weight": item_weight,
         "price": item_price
     }
-    # dropoff_type = 'REGULAR_PICKUP'
     result = fedex.create_shipment(sender, receiver, item, config, service_type)
     cod_return_label_url = None
     outbound_label_url = None
     if result['status'] != 'ERROR':
         if client_type == 'business':
-            if (product.mapped_tracking_no):
+            if product.mapped_tracking_no:
                 product.tracking_history= str(product.tracking_history) + ',' + str(product.mapped_tracking_no)
             product.mapped_tracking_no = result['tracking_number']
-            # product.actual_cost = result['shipping_cost']
             if is_cod:
                 product.fedex_cod_return_label.save(result['tracking_number'] + '_COD.pdf',
                                                     ContentFile(base64.b64decode(result['COD_RETURN_LABEL'])))
@@ -169,10 +127,9 @@ def create_fedex_shipment(request):
             product.company = 'F'
             product.save()
         elif client_type == 'customer':
-            if (shipment.mapped_tracking_no):
+            if shipment.mapped_tracking_no:
                 shipment.tracking_history=str(shipment.tracking_history) + ',' + str(shipment.mapped_tracking_no)
             shipment.mapped_tracking_no = result['tracking_number']
-            # shipment.actual_cost = result['shipping_cost']
             if is_cod:
                 shipment.fedex_cod_return_label.save(result['tracking_number'] + '_COD.pdf',
                                                      ContentFile(base64.b64decode(result['COD_RETURN_LABEL'])))
