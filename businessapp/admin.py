@@ -31,7 +31,7 @@ action_names = {
 }
 
 class FilterBase(admin.SimpleListFilter):
-    def queryset(self, request, queryset):
+    def get_queryset(self, request, queryset):
         if self.value():
             dictionary = dict(((self.parameter_name, self.value()),))
             return queryset.filter(**dictionary)
@@ -117,7 +117,7 @@ class LogEntryAdmin(admin.ModelAdmin):
     object_link.admin_order_field = 'object_repr'
     object_link.short_description = u'object'
 
-    def queryset(self, request):
+    def get_queryset(self, request):
         return super(LogEntryAdmin, self).queryset(request) \
             .prefetch_related('content_type')
 
@@ -236,7 +236,7 @@ class BaseBusinessAdmin(reversion.VersionAdmin):
                 op=True
         except:
             pass
-        a = Business.objects.filter(status='A').count()
+        a = Business.objects.filter(status='A',is_completed=False).count()
         
         nap = Order.objects.filter(business__status='N',status='P').count()
         ap = Business.objects.filter(status='Y').count()
@@ -269,7 +269,7 @@ class BusinessAdmin(BaseBusinessAdmin):
     actions_on_top = True
     
 
-    def queryset(self, request):
+    def get_queryset(self, request):
 #total_order
 #pick_order
 #pending_count
@@ -338,7 +338,7 @@ class CSBusinessAdmin(BusinessAdmin):
     list_editable = ('assigned_pickup_time','cs_comment')
     list_filter = ['username', 'daily','pb']
 
-    def queryset(self, request):
+    def get_queryset(self, request):
 #total_order
 #pick_order
 #pending_count
@@ -383,7 +383,7 @@ class NotApprovedBusinessAdmin(CSBusinessAdmin):
                 object_repr=str(obj.pk),
                 action_flag=CHANGE,
                 change_message="action button : business status changed to approved")        
-        queryset.update(status='Y')
+        queryset.update(status='Y',pb=None,is_completed=False)
 
 
 
@@ -395,13 +395,13 @@ class NotApprovedBusinessAdmin(CSBusinessAdmin):
     actions_on_top = True
 
 
-    def queryset(self, request):
+    def get_queryset(self, request):
         qs = super(CSBusinessAdmin, self).queryset(request)
         qs = qs.filter(status='N')
         return qs
 
 
-    # def queryset(self, request):
+    # def get_queryset(self, request):
 
     #     return Business.objects.raw('SELECT `businessapp_business`.`username`, `businessapp_business`.`apikey`, `businessapp_business`.`business_name`, `businessapp_business`.`password`, `businessapp_business`.`email`, `businessapp_business`.`name`, `businessapp_business`.`contact_mob`, `businessapp_business`.`contact_office`, `businessapp_business`.`pickup_time`, `businessapp_business`.`address`, `businessapp_business`.`city`, `businessapp_business`.`state`, `businessapp_business`.`pincode`, `businessapp_business`.`company_name`, `businessapp_business`.`website`, `businessapp_business`.`businessmanager_id`, `businessapp_business`.`show_tracking_company`, `businessapp_business`.`pb_id`, `businessapp_business`.`assigned_pickup_time`, `businessapp_business`.`comment`, `businessapp_business`.`daily`, `businessapp_business`.`status`, `businessapp_business`.`warehouse_id`, COUNT(`businessapp_order`.`status`) AS `total_order` ,count(case when `businessapp_order`.`status` = 'PU' then 1 end) as pick_order,count(case when `businessapp_order`.`status` = 'P' then 1 end) as pending_count, count(case when `businessapp_order`.`status` = 'D' then 1 end) as transit_count,count(case when `businessapp_order`.`status` = 'DI' then 1 end) as dispatch_count  FROM `businessapp_business` INNER JOIN `businessapp_order` ON ( `businessapp_business`.`username` = `businessapp_order`.`business_id` ) GROUP BY `businessapp_business`.`username` ORDER BY NULL')
 
@@ -434,7 +434,7 @@ class ApprovedBusinessAdmin(CSBusinessAdmin):
     actions_on_top = True
 
 
-    def queryset(self, request):
+    def get_queryset(self, request):
         qs = super(CSBusinessAdmin, self).queryset(request)
         qs = qs.exclude(status='N')
         return qs
@@ -444,7 +444,7 @@ admin.site.register(ApprovedBusiness, ApprovedBusinessAdmin)
 
 class DailyBusinessAdmin(CSBusinessAdmin):
     
-    def queryset(self, request):
+    def get_queryset(self, request):
         return self.model.objects.filter(daily='True')
 
 
@@ -452,7 +452,7 @@ admin.site.register(DailyBusiness, DailyBusinessAdmin)
 
 class CancelledBusinessAdmin(CSBusinessAdmin):
     
-    def queryset(self, request):
+    def get_queryset(self, request):
         return self.model.objects.filter(status='C')
 
 
@@ -484,9 +484,9 @@ class ApprovedBusinessOPAdmin(OPBusinessAdmin):
 
 
     
-    def queryset(self, request):
+    def get_queryset(self, request):
         qs = super(OPBusinessAdmin, self).queryset(request)
-        qs = qs.filter(status='Y')
+        qs = qs.filter(status='Y',is_completed=False)
         return qs
 
 
@@ -516,9 +516,9 @@ class AllotedBusinessAdmin(OPBusinessAdmin):
 
     actions = [make_pickedup]
     
-    def queryset(self, request):
+    def get_queryset(self, request):
         qs = super(OPBusinessAdmin, self).queryset(request)
-        qs = qs.filter(status='A')
+        qs = qs.filter(status='A',is_completed=False)
         return qs
 
 
@@ -548,9 +548,10 @@ class PickedupBusinessAdmin(OPBusinessAdmin):
 
     actions = [make_complete]
     
-    def queryset(self, request):
+    def get_queryset(self, request):
         qs = super(OPBusinessAdmin, self).queryset(request)
         qs = qs.filter(is_completed=True,status='A')
+        print qs
         return qs
 
 
@@ -885,7 +886,7 @@ class ProductInline(admin.TabularInline):
 class FilterUserAdmin(BaseBusinessAdmin):
 
 
-    def queryset(self, request):
+    def get_queryset(self, request):
         try:
             qs = super(FilterUserAdmin, self).queryset(request)
             print "queryyyset"
@@ -1062,7 +1063,7 @@ class RemittanceProductPendingAdmin(reversion.VersionAdmin):
     get_business.admin_order_field  = 'business'  #Allows column order sorting
     get_business.short_description = 'Business'
 
-    def queryset(self, request):
+    def get_queryset(self, request):
         return self.model.objects.filter(order__payment_method='C').order_by('status').exclude(remittance=True)
 
 
@@ -1093,7 +1094,7 @@ class RemittanceProductCompleteAdmin(reversion.VersionAdmin):
     get_business.admin_order_field  = 'business'  #Allows column order sorting
     get_business.short_description = 'Business'
 
-    def queryset(self, request):
+    def get_queryset(self, request):
         return self.model.objects.filter(order__payment_method='C').order_by('status').exclude(remittance=False)
 
 
@@ -1106,7 +1107,7 @@ reversion.VersionAdmin.change_list_template='businessapp/templates/admin/busines
 class QcProductAdmin(ProductAdmin):
 
     change_list_template='businessapp/templates/admin/businessapp/qcproduct/change_list.html'
-    def queryset(self, request):
+    def get_queryset(self, request):
         return self.model.objects.filter(Q(order__status='DI')| Q(order__status='R')).exclude(status='C').exclude(order__business='ecell').exclude(order__business='ghasitaram').exclude(order__business='holachef')
     list_display = (
         'order_no','tracking_no','company','book_date','dispatch_time','get_business','sent_to', 'tracking_status','last_location' ,'expected_delivery_date','last_updated','last_tracking_status','qc_comment')

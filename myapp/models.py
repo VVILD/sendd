@@ -55,7 +55,7 @@ class Address(models.Model):
     country = models.CharField(max_length=30, null=True, blank=True)
 
     def __unicode__(self):
-        return 'pk:'+str(self.pk)
+        return str(self.flat_no)+','+str(self.locality)+','+str(self.city)+','+str(self.state)+','+str(self.country)+'-'+str(self.pincode)
 
     def save(self, *args, **kwargs):
         if not state_matcher.is_state(self.state):
@@ -255,7 +255,7 @@ class Shipment(models.Model):
     company = models.CharField(max_length=2,
                                choices=[('F', 'FedEx'), ('D', 'Delhivery'), ('P', 'Professional'), ('G', 'Gati'),
                                         ('A', 'Aramex'), ('E', 'Ecomexpress'), ('DT', 'dtdc'), ('FF', 'First Flight'),
-                                        ('M', 'Maruti courier'), ('I', 'India Post'), ('S', 'Sendd'), ('B', 'Bluedart'), ('T', 'trinity')],
+                                        ('M', 'Maruti courier'), ('I', 'India Post'), ('S', 'Sendd'), ('B', 'Bluedart'), ('T', 'trinity'), ('V', 'vichare')],
                                blank=True, null=True)
 
     cost_of_courier = models.CharField(verbose_name='item cost', max_length=100, null=True, blank=True)
