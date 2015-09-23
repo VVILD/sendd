@@ -28,6 +28,7 @@ def print_html(arr):
 class PickupboyAdmin(reversion.VersionAdmin):
     search_fields = ['pincodes__pincode','name']
     list_display = ('name', 'pincodes_pref', 'alloted_times')
+    change_list_template='pickupboyapp/templates/admin/pickupboyapp/change_list.html'
 
 
     def queryset(self, request):
