@@ -115,7 +115,7 @@ class Business(models.Model):
 
         if not self.apikey:
             self.apikey = hashlib.sha1(str(random.getrandbits(256))).hexdigest()
-        if self.pincode:
+        if self.pincode and not self.warehouse:
             pincode = Pincode.objects.filter(pincode=self.pincode).exclude(latitude__isnull=True)
             if len(pincode) > 0:
                 self.warehouse = pincode[0].warehouse
