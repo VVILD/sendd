@@ -45,22 +45,35 @@ class Fedex:
         # FEDEX_BOX, FEDEX_PAK, FEDEX_TUBE, YOUR_PACKAGING
         shipment.RequestedShipment.PackagingType = 'YOUR_PACKAGING'
 
-        # Shipper contact info.
-        shipment.RequestedShipment.Shipper.Contact.PersonName = str(sender['sender_details']['business_name'])
+        if sender['sender_details']['business_name'] is not None:
+            # Shipper contact info.
+            shipment.RequestedShipment.Shipper.Contact.PersonName = str(sender['sender_details']['business_name'])
+        else:
+            # Shipper contact info.
+            shipment.RequestedShipment.Shipper.Contact.PersonName = "Sendd"
         # if sender['company']:
         shipment.RequestedShipment.Shipper.Contact.CompanyName = "C/O: Sendd"
         shipment.RequestedShipment.Shipper.Contact.PhoneNumber = '8080028081'
-
-        # Shipper address.
-        if sender['warehouse']['address_line_2'] is not None:
-            shipment.RequestedShipment.Shipper.Address.StreetLines = [str(sender['warehouse']['address_line_1']),
-                                                                      str(sender['warehouse']['address_line_2'])]
+        if sender['warehouse'] is not None:
+            # Shipper address.
+            if sender['warehouse']['address_line_2'] is not None:
+                shipment.RequestedShipment.Shipper.Address.StreetLines = [str(sender['warehouse']['address_line_1']),
+                                                                          str(sender['warehouse']['address_line_2'])]
+            else:
+                shipment.RequestedShipment.Shipper.Address.StreetLines = [str(sender['warehouse']['address_line_1'])]
+            shipment.RequestedShipment.Shipper.Address.City = str(sender['warehouse']['city'])
+            state_code = StateCodes.objects.get(country_code='IN', subdivision_name=str(sender['warehouse']['state']))
+            shipment.RequestedShipment.Shipper.Address.StateOrProvinceCode = str(state_code.code).split('-')[1]
+            shipment.RequestedShipment.Shipper.Address.PostalCode = str(sender['warehouse']['pincode'])
         else:
-            shipment.RequestedShipment.Shipper.Address.StreetLines = [str(sender['warehouse']['address_line_1'])]
-        shipment.RequestedShipment.Shipper.Address.City = str(sender['warehouse']['city'])
-        state_code = StateCodes.objects.get(country_code='IN', subdivision_name=str(sender['warehouse']['state']))
-        shipment.RequestedShipment.Shipper.Address.StateOrProvinceCode = str(state_code.code).split('-')[1]
-        shipment.RequestedShipment.Shipper.Address.PostalCode = str(sender['warehouse']['pincode'])
+            # Shipper address.
+            shipment.RequestedShipment.Shipper.Address.StreetLines = ["107 A-Wing Classique Center, Gundavali",
+                                                                      "Andheri East, Mahakali Caves Road"]
+            shipment.RequestedShipment.Shipper.Address.City = "Mumbai"
+            # state_code = StateCodes.objects.get(subdivision_name=str(sender['state']))
+            shipment.RequestedShipment.Shipper.Address.StateOrProvinceCode = "MH"
+            shipment.RequestedShipment.Shipper.Address.PostalCode = "400093"
+
         shipment.RequestedShipment.Shipper.Address.CountryCode = "IN"
         # shipment.RequestedShipment.Shipper.Address.Residential = not sender['is_business']
 

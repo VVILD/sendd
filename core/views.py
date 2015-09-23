@@ -50,8 +50,10 @@ def create_fedex_shipment(request):
         is_business_receiver = False
         product_type = product.order.payment_method
         is_cod = False
-        sender_details = product.order.business.__dict__
-        warehouse = product.order.business.warehouse.__dict__
+        if product.order.business.business_name is not None:
+            sender_details = product.order.business.__dict__
+        if product.order.business.warehouse is not None:
+            warehouse = product.order.business.warehouse.__dict__
         if product_type == 'C':
             is_cod = True
         service_type, config = fedex.get_service_type(str(product.order.method), float(product.price),
@@ -61,8 +63,10 @@ def create_fedex_shipment(request):
         shipment = Shipment.objects.get(pk=shipment_pk)
         item_name = shipment.item_name
         item_weight = shipment.weight
-        warehouse = shipment.order.warehouse.__dict__
-        sender_details = {"business_name": shipment.order.namemail.name}
+        if shipment.order.warehouse is not None:
+            warehouse = shipment.order.warehouse.__dict__
+        if shipment.order.namemail.name is not None:
+            sender_details = {"business_name": shipment.order.namemail.name}
         receiver_name = shipment.drop_name
         receiver_company = None
         receiver_phone = shipment.drop_phone
