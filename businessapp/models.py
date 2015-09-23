@@ -255,6 +255,7 @@ class Product(models.Model):
     remittance = models.BooleanField(default=False)
     fedex_cod_return_label = models.FileField(upload_to='shipment/', blank=True, null=True)
     fedex_outbound_label = models.FileField(upload_to='shipment/', blank=True, null=True)
+    fedex_ship_docs = models.FileField(upload_to='shipment/', blank=True, null=True)
     actual_shipping_cost = models.FloatField(default=0.0)
     is_document = models.BooleanField(default=False)
     is_fragile = models.BooleanField(default=False)

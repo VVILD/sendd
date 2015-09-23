@@ -179,6 +179,11 @@ class Fedex:
         # BOTTOM_EDGE_OF_TEXT_FIRST or TOP_EDGE_OF_TEXT_FIRST
         shipment.RequestedShipment.LabelSpecification.LabelPrintingOrientation = 'TOP_EDGE_OF_TEXT_FIRST'
 
+        shipment.RequestedShipment.ShippingDocumentSpecification.ShippingDocumentTypes = 'COMMERCIAL_INVOICE'
+        shipment.RequestedShipment.ShippingDocumentSpecification.CommercialInvoiceDetail = shipment.create_wsdl_object_of_type('CommercialInvoiceDetail')
+        shipment.RequestedShipment.ShippingDocumentSpecification.CommercialInvoiceDetail.Format.ImageType = 'PDF'
+        shipment.RequestedShipment.ShippingDocumentSpecification.CommercialInvoiceDetail.Format.StockType = 'PAPER_LETTER'
+
         package1_weight = shipment.create_wsdl_object_of_type('Weight')
         # Weight, in pounds.
         package1_weight.Value = float(item['weight'])
@@ -226,10 +231,10 @@ class Fedex:
         # label_binary_data = binascii.a2b_base64(ascii_label_data)
         if sender['is_cod']:
             COD_RETURN_LABEL = shipment.response.CompletedShipmentDetail.AssociatedShipments[0].Label.Parts[0].Image
-            OUTBOUND_LABEL = shipment.response.CompletedShipmentDetail.CompletedPackageDetails[0].Label.Parts[0].Image
         else:
-            OUTBOUND_LABEL = shipment.response.CompletedShipmentDetail.CompletedPackageDetails[0].Label.Parts[0].Image
             COD_RETURN_LABEL = None
+        OUTBOUND_LABEL = shipment.response.CompletedShipmentDetail.CompletedPackageDetails[0].Label.Parts[0].Image
+        COMMERCIAL_INVOICE = shipment.response.CompletedShipmentDetail.ShipmentDocuments[0].Parts[0].Image
         shiping_cost = None
         if shipment.response.HighestSeverity == "SUCCESS":
             shiping_cost = shipment.response.CompletedShipmentDetail.ShipmentRating.ShipmentRateDetails[0].TotalNetCharge.Amount
@@ -240,6 +245,7 @@ class Fedex:
                 0].TrackingNumber,
             "OUTBOUND_LABEL": OUTBOUND_LABEL,
             "COD_RETURN_LABEL": COD_RETURN_LABEL,
+            "COMMERCIAL_INVOICE": COMMERCIAL_INVOICE,
             "service_type": service_type,
             "account": FEDEX_CONFIG_OBJ.account_number,
             "shipping_cost": shiping_cost
