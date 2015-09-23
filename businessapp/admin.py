@@ -24,6 +24,9 @@ from django.utils.html import escape
 from django.core.urlresolvers import reverse, NoReverseMatch
 from django.contrib.auth.models import User
 
+from django.utils import timezone
+
+
 action_names = {
     ADDITION: 'Addition',
     CHANGE:   'Change',
@@ -31,7 +34,7 @@ action_names = {
 }
 
 class FilterBase(admin.SimpleListFilter):
-    def get_queryset(self, request, queryset):
+    def queryset(self, request, queryset):
         if self.value():
             dictionary = dict(((self.parameter_name, self.value()),))
             return queryset.filter(**dictionary)
@@ -117,7 +120,7 @@ class LogEntryAdmin(admin.ModelAdmin):
     object_link.admin_order_field = 'object_repr'
     object_link.short_description = u'object'
 
-    def get_queryset(self, request):
+    def queryset(self, request):
         return super(LogEntryAdmin, self).queryset(request) \
             .prefetch_related('content_type')
 
@@ -600,7 +603,7 @@ admin.site.register(LoginSession)
 
 class ProductAdmin(reversion.VersionAdmin):
     search_fields = ['name', 'real_tracking_no']
-    list_display = ('name', 'price', 'weight', 'status', 'real_tracking_no', 'order', 'barcode','date','last_tracking_status',)
+    list_display = ('name', 'price', 'weight', 'status', 'real_tracking_no', 'order', 'barcode','date','last_tracking_status','update_time')
     list_editable = ('status', )
     list_filter=['order__business','last_tracking_status','company','status']
     readonly_fields = (
@@ -1175,15 +1178,12 @@ class QcProductAdmin(ProductAdmin):
 
     def last_updated(self,obj):
         import datetime
-        z = timezone('Asia/Kolkata')
         fmt = '%Y-%m-%d %H:%M:%S'
-        ind_time = datetime.datetime.now(z)
-        time = ind_time.strftime(fmt)
-        z = timezone('Asia/Kolkata')
+        ind_time = timezone.now()
+        #time = ind_time.strftime(fmt)
         #fmt = '%Y-%m-%d %H:%M:%S'
-        ind_time = datetime.datetime.now(z)
         try:
-            diff_time=ind_time.replace(second=0, microsecond=0,tzinfo=None)-obj.update_time.replace(second=0, microsecond=0,tzinfo=None)
+            diff_time=ind_time-obj.update_time
             total_seconds = int(diff_time.total_seconds())
             hours, remainder = divmod(total_seconds,60*60)
             minutes, seconds = divmod(remainder,60)

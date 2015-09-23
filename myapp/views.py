@@ -264,3 +264,26 @@ def get_name(request):
         form = NewShipmentForm()
 
     return render(request, 'newshipment.html', {'form': form})
+
+
+def redirect(request):
+	
+	barcode=request.GET.get('q', '')
+
+	print "barcode"
+
+	print barcode
+
+	try:
+		Shipment.objects.get(barcode=barcode)
+		url='/admin/myapp/order/?q='+barcode
+	except:
+		try:
+			Product.objects.get(barcode=barcode)
+			url='/admin/businessapp/order/?q='+barcode
+		except:
+			url='/admin/businessapp/order/?q='+barcode
+
+	context = {'url':url}
+
+	return render(request, 'polls/redirection.html', context)

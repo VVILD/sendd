@@ -18,5 +18,7 @@ urlpatterns = [
 
     url(r'^billing/$', views.vote, name='vote'),
 
+    url(r'^redirect/$', views.redirect, name='redirect'),
+
 
 ]
