@@ -710,6 +710,11 @@ class BarcodeFetchResource(CORSResource):
             product_exists = True
         except ObjectDoesNotExist:
             product_exists = False
+            try:
+                product = Shipment.objects.get(barcode=barcode)
+                product_exists = True
+            except ObjectDoesNotExist:
+                product_exists = False
 
         try:
             barcode_assoc = Barcode.objects.get(value=barcode)
