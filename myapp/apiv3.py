@@ -1,3 +1,5 @@
+import base64
+from django.core.files.base import ContentFile
 from tastypie import fields
 from tastypie.authentication import Authentication
 from tastypie.authorization import Authorization
@@ -66,7 +68,7 @@ class AddressResource3( ModelResource):
 class ShipmentResource3(MultipartResource,ModelResource):
     order = fields.ToOneField(OrderResource3, 'order')
     drop_address = fields.ForeignKey(AddressResource3, 'drop_address',full=True)
-    img = fields.FileField(attribute="img", null=True, blank=True)
+    image = fields.CharField(null=True, blank=True)
 
     class Meta:
         queryset = Shipment.objects.all()
@@ -75,6 +77,11 @@ class ShipmentResource3(MultipartResource,ModelResource):
         authentication = Authentication()
         always_return_data = True
 
+    def hydrate(self, bundle):
+        if bundle.data['image']:
+            bundle.data['img'] = ContentFile(base64.b64decode(bundle.data['image']))
+
+        return bundle
 
 
 class NamemailResource3(ModelResource):
