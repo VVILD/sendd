@@ -115,7 +115,7 @@ class Business(models.Model):
 
         if not self.apikey:
             self.apikey = hashlib.sha1(str(random.getrandbits(256))).hexdigest()
-        if self.pincode:
+        if self.pincode and not self.warehouse:
             pincode = Pincode.objects.filter(pincode=self.pincode).exclude(latitude__isnull=True)
             if len(pincode) > 0:
                 self.warehouse = pincode[0].warehouse
@@ -255,6 +255,7 @@ class Product(models.Model):
     remittance = models.BooleanField(default=False)
     fedex_cod_return_label = models.FileField(upload_to='shipment/', blank=True, null=True)
     fedex_outbound_label = models.FileField(upload_to='shipment/', blank=True, null=True)
+    fedex_ship_docs = models.FileField(upload_to='shipment/', blank=True, null=True)
     actual_shipping_cost = models.FloatField(default=0.0)
     is_document = models.BooleanField(default=False)
     is_fragile = models.BooleanField(default=False)

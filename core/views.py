@@ -102,29 +102,36 @@ def create_fedex_shipment(request):
         "price": item_price
     }
     result = fedex.create_shipment(sender, receiver, item, config, service_type)
-    cod_return_label_url = None
-    outbound_label_url = None
+    fedex_ship_docs_url = None
     if result['status'] != 'ERROR':
         if client_type == 'business':
             if product.mapped_tracking_no:
                 product.tracking_history= str(product.tracking_history) + ',' + str(product.mapped_tracking_no)
             product.mapped_tracking_no = result['tracking_number']
-            if is_cod:
-                product.fedex_cod_return_label.save(result['tracking_number'] + '_COD.pdf',
-                                                    ContentFile(base64.b64decode(result['COD_RETURN_LABEL'])))
-                cod_return_label_url = str(product.fedex_cod_return_label.name).split('/')[-1]
+
             output = PdfFileWriter()
             f1 = ContentFile(base64.b64decode(result['OUTBOUND_LABEL']))
             input1 = PdfFileReader(f1, strict=False)
             output.addPage(input1.getPage(0))
             output.addPage(input1.getPage(1))
             output.addPage(input1.getPage(2))
+
+            if is_cod:
+                f2 = ContentFile(base64.b64decode(result['COD_RETURN_LABEL']))
+                input2 = PdfFileReader(f2, strict=False)
+                output.addPage(input2.getPage(0))
+                output.addPage(input2.getPage(1))
+
+            f3 = ContentFile(base64.b64decode(result['COMMERCIAL_INVOICE']))
+            input3 = PdfFileReader(f3, strict=False)
+            output.addPage(input3.getPage(0))
+
             output.addJS("this.print({bUI:true,bSilent:false,bShrinkToFit:true});")
             outputStream = cStringIO.StringIO()
             output.write(outputStream)
-            product.fedex_outbound_label.save(result['tracking_number'] + '_OUT.pdf',
+            product.fedex_ship_docs.save(result['tracking_number'] + '.pdf',
                                               ContentFile(outputStream.getvalue()))
-            outbound_label_url = str(product.fedex_outbound_label.name).split('/')[-1]
+            fedex_ship_docs_url = str(product.fedex_ship_docs.name).split('/')[-1]
             if result["shipping_cost"]:
                 product.actual_shipping_cost = float(result["shipping_cost"])
             product.status = 'DI'
@@ -134,22 +141,24 @@ def create_fedex_shipment(request):
             if shipment.mapped_tracking_no:
                 shipment.tracking_history=str(shipment.tracking_history) + ',' + str(shipment.mapped_tracking_no)
             shipment.mapped_tracking_no = result['tracking_number']
-            if is_cod:
-                shipment.fedex_cod_return_label.save(result['tracking_number'] + '_COD.pdf',
-                                                     ContentFile(base64.b64decode(result['COD_RETURN_LABEL'])))
-                cod_return_label_url = str(shipment.fedex_cod_return_label.name).split('/')[-1]
+
             output = PdfFileWriter()
             f1 = ContentFile(base64.b64decode(result['OUTBOUND_LABEL']))
             input1 = PdfFileReader(f1, strict=False)
             output.addPage(input1.getPage(0))
             output.addPage(input1.getPage(1))
             output.addPage(input1.getPage(2))
+
+            f3 = ContentFile(base64.b64decode(result['COMMERCIAL_INVOICE']))
+            input3 = PdfFileReader(f3, strict=False)
+            output.addPage(input3.getPage(0))
+
             output.addJS("this.print({bUI:true,bSilent:false,bShrinkToFit:true});")
             outputStream = cStringIO.StringIO()
             output.write(outputStream)
-            shipment.fedex_outbound_label.save(result['tracking_number'] + '_OUT.pdf',
+            shipment.fedex_ship_docs.save(result['tracking_number'] + '.pdf',
                                                ContentFile(outputStream.getvalue()))
-            outbound_label_url = str(shipment.fedex_outbound_label.name).split('/')[-1]
+            fedex_ship_docs_url = str(shipment.fedex_ship_docs.name).split('/')[-1]
             if result["shipping_cost"]:
                 shipment.actual_shipping_cost = float(result["shipping_cost"])
             shipment.status = 'DI'
@@ -159,8 +168,7 @@ def create_fedex_shipment(request):
     context = {
         "status": result['status'],
         "tracking_number": result["tracking_number"],
-        "cod_return_label_url": cod_return_label_url,
-        "outbound_label_url": outbound_label_url,
+        "fedex_ship_docs_url": fedex_ship_docs_url,
         "is_cod": is_cod,
         "service_type": result["service_type"],
         "account": result["account"],

@@ -7,7 +7,7 @@ restricted_states = ['Bihar', 'Jharkhand', 'Madhya Pradesh', 'Manipur', 'Meghala
 
 
 def get_closest_state(state):
-    return difflib.get_close_matches(state, states, cutoff=0.60)
+    return difflib.get_close_matches(str(state).title(), states, cutoff=0.60)
 
 
 def is_state(state):
