@@ -47,6 +47,14 @@ v2_api.register(PincodecheckResource2())
 v2_api.register(InvoicesentResource2())
 v2_api.register(ZipcodeResource2())
 
+from myapp.apiv3 import ShipmentResource3,OrderResource3, UserResource3, NamemailResource3, AddressResource3
+
+v3_api = Api(api_name='v3')
+v3_api.register(OrderResource3())
+v3_api.register(ShipmentResource3())
+v3_api.register(UserResource3())
+v3_api.register(NamemailResource3())
+v3_api.register(AddressResource3())
 
 
 from businessapp.api import BusinessResource,LoginSessionResource,OrderResource,ProductResource,XResource,UsernamecheckResource,PaymentResource,PricingResource,ForgotpassResource,ChangepassResource,BillingResource,PincodecheckResource
@@ -108,6 +116,7 @@ urlpatterns = patterns('',
     url(r'^admin/', include(admin.site.urls)),
     url(r'^api/', include(v1_api.urls)),
     url(r'^api/', include(v2_api.urls)),
+    url(r'^api/', include(v3_api.urls)),
     url(r'^bapi/', include(bv1_api.urls)),
     url(r'^bapi/', include(bv2_api.urls)),
     url(r'^bapi/', include(bv3_api.urls)),
