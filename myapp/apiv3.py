@@ -69,6 +69,7 @@ class ShipmentResource3(MultipartResource,ModelResource):
     order = fields.ToOneField(OrderResource3, 'order')
     drop_address = fields.ForeignKey(AddressResource3, 'drop_address',full=True)
     image = fields.CharField(null=True, blank=True)
+    img = fields.FileField(attribute='img', null=True, blank=True)
 
     class Meta:
         queryset = Shipment.objects.all()
@@ -78,8 +79,9 @@ class ShipmentResource3(MultipartResource,ModelResource):
         always_return_data = True
 
     def hydrate(self, bundle):
-        if bundle.data['image']:
-            bundle.data['img'] = ContentFile(base64.b64decode(bundle.data['image']))
+        if 'image' in bundle.data:
+            if bundle.data['image']:
+                bundle.data['img'] = ContentFile(base64.b64decode(str(bundle.data['image'])))
 
         return bundle
 
