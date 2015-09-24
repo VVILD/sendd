@@ -52,7 +52,7 @@ class AddressResource3( ModelResource):
         authorization = Authorization()
         always_return_data = True
 
-class ShipmentResource3(MultipartResource ,ModelResource):
+class ShipmentResource3(ModelResource):
     order = fields.ToOneField(OrderResource3, 'order')
     drop_address = fields.ForeignKey(AddressResource3, 'drop_address',full=True)
 
