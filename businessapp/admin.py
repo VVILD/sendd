@@ -337,7 +337,7 @@ class BusinessAdmin(BaseBusinessAdmin):
 class CSBusinessAdmin(BusinessAdmin):
     # search_fields=['name']
     search_fields=['username','business_name']
-    list_display = ( 'business_name','contact_mob','contact_office', 'pickup_time','pb','assigned_pickup_time','status','pending_orders_total', 'pending_orders','pickedup_orders','dispatched_orders','daily','cs_comment','pricing_ok')
+    list_display = ( 'business_name','contact_mob','contact_office', 'pickup_time','pb','assigned_pickup_time','status','pending_orders_total', 'pending_orders','pickedup_orders','dispatched_orders','daily','cs_comment','warehouse','pricing_ok')
     list_editable = ('assigned_pickup_time','cs_comment')
     list_filter = ['username', 'daily','pb']
 
