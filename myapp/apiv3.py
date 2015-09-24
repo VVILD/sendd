@@ -1,4 +1,6 @@
 import base64
+import random
+import datetime
 from django.core.files.base import ContentFile
 from tastypie import fields
 from tastypie.authentication import Authentication
@@ -81,7 +83,7 @@ class ShipmentResource3(MultipartResource,ModelResource):
     def hydrate(self, bundle):
         if 'image' in bundle.data:
             if bundle.data['image']:
-                bundle.data['img'] = ContentFile(base64.b64decode(str(bundle.data['image'])))
+                bundle.data['img'] = ContentFile(base64.b64decode(str(bundle.data['image'])), str(bundle.data['image'])[:10] + datetime.datetime.now().strftime('%Y%m%d%H%M%S') + ".jpeg")
 
         return bundle
 
