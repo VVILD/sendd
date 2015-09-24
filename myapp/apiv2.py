@@ -1821,13 +1821,23 @@ class OrderResource2(MultipartResource, ModelResource):
         bundle.data['user'] = "/api/v2/user/" + str(bundle.data['user']) + "/"
         cust = User.objects.get(pk=pk)
 
-        check_time = datetime.combine(parse(str(bundle.data['date'])).date(), datetime.strptime(bundle.data['time'], "%I:%M %p").time())
-        offline = Offline.objects.filter(start__lte=check_time, end__gte=check_time, active=True).values("message")
-        if len(offline) > 0:
-            raise CustomBadRequest(
-                code="offline",
-                message=offline[0]['message']
-            )
+        offline = None
+        try:
+            check_time = datetime.combine(parse(str(bundle.data['date'])).date(), datetime.strptime(bundle.data['time'], "%I:%M %p").time())
+            offline = Offline.objects.filter(start__lte=check_time, end__gte=check_time, active=True).values("message")
+            if len(offline) > 0:
+                raise CustomBadRequest(
+                    code="offline",
+                    message=offline[0]['message']
+                )
+        except:
+            if offline is not None:
+                if len(offline) > 0:
+                    raise CustomBadRequest(
+                        code="offline",
+                        message=offline[0]['message']
+                    )
+            pass
 
         try:
             promocode = Promocode.objects.get(pk=bundle.data['code'])
