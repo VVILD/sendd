@@ -52,9 +52,10 @@ class AddressResource3( ModelResource):
         authorization = Authorization()
         always_return_data = True
 
-class ShipmentResource3(ModelResource):
+class ShipmentResource3(MultipartResource,ModelResource):
     order = fields.ToOneField(OrderResource3, 'order')
     drop_address = fields.ForeignKey(AddressResource3, 'drop_address',full=True)
+    img = fields.FileField(attribute="img", null=True, blank=True)
 
     class Meta:
         queryset = Shipment.objects.all()
