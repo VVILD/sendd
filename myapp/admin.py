@@ -80,7 +80,7 @@ class OrderAdmin(reversion.VersionAdmin):
     change_list_template='myapp/templates/admin/myapp/change_list.html'
     save_as = True
     list_per_page = 25
-    search_fields = ['user__phone', 'name', 'namemail__name', 'namemail__email', 'promocode__code', 'shipment__real_tracking_no','shipment__mapped_tracking_no','shipment__barcode','shipment__drop_phone','shipment__drop_name']
+    search_fields = ['order_no','user__phone', 'name', 'namemail__name', 'namemail__email', 'promocode__code', 'shipment__real_tracking_no','shipment__mapped_tracking_no','shipment__barcode','shipment__drop_phone','shipment__drop_name']
     list_display = (
         'order_no', 'book_time', 'promocode', 'date', 'time', 'full_address', 'name_email', 'order_status','mapped_ok', 'way',
         'pb', 'comment', 'shipments', 'send_invoice', 'warehouse')

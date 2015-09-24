@@ -934,7 +934,7 @@ class FilterUserAdmin(BaseBusinessAdmin):
 class OrderAdmin(FilterUserAdmin):
 
     inlines = (ProductInline,)
-    search_fields = ['business__business_name', 'name', 'product__real_tracking_no', 'product__barcode','city','state','product__mapped_tracking_no']
+    search_fields = ['order_no','business__business_name', 'name', 'product__real_tracking_no', 'product__barcode','city','state','product__mapped_tracking_no']
     list_display = (
         'order_no', 'book_time', 'business_details', 'name', 'status','mapped_ok', 'no_of_products', 'total_shipping_cost',
         'total_cod_cost', 'method',)
