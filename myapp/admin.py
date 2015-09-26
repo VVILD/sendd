@@ -794,7 +794,7 @@ class ShipmentAdmin(reversion.VersionAdmin):
         if (name == ''):
             return str(obj.item_name)
         name_mod = name[9:]
-        full_url = 'http://128.199.159.90/static/' + name_mod
+        full_url = '/static/' + name_mod
         return '<img src="%s" width=60 height=60 onmouseover="this.width=\'500\'; this.height=\'500\'" onmouseout="this.width=\'100\'; this.height=\'100\'" />' % (
             full_url)
 
