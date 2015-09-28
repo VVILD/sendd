@@ -1728,7 +1728,7 @@ class WeborderResource2(CORSModelResource):
         senderName = str(order.namemail.name)
         senderContact = str(order.user.phone)
         pickupAddress = str(order.address)
-        book_time = datetime.strptime(order.book_time, "%Y-%m-%d %H:%M:%S")
+        book_time = order.book_time
         bookingTime = str(book_time.strftime("%H:%M"))
         pickupTime = None
         if order.time:
