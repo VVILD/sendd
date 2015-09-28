@@ -2114,19 +2114,10 @@ class PriceappResource2(CORSModelResource):
         try:
             zipcode = Zipcode.objects.get(pincode=bundle.data['pincode'])
         except:
-            try:
-                zipcode = Pincode.objects.get(pincode=bundle.data['pincode'])
-            except:
+            zipcode = Pincode.objects.filter(pincode=bundle.data['pincode'])
+            if (zipcode.count()==0):
                 bundle.data['msg'] = 'invalid pin'
                 return bundle
-
-        print "count"
-
-        # print zipcode.count()==0
-
-        print "count"
-
-        # if (zipcode.count()==0):
 
         bundle.data['msg'] = 'ok'
         zone = 3
