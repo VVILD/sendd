@@ -2116,6 +2116,7 @@ class PriceappResource2(CORSModelResource):
         except:
             zipcode = Pincode.objects.filter(pincode=bundle.data['pincode'])
             if (zipcode.count()==0):
+
                 bundle.data['msg'] = 'invalid pin'
                 return bundle
 
