@@ -2215,8 +2215,11 @@ class DateappResource2(CORSModelResource):
         try:
             zipcode = Zipcode.objects.get(pincode=bundle.data['pincode'])
         except:
-            bundle.data['msg'] = 'invalid pin'
-            return bundle
+            zipcode = Pincode.objects.filter(pincode=bundle.data['pincode'])
+            if (zipcode.count()==0):
+
+                bundle.data['msg'] = 'invalid pin'
+                return bundle
 
         bundle.data['msg'] = 'ok'
 
