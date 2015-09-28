@@ -805,7 +805,7 @@ class ShipmentAdmin(reversion.VersionAdmin):
 
         valid = 1
         try:
-            string = ''
+            string = 'ot=2&'
             shipment = Shipment.objects.get(pk=obj.pk)
             address = shipment.drop_address
             error_string = ''
@@ -909,12 +909,24 @@ class ShipmentAdmin(reversion.VersionAdmin):
                 error_string = error_string + 'pincode not set<br>'
                 valid = 0
 
+            try:
+
+                cod = 'F'
+                string = string + 'cod=' + str(cod) + '&'
+            except:
+                error_string = error_string + 'cod not set<br>'
+                valid = 0
+
         except:
             pass
 
         if (valid):
-            return 'All good!<br><a href="http://order.sendmates.com/?%s" target="_blank" >Create Normal Order</a> <br> <a href="http://order.sendmates.com/cod/?%s" target="_blank" >Create Cod Order</a>' % (
-                string, string)
+            if (cod=='F'):
+                return 'All good!<br><a href="/stats/kartrocket/?%s" target="_blank" >Create Normal Order</a>' % (string)
+            elif (cod=='C'):
+                return 'All good!<br><a href="/stats/kartrocket/?%s" target="_blank" >Create Cod Order</a>' % (string)
+            else:
+                return "no payment_method set"
         else:
             return '<div style="color:red">' + error_string + '</div>'
 

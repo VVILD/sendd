@@ -20,5 +20,6 @@ urlpatterns = [
 
     url(r'^redirect/$', views.redirect, name='redirect'),
 
+    url(r'^kartrocket/$', views.kartrocket, name='kartrocket'),
 
 ]
