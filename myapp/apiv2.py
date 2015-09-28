@@ -5,6 +5,7 @@ from django.conf.urls import url
 from core.models import Offline
 from myapp.mail.bookingConfirmationMail import SendConfirmationMail
 from myapp.models import *
+from core.models import *
 from tastypie.authorization import Authorization
 from tastypie import fields
 from tastypie.serializers import Serializer
@@ -2113,8 +2114,11 @@ class PriceappResource2(CORSModelResource):
         try:
             zipcode = Zipcode.objects.get(pincode=bundle.data['pincode'])
         except:
-            bundle.data['msg'] = 'invalid pin'
-            return bundle
+            try:
+                zipcode = Pincode.objects.get(pincode=bundle.data['pincode'])
+            except:
+                bundle.data['msg'] = 'invalid pin'
+                return bundle
 
         print "count"
 
