@@ -47,6 +47,7 @@ class Command(BaseCommand):
           query = ''.join([msg0, msga, msg1])
           print query
           req=requests.get(query)
+
           email=str(order.email)
 
           email_sub= "Hi "+rname+" ,Your parcel from "+rbusiness_name+" has been shipped via Sendd"
