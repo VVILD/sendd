@@ -802,7 +802,7 @@ class ShipmentAdmin(reversion.VersionAdmin):
 
 
     def generate_order(self, obj):
-
+        cod=''
         valid = 1
         try:
             string = 'ot=2&'
