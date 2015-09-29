@@ -56,7 +56,7 @@ class Command(BaseCommand):
           subject, from_email, to = email_sub, 'order@sendd.co', email
           html_content = render_to_string('orderconfirmationmail.html', {'name':rname,'business_name':rbusiness_name,'sent_date':sent_date,'delivery_date':delivery_date,'tracking_id':tracking_id})
           text_content = strip_tags(html_content) # this strips the html, so people will have the text as well.
-          msg = EmailMultiAlternatives(subject, text_content, from_email, [to])
+          msg = EmailMultiAlternatives(subject, text_content, from_email, [to,'sargun@sendd.co'])
           msg.attach_alternative(html_content, "text/html")
           msg.send()
 
