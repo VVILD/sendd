@@ -649,7 +649,7 @@ class ShipmentAdmin(reversion.VersionAdmin):
                 ('Tracking', {'fields': ['tracking_data','tracking_history'], 'classes': ('suit-tab', 'suit-tab-tracking')}),
                 ('Order', {'fields': ['order','drop_address'], 'classes': ('suit-tab', 'suit-tab-order')})
             )
-
+            self.raw_id_fields = ('drop_address', )
             self.suit_form_tabs = (('general', 'General'), ('tracking', 'Tracking'), ('order', 'Order'))
 
 
