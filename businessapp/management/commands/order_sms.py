@@ -24,18 +24,20 @@ class Command(BaseCommand):
 
   def handle(self, *args, **options):
 
-      y=Order.objects.filter(business='souled_store')
+      y=Order.objects.filter(business__send_notification='Y',notification='N',status='DI')
       #y=Order.objects.filter()
 
 
       for order in y:
           phone=urllib.quote_plus(str(order.phone))
           business_name=urllib.quote_plus(str(order.business.business_name))
+          rbusiness_name=str(order.business.business_name)
           sent_date=urllib.quote_plus(str(date.today()))
           delivery_date=urllib.quote_plus(str(date.today()+timedelta(days=5)))
           tracking_id=urllib.quote_plus(str(order.master_tracking_number))
           name=urllib.quote_plus(str(order.name))
-          phone="8879006197"
+          rname=str(order.name)
+
           if (order.name==None):
               name="user"
 
@@ -45,20 +47,19 @@ class Command(BaseCommand):
           query = ''.join([msg0, msga, msg1])
           print query
           req=requests.get(query)
+          email=str(order.email)
 
-          email_sub= "Hi "+name+" ,Your parcel from "+business_name+" has been shipped via Sendd"
+          email_sub= "Hi "+rname+" ,Your parcel from "+rbusiness_name+" has been shipped via Sendd"
 
 
-          subject, from_email, to = email_sub, 'order@sendd.co', 'sargun@sendd.co'
-          html_content = render_to_string('orderconfirmationmail.html', {'name':name,'business_name':business_name,'sent_date':sent_date,'delivery_date':delivery_date,'tracking_id':tracking_id})
-          print html_content
+          subject, from_email, to = email_sub, 'order@sendd.co', email
+          html_content = render_to_string('orderconfirmationmail.html', {'name':rname,'business_name':rbusiness_name,'sent_date':sent_date,'delivery_date':delivery_date,'tracking_id':tracking_id})
           text_content = strip_tags(html_content) # this strips the html, so people will have the text as well.
           msg = EmailMultiAlternatives(subject, text_content, from_email, [to])
           msg.attach_alternative(html_content, "text/html")
           msg.send()
-          print msg.send()
 
-          # order.notification='Y'
-          # order.save()
+          order.notification='Y'
+          order.save()
 
 
