@@ -55,7 +55,6 @@ class Command(BaseCommand):
 
 
         shipment_list=Shipment.objects.filter((~Q(kartrocket_order='')) & Q(kartrocket_order__isnull=False) & (Q(mapped_tracking_no='') | Q(mapped_tracking_no__isnull=True) ))
-
         for shipment in shipment_list:
             kartrocket_order=shipment.kartrocket_order
             link = "http://crazymindtechnologies.kartrocket.co/index.php?route=feed/web_api/orders&version=2&key=c20ad4d76fe97759aa27a0c99bff6710&order_id="+kartrocket_order
