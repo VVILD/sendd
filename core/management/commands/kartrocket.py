@@ -31,4 +31,4 @@ class Command(BaseCommand):
   help = 'Django admin custom command poc.'
  
   def handle(self, *args, **options):
-  	Product.objects.filter(~Q(kartrocket_order='') & Q(kartrocket_order__isnull=False) & (Q(mapped_tracking_no='') & Q(mapped_tracking_no__isnull=True) ))
+  	Product.objects.filter((~Q(kartrocket_order='')) & Q(kartrocket_order__isnull=False) & (Q(mapped_tracking_no='') | Q(mapped_tracking_no__isnull=True) ))
