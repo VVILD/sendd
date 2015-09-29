@@ -72,8 +72,11 @@ class Warehouse(models.Model):
                 pincode.save()
 
             for business in businesses:
-                pincode_search = Pincode.objects.filter(pincode=business.pincode).exclude(latitude__isnull=True)
-                business.warehouse = pincode_search[0].warehouse
+                pincode_search = Pincode.objects.filter(pincode=str(business.pincode)).exclude(latitude__isnull=True, warehouse__isnull=True)
+                if pincode_search.count() > 0:
+                    business.warehouse = pincode_search[0].warehouse
+                else:
+                    business.warehouse = None
                 business.save()
         else:
             raise ValidationError("Please enter a pincode")
