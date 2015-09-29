@@ -72,7 +72,7 @@ class Warehouse(models.Model):
                 pincode.save()
 
             for business in businesses:
-                pincode_search = Pincode.objects.filter(pincode=self.pincode).exclude(latitude__isnull=True)
+                pincode_search = Pincode.objects.filter(pincode=business.pincode).exclude(latitude__isnull=True)
                 business.warehouse = pincode_search[0].warehouse
                 business.save()
         else:
@@ -181,7 +181,7 @@ class Pincode(models.Model):
         null=True
     )
     fedex_oda_opa = models.BooleanField(default=False)
-    fedex_cod_service = models.BooleanField(default=True)
+    fedex_cod_service = models.BooleanField(default=False)
     fedex_servicable = models.BooleanField(default=False)
     warehouse = models.ForeignKey(Warehouse, null=True, blank=True, related_name="pincode_warehouse")
 
