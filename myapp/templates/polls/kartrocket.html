@@ -1,0 +1,41 @@
+
+<head>
+<style>
+table, th, td {
+    border: 1px solid black;
+    border-collapse: collapse;
+}
+th, td {
+    padding: 5px;
+    text-align: left;
+}
+</style>
+
+
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+
+<!-- Optional theme -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
+
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+</head>
+
+
+<h2># this page shows the kartrocket order id, if order is created else it shows the error 
+<br>
+<br>
+{% if res|slice:"1" == '1' %}
+
+Created
+{% else %}
+
+Error
+
+{% endif %}
+</h2>
+
+
+<h3>
+{{res}}
+</h3>
