@@ -311,7 +311,7 @@ class Shipment(models.Model):
             ind_time = datetime.now(z)
             time = ind_time
             self.update_time = ind_time
-            time = str(time)
+            time = str(time.replace(second=0, microsecond=0,tzinfo=None))
             self.tracking_data = "[{\"status\": \"Booking Received\", \"date\"	: \"" + time + " \", \"location\": \"Mumbai (Maharashtra)\"}]"
             print self.tracking_data
             print self.status

@@ -5,6 +5,7 @@ from django.conf.urls import url
 from core.models import Offline
 from myapp.mail.bookingConfirmationMail import SendConfirmationMail
 from myapp.models import *
+from core.models import *
 from tastypie.authorization import Authorization
 from tastypie import fields
 from tastypie.serializers import Serializer
@@ -1728,7 +1729,7 @@ class WeborderResource2(CORSModelResource):
         senderName = str(order.namemail.name)
         senderContact = str(order.user.phone)
         pickupAddress = str(order.address)
-        book_time = datetime.strptime(order.book_time, "%Y-%m-%d %H:%M:%S")
+        book_time = order.book_time
         bookingTime = str(book_time.strftime("%H:%M"))
         pickupTime = None
         if order.time:
@@ -2113,16 +2114,11 @@ class PriceappResource2(CORSModelResource):
         try:
             zipcode = Zipcode.objects.get(pincode=bundle.data['pincode'])
         except:
-            bundle.data['msg'] = 'invalid pin'
-            return bundle
+            zipcode = Pincode.objects.filter(pincode=bundle.data['pincode'])
+            if (zipcode.count()==0):
 
-        print "count"
-
-        # print zipcode.count()==0
-
-        print "count"
-
-        # if (zipcode.count()==0):
+                bundle.data['msg'] = 'invalid pin'
+                return bundle
 
         bundle.data['msg'] = 'ok'
         zone = 3
@@ -2219,8 +2215,11 @@ class DateappResource2(CORSModelResource):
         try:
             zipcode = Zipcode.objects.get(pincode=bundle.data['pincode'])
         except:
-            bundle.data['msg'] = 'invalid pin'
-            return bundle
+            zipcode = Pincode.objects.filter(pincode=bundle.data['pincode'])
+            if (zipcode.count()==0):
+
+                bundle.data['msg'] = 'invalid pin'
+                return bundle
 
         bundle.data['msg'] = 'ok'
 

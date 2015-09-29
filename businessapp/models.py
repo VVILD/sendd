@@ -24,14 +24,17 @@ import json
 import urllib
 import requests
 
+
 class Profile(models.Model):
     user = models.OneToOneField(User)
     phone = models.CharField(max_length=100)
-    usertype = models.CharField(max_length=1, choices=(('O', 'ops'), ('B', 'bd'), ('A', 'admin'),('Q', 'qc'),('C', 'customer support'),),
+    usertype = models.CharField(max_length=1, choices=(
+    ('O', 'ops'), ('B', 'bd'), ('A', 'admin'), ('Q', 'qc'), ('C', 'customer support'),),
                                 null=True, blank=True)
 
     def __unicode__(self):
         return str(self.user.username)
+
 
 # class BusinessManager(models.Model):
 # """User with app settings."""
@@ -54,6 +57,20 @@ from pickupboyapp.models import PBUser
 from random import randint
 
 
+class Weight(models.Model):
+    weight = models.FloatField()
+
+    def __unicode__(self):
+        return str(self.weight)
+
+
+class Zone(models.Model):
+    zone = models.CharField(max_length=2)
+
+    def __unicode__(self):
+        return str(self.zone)
+
+
 class Business(models.Model):
     # phone_regex = RegexValidator(regex=r'^[0-9]*$', message="Phone number must be entered in the format: '999999999'. Up to 12 digits allowed.")
     username = models.CharField(max_length=20, primary_key=True)
@@ -73,10 +90,12 @@ class Business(models.Model):
     pincode = models.CharField(max_length=50, null=True, blank=True)
     company_name = models.CharField(max_length=100, null=True, blank=True)
     website = models.CharField(max_length=100, null=True, blank=True)
-    #key=models.CharField(max_length = 100,null=True,blank =True)
+    # key=models.CharField(max_length = 100,null=True,blank =True)
     businessmanager = models.ForeignKey(Profile, null=True, blank=True)
     show_tracking_company = models.CharField(max_length=1, choices=(('Y', 'yes'), ('N', 'no'),), null=True, blank=True,
                                              default='N')
+    send_notification = models.CharField(max_length=1, choices=(('Y', 'yes'), ('N', 'no'),), null=True, blank=True,
+                                         default='N')
     pb = models.ForeignKey(PBUser, null=True, blank=True)
     is_completed = models.BooleanField(default=False)
     assigned_pickup_time = models.TimeField(null=True, blank=True)
@@ -85,30 +104,40 @@ class Business(models.Model):
 
     cs_comment = models.TextField(null=True, blank=True)
     ff_comment = models.TextField(null=True, blank=True)
-    
+
     daily = models.BooleanField(default=False)
-    status = models.CharField(max_length=1, choices=(('Y', 'approved'), ('N', 'not approved'),('C', 'cancelled'),('A', 'alloted'),), null=True, blank=True,
-    default='N')
+    status = models.CharField(max_length=1,
+                              choices=(('Y', 'approved'), ('N', 'not approved'), ('C', 'cancelled'), ('A', 'alloted'),),
+                              null=True, blank=True,
+                              default='N')
     warehouse = models.ForeignKey(Warehouse, null=True, blank=True)
 
     class Meta:
-        ordering = ['business_name',]
-
+        ordering = ['business_name', ]
 
     def save(self, *args, **kwargs):
-        #print self.tracking_no
-        #print self.pk
-        #print "jkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkjjkjkjkjkjkkjkjkjkj"
-        if self.pb and self.status=='Y':
-            self.status='A'
-            address=urllib.quote_plus(str(self.address))  
-            phone=urllib.quote_plus(str(self.pb.phone))
-            user_phone=urllib.quote_plus(str(self.contact_office)+str(self.contact_mob))
-            order_no=urllib.quote_plus(str(self.pk))
-            name=urllib.quote_plus(str(self.name))
+        # if self.pricing2s.count()==0:
+        #
+        #     ndict = {'a': [1, 2, 3, 4, 5]}
+        #     bdict = {'a': [1, 2, 3, 4, 5]}
+        #
+        #     for key in ndict:
+        #         for w in dict[key]:
+        #             zone = Zone.objects.get(zone=key)
+        #             weight = Weight.object.get(weight=w)
+
+        if self.pb and self.status == 'Y':
+            self.status = 'A'
+            address = urllib.quote_plus(str(self.address))
+            phone = urllib.quote_plus(str(self.pb.phone))
+            user_phone = urllib.quote_plus(str(self.contact_office) + str(self.contact_mob))
+            order_no = urllib.quote_plus(str(self.pk))
+            name = urllib.quote_plus(str(self.name))
             msg0 = "http://enterprise.smsgupshup.com/GatewayAPI/rest?method=SendMessage&send_to="
             msga = str(phone)
-            msg1 = "&msg=Pickup+details+for+order+no%3A"+str(order_no)+".%0D%0AName%3A"+str(name)+"%2C+Address%3A"+str(address)+"%2C+Mobile+No%3A"+str(user_phone)+"&msg_type=TEXT&userid=2000142364&auth_scheme=plain&password=h0s6jgB4N&format=text"
+            msg1 = "&msg=Pickup+details+for+order+no%3A" + str(order_no) + ".%0D%0AName%3A" + str(
+                name) + "%2C+Address%3A" + str(address) + "%2C+Mobile+No%3A" + str(
+                user_phone) + "&msg_type=TEXT&userid=2000142364&auth_scheme=plain&password=h0s6jgB4N&format=text"
             query = ''.join([msg0, msga, msg1])
             print query
             req = requests.get(query)
@@ -121,25 +150,29 @@ class Business(models.Model):
                 self.warehouse = pincode[0].warehouse
         super(Business, self).save(*args, **kwargs)
 
-
     def __unicode__(self):
         return str(self.business_name)
+
 
 class NotApprovedBusiness(Business):
     class Meta:
         proxy = True
 
+
 class ApprovedBusiness(Business):
     class Meta:
         proxy = True
+
 
 class ApprovedBusinessOP(Business):
     class Meta:
         proxy = True
 
+
 class AllotedBusiness(Business):
     class Meta:
         proxy = True
+
 
 class PickedupBusiness(Business):
     class Meta:
@@ -149,6 +182,7 @@ class PickedupBusiness(Business):
 class DailyBusiness(Business):
     class Meta:
         proxy = True
+
 
 class CancelledBusiness(Business):
     class Meta:
@@ -189,22 +223,22 @@ class Order(models.Model):
     book_time = models.DateTimeField(null=True, blank=True)
     status = models.CharField(max_length=2, choices=(
         ('P', 'pending'), ('C', 'complete'), ('N', 'cancelled'), ('D', 'in transit'), ('PU', 'pickedup'),
-        ('RC', 'return/completed'), ('R', 'return'), ('DI', 'dispatched'), ), default='P')
+        ('RC', 'return/completed'), ('R', 'return'), ('DI', 'dispatched'),), default='P')
     confirmed = models.BooleanField(default=True)
     method = models.CharField(max_length=1,
                               choices=(('B', 'Bulk'), ('N', 'Normal'),),
                               blank=True, null=True)
     master_tracking_number = models.CharField(max_length=10, blank=True, null=True)
     business = models.ForeignKey(Business)
-
+    notification = models.CharField(max_length=1, choices=(('Y', 'yes'), ('N', 'no'),), null=True, blank=True,
+                                         default='N')
 
     def __unicode__(self):
         return str(self.order_no)
 
-
     def save(self, *args, **kwargs):
         ''' On save, update timestamps '''
-        
+
         z = timezone('Asia/Kolkata')
         fmt = '%Y-%m-%d %H:%M:%S'
         ind_time = datetime.now(z)
@@ -238,13 +272,14 @@ class Product(models.Model):
     company = models.CharField(max_length=2,
                                choices=[('F', 'FedEx'), ('D', 'Delhivery'), ('P', 'Professional'), ('G', 'Gati'),
                                         ('A', 'Aramex'), ('E', 'Ecomexpress'), ('DT', 'dtdc'), ('FF', 'First Flight'),
-                                        ('M', 'Maruti courier'), ('I', 'India Post'), ('S', 'Sendd'), ('B', 'bluedart'), ('T', 'trinity'), ('V', 'vichare')],
+                                        ('M', 'Maruti courier'), ('I', 'India Post'), ('S', 'Sendd'), ('B', 'bluedart'),
+                                        ('T', 'trinity'), ('V', 'vichare')],
                                blank=True, null=True)
     shipping_cost = models.FloatField(default=0.0)
     cod_cost = models.FloatField(default=0.0)
     return_cost = models.FloatField(default=0.0)
 
-    #tracking_no=models.AutoField(primary_key=True)
+    # tracking_no=models.AutoField(primary_key=True)
     barcode = models.CharField(null=True, blank=True, default=None, max_length=12, unique=True)
     status = models.CharField(max_length=2,
                               choices=(('P', 'pending'), ('C', 'complete'), ('PU', 'pickedup'), ('CA', 'cancelled'),
@@ -261,13 +296,13 @@ class Product(models.Model):
     is_fragile = models.BooleanField(default=False)
 
     __original_tracking_data = None
-    update_time=models.DateTimeField(null=True, blank=True)
-    dispatch_time=models.DateTimeField(null=True, blank=True)
+    update_time = models.DateTimeField(null=True, blank=True)
+    dispatch_time = models.DateTimeField(null=True, blank=True)
 
-    qc_comment=models.TextField(null=True, blank=True)
+    qc_comment = models.TextField(null=True, blank=True)
     tracking_history = models.TextField(null=True, blank=True)
     warning = models.BooleanField(default=False)
-    last_tracking_status=models.CharField(max_length=300, null=True, blank=True)
+    last_tracking_status = models.CharField(max_length=300, null=True, blank=True)
 
     def __unicode__(self):
         return str(self.name)
@@ -282,11 +317,10 @@ class Product(models.Model):
         ind_time = datetime.now(z)
         time = ind_time
 
-
-        if self.mapped_tracking_no and (self.status=='PU' or self.status=='D' or self.status=='P'):
-            self.status='DI'
-            self.update_time=time
-            self.dispatch_time=time
+        if self.mapped_tracking_no and (self.status == 'PU' or self.status == 'D' or self.status == 'P'):
+            self.status = 'DI'
+            self.update_time = time
+            self.dispatch_time = time
 
         # whenever tracking data changes
         if self.tracking_data != self.__original_tracking_data:
@@ -294,20 +328,20 @@ class Product(models.Model):
             fmt = '%Y-%m-%d %H:%M:%S'
             ind_time = datetime.now(z)
             time = ind_time
-            self.update_time=time
-            self.last_tracking_status=json.loads(self.tracking_data)[-1]['status']
-            #Warnings rule definations
+            self.update_time = time
+            self.last_tracking_status = json.loads(self.tracking_data)[-1]['status']
+            # Warnings rule definations
             if ('exception' in self.last_tracking_status):
-                self.warning=True
-        
+                self.warning = True
+
         if not self.pk:
             z = timezone('Asia/Kolkata')
             fmt = '%Y-%m-%d %H:%M:%S'
             ind_time = datetime.now(z)
             time = ind_time
             self.date = ind_time
-            time = str(time)
-            self.update_time=ind_time
+            time = str(time.replace(second=0, microsecond=0,tzinfo=None))
+            self.update_time = ind_time
             self.tracking_data = "[{\"status\": \"Booking Received\", \"date\"	: \"" + time + " \", \"location\": \"Mumbai (Maharashtra)\"}]"
             super(Product, self).save(*args, **kwargs)
             alphabet = random.choice('BDQP')
@@ -326,6 +360,7 @@ class Product(models.Model):
         super(Product, self).save(*args, **kwargs)
         self.__original_tracking_data = self.tracking_data
 
+
 class RemittanceProductPending(Product):
     class Meta:
         proxy = True
@@ -335,9 +370,11 @@ class RemittanceProductComplete(Product):
     class Meta:
         proxy = True
 
+
 class QcProduct(Product):
     class Meta:
         proxy = True
+
 
 def send_update(sender, instance, created, **kwargs):
     # product can be pending complete returned picked up
@@ -424,14 +461,14 @@ def send_update(sender, instance, created, **kwargs):
                 price = price1 * instance.applied_weight
 
         Order.objects.filter(pk=instance.order.pk).update(status='D')
-#        print "prrriiiceee"
+        #        print "prrriiiceee"
 
         price = math.ceil(1.20 * price)
 
         Product.objects.filter(pk=instance.pk).update(shipping_cost=price, cod_cost=cod_price)
-#        print "Done"
-        #MyModel.objects.filter(pk=some_value).update(field1='some value')
-#        print "in  loop"
+    #        print "Done"
+    # MyModel.objects.filter(pk=some_value).update(field1='some value')
+    #        print "in  loop"
 
     if instance.status == 'C' or instance.status == 'R':
         complete = True
@@ -441,59 +478,57 @@ def send_update(sender, instance, created, **kwargs):
 
         for product in products_in_order:
             if product.status != 'C':
-                #print "false check"
+                # print "false check"
                 complete = False
-            #    print "1aaa"
+            # print "1aaa"
             elif product.status != 'R':
                 return_value = False
-            #    print "2aaa"
+            # print "2aaa"
             elif (product.status != 'R' & product.status != 'C'):
                 other_case = True
-            #    print "3aaa"
+                #    print "3aaa"
 
         signals.post_save.disconnect(send_update_order, sender=Order)
 
         if (complete & (not return_value)):
-            #print "am i here"
-            #print "1111111111111111111111111111111111111111111111"
+            # print "am i here"
+            # print "1111111111111111111111111111111111111111111111"
             instance.order.status = 'C'
             instance.order.save()
 
         elif ((not complete) & return_value):
-            #print "222222222222222222222222222222222222222222222"
-            #print "am i here"
+            # print "222222222222222222222222222222222222222222222"
+            # print "am i here"
             instance.order.status = 'R'
             instance.order.save()
         elif (other_case):
             pass
         else:
-            #print "33333333333333333333333333333333333333333333	"
+            # print "33333333333333333333333333333333333333333333	"
             instance.order.status = 'RC'
             instance.order.save()
 
-     	signals.post_save.connect(send_update_order, sender=Order)
-
-
+        signals.post_save.connect(send_update_order, sender=Order)
 
     if (instance.status == 'PU') or (instance.status == 'CA'):
-    	#print "33333333333333333333333333333333333333333333	"
-    	pickedup = True
+        # print "33333333333333333333333333333333333333333333	"
+        pickedup = True
         for product in products_in_order:
-        	if (product.status!='PU') & (product.status!='CA'):
-        		pickedup=False
+            if (product.status != 'PU') & (product.status != 'CA'):
+                pickedup = False
 
         if (pickedup):
-        	signals.post_save.disconnect(send_update_order, sender=Order)
-        	instance.order.status = 'PU'
-        	instance.order.save()
-        	signals.post_save.connect(send_update_order, sender=Order)
+            signals.post_save.disconnect(send_update_order, sender=Order)
+            instance.order.status = 'PU'
+            instance.order.save()
+            signals.post_save.connect(send_update_order, sender=Order)
 
     if (instance.status == 'DI') or (instance.status == 'CA'):
-        #print "33333333333333333333333333333333333333333333    "
+        # print "33333333333333333333333333333333333333333333    "
         Dispatched = True
         for product in products_in_order:
-            if (product.status!='DI') & (product.status!='CA'):
-                Dispatched=False
+            if (product.status != 'DI') & (product.status != 'CA'):
+                Dispatched = False
 
         if (Dispatched):
             signals.post_save.disconnect(send_update_order, sender=Order)
@@ -501,16 +536,14 @@ def send_update(sender, instance, created, **kwargs):
             instance.order.save()
             signals.post_save.connect(send_update_order, sender=Order)
 
-
-
-    if (instance.status=='CA'):
-        Cancelled=True
+    if (instance.status == 'CA'):
+        Cancelled = True
         for product in products_in_order:
-            if (product.status!='CA'):
-                Cancelled=False
+            if (product.status != 'CA'):
+                Cancelled = False
         if (Cancelled):
-# signals.post_save.disconnect(send_update_order, sender=Order)
-            signals.post_save.disconnect(send_update_order, sender=Order)        
+            # signals.post_save.disconnect(send_update_order, sender=Order)
+            signals.post_save.disconnect(send_update_order, sender=Order)
             instance.order.status = 'N'
             instance.order.save()
             signals.post_save.connect(send_update_order, sender=Order)
@@ -531,7 +564,7 @@ def send_update_order(sender, instance, created, **kwargs):
 
     # order will be pending intransit complete cancelled picked up
 
-    products=Product.objects.filter(order=instance)
+    products = Product.objects.filter(order=instance)
 
     if instance.status == 'C' or instance.status == 'PU' or instance.status == 'CA' or instance.status == 'P' or instance.status == 'R':
         signals.post_save.disconnect(send_update, sender=Product)
@@ -574,7 +607,7 @@ def send_update_order(sender, instance, created, **kwargs):
                     price3 = pricing.normal_zone_a_2
 
                 elif (
-                                                    two_digits == '41' or two_digits == '42' or two_digits == '43' or two_digits == '44' or three_digits == '403' or two_digits == '36' or two_digits == '37' or two_digits == '38' or two_digits == '39'):
+                                                            two_digits == '41' or two_digits == '42' or two_digits == '43' or two_digits == '44' or three_digits == '403' or two_digits == '36' or two_digits == '37' or two_digits == '38' or two_digits == '39'):
                     price1 = pricing.normal_zone_b_0
                     price2 = pricing.normal_zone_b_1
                     price3 = pricing.normal_zone_b_2
@@ -604,7 +637,7 @@ def send_update_order(sender, instance, created, **kwargs):
                     price1 = pricing.bulk_zone_a
 
                 elif (
-                                                    two_digits == '41' or two_digits == '42' or two_digits == '43' or two_digits == '44' or three_digits == '403' or two_digits == '36' or two_digits == '37' or two_digits == '38' or two_digits == '39'):
+                                                            two_digits == '41' or two_digits == '42' or two_digits == '43' or two_digits == '44' or three_digits == '403' or two_digits == '36' or two_digits == '37' or two_digits == '38' or two_digits == '39'):
                     price1 = pricing.bulk_zone_b
                 elif (two_digits == '56' or two_digits == '11' or three_digits == '600' or three_digits == '700'):
                     price1 = pricing.bulk_zone_c
@@ -628,6 +661,7 @@ def send_update_order(sender, instance, created, **kwargs):
             product.cod_cost = cod_price
             product.save()
             signals.post_save.connect(send_update, sender=Product)
+
 
 post_save.connect(send_update_order, sender=Order)
 
@@ -705,6 +739,40 @@ class Pricing(models.Model):
     bulk_zone_c = models.FloatField(default=11)
     bulk_zone_d = models.FloatField(default=13)
     bulk_zone_e = models.FloatField(default=15)
+
+    def __unicode__(self):
+        return str(self.business)
+
+
+class Weight(models.Model):
+    weight = models.FloatField(primary_key=True)
+
+    def __unicode__(self):
+        return str(self.weight)
+
+
+class Zone(models.Model):
+    zone = models.CharField(max_length=2, primary_key=True)
+
+    def __unicode__(self):
+        return str(self.zone)
+
+
+class Pricing2(models.Model):
+    business = models.ForeignKey(Business,related_name='pricing2s')
+    weight = models.ForeignKey(Weight)
+    zone = models.ForeignKey(Zone)
+    type = models.CharField(max_length=1,
+                            choices=(('N', 'normal'), ('B', 'bulk'),),
+                            default='N')
+    price = models.FloatField(default=15)
+    ppkg = models.FloatField(default=15)
+
+    def save(self, *args, **kwargs):
+        ''' On save, update timestamps '''
+        self.ppkg = self.price / self.weight.weight
+
+        super(Pricing2, self).save(*args, **kwargs)
 
     def __unicode__(self):
         return str(self.business)

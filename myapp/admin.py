@@ -80,7 +80,7 @@ class OrderAdmin(reversion.VersionAdmin):
     change_list_template='myapp/templates/admin/myapp/change_list.html'
     save_as = True
     list_per_page = 25
-    search_fields = ['user__phone', 'name', 'namemail__name', 'namemail__email', 'promocode__code', 'shipment__real_tracking_no','shipment__mapped_tracking_no','shipment__barcode','shipment__drop_phone','shipment__drop_name']
+    search_fields = ['order_no','user__phone', 'name', 'namemail__name', 'namemail__email', 'promocode__code', 'shipment__real_tracking_no','shipment__mapped_tracking_no','shipment__barcode','shipment__drop_phone','shipment__drop_name']
     list_display = (
         'order_no', 'book_time', 'promocode', 'date', 'time', 'full_address', 'name_email', 'order_status','mapped_ok', 'way',
         'pb', 'comment', 'shipments', 'send_invoice', 'warehouse')
@@ -794,7 +794,7 @@ class ShipmentAdmin(reversion.VersionAdmin):
         if (name == ''):
             return str(obj.item_name)
         name_mod = name[9:]
-        full_url = 'http://128.199.159.90/static/' + name_mod
+        full_url = '/static/' + name_mod
         return '<img src="%s" width=60 height=60 onmouseover="this.width=\'500\'; this.height=\'500\'" onmouseout="this.width=\'100\'; this.height=\'100\'" />' % (
             full_url)
 
@@ -805,7 +805,7 @@ class ShipmentAdmin(reversion.VersionAdmin):
 
         valid = 1
         try:
-            string = ''
+            string = 'ot=2&'
             shipment = Shipment.objects.get(pk=obj.pk)
             address = shipment.drop_address
             error_string = ''
@@ -909,12 +909,24 @@ class ShipmentAdmin(reversion.VersionAdmin):
                 error_string = error_string + 'pincode not set<br>'
                 valid = 0
 
+            try:
+
+                cod = 'F'
+                string = string + 'cod=' + str(cod) + '&'
+            except:
+                error_string = error_string + 'cod not set<br>'
+                valid = 0
+
         except:
             pass
 
         if (valid):
-            return 'All good!<br><a href="http://order.sendmates.com/?%s" target="_blank" >Create Normal Order</a> <br> <a href="http://order.sendmates.com/cod/?%s" target="_blank" >Create Cod Order</a>' % (
-                string, string)
+            if (cod=='F'):
+                return 'All good!<br><a href="/stats/kartrocket/?%s" target="_blank" >Create Normal Order</a>' % (string)
+            elif (cod=='C'):
+                return 'All good!<br><a href="/stats/kartrocket/?%s" target="_blank" >Create Cod Order</a>' % (string)
+            else:
+                return "no payment_method set"
         else:
             return '<div style="color:red">' + error_string + '</div>'
 

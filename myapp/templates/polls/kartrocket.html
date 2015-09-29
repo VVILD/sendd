@@ -1,0 +1,23 @@
+
+<head>
+
+</head>
+
+
+<h2># this page shows the kartrocket order id, if order is created else it shows the error 
+<br>
+<br>
+{% if res|slice:"1" == '1' %}
+
+Created
+{% else %}
+
+Error
+
+{% endif %}
+</h2>
+
+
+<h3>
+{{res}}
+</h3>

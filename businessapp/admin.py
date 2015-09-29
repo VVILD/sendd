@@ -697,10 +697,10 @@ class ProductInline(admin.TabularInline):
 
 
     def generate_order(self, obj):
-
+        cod=''
         valid = 1
         try:
-            string = ''
+            string = 'ot=1&'
             product = Product.objects.get(pk=obj.pk)
             order = product.order
             error_string = ''
@@ -804,12 +804,24 @@ class ProductInline(admin.TabularInline):
                 error_string = error_string + 'pincode not set<br>'
                 valid = 0
 
+            try:
+
+                cod = order.payment_method
+                string = string + 'cod=' + str(cod) + '&'
+            except:
+                error_string = error_string + 'cod not set<br>'
+                valid = 0
+
         except:
             pass
 
         if (valid):
-            return 'All good!<br><a href="http://order.sendmates.com/baindex.php?%s" target="_blank" >Create Normal Order</a> <br> <a href="http://order.sendmates.com/cod/?%s" target="_blank" >Create Cod Order</a>' % (
-                string, string)
+            if (cod=='F'):
+                return 'All good!<br><a href="/stats/kartrocket/?%s" target="_blank" >Create Normal Order</a>' % (string)
+            elif (cod=='C'):
+                return 'All good!<br><a href="/stats/kartrocket/?%s" target="_blank" >Create Cod Order</a>' % (string)
+            else:
+                return "no payment_method set"
         else:
             return '<div style="color:red">' + error_string + '</div>'
 
@@ -934,7 +946,7 @@ class FilterUserAdmin(BaseBusinessAdmin):
 class OrderAdmin(FilterUserAdmin):
 
     inlines = (ProductInline,)
-    search_fields = ['business__business_name', 'name', 'product__real_tracking_no', 'product__barcode','city','state','product__mapped_tracking_no']
+    search_fields = ['order_no','business__business_name', 'name', 'product__real_tracking_no', 'product__barcode','city','state','product__mapped_tracking_no']
     list_display = (
         'order_no', 'book_time', 'business_details', 'name', 'status','mapped_ok', 'no_of_products', 'total_shipping_cost',
         'total_cod_cost', 'method',)
@@ -1221,3 +1233,21 @@ class QcProductAdmin(ProductAdmin):
 admin.site.register(QcProduct, QcProductAdmin)
 
 
+class Pricing2Admin(reversion.VersionAdmin):
+    # search_fields=['name']
+    list_filter=('business__username','business__business_name','zone','weight','type')
+    list_display=('business','weight','zone','type','price','ppkg')
+    list_editable = ('price',)
+
+admin.site.register(Pricing2,Pricing2Admin)
+
+
+class WeightAdmin(reversion.VersionAdmin):
+    pass
+
+admin.site.register(Weight,WeightAdmin)
+
+class ZoneAdmin(reversion.VersionAdmin):
+    pass
+
+admin.site.register(Zone,ZoneAdmin)
