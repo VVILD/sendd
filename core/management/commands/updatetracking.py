@@ -8,10 +8,13 @@ from core.fedex.config import FedexConfig
 from core.fedex.services.track_service import FedexTrackRequest
 from myapp.models import Shipment
 import aftership
-import json
 from django.db.models import Q
 from concurrent import futures
 import datetime
+from bs4 import BeautifulSoup
+import urllib2
+import json
+
 
 class Command(BaseCommand):
     help = 'Updates tracking info for all the services'
@@ -240,7 +243,116 @@ class Command(BaseCommand):
             product.save()
         return result
 
+
+
+
+    def ecom_track(self,tp):
+        product, client_type = tp[0], tp[1]
+        company='Ecom'
+        completed=False
+        tracking_data=[]
+        url='https://billing.ecomexpress.in/track_me/multipleawb_open/?awb='+str(product.mapped_tracking_no)+'&order&news_go=track+now'
+        try:
+            soup = BeautifulSoup(urllib2.urlopen(url).read(),"lxml")
+            col = [i.string.encode('utf-8').strip().replace('\xc2\xa0\xc2\xa0\xc2\xa0', "") for i in soup('td') if i.string != None and i.parent.a == None]
+            del col[0]
+
+            data =[]
+            date = []
+            new_data = []
+            exp_date = [] #This variable stores the ETA of packages
+            s = 0
+            a = 0
+            b = 0
+            c = 0
+
+            while s < len(col): #This loop is used to split the date and location
+                date.append(col[s].split(','))
+                s += 2
+
+            while a < len(date): #This adds all the items to the list
+                data.append(date[a][0].strip()), data.append(date[a][1].strip()), data.append(col[b + 1])
+                exp_date.append(date[a][0])
+                b += 2
+                a += 1
+
+            while c < len(data):
+                new_data.append({"status" : data[c + 2], "date" : data[c],"location": data[c + 1] })
+                c += 3
+
+            new_tracking = sorted(new_data, key=lambda k: k["date"])
+
+
+            for row in new_tracking:
+                tracking_data.append(row)
+                if "delivered" in row["status"].lower():
+                    completed=True
+
+            result = {
+                "company": company,
+                "tracking_no": product.mapped_tracking_no,
+                "updated": True,
+                "error": False
+            }
+
+        except:
+            result = {
+                "company": company,
+                "tracking_no": product.mapped_tracking_no,
+                "updated": False,
+                "error": True
+            }
+
+        if json.dumps(tracking_data) != '[]':
+            product.tracking_data = json.dumps(tracking_data)
+            product.save()
+
+        if (completed):
+            product.status = 'C'
+            product.save()
+            order = product.order
+            # getting all products of that order
+
+            if client_type == 'customer':
+                specific_products = Shipment.objects.filter(order=order)
+            else:
+                specific_products = Product.objects.filter(order=order)
+            order_complete = True
+            for specific_product in specific_products:
+                if specific_product.status == 'P':
+                    order_complete = False
+
+            if order_complete:
+                if client_type == 'customer':
+                    order.order_status = 'D'
+                else:
+                    order.status = 'C'
+                order.save()
+
+        return result
+
+#parser("https://billing.ecomexpress.in/track_me/multipleawb_open/?awb=122066652&order&news_go=track+now")
+
+
+
     def handle(self, *args, **options):
+
+        ecom_track_queue = []
+        # Track Bluedart shipments for businesses and customers
+        business_shipments = Product.objects.filter(
+            (Q(company='E')) & (
+                Q(status='P') | Q(status='DI'))).exclude(Q(order__status='C')| Q(order__status='N'))
+
+        for business_shipment in business_shipments:
+            ecom_track_queue.append((business_shipment, 'business'))
+
+        customer_shipments = Shipment.objects.filter(
+            ( Q(company='E')) & (
+                Q(status='P') | Q(status='DI'))).exclude( Q(order__order_status='N')| Q(order__order_status='D'))
+
+        for customer_shipment in customer_shipments:
+            ecom_track_queue.append((customer_shipment, 'customer'))
+
 
         aftership_track_queue = []
         # Track Bluedart shipments for businesses and customers
@@ -257,6 +369,7 @@ class Command(BaseCommand):
 
         for customer_shipment in customer_shipments:
             aftership_track_queue.append((customer_shipment, 'customer'))
+
 
         fedex_track_queue = []
         fedex_business_shipments = Product.objects.filter(Q(company='F') & (Q(status='P') | Q(status='DI'))).exclude(Q(order__status='C')| Q(order__status='N'))
@@ -286,6 +399,15 @@ class Command(BaseCommand):
         if len(fedex_track_queue) > 0:
             with futures.ThreadPoolExecutor(max_workers=workers) as executor:
                 futures_track = (executor.submit(self.fedex_track, item) for item in fedex_track_queue)
+                for result in futures.as_completed(futures_track):
+                    if result.exception() is not None:
+                        print('%s' % result.exception())
+                    else:
+                        print(result.result())
+
+        if len(ecom_track_queue) > 0:
+            with futures.ThreadPoolExecutor(max_workers=workers) as executor:
+                futures_track = (executor.submit(self.ecom_track, item) for item in ecom_track_queue)
                 for result in futures.as_completed(futures_track):
                     if result.exception() is not None:
                         print('%s' % result.exception())
