@@ -1329,7 +1329,7 @@ class BdheadAdmin(admin.ModelAdmin):
             select_params=(date_min,date_max,date_min,date_max,date_min,date_max,),
             )
     search_fields=['username','business_name']
-    list_display = ('username','business_name', 'pickup_time', 'warehouse', 'businessmanager','status','cs_comment','ff_comment','order_total','order_today','total_completed','total_revenue')
+    list_display = ('username','business_name', 'warehouse', 'businessmanager','order_total','order_today','total_completed','total_revenue')
     #aw_id_fields = ('pb', 'warehouse')
     list_filter = ['warehouse',BmFilter,]
 
