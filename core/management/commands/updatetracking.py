@@ -253,7 +253,7 @@ class Command(BaseCommand):
         tracking_data=[]
         url='https://billing.ecomexpress.in/track_me/multipleawb_open/?awb='+str(product.mapped_tracking_no)+'&order&news_go=track+now'
         try:
-            soup = BeautifulSoup(urllib2.urlopen(url).read(),"lxml")
+            soup = BeautifulSoup(urllib2.urlopen(url).read())
             col = [i.string.encode('utf-8').strip().replace('\xc2\xa0\xc2\xa0\xc2\xa0', "") for i in soup('td') if i.string != None and i.parent.a == None]
             del col[0]
 
