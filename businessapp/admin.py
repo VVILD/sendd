@@ -1315,8 +1315,6 @@ class BdheadAdmin(admin.ModelAdmin):
     # search_fields=['name']
 
     def get_queryset(self, request):
-
-
         todays_date=date.today()
         import datetime
         date_max = datetime.datetime.combine(todays_date, datetime.time.max)
@@ -1325,40 +1323,48 @@ class BdheadAdmin(admin.ModelAdmin):
 #'order_total','order_today','total_completed','total_revenue',
 
         return Business.objects.extra(select={
-            'order_total': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.business_id = businessapp_business.username ",
-            'total_completed': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.business_id = businessapp_business.username and businessapp_order.status='C' ",
-            'order_today': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.business_id = businessapp_business.username and businessapp_order.book_time BETWEEN %s AND %s",},
+            'order_total2': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.business_id = businessapp_business.username ",
+            'total_completed2': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.business_id = businessapp_business.username and businessapp_order.status='C' ",
+            'order_today2': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.business_id = businessapp_business.username and businessapp_order.book_time BETWEEN %s AND %s",},
             select_params=(date_min,date_max,date_min,date_max,date_min,date_max,),
             )
     search_fields=['username','business_name']
     list_display = ('username','business_name', 'pickup_time', 'warehouse', 'businessmanager','status','cs_comment','ff_comment','order_total','order_today','total_completed','total_revenue')
     #aw_id_fields = ('pb', 'warehouse')
-    list_filter = ['warehouse',]
+    list_filter = ['warehouse',BmFilter,]
 
 
-    # actions = [export_as_csv_action("CSV Export", fields=['username','business_name','apikey','name','email','contact_mob','contact_office','address','city','state','pincode'])]
-    # actions_on_bottom = False
-    # actions_on_top = True
+    actions = [export_as_csv_action("CSV Export", fields=['username','business_name','apikey','name','email','contact_mob','contact_office','address','city','state','pincode'])]
+    actions_on_bottom = False
+    actions_on_top = True
 
 
 
     def total_revenue(self,obj):
-        return 1
+        today_orders_b2b = Order.objects.filter(business=obj.username)
+        today_products_correct = Product.objects.filter(order=today_orders_b2b).exclude(shipping_cost__isnull=True)
+        sum_b2b = today_products_correct.aggregate(total=Sum('shipping_cost', field="shipping_cost+cod_cost"))['total']
+        count_b2b = today_products_correct.count()
+
+        print sum_b2b
+        print count_b2b
+        return sum_b2b
 
     def order_total(self,obj):
-        return '<a href="/admin/businessapp/order/?q=&business__username__exact=%s> %s </a>' % (obj.username, obj.order_total)
+                return '<a href="/admin/businessapp/order/?q=&business__username__exact='+str(obj.username)+'"> '+str(obj.order_total2) +'</a>'
     order_total.allow_tags = True
-    order_total.admin_order_field='order_total'
+    order_total.admin_order_field='order_total2'
 
     def total_completed(self,obj):
-        return '<a href="/admin/businessapp/order/?q=&business__username__exact=%s&status__exact=C> %s </a>' % (obj.username, obj.order_total)
+        return '<a href="/admin/businessapp/order/?q=&business__username__exact='+str(obj.username)+'"> '+str(obj.total_completed2) +'</a>'
     total_completed.allow_tags = True
-    total_completed.admin_order_field='total_completed'
+    total_completed.admin_order_field='total_completed2'
 
     def order_today(self,obj):
-        return '<a href="/admin/businessapp/order/?q=&business__username__exact=%s> %s </a>' % (obj.username, obj.order_total)
+
+        return '<a href="/admin/businessapp/order/?q=&business__username__exact='+str(obj.username)+'"> '+str(obj.order_today2) +'</a>'
     order_today.allow_tags = True
-    order_today.admin_order_field='order_today'
+    order_today.admin_order_field='order_today2'
 
 admin.site.register(Bdheadpanel,BdheadAdmin)
 
