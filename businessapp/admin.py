@@ -1,5 +1,6 @@
 import urllib
 import json
+from django.contrib.admin import ModelAdmin, RelatedFieldListFilter
 
 from django.contrib.admin.models import LogEntry, CHANGE
 from django.contrib.contenttypes.models import ContentType
@@ -1251,3 +1252,114 @@ class ZoneAdmin(reversion.VersionAdmin):
     pass
 
 admin.site.register(Zone,ZoneAdmin)
+
+from django.contrib import admin
+from django.utils.translation import ugettext_lazy as _
+
+
+class BmFilter(admin.SimpleListFilter):
+    # Human-readable title which will be displayed in the
+    # right admin sidebar just above the filter options.
+    title = _('Businessmanager')
+
+    # Parameter for the filter that will be used in the URL query.
+    parameter_name = 'decade'
+
+    def lookups(self, request, model_admin):
+        """
+        Returns a list of tuples. The first element in each
+        tuple is the coded value for the option that will
+        appear in the URL query. The second element is the
+        human-readable name for the option that will appear
+        in the right sidebar.
+        """
+        bd_set=Profile.objects.filter(usertype='b')
+        bd_tupel=[]
+
+        bd_tupel.append(('nbm',_('No businessmanager')))
+        for bd in bd_set:
+            bd_tupel.append((bd.user.username,_(bd.user.username)))
+
+
+        print (bd_tupel,)
+        return tuple(bd_tupel)
+        # return (
+        #     ('80s', _('in the eighties')),
+        #     ('90s', _('in the nineties')),
+        # )
+
+    def queryset(self, request, queryset):
+        """
+        Returns the filtered queryset based on the value
+        provided in the query string and retrievable via
+        `self.value()`.
+        """
+        # Compare the requested value (either '80s' or '90s')
+        # to decide how to filter the queryset.
+        # if self.value() == '80s':
+        #     return queryset.filter(birthday__gte=date(1980, 1, 1),
+        #                             birthday__lte=date(1989, 12, 31))
+        # if self.value() == '90s':
+        #     return queryset.filter(birthday__gte=date(1990, 1, 1),
+        #                             birthday__lte=date(1999, 12, 31))
+
+        if self.value()==None:
+            return queryset.filter()
+        if self.value()=='nbm':
+            return queryset.filter(businessmanager__isnull=True)
+
+
+        return queryset.filter(businessmanager__user__username=self.value())
+
+class BdheadAdmin(ModelAdmin):
+    # search_fields=['name']
+    search_fields=['username','business_name']
+    list_display = ('username','business_name', 'pickup_time', 'warehouse', 'businessmanager','order_total','order_today','total_completed','total_revenue','status','cs_comment','ff_comment')
+    raw_id_fields = ('pb', 'warehouse')
+    list_filter = ['warehouse',BmFilter,]
+
+
+    actions = [export_as_csv_action("CSV Export", fields=['username','business_name','apikey','name','email','contact_mob','contact_office','address','city','state','pincode'])]
+    actions_on_bottom = False
+    actions_on_top = True
+
+    def get_queryset(self, request):
+
+
+        todays_date=date.today()
+        import datetime
+        date_max = datetime.datetime.combine(todays_date, datetime.time.max)
+        date_min = datetime.datetime.combine(todays_date, datetime.time.min)
+
+#'order_total','order_today','total_completed','total_revenue',
+
+        return Business.objects.extra(select={
+            'order_total': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.business_id = businessapp_business.username ",
+            'total_completed': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.business_id = businessapp_business.username and businessapp_order.status='C' ",
+            'order_today': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.business_id = businessapp_business.username and businessapp_order.book_time BETWEEN %s AND %s",},
+            select_params=(date_min,date_max,date_min,date_max,date_min,date_max,),
+            )
+
+
+    def total_revenue(self,obj):
+        return 1
+
+    def order_total(self,obj):
+        return '<a href="/admin/businessapp/order/?q=&business__username__exact=%s> %s </a>' % (obj.username, obj.order_total)
+    order_total.allow_tags = True
+    order_total.admin_order_field='order_total'
+
+    def total_completed(self,obj):
+        return '<a href="/admin/businessapp/order/?q=&business__username__exact=%s&status__exact=C> %s </a>' % (obj.username, obj.order_total)
+    total_completed.allow_tags = True
+    total_completed.admin_order_field='total_completed'
+
+    def order_today(self,obj):
+        return '<a href="/admin/businessapp/order/?q=&business__username__exact=%s> %s </a>' % (obj.username, obj.order_total)
+    order_today.allow_tags = True
+    order_today.admin_order_field='order_today'
+
+admin.site.register(Bdheadpanel,BdheadAdmin)
+
+
+

@@ -185,6 +185,10 @@ class DailyBusiness(Business):
     class Meta:
         proxy = True
 
+class Bdheadpanel(Business):
+    class Meta:
+        proxy = True
+        verbose_name_plural = "bdheadpanel"
 
 class CancelledBusiness(Business):
     class Meta:
