@@ -1311,17 +1311,8 @@ class BmFilter(admin.SimpleListFilter):
 
         return queryset.filter(businessmanager__user__username=self.value())
 
-class BdheadAdmin(ModelAdmin):
+class BdheadAdmin(admin.ModelAdmin):
     # search_fields=['name']
-    search_fields=['username','business_name']
-    list_display = ('username','business_name', 'pickup_time', 'warehouse', 'businessmanager','order_total','order_today','total_completed','total_revenue','status','cs_comment','ff_comment')
-    raw_id_fields = ('pb', 'warehouse')
-    list_filter = ['warehouse',BmFilter,]
-
-
-    actions = [export_as_csv_action("CSV Export", fields=['username','business_name','apikey','name','email','contact_mob','contact_office','address','city','state','pincode'])]
-    actions_on_bottom = False
-    actions_on_top = True
 
     def get_queryset(self, request):
 
@@ -1339,6 +1330,16 @@ class BdheadAdmin(ModelAdmin):
             'order_today': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.business_id = businessapp_business.username and businessapp_order.book_time BETWEEN %s AND %s",},
             select_params=(date_min,date_max,date_min,date_max,date_min,date_max,),
             )
+    search_fields=['username','business_name']
+    list_display = ('username','business_name', 'pickup_time', 'warehouse', 'businessmanager','status','cs_comment','ff_comment','order_total','order_today','total_completed','total_revenue')
+    #aw_id_fields = ('pb', 'warehouse')
+    list_filter = ['warehouse',]
+
+
+    # actions = [export_as_csv_action("CSV Export", fields=['username','business_name','apikey','name','email','contact_mob','contact_office','address','city','state','pincode'])]
+    # actions_on_bottom = False
+    # actions_on_top = True
+
 
 
     def total_revenue(self,obj):
