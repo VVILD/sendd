@@ -1338,7 +1338,21 @@ class BdheadAdmin(admin.ModelAdmin):
     actions_on_bottom = False
     actions_on_top = True
 
+    def changelist_view(self, request, extra_context=None):
+        try:
+            bd_username= request.GET['decade']
+            profile=Profile.objects.get(user__username=bd_username)
+            today_orders_b2b = Order.objects.filter(business__businessmanager=profile)
+            today_products_correct = Product.objects.filter(order=today_orders_b2b).exclude(shipping_cost__isnull=True)
+            sum_b2b = today_products_correct.aggregate(total=Sum('shipping_cost', field="shipping_cost+cod_cost"))['total']
+            count_b2b = today_products_correct.count()
 
+        except:
+            bd_username=None
+            sum_b2b=0
+            count_b2b=0
+        context={'s':sum_b2b,'c':count_b2b}
+        return super(BdheadAdmin, self).changelist_view(request, extra_context=context)
 
     def total_revenue(self,obj):
         today_orders_b2b = Order.objects.filter(business=obj.username)
@@ -1346,9 +1360,8 @@ class BdheadAdmin(admin.ModelAdmin):
         sum_b2b = today_products_correct.aggregate(total=Sum('shipping_cost', field="shipping_cost+cod_cost"))['total']
         count_b2b = today_products_correct.count()
 
-        print sum_b2b
-        print count_b2b
-        return sum_b2b
+
+        return str(sum_b2b)+'|' + str(count_b2b)
 
     def order_total(self,obj):
                 return '<a href="/admin/businessapp/order/?q=&business__username__exact='+str(obj.username)+'"> '+str(obj.order_total2) +'</a>'
