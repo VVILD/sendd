@@ -83,11 +83,11 @@ class OrderAdmin(reversion.VersionAdmin):
     search_fields = ['order_no','user__phone', 'name', 'namemail__name', 'namemail__email', 'promocode__code', 'shipment__real_tracking_no','shipment__mapped_tracking_no','shipment__barcode','shipment__drop_phone','shipment__drop_name']
     list_display = (
         'order_no', 'book_time', 'promocode', 'date', 'time', 'full_address', 'name_email', 'order_status','mapped_ok', 'way',
-        'pb', 'comment', 'shipments', 'send_invoice', 'warehouse')
+        'pb', 'comment', 'shipments', 'fedex', 'send_invoice', 'warehouse')
     list_editable = ('date', 'time', 'order_status', 'pb', 'comment', 'warehouse')
     list_filter = ['book_time', 'status', 'pb','order_status', 'warehouse']
     raw_id_fields = ('pb', 'warehouse', )
-    readonly_fields = ('code', 'send_invoice',)
+    readonly_fields = ('code', 'send_invoice', 'fedex')
     '''
 	fieldsets=(
 	('Basic Information', {'fields':['contact_number',('name','email'),'item_details',('date','time'),'code',],}),
@@ -367,6 +367,71 @@ class OrderAdmin(reversion.VersionAdmin):
         return output
 
     shipments.allow_tags = True  # <img src="https://farm8.staticflickr.com/7042/6873010155_d4160a32a2_s.jpg" onmouseover="this.width='500'; this.height='500'" onmouseout="this.width='100'; this.height='100'">
+
+    def fedex(self, obj):
+        params = urllib.urlencode({'order_pk': obj.pk, 'client_type': "customer"})
+
+        need_guj_form = False
+        restricted = False
+        for shipment in obj.shipments.all():
+
+            if not shipment.drop_address:
+                return "Enter drop address in %s" % shipment.real_tracking_no
+
+            if not shipment.drop_address.state:
+                return "Enter state in %s" % shipment.real_tracking_no
+
+            if not state_matcher.is_state(shipment.drop_address.state):
+                return '<h2 style="color:red">Enter a valid state in %s</h2>' % shipment.real_tracking_no
+
+            if not shipment.drop_address.pincode:
+                return "Enter pincode in %s" % shipment.real_tracking_no
+
+            db_pincode = Pincode.objects.filter(pincode=shipment.drop_address.pincode)
+
+            if db_pincode:
+                if not db_pincode[0].fedex_servicable:
+                    return '<h2 style="color:red">Not Servicable %s</h2>' % shipment.real_tracking_no
+                elif db_pincode[0].fedex_oda_opa:
+                    return '<h2 style="color:red">ODA %s</h2>' % shipment.real_tracking_no
+            else:
+                return '<h2 style="color:red">Enter a valid pincode in %s</h2>' % shipment.real_tracking_no
+
+            if not shipment.weight:
+                return "Enter applied weight in %s" % shipment.real_tracking_no
+
+            if not shipment.cost_of_courier:
+                return "Enter item value in %s" % shipment.real_tracking_no
+
+            if shipment.drop_address.state == 'Kerala' and shipment.category == 'E':
+                return '<h2 style="color:red">Not Servicable %s</h2>' % shipment.real_tracking_no
+
+            if shipment.drop_address.state == 'West Bengal' and float(shipment.cost_of_courier) > 1000:
+                return '<h2 style="color:red">Not Servicable %s</h2>' % shipment.real_tracking_no
+
+            if shipment.drop_address.state == 'Gujarat' and shipment.category == 'E':
+                need_guj_form = True
+
+            if state_matcher.is_restricted(shipment.drop_address.state) and not shipment.is_document:
+                restricted = True
+
+        if obj.fedex_ship_docs:
+            if need_guj_form:
+                return '<a href="/static/%s" target="_blank">%s</a>' % (str(obj.fedex_ship_docs.name).split('/')[-1], "Print Docs") + '<br><a style="color:red" href="/create_fedex_shipment/?%s" target="_blank">%s</a>' % (params, "Re-Create Order") + '<br><br><a href="http://commercialtax.gujarat.gov.in/vatwebsite/download/form/403.pdf" target="_blank">%s</a>' % "Print Form 403"
+            else:
+                return '<a href="/static/%s" target="_blank">%s</a>' % (str(obj.fedex_ship_docs.name).split('/')[-1], "Print Docs") + '<br><a style="color:red" href="/create_fedex_shipment/?%s" target="_blank">%s</a>' % (params, "Re-Create Order")
+
+        if need_guj_form and obj.shipments.all().count() > 0:
+            return '<a href="/create_fedex_shipment/?%s" target="_blank">%s</a>' % (params, "Create Order") + '<br> <br><a href="http://commercialtax.gujarat.gov.in/vatwebsite/download/form/403.pdf" target="_blank">%s</a>' % "Print Form 403"
+
+        if restricted and obj.shipments.all().count() > 0:
+            return '<a href="/create_fedex_shipment/?%s" target="_blank">%s</a>' % (params, "Create Order") + '<br> <h2 style="color:red">Restricted States</h2>'
+
+        if obj.shipments.all().count() > 0:
+            return '<a href="/create_fedex_shipment/?%s" target="_blank">%s</a>' % (params, "Create Order")
+        else:
+            return 'No shipments'
+    fedex.allow_tags = True
 
 admin.site.register(Order, OrderAdmin)
 admin.site.register(Gcmmessage)
@@ -909,31 +974,21 @@ class ShipmentAdmin(reversion.VersionAdmin):
                 error_string = error_string + 'pincode not set<br>'
                 valid = 0
 
-            try:
-
-                cod = 'F'
-                string = string + 'cod=' + str(cod) + '&'
-            except:
-                error_string = error_string + 'cod not set<br>'
-                valid = 0
-
         except:
             pass
 
         if (valid):
-            if (cod=='F'):
-                return 'All good!<br><a href="/stats/kartrocket/?%s" target="_blank" >Create Normal Order</a>' % (string)
-            elif (cod=='C'):
-                return 'All good!<br><a href="/stats/kartrocket/?%s" target="_blank" >Create Cod Order</a>' % (string)
-            else:
-                return "no payment_method set"
+            return 'All good!<br><a href="/stats/kartrocket/?%s" target="_blank" >Create Normal Order</a>' % (string)
         else:
             return '<div style="color:red">' + error_string + '</div>'
 
     generate_order.allow_tags = True
 
     def fedex(self, obj):
-        params = urllib.urlencode({'shipment_pk': obj.pk, 'client_type': "customer"})
+        # params = urllib.urlencode({'shipment_pk': obj.pk, 'client_type': "customer"})
+
+        if not obj.drop_address:
+            return "Enter drop address"
 
         if not obj.drop_address.state:
             return "Enter state"
@@ -968,23 +1023,24 @@ class ShipmentAdmin(reversion.VersionAdmin):
 
         if obj.fedex_ship_docs:
             if obj.drop_address.state == 'Gujarat' and obj.category == 'E':
-                return '<a href="/static/%s" target="_blank">%s</a>' % (str(obj.fedex_ship_docs.name).split('/')[-1], "Print Docs") + '<br><a style="color:red" href="/create_fedex_shipment/?%s" target="_blank">%s</a>' % (params, "Re-Create Order") + '<br><br><a href="http://commercialtax.gujarat.gov.in/vatwebsite/download/form/403.pdf" target="_blank">%s</a>' % "Print Form 403"
+                return '<a href="/static/%s" target="_blank">%s</a>' % (str(obj.fedex_ship_docs.name).split('/')[-1], "Print Docs") +  '<br><br><a href="http://commercialtax.gujarat.gov.in/vatwebsite/download/form/403.pdf" target="_blank">%s</a>' % "Print Form 403"
             else:
-                return '<a href="/static/%s" target="_blank">%s</a>' % (str(obj.fedex_ship_docs.name).split('/')[-1], "Print Docs") + '<br><a style="color:red" href="/create_fedex_shipment/?%s" target="_blank">%s</a>' % (params, "Re-Create Order")
+                return '<a href="/static/%s" target="_blank">%s</a>' % (str(obj.fedex_ship_docs.name).split('/')[-1], "Print Docs")
 
         if obj.fedex_outbound_label:
             if obj.drop_address.state == 'Gujarat' and obj.category == 'E':
-                return '<a href="/static/%s" target="_blank">%s</a>' % (str(obj.fedex_outbound_label.name).split('/')[-1], "Print Outbound Label") + '<br><a style="color:red" href="/create_fedex_shipment/?%s" target="_blank">%s</a>' % (params, "Re-Create Order") + '<br><br><a href="http://commercialtax.gujarat.gov.in/vatwebsite/download/form/403.pdf" target="_blank">%s</a>' % "Print Form 403"
+                return '<a href="/static/%s" target="_blank">%s</a>' % (str(obj.fedex_outbound_label.name).split('/')[-1], "Print Outbound Label") + '<br><br><a href="http://commercialtax.gujarat.gov.in/vatwebsite/download/form/403.pdf" target="_blank">%s</a>' % "Print Form 403"
             else:
-                return '<a href="/static/%s" target="_blank">%s</a>' % (str(obj.fedex_outbound_label.name).split('/')[-1], "Print Outbound Label") + '<br><a style="color:red" href="/create_fedex_shipment/?%s" target="_blank">%s</a>' % (params, "Re-Create Order")
+                return '<a href="/static/%s" target="_blank">%s</a>' % (str(obj.fedex_outbound_label.name).split('/')[-1], "Print Outbound Label")
 
-        if obj.drop_address.state == 'Gujarat' and obj.category == 'E':
-            return '<a href="/create_fedex_shipment/?%s" target="_blank">%s</a>' % (params, "Create Order") + '<br> <br><a href="http://commercialtax.gujarat.gov.in/vatwebsite/download/form/403.pdf" target="_blank">%s</a>' % "Print Form 403"
-
-        if state_matcher.is_restricted(obj.drop_address.state) and not obj.is_document:
-            return '<a href="/create_fedex_shipment/?%s" target="_blank">%s</a>' % (params, "Create Order") + '<br> <h2 style="color:red">Restricted States</h2>'
-
-        return '<a href="/create_fedex_shipment/?%s" target="_blank">%s</a>' % (params, "Create Order")
+        return "Please use the order view to create orders"
+        # if obj.drop_address.state == 'Gujarat' and obj.category == 'E':
+        #     return '<a href="/create_fedex_shipment/?%s" target="_blank">%s</a>' % (params, "Create Order") + '<br> <br><a href="http://commercialtax.gujarat.gov.in/vatwebsite/download/form/403.pdf" target="_blank">%s</a>' % "Print Form 403"
+        #
+        # if state_matcher.is_restricted(obj.drop_address.state) and not obj.is_document:
+        #     return '<a href="/create_fedex_shipment/?%s" target="_blank">%s</a>' % (params, "Create Order") + '<br> <h2 style="color:red">Restricted States</h2>'
+        #
+        # return '<a href="/create_fedex_shipment/?%s" target="_blank">%s</a>' % (params, "Create Order")
     fedex.allow_tags = True
 
 

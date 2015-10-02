@@ -869,30 +869,34 @@ class ProductInline(admin.TabularInline):
         if obj.order.state == 'West Bengal' and float(obj.price) > 1000:
             return '<h2 style="color:red">Not Servicable</h2>'
 
+        if obj.order.fedex_ship_docs:
+            return "Print docs from the order view"
+
         if obj.fedex_ship_docs:
             if obj.order.state == 'Gujarat' and obj.order.method == 'B':
-                return '<a href="/static/%s" target="_blank">%s</a>' % (str(obj.fedex_ship_docs.name).split('/')[-1], "Print Docs")+'<br><br>' + '<br><br><a style="color:red" href="/create_fedex_shipment/?%s" target="_blank">%s</a>' % (params, "Re-Create Order") + '<br><br><a href="http://commercialtax.gujarat.gov.in/vatwebsite/download/form/403.pdf" target="_blank">%s</a>' % "Print Form 403"
+                return '<a href="/static/%s" target="_blank">%s</a>' % (str(obj.fedex_ship_docs.name).split('/')[-1], "Print Docs")+'<br><br>' + '<br><br><a href="http://commercialtax.gujarat.gov.in/vatwebsite/download/form/403.pdf" target="_blank">%s</a>' % "Print Form 403"
             else:
-                return '<a href="/static/%s" target="_blank">%s</a>' % (str(obj.fedex_ship_docs.name).split('/')[-1], "Print Docs")+'<br><br>' + '<br><br><a style="color:red" href="/create_fedex_shipment/?%s" target="_blank">%s</a>' % (params, "Re-Create Order")
+                return '<a href="/static/%s" target="_blank">%s</a>' % (str(obj.fedex_ship_docs.name).split('/')[-1], "Print Docs")+'<br><br>'
 
         if obj.fedex_outbound_label and obj.fedex_cod_return_label:
             if obj.order.state == 'Gujarat' and obj.order.method == 'B':
-                return '<a href="/static/%s" target="_blank">%s</a>' % (str(obj.fedex_outbound_label.name).split('/')[-1], "Print Outbound Label")+'<br><br>'+ '<a href="/static/%s" target="_blank">%s</a>' % (str(obj.fedex_cod_return_label.name).split('/')[-1], "Print COD Return Label") + '<br><br><a style="color:red" href="/create_fedex_shipment/?%s" target="_blank">%s</a>' % (params, "Re-Create Order") + '<br><br><a href="http://commercialtax.gujarat.gov.in/vatwebsite/download/form/403.pdf" target="_blank">%s</a>' % "Print Form 403"
+                return '<a href="/static/%s" target="_blank">%s</a>' % (str(obj.fedex_outbound_label.name).split('/')[-1], "Print Outbound Label")+'<br><br>'+ '<a href="/static/%s" target="_blank">%s</a>' % (str(obj.fedex_cod_return_label.name).split('/')[-1], "Print COD Return Label") + '<br><br><a href="http://commercialtax.gujarat.gov.in/vatwebsite/download/form/403.pdf" target="_blank">%s</a>' % "Print Form 403"
             else:
-                return '<a href="/static/%s" target="_blank">%s</a>' % (str(obj.fedex_outbound_label.name).split('/')[-1], "Print Outbound Label")+'<br><br>'+ '<a href="/static/%s" target="_blank">%s</a>' % (str(obj.fedex_cod_return_label.name).split('/')[-1], "Print COD Return Label") + '<br><br><a style="color:red" href="/create_fedex_shipment/?%s" target="_blank">%s</a>' % (params, "Re-Create Order")
+                return '<a href="/static/%s" target="_blank">%s</a>' % (str(obj.fedex_outbound_label.name).split('/')[-1], "Print Outbound Label")+'<br><br>'+ '<a href="/static/%s" target="_blank">%s</a>' % (str(obj.fedex_cod_return_label.name).split('/')[-1], "Print COD Return Label")
         elif obj.fedex_outbound_label:
             if obj.order.state == 'Gujarat' and obj.order.method == 'B':
-                return '<a href="/static/%s" target="_blank">%s</a>' % (str(obj.fedex_outbound_label.name).split('/')[-1], "Print Outbound Label") + '<br><a style="color:red" href="/create_fedex_shipment/?%s" target="_blank">%s</a>' % (params, "Re-Create Order") + '<br><br><a href="http://commercialtax.gujarat.gov.in/vatwebsite/download/form/403.pdf" target="_blank">%s</a>' % "Print Form 403"
+                return '<a href="/static/%s" target="_blank">%s</a>' % (str(obj.fedex_outbound_label.name).split('/')[-1], "Print Outbound Label") + '<br><br><a href="http://commercialtax.gujarat.gov.in/vatwebsite/download/form/403.pdf" target="_blank">%s</a>' % "Print Form 403"
             else:
-                return '<a href="/static/%s" target="_blank">%s</a>' % (str(obj.fedex_outbound_label.name).split('/')[-1], "Print Outbound Label") + '<br><a style="color:red" href="/create_fedex_shipment/?%s" target="_blank">%s</a>' % (params, "Re-Create Order")
+                return '<a href="/static/%s" target="_blank">%s</a>' % (str(obj.fedex_outbound_label.name).split('/')[-1], "Print Outbound Label")
 
-        if obj.order.state == 'Gujarat' and obj.order.method == 'B':
-            return '<a href="/create_fedex_shipment/?%s" target="_blank">%s</a>' % (params, "Create Order") + '<br> <br><a href="http://commercialtax.gujarat.gov.in/vatwebsite/download/form/403.pdf" target="_blank">%s</a>' % "Print Form 403"
-
-        if state_matcher.is_restricted(obj.order.state) and not obj.is_document:
-            return '<a href="/create_fedex_shipment/?%s" target="_blank">%s</a>' % (params, "Create Order") + '<br> <h2 style="color:red">Restricted States</h2>'
-
-        return '<a href="/create_fedex_shipment/?%s" target="_blank">%s</a>' % (params, "Create Order")
+        return "Please use the fedex create order link in the order view"
+        # if obj.order.state == 'Gujarat' and obj.order.method == 'B':
+        #     return '<a href="/create_fedex_shipment/?%s" target="_blank">%s</a>' % (params, "Create Order") + '<br> <br><a href="http://commercialtax.gujarat.gov.in/vatwebsite/download/form/403.pdf" target="_blank">%s</a>' % "Print Form 403"
+        #
+        # if state_matcher.is_restricted(obj.order.state) and not obj.is_document:
+        #     return '<a href="/create_fedex_shipment/?%s" target="_blank">%s</a>' % (params, "Create Order") + '<br> <h2 style="color:red">Restricted States</h2>'
+        #
+        # return '<a href="/create_fedex_shipment/?%s" target="_blank">%s</a>' % (params, "Create Order")
 
     fedex.allow_tags = True
 
@@ -949,11 +953,11 @@ class OrderAdmin(FilterUserAdmin):
     search_fields = ['order_no','business__business_name', 'name', 'product__real_tracking_no', 'product__barcode','city','state','product__mapped_tracking_no']
     list_display = (
         'order_no', 'book_time', 'business_details', 'name', 'status','mapped_ok', 'no_of_products', 'total_shipping_cost',
-        'total_cod_cost', 'method',)
+        'total_cod_cost', 'method', 'fedex')
     list_editable = ('status',)
     list_filter = ['business', 'status', 'book_time']
     actions = [export_as_csv_action("CSV Export", fields=['name','product__real_tracking_no'])]
-    readonly_fields=('master_tracking_number',)
+    readonly_fields=('master_tracking_number', 'mapped_master_tracking_number', 'fedex')
 
 
     def change_view(self, request, object_id, form_url='', extra_context=None):        
@@ -1004,6 +1008,69 @@ class OrderAdmin(FilterUserAdmin):
         return '<a href="/admin/businessapp/business/%s/">%s</a>' % (obj.business.username, obj.business.business_name)
 
     business_details.allow_tags = True
+
+    def fedex(self, obj):
+        params = urllib.urlencode({'order_pk': obj.pk, 'client_type': "business"})
+
+        if not obj.state:
+            return "Enter state"
+
+        if not state_matcher.is_state(obj.state):
+            return '<h2 style="color:red">Enter a valid state</h2>'
+
+        if not obj.pincode:
+            return "Enter pincode"
+
+        db_pincode = Pincode.objects.filter(pincode=obj.pincode)
+
+        if db_pincode:
+            if not db_pincode[0].fedex_servicable:
+                return '<h2 style="color:red">Not Servicable</h2>'
+            elif db_pincode[0].fedex_oda_opa:
+                return '<h2 style="color:red">ODA</h2>'
+        else:
+            return '<h2 style="color:red">Enter a valid pincode</h2>'
+
+        if obj.payment_method == 'C':
+            if not db_pincode[0].fedex_cod_service:
+                return '<h2 style="color:red">Not COD Servicable</h2>'
+
+        is_doc = True
+        for product in obj.products.all():
+            if not product.applied_weight:
+                return "Enter applied weight for %s" % product.name
+
+            if not product.price:
+                return "Enter item value for %s" % product.name
+
+            if obj.state == 'West Bengal' and float(product.price) > 1000:
+                return '<h2 style="color:red">Product %s is not servicable</h2>' % product.name
+
+            if product.is_document is False:
+                is_doc = False
+
+        if obj.state == 'Kerala' and obj.method == 'B':
+            return '<h2 style="color:red">Not Servicable</h2>'
+
+        # Temporary ban
+        if obj.state == 'Kerala' and obj.payment_method == 'C':
+            return '<h2 style="color:red">Kerala Temporary Ban</h2>'
+
+        if obj.fedex_ship_docs:
+            if obj.state == 'Gujarat' and obj.method == 'B':
+                return '<a href="/static/%s" target="_blank">%s</a>' % (str(obj.fedex_ship_docs.name).split('/')[-1], "Print Docs")+'<br><br>' + '<br><br><a style="color:red" href="/create_fedex_shipment/?%s" target="_blank">%s</a>' % (params, "Re-Create Order") + '<br><br><a href="http://commercialtax.gujarat.gov.in/vatwebsite/download/form/403.pdf" target="_blank">%s</a>' % "Print Form 403"
+            else:
+                return '<a href="/static/%s" target="_blank">%s</a>' % (str(obj.fedex_ship_docs.name).split('/')[-1], "Print Docs")+'<br><br>' + '<br><br><a style="color:red" href="/create_fedex_shipment/?%s" target="_blank">%s</a>' % (params, "Re-Create Order")
+
+        if obj.state == 'Gujarat' and obj.method == 'B':
+            return '<a href="/create_fedex_shipment/?%s" target="_blank">%s</a>' % (params, "Create Order") + '<br> <br><a href="http://commercialtax.gujarat.gov.in/vatwebsite/download/form/403.pdf" target="_blank">%s</a>' % "Print Form 403"
+
+        if state_matcher.is_restricted(obj.state) and not is_doc:
+            return '<a href="/create_fedex_shipment/?%s" target="_blank">%s</a>' % (params, "Create Order") + '<br> <h2 style="color:red">Restricted States</h2>'
+
+        return '<a href="/create_fedex_shipment/?%s" target="_blank">%s</a>' % (params, "Create Order")
+
+    fedex.allow_tags = True
 
 
 '''

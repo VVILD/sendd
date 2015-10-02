@@ -173,8 +173,8 @@ class FedexProcessShipmentRequest(FedexBaseService):
 
         self.RequestedShipment.RequestedPackageLineItems.append(package_item)
         package_weight = package_item.Weight.Value
-        self.RequestedShipment.TotalWeight.Value += package_weight
-        self.RequestedShipment.PackageCount += 1
+        self.RequestedShipment.TotalWeight.Value = package_weight
+        # self.RequestedShipment.PackageCount += 1
 
 
 class FedexDeleteShipmentRequest(FedexBaseService):

@@ -18,7 +18,6 @@ from django.db.models import signals
 from core.fedex.base_service import FedexError
 from core.models import Warehouse, Pincode
 from core.utils import state_matcher
-from core.utils.fedex_api_helper import Fedex
 from django.core.exceptions import ObjectDoesNotExist
 import json
 import urllib
@@ -229,6 +228,8 @@ class Order(models.Model):
                               choices=(('B', 'Bulk'), ('N', 'Normal'),),
                               blank=True, null=True)
     master_tracking_number = models.CharField(max_length=10, blank=True, null=True)
+    mapped_master_tracking_number = models.CharField(max_length=50, blank=True, null=True)
+    fedex_ship_docs = models.FileField(upload_to='shipment/', blank=True, null=True)
     business = models.ForeignKey(Business)
     notification = models.CharField(max_length=1, choices=(('Y', 'yes'), ('N', 'no'),), null=True, blank=True,
                                          default='N')
@@ -264,7 +265,7 @@ class Product(models.Model):
     price = models.FloatField(default=0.0)
     weight = models.FloatField(max_length=10, null=True, blank=True)
     applied_weight = models.FloatField(max_length=10, null=True, blank=True)
-    order = models.ForeignKey(Order, null=True, blank=True)
+    order = models.ForeignKey(Order, null=True, blank=True, related_name='products')
     real_tracking_no = models.CharField(max_length=10, blank=True, null=True)
     mapped_tracking_no = models.CharField(max_length=50, null=True, blank=True)
     tracking_data = models.TextField(null=True, blank=True)
