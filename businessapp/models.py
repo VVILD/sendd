@@ -117,13 +117,15 @@ class Business(models.Model):
     def save(self, *args, **kwargs):
         # if self.pricing2s.count()==0:
         #
-        #     ndict = {'a': [1, 2, 3, 4, 5]}
+        #     ndict = {'a': [(1,3), (2,4)]}
         #     bdict = {'a': [1, 2, 3, 4, 5]}
         #
         #     for key in ndict:
         #         for w in dict[key]:
         #             zone = Zone.objects.get(zone=key)
-        #             weight = Weight.object.get(weight=w)
+        #             weight = Weight.object.get(weight=w[0])
+        #             p=Pricing2(zone)
+
 
         if self.pb and self.status == 'Y':
             self.status = 'A'
@@ -182,6 +184,10 @@ class DailyBusiness(Business):
     class Meta:
         proxy = True
 
+class Bdheadpanel(Business):
+    class Meta:
+        proxy = True
+        verbose_name_plural = "bdheadpanel"
 
 class CancelledBusiness(Business):
     class Meta:
