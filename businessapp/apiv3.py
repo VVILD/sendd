@@ -260,9 +260,12 @@ class OrderResource3(CORSModelResource):
         resource_name = 'order'
         authorization = OnlyAuthorization()
         authentication = Authentication()
-        allowed_methods = ['post', 'patch', 'put']
+        allowed_methods = ['post', 'patch', 'put', 'get']
         always_return_data = True
         ordering = ['book_time']
+        filtering = {
+            "order_no": ALL
+        }
 
     def hydrate(self, bundle):
         try:
@@ -295,14 +298,15 @@ class OrderResource3(CORSModelResource):
 
         products = Product.objects.filter(order__pk=bundle.data['order_no']).values("real_tracking_no", "sku",
                                                                                     "weight",
-                                                                                    "name", "quantity", "price")
+                                                                                    "name", "quantity", "price", "status")
 
         new_bundle = {
             "order_no": bundle.data['order_no'],
             "reference_id": bundle.data['reference_id'],
             "master_tracking_no": bundle.data['master_tracking_number'],
             "is_confirmed": bundle.data['confirmed'],
-            "products": list(products)
+            "products": list(products),
+            "status": bundle.data['status']
         }
         return new_bundle
 
