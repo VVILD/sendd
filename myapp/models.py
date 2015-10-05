@@ -234,7 +234,7 @@ class Shipment(models.Model):
 
     drop_phone = models.CharField(validators=[phone_regex2], max_length=16, null=True, blank=True)
     drop_address = models.ForeignKey(Address, null=True, blank=True)
-    order = models.ForeignKey(Order, null=True, blank=True, related_name='shipments')
+    order = models.ForeignKey(Order, null=True, blank=True)
 
     status = models.CharField(max_length=2,
                               choices=(('P', 'pending'), ('C', 'complete'), ('PU', 'pickedup'), ('CA', 'cancelled'), ('DI', 'dispatched')),

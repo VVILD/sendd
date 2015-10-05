@@ -271,7 +271,7 @@ class Product(models.Model):
     price = models.FloatField(default=0.0)
     weight = models.FloatField(max_length=10, null=True, blank=True)
     applied_weight = models.FloatField(max_length=10, null=True, blank=True)
-    order = models.ForeignKey(Order, null=True, blank=True, related_name='products')
+    order = models.ForeignKey(Order, null=True, blank=True)
     real_tracking_no = models.CharField(max_length=10, blank=True, null=True)
     mapped_tracking_no = models.CharField(max_length=50, null=True, blank=True)
     tracking_data = models.TextField(null=True, blank=True)

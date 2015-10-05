@@ -373,7 +373,7 @@ class OrderAdmin(reversion.VersionAdmin):
 
         need_guj_form = False
         restricted = False
-        for shipment in obj.shipments.all():
+        for shipment in obj.shipment_set.all():
 
             if not shipment.drop_address:
                 return "Enter drop address in %s" % shipment.real_tracking_no
@@ -421,13 +421,13 @@ class OrderAdmin(reversion.VersionAdmin):
             else:
                 return '<a href="/static/%s" target="_blank">%s</a>' % (str(obj.fedex_ship_docs.name).split('/')[-1], "Print Docs") + '<br><a style="color:red" href="/create_fedex_shipment/?%s" target="_blank">%s</a>' % (params, "Re-Create Order")
 
-        if need_guj_form and obj.shipments.all().count() > 0:
+        if need_guj_form and obj.shipment_set.all().count() > 0:
             return '<a href="/create_fedex_shipment/?%s" target="_blank">%s</a>' % (params, "Create Order") + '<br> <br><a href="http://commercialtax.gujarat.gov.in/vatwebsite/download/form/403.pdf" target="_blank">%s</a>' % "Print Form 403"
 
-        if restricted and obj.shipments.all().count() > 0:
+        if restricted and obj.shipment_set.all().count() > 0:
             return '<a href="/create_fedex_shipment/?%s" target="_blank">%s</a>' % (params, "Create Order") + '<br> <h2 style="color:red">Restricted States</h2>'
 
-        if obj.shipments.all().count() > 0:
+        if obj.shipment_set.all().count() > 0:
             return '<a href="/create_fedex_shipment/?%s" target="_blank">%s</a>' % (params, "Create Order")
         else:
             return 'No shipments'
