@@ -267,6 +267,9 @@ class BusinessResource(CORSModelResource):
 	#	excludes = ['password']
 		authorization= Authorization()
 		always_return_data = True
+		filtering = {
+            "business_name": ALL
+        }
 
 	def hydrate(self,bundle):
 
