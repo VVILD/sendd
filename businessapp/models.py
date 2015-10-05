@@ -116,16 +116,6 @@ class Business(models.Model):
         ordering = ['business_name', ]
 
     def save(self, *args, **kwargs):
-        # if self.pricing2s.count()==0:
-        #
-        #     ndict = {'a': [(1,3), (2,4)]}
-        #     bdict = {'a': [1, 2, 3, 4, 5]}
-        #
-        #     for key in ndict:
-        #         for w in dict[key]:
-        #             zone = Zone.objects.get(zone=key)
-        #             weight = Weight.object.get(weight=w[0])
-        #             p=Pricing2(zone)
 
 
         if self.pb and self.status == 'Y':
@@ -383,6 +373,7 @@ class QcProduct(Product):
 
 
 def send_update(sender, instance, created, **kwargs):
+
     # product can be pending complete returned picked up
 
     #                              choices=(('P', 'pending'), ('C', 'complete'), ('PU', 'pickedup'), ('CA', 'cancelled'), ('R', 'return')),
@@ -778,6 +769,9 @@ class Pricing2(models.Model):
         ''' On save, update timestamps '''
         self.ppkg = self.price / self.weight.weight
 
+        if Pricing2.objects.filter(zone__zone=self.zone.zone,weight__weight=self.weight.weight,type=self.type).count() > 0:
+            raise ValidationError("Pricing already exists")
+        
         super(Pricing2, self).save(*args, **kwargs)
 
     def __unicode__(self):
@@ -829,3 +823,38 @@ class Barcode(models.Model):
             raise ValidationError("Barcode length should be 10")
 
         super(Barcode, self).save(*args, **kwargs)
+
+
+def add_pricing(sender, instance, created, **kwargs):
+    if instance.pricing2s.count()==0:
+        ndict = {'a': [(0.25,15), (0.5,15), (1,28),(2,54), (3,80), (4,106), (5,132), (6,158), (7,184), (8,210), (9,236), (10,262)],
+                 'b': [(0.25,20), (0.5,30), (1,56),(2,82), (3,108), (4,134), (5,160), (6,186), (7,212), (8,238), (9,264), (10,290)],
+                 'c': [(0.25,25), (0.5,33), (1,65),(2,91), (3,117), (4,143), (5,169), (6,195), (7,221), (8,247), (9,273), (10,299)],
+                 'd': [(0.25,30), (0.5,40), (1,78),(2,104), (3,130), (4,156), (5,182), (6,208), (7,234), (8,260), (9,286), (10,312)],
+                 'e': [(0.25,38), (0.5,48), (1,93),(2,119), (3,145), (4,171), (5,197), (6,223), (7,249), (8,275), (9,301), (10,327)],
+                 }
+
+        bdict = {'a': [(1,80),(2,80), (3,80), (4,80), (5,80), (6,80), (7,80), (8,80), (9,80), (10,80)],
+                 'b': [(1,95),(2,95), (3,95), (4,95), (5,95), (6,95), (7,95), (8,95), (9,95), (10,95)],
+                 'c': [(1,110),(2,110), (3,110), (4,110), (5,110), (6,110), (7,110), (8,110), (9,110), (10,110)],
+                 'd': [(1,130),(2,130), (3,130), (4,130), (5,130), (6,130), (7,130), (8,130), (9,130), (10,130)],
+                 'e': [(1,150),(2,150), (3,150), (4,150), (5,150), (6,150), (7,150), (8,150), (9,150), (10,150)]}
+
+
+
+        for key in ndict:
+            for w in ndict[key]:
+                zone = Zone.objects.get(zone=key)
+                weight = Weight.objects.get(weight=w[0])
+                p=Pricing2(business=instance,zone=zone,weight=weight,price=w[1],type='N')
+                p.save()
+
+        for key in bdict:
+            for w in bdict[key]:
+                zone = Zone.objects.get(zone=key)
+                weight = Weight.objects.get(weight=w[0])
+                p=Pricing2(business=instance,zone=zone,weight=weight,price=w[1],type='B')
+                p.save()
+
+
+post_save.connect(add_pricing, sender=Business)

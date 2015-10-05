@@ -1237,8 +1237,30 @@ admin.site.register(QcProduct, QcProductAdmin)
 class Pricing2Admin(reversion.VersionAdmin):
     # search_fields=['name']
     list_filter=('business__username','business__business_name','zone','weight','type')
-    list_display=('business','weight','zone','type','price','ppkg')
+    list_display=('business','weight','price','ppkg','narray','barray')
     list_editable = ('price',)
+
+    def get_queryset(self, request):
+#'order_total','order_today','total_completed','total_revenue',
+        return Pricing2.objects.filter(zone__zone='a').extra(select={
+            'barray': "SELECT GROUP_CONCAT(price) from businessapp_pricing2 where businessapp_pricing2.zone_id='a' and type='B'",
+            'narray': "SELECT GROUP_CONCAT(price) from businessapp_pricing2 where businessapp_pricing2.zone_id='a' and type='N'",
+            },
+            )
+
+
+    def narray(self,obj):
+        return obj.narray
+    narray.allow_tags = True
+    narray.admin_order_field='narray'
+
+    def barray(self,obj):
+        return obj.barray
+    barray.allow_tags = True
+    barray.admin_order_field='barray'
+
+
+
 
 admin.site.register(Pricing2,Pricing2Admin)
 

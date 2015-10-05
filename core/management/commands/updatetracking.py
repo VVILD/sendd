@@ -280,13 +280,13 @@ class Command(BaseCommand):
                 new_data.append({"status" : data[c + 2], "date" : data[c],"location": data[c + 1] })
                 c += 3
 
-            new_tracking = sorted(new_data, key=lambda k: k["date"])
+            # new_tracking = sorted(new_data, key=lambda k: k["date"])
+            tracking_data=new_data[::-1]
 
-
-            for row in new_tracking:
-                tracking_data.append(row)
-                if "delivered" in row["status"].lower():
-                    completed=True
+            # for row in new_tracking:
+            #     tracking_data.append(row)
+            #     if "delivered" in row["status"].lower():
+            #         completed=True
 
             result = {
                 "company": company,
