@@ -269,7 +269,8 @@ class OrderResource3(CORSModelResource):
         always_return_data = True
         ordering = ['book_time']
         filtering = {
-            "reference_id": ALL
+            "reference_id": ALL,
+            "book_time": ALL
         }
 
     def hydrate(self, bundle):
