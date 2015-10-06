@@ -126,6 +126,8 @@ def create_shipment(sender, receiver, item, FEDEX_CONFIG_OBJ, service_type, sequ
     shipment.RequestedShipment.CustomsClearanceDetail.Commodities.Weight.Value = float(item['weight'])
     shipment.RequestedShipment.CustomsClearanceDetail.Commodities.Weight.Units = "KG"
     shipment.RequestedShipment.CustomsClearanceDetail.Commodities.Quantity = 1
+    if 'quantity' in item:
+        shipment.RequestedShipment.CustomsClearanceDetail.Commodities.Quantity = int(item['quantity'])
     shipment.RequestedShipment.CustomsClearanceDetail.Commodities.QuantityUnits = 'EA'
     shipment.RequestedShipment.CustomsClearanceDetail.Commodities.UnitPrice.Currency = 'INR'
     shipment.RequestedShipment.CustomsClearanceDetail.Commodities.UnitPrice.Amount = float(item['price'])
@@ -180,8 +182,7 @@ def create_shipment(sender, receiver, item, FEDEX_CONFIG_OBJ, service_type, sequ
     package1.CustomerReferences.Value = 'Bill D/T - Sender'
     package1.Weight = package1_weight
 
-    if master_tracking_no is None:
-        package1.GroupPackageCount = 1
+    package1.GroupPackageCount = 1
 
     # Un-comment this to see the other variables you may set on a package.
     # print package1

@@ -30,6 +30,7 @@ def create_fedex_shipment(request):
             warehouse = None
             item_name = product.name
             item_weight = product.applied_weight
+            item_qty = product.quantity
             receiver_name = product.order.name
             receiver_company = None
             receiver_phone = product.order.phone
@@ -71,7 +72,8 @@ def create_fedex_shipment(request):
             item = {
                 "name": item_name,
                 "weight": item_weight,
-                "price": item_price
+                "price": item_price,
+                "quantity": item_qty
             }
             result = fedex.create_shipment(sender, receiver, item, config, service_type, idx, package_count, master_tracking_no)
             if result['status'] != 'ERROR':
