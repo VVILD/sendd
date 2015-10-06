@@ -151,6 +151,11 @@ class NotApprovedBusiness(Business):
         proxy = True
 
 
+class BusinessPricing(Business):
+    class Meta:
+        proxy = True
+
+
 class ApprovedBusiness(Business):
     class Meta:
         proxy = True
@@ -769,8 +774,9 @@ class Pricing2(models.Model):
         ''' On save, update timestamps '''
         self.ppkg = self.price / self.weight.weight
 
-        if Pricing2.objects.filter(zone__zone=self.zone.zone,weight__weight=self.weight.weight,type=self.type).count() > 0:
-            raise ValidationError("Pricing already exists")
+        if not self.pk:
+            if Pricing2.objects.filter(zone__zone=self.zone.zone,weight__weight=self.weight.weight,type=self.type).count() > 0:
+                raise ValidationError("Pricing already exists")
         
         super(Pricing2, self).save(*args, **kwargs)
 

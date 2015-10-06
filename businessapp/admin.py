@@ -1233,33 +1233,74 @@ class QcProductAdmin(ProductAdmin):
 
 admin.site.register(QcProduct, QcProductAdmin)
 
+def createpricingfield(name,weight,type_of_pricing):
+    def func1(self,obj):
+        y=Pricing2.objects.filter(business=obj,weight__weight=weight,type=type_of_pricing)
+        pk_list=[]
+        for x in y:
+            pk_list.append((x.pk,x.price))
+        result_string='<table>'  
+        for item in pk_list:
+            result_string= result_string +' <th> <a href="/admin/businessapp/pricing2/'+str(item[0])+'/" target="_blank"> '+str(item[1]) +'</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </th>'
+        return result_string + '</table>'
+    func1.__name__ = name
+    return func1
+
+
+
+class BusinessPricingAdmin(reversion.VersionAdmin):
+    list_filter=('username','business_name')
+    list_display=('business_name',)
+    readonly_fields=('N0_25','N0_5','N1','N2','N3','N4','N5','N6','N7','N8','N9','N10','B1','B2','B3','B4','B5','B6','B7','B8','B9','B10')
+
+
+
+    N0_25=createpricingfield('N0_25',0.25,'N')
+    N0_5=createpricingfield('N0_5',0.5,'N')
+    N1=createpricingfield('N1',1.0,'N')
+    N2=createpricingfield('N2',2.0,'N')
+    N3=createpricingfield('N3',3.0,'N')
+    N4=createpricingfield('N4',4.0,'N')
+    N5=createpricingfield('N5',5.0,'N')
+    N6=createpricingfield('N6',6.0,'N')
+    N7=createpricingfield('N7',7.0,'N')
+    N8=createpricingfield('N8',8.0,'N')
+    N9=createpricingfield('N9',9.0,'N')
+    N10=createpricingfield('N10',10.0,'N')
+
+    B1=createpricingfield('B1',1.0,'B')
+    B2=createpricingfield('B2',2.0,'B')
+    B3=createpricingfield('B3',3.0,'B')
+    B4=createpricingfield('B4',4.0,'B')
+    B5=createpricingfield('B5',5.0,'B')
+    B6=createpricingfield('B6',6.0,'B')
+    B7=createpricingfield('B7',7.0,'B')
+    B8=createpricingfield('B8',8.0,'B')
+    B9=createpricingfield('B9',9.0,'B')
+    B10=createpricingfield('B10',1.0,'B')
+
+
+
+    fieldsets = (
+        ('Normal Pricing', {'fields': ['N0_25','N0_5','N1','N2','N3','N4','N5','N6','N7','N8','N9','N10']}),
+        ('Bulk Pricing', {'fields': ['B1','B2','B3','B4','B5','B6','B7','B8','B9','B10']}),
+        # ('Bulk Pricing',
+        #  {'fields': [('name', 'weight', 'cost_of_courier'), ], 'classes': ('suit-tab', 'suit-tab-general')}),
+    )
+
+admin.site.register(BusinessPricing,BusinessPricingAdmin)
+
 
 class Pricing2Admin(reversion.VersionAdmin):
     # search_fields=['name']
     list_filter=('business__username','business__business_name','zone','weight','type')
-    list_display=('business','weight','price','ppkg','narray','barray')
-    list_editable = ('price',)
+    list_display=('business',)
 
-    def get_queryset(self, request):
-#'order_total','order_today','total_completed','total_revenue',
-        return Pricing2.objects.filter(zone__zone='a').extra(select={
-            'barray': "SELECT GROUP_CONCAT(price) from businessapp_pricing2 where businessapp_pricing2.zone_id='a' and type='B'",
-            'narray': "SELECT GROUP_CONCAT(price) from businessapp_pricing2 where businessapp_pricing2.zone_id='a' and type='N'",
-            },
-            )
+    
+    readonly_fields=('ppkg','weight','zone','type','business')
 
 
-    def narray(self,obj):
-        return obj.narray
-    narray.allow_tags = True
-    narray.admin_order_field='narray'
-
-    def barray(self,obj):
-        return obj.barray
-    barray.allow_tags = True
-    barray.admin_order_field='barray'
-
-
+    
 
 
 admin.site.register(Pricing2,Pricing2Admin)
