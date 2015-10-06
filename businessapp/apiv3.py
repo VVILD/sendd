@@ -1,29 +1,18 @@
-from django.db.models import Q
-from tastypie.resources import ModelResource
+
 from django.conf.urls import url
 from tastypie.utils import trailing_slash
-import time
-from datetime import datetime, timedelta
+
 from businessapp.models import *
 from myapp.models import Zipcode, Shipment
-from tastypie.authorization import Authorization
+
 from tastypie import fields
 from tastypie.serializers import Serializer
-from random import randint
-import random
-import urllib2, urllib
-import hashlib, random
-import os
-from tastypie.constants import ALL, ALL_WITH_RELATIONS
-from tastypie.authentication import ApiKeyAuthentication
+
+from tastypie.constants import ALL
 import math
-import string
-from django.core.mail import send_mail
-from push_notifications.models import APNSDevice, GCMDevice
-import ast
+
 import json
-from tastypie.resources import Resource
-from tastypie.fields import ListField
+
 
 import urlparse
 from tastypie.authentication import Authentication
@@ -56,12 +45,28 @@ class urlencodeSerializer(Serializer):
 
 
 class OnlyAuthorization(Authorization):
+    def read_list(self, object_list, bundle):
+        business_username = bundle.request.GET.get("username", None)
+        if business_username is None:
+            raise ImmediateHttpResponse(HttpBadRequest("Please Provide a valid username key"))
+        try:
+            business_obj = Business.objects.get(username=business_username)
+        except Business.DoesNotExist:
+            raise ImmediateHttpResponse(HttpBadRequest("Username doesnt exist"))
+        try:
+            if bundle.request.META["HTTP_AUTHORIZATION"] == 'B' or business_obj.apikey == bundle.request.META["HTTP_AUTHORIZATION"]:
+                return object_list.filter(business=business_obj)
+            else:
+                raise Unauthorized
+        except KeyError:
+            raise ImmediateHttpResponse(HttpBadRequest("Provide valid authorization headers"))
+
     def read_detail(self, object_list, bundle):
         # Is the requested object owned by the user?
 
         # these 2 lines due to product wanting to use this authorisation
         try:
-            if (bundle.request.META["HTTP_AUTHORIZATION"] == 'A'):
+            if (bundle.request.META["HTTP_AUTHORIZATION"] == 'B'):
                 return True
 
             return bundle.obj.business.apikey == bundle.request.META["HTTP_AUTHORIZATION"]
@@ -74,7 +79,7 @@ class OnlyAuthorization(Authorization):
 
     def create_detail(self, object_list, bundle):
         try:
-            if (bundle.request.META["HTTP_AUTHORIZATION"] == 'A'):
+            if (bundle.request.META["HTTP_AUTHORIZATION"] == 'B'):
                 return True
 
             return bundle.obj.business.apikey == bundle.request.META["HTTP_AUTHORIZATION"]
@@ -93,7 +98,7 @@ class OnlyAuthorization(Authorization):
 
     def update_detail(self, object_list, bundle):
         try:
-            if (bundle.request.META["HTTP_AUTHORIZATION"] == 'A'):
+            if (bundle.request.META["HTTP_AUTHORIZATION"] == 'B'):
                 return True
 
             return bundle.obj.business.apikey == bundle.request.META["HTTP_AUTHORIZATION"]
@@ -131,7 +136,7 @@ from tastypie import http
 from tastypie.exceptions import ImmediateHttpResponse
 from tastypie.resources import csrf_exempt
 from tastypie.resources import Resource, ModelResource
-import logging
+
 
 
 class BaseCorsResource(Resource):
@@ -260,9 +265,13 @@ class OrderResource3(CORSModelResource):
         resource_name = 'order'
         authorization = OnlyAuthorization()
         authentication = Authentication()
-        allowed_methods = ['post', 'patch', 'put']
+        allowed_methods = ['post', 'patch', 'put', 'get']
         always_return_data = True
         ordering = ['book_time']
+        filtering = {
+            "reference_id": ALL,
+            "book_time": ALL
+        }
 
     def hydrate(self, bundle):
         try:
@@ -295,14 +304,15 @@ class OrderResource3(CORSModelResource):
 
         products = Product.objects.filter(order__pk=bundle.data['order_no']).values("real_tracking_no", "sku",
                                                                                     "weight",
-                                                                                    "name", "quantity", "price")
+                                                                                    "name", "quantity", "price", "status")
 
         new_bundle = {
             "order_no": bundle.data['order_no'],
             "reference_id": bundle.data['reference_id'],
             "master_tracking_no": bundle.data['master_tracking_number'],
             "is_confirmed": bundle.data['confirmed'],
-            "products": list(products)
+            "products": list(products),
+            "status": bundle.data['status']
         }
         return new_bundle
 

@@ -1,4 +1,5 @@
 import random
+import uuid
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.db.models.signals import post_save
 from django.db import models
@@ -10,7 +11,6 @@ from push_notifications.models import GCMDevice
 from core.fedex.base_service import FedexError
 from core.models import Warehouse, Pincode
 from core.utils import state_matcher
-from core.utils.fedex_api_helper import Fedex
 from pickupboyapp.models import PBUser
 import urllib2
 
@@ -116,27 +116,17 @@ class Order(models.Model):
     pick_now = models.CharField(max_length=1,
                                 choices=(('Y', 'yes'), ('N', 'no'),),
                                 default='Y')
-    # source=models.CharField(max_length=1,
-    #								  choices=(('P','pending') ,('C','complete'),('N','cancelled'),('F','fake'),),
-    #								  default='F')
-    #cost=models.CharField(max_length = 10,null=True ,blank=True)
-    #paid=models.CharField(max_length=1,
-    #								  choices=(('Y','yes') ,('N','no'),),
-    #								  blank=True , null = True)
-
-    #cancelled=models.CharField(max_length=1,
-    # choices=(('Y','yes') ,('N','no'),),
-    #								  default='N')
     pb = models.ForeignKey(PBUser, null=True, blank=True)
     latitude = models.DecimalField(max_digits=25, decimal_places=20, null=True, blank=True)
     longitude = models.DecimalField(max_digits=25, decimal_places=20, null=True, blank=True)
     address = models.CharField(max_length=200, null=True, blank=True)
     pincode = models.CharField(max_length=30, null=True, blank=True)
     flat_no = models.CharField(max_length=100, null=True, blank=True)
-    #picked_up=models.BooleanField(default=False
-    #status_code=models.CharField(max_length=100, null=True, blank=True)
     book_time = models.DateTimeField(null=True, blank=True)
     warehouse = models.ForeignKey(Warehouse, null=True, blank=True, related_name="myapp_orders")
+    master_tracking_number = models.CharField(max_length=10, blank=True, null=True)
+    mapped_master_tracking_number = models.CharField(max_length=50, blank=True, null=True)
+    fedex_ship_docs = models.FileField(upload_to='shipment/', blank=True, null=True)
 
     def __unicode__(self):
         return str(self.order_no)
@@ -155,10 +145,7 @@ class Order(models.Model):
             msga = str(phone)
             msg1 = "&msg=Pickup+details+for+order+no%3A"+str(order_no)+".%0D%0AName%3A"+str(name)+"%2C+Address%3A"+str(address)+"%2C+Mobile+No%3A"+str(user_phone)+"&msg_type=TEXT&userid=2000142364&auth_scheme=plain&password=h0s6jgB4N&format=text"
             query = ''.join([msg0, msga, msg1])
-            print query
             req = requests.get(query)
-            # print "status_code here"
-            # print req.status_code
 
         ''' On save, update timestamps '''
         z = timezone('Asia/Kolkata')
@@ -166,6 +153,11 @@ class Order(models.Model):
         ind_time = datetime.now(z)
         if not self.pk:
             self.book_time = ind_time
+            super(Order, self).save(*args, **kwargs)
+            order_no = self.pk + 1000
+            if str(order_no) > 4:
+                order_no = str(order_no)[:4]
+            self.master_tracking_number = 'M' + order_no + str(uuid.uuid4().get_hex().upper()[:5])
         if not self.warehouse:
             pincode = Pincode.objects.filter(pincode=self.pincode).exclude(latitude__isnull=True)
             try:
