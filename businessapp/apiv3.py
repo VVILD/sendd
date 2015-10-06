@@ -54,7 +54,7 @@ class OnlyAuthorization(Authorization):
         except Business.DoesNotExist:
             raise ImmediateHttpResponse(HttpBadRequest("Username doesnt exist"))
         try:
-            if bundle.request.META["HTTP_AUTHORIZATION"] == 'A' or business_obj.apikey == bundle.request.META["HTTP_AUTHORIZATION"]:
+            if bundle.request.META["HTTP_AUTHORIZATION"] == 'B' or business_obj.apikey == bundle.request.META["HTTP_AUTHORIZATION"]:
                 return object_list.filter(business=business_obj)
             else:
                 raise Unauthorized
@@ -66,7 +66,7 @@ class OnlyAuthorization(Authorization):
 
         # these 2 lines due to product wanting to use this authorisation
         try:
-            if (bundle.request.META["HTTP_AUTHORIZATION"] == 'A'):
+            if (bundle.request.META["HTTP_AUTHORIZATION"] == 'B'):
                 return True
 
             return bundle.obj.business.apikey == bundle.request.META["HTTP_AUTHORIZATION"]
@@ -79,7 +79,7 @@ class OnlyAuthorization(Authorization):
 
     def create_detail(self, object_list, bundle):
         try:
-            if (bundle.request.META["HTTP_AUTHORIZATION"] == 'A'):
+            if (bundle.request.META["HTTP_AUTHORIZATION"] == 'B'):
                 return True
 
             return bundle.obj.business.apikey == bundle.request.META["HTTP_AUTHORIZATION"]
@@ -98,7 +98,7 @@ class OnlyAuthorization(Authorization):
 
     def update_detail(self, object_list, bundle):
         try:
-            if (bundle.request.META["HTTP_AUTHORIZATION"] == 'A'):
+            if (bundle.request.META["HTTP_AUTHORIZATION"] == 'B'):
                 return True
 
             return bundle.obj.business.apikey == bundle.request.META["HTTP_AUTHORIZATION"]
