@@ -1,5 +1,11 @@
-
+import base64
+from urllib import urlencode, urlopen
+from PyPDF2 import PdfFileWriter, PdfFileReader
+import cStringIO
 from django.conf.urls import url
+from django.core.files.base import ContentFile
+from django.core.mail import EmailMessage
+from rq import Queue
 from tastypie.utils import trailing_slash
 
 from businessapp.models import *
@@ -13,7 +19,6 @@ import math
 
 import json
 
-
 import urlparse
 from tastypie.authentication import Authentication
 from tastypie.http import HttpBadRequest
@@ -21,6 +26,7 @@ from tastypie.authorization import Authorization
 from tastypie.exceptions import Unauthorized, BadRequest
 from pickupboyapp.exceptions import CustomBadRequest
 
+import django_rq
 
 class urlencodeSerializer(Serializer):
     formats = ['json', 'jsonp', 'xml', 'yaml', 'html', 'plist', 'urlencode']
@@ -54,7 +60,8 @@ class OnlyAuthorization(Authorization):
         except Business.DoesNotExist:
             raise ImmediateHttpResponse(HttpBadRequest("Username doesnt exist"))
         try:
-            if bundle.request.META["HTTP_AUTHORIZATION"] == 'B' or business_obj.apikey == bundle.request.META["HTTP_AUTHORIZATION"]:
+            if bundle.request.META["HTTP_AUTHORIZATION"] == 'B' or business_obj.apikey == bundle.request.META[
+                "HTTP_AUTHORIZATION"]:
                 return object_list.filter(business=business_obj)
             else:
                 raise Unauthorized
@@ -136,7 +143,6 @@ from tastypie import http
 from tastypie.exceptions import ImmediateHttpResponse
 from tastypie.resources import csrf_exempt
 from tastypie.resources import Resource, ModelResource
-
 
 
 class BaseCorsResource(Resource):
@@ -304,7 +310,8 @@ class OrderResource3(CORSModelResource):
 
         products = Product.objects.filter(order__pk=bundle.data['order_no']).values("real_tracking_no", "sku",
                                                                                     "weight",
-                                                                                    "name", "quantity", "price", "status")
+                                                                                    "name", "quantity", "price",
+                                                                                    "status")
 
         new_bundle = {
             "order_no": bundle.data['order_no'],
@@ -438,6 +445,112 @@ class OrderPatchReferenceResource(CORSModelResource):
 
         self.log_throttled_access(request)
         return self.create_response(request, bundle)
+
+
+def send_business_labels(db_objs, business_obj):
+    output = PdfFileWriter()
+    name = business_obj.business_name
+    phone = business_obj.contact_mob
+    address = business_obj.get_full_address()
+    for db_obj in db_objs:
+        name2 = db_obj.name
+        address2 = db_obj.get_full_address()
+        phone2 = db_obj.phone
+        s_method = db_obj.method
+        p_method = db_obj.get_payment_method_display()
+        date = str(db_obj.book_time.date())
+        order_no = db_obj.order_no
+
+        for product in db_obj.product_set.all():
+            description = product.name
+            weight = product.weight
+            price = product.price
+            sku = product.sku
+            trackingid = product.real_tracking_no
+            params = urlencode({
+                "name": name,
+                "name2": name2,
+                "phone": phone,
+                "phone2": phone2,
+                "address": address,
+                "address2": address2,
+                "s_method": s_method,
+                "p_method": p_method,
+                "date": date,
+                "order_no": order_no,
+                "description": description,
+                "weight": weight,
+                "price": price,
+                "sku": sku,
+                "trackingid": trackingid
+            })
+
+            response = urlopen("http://128.199.210.166/email_businesslabel.php?%s" % params).read()
+            f1 = ContentFile(base64.b64decode(response))
+            input1 = PdfFileReader(f1, strict=False)
+            output.addPage(input1.getPage(0))
+
+
+    outputStream = cStringIO.StringIO()
+    output.write(outputStream)
+
+    message = EmailMessage('Your shipping labels have arrived - Sendd',
+                           'Hi {}, \n\n We have attached the shipping labels for the selected order/orders. \n\n '.format(business_obj.business_name) +
+                           'Thanks for choosing Sendd,\n Team Sendd',
+                           'order@sendd.co',
+                           [business_obj.email],
+                           headers={'Reply-To': 'no-reply@sendd.co'})
+    message.attach(str(business_obj.username)+"_"+str(datetime.now())+'.pdf', outputStream.getvalue(), 'application/pdf')
+    message.send(fail_silently=True)
+
+class EmailLabelsResource(CORSModelResource):
+    class Meta:
+        resource_name = 'email_labels'
+        authentication = Authentication()
+        authorization = OnlyAuthorization()
+
+    def prepend_urls(self):
+        return [
+            url(r"^(?P<resource_name>%s)%s$" % (self._meta.resource_name, trailing_slash()),
+                self.wrap_view('email_labels'), name="api_email_labels"),
+        ]
+
+    def email_labels(self, request, **kwargs):
+        self.method_check(request, allowed=['post'])
+        self.is_authenticated(request)
+        self.throttle_check(request)
+
+        if not request.body:
+            raise CustomBadRequest("error",
+                                   'Please supply a valid json in the format {"reference_ids":["ID1", "ID2", "ID3"]}')
+
+        reference_ids = self.deserialize(request, request.body)
+
+        if not 'reference_ids' in reference_ids:
+            raise CustomBadRequest("error",
+                                   'Please supply a valid json in the format {"reference_ids":["ID1", "ID2", "ID3"]}')
+        if type(reference_ids['reference_ids']) is not list:
+            raise CustomBadRequest("error",
+                                   'Please supply a valid json in the format {"reference_ids":["ID1", "ID2", "ID3"]}')
+
+        if not 'username' in reference_ids:
+            raise CustomBadRequest("error", 'Please supply a username')
+
+        try:
+            business_obj = Business.objects.get(username=reference_ids['username'])
+        except Business.DoesNotExist:
+            raise CustomBadRequest("error", "Username doesn't exist")
+        except KeyError:
+            raise CustomBadRequest("error", 'Please supply a valid username')
+
+        db_objs = Order.objects.filter(reference_id__in=reference_ids['reference_ids'], business=business_obj)
+        if db_objs.count() == 0:
+            return self.create_response(request, {"success": False, "message": "No labels to create"})
+
+        django_rq.enqueue(send_business_labels, db_objs, business_obj)
+
+        self.log_throttled_access(request)
+        return self.create_response(request, {"success": True, "message": "Labels created"})
 
 
 class ProductResource3(ModelResource):

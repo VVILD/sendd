@@ -89,7 +89,7 @@ bv2_api.register(OrderResource2())
 bv2_api.register(BarcodeAllotmentResource())
 bv2_api.register(BarcodeFetchResource())
 
-from businessapp.apiv3 import ProductResource3, OrderResource3, ShippingEstimateResource, OrderPatchResource, BusinessPatchResource,OrderCancelResource,PincodecheckResource, OrderPatchReferenceResource
+from businessapp.apiv3 import ProductResource3, OrderResource3, ShippingEstimateResource, OrderPatchResource, BusinessPatchResource,OrderCancelResource,PincodecheckResource, OrderPatchReferenceResource, EmailLabelsResource
 from businessapp.apiv3 import TrackingResource as TrackingResourceV3
 bv3_api = Api(api_name='v3')
 bv3_api.register(ProductResource3())
@@ -101,6 +101,7 @@ bv3_api.register(BusinessPatchResource())
 bv3_api.register(OrderCancelResource())
 bv3_api.register(PincodecheckResource())
 bv3_api.register(OrderPatchReferenceResource())
+bv3_api.register(EmailLabelsResource())
 
 
 from core.api import PincodeResource
@@ -127,4 +128,8 @@ urlpatterns = patterns('',
     url(r'^create_fedex_shipment/', create_fedex_shipment, name='create_fedex'),
     url(r'^print_address/', print_address_view, name='print_business_address'),
     url(r'^barcode_fedex_print/(?P<barcode>[\w]{10})/$', barcode_fedex_redirector, name='fedex_barcode_redirector')
+)
+
+urlpatterns += patterns('',
+    (r'^django-rq/', include('django_rq.urls')),
 )

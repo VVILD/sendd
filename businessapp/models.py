@@ -114,6 +114,9 @@ class Business(models.Model):
     class Meta:
         ordering = ['business_name', ]
 
+    def get_full_address(self):
+        return str(self.address + " " + self.city + " " + self.state + " - " + self.pincode)
+
     def save(self, *args, **kwargs):
         # if self.pricing2s.count()==0:
         #
@@ -224,7 +227,7 @@ class Order(models.Model):
     state = models.CharField(max_length=50, null=True, blank=True)
     pincode = models.CharField(max_length=30, null=True, blank=True)
     country = models.CharField(max_length=30, null=True, blank=True)
-    payment_method = models.CharField(max_length=1, choices=(('F', 'free checkout'), ('C', 'cod'),), )
+    payment_method = models.CharField(max_length=1, choices=(('F', 'Free Shipping'), ('C', 'cod'),), )
     book_time = models.DateTimeField(null=True, blank=True)
     status = models.CharField(max_length=2, choices=(
         ('P', 'pending'), ('C', 'complete'), ('N', 'cancelled'), ('D', 'in transit'), ('PU', 'pickedup'),
@@ -242,6 +245,9 @@ class Order(models.Model):
 
     def __unicode__(self):
         return str(self.order_no)
+
+    def get_full_address(self):
+        return str(self.address1 + " " + self.address2 + " " + self.city + " " + self.state + " - " + self.pincode)
 
     def save(self, *args, **kwargs):
         ''' On save, update timestamps '''
