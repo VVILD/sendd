@@ -108,7 +108,7 @@ class Command(BaseCommand):
                     if original_length > 0:
                         if tracking_data[-1]['date'] != (event.Timestamp).strftime('%Y-%m-%d %H:%M:%S'):
                             if match.StatusCode == "DE":
-                                event_desc = "Delivery Exception (" + event.EventDescription + ")"
+                                event_desc = "Delivery Exception (" + event.StatusExceptionDescription + ")"
                             else:
                                 event_desc = event.EventDescription
                             regex = re.compile(r'\b('+self.remove_regex+r')\b', flags=re.IGNORECASE)
