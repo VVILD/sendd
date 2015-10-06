@@ -1050,6 +1050,10 @@ class OrderAdmin(FilterUserAdmin):
             if product.is_document is False:
                 is_doc = False
 
+            if product.fedex_ship_docs or product.fedex_outbound_label:
+                return "Order already created using legacy"
+
+
         if obj.state == 'Kerala' and obj.method == 'B':
             return '<h2 style="color:red">Not Servicable</h2>'
 
