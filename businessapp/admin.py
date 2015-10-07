@@ -1440,7 +1440,11 @@ class ExportOrderAdmin(ImportExportModelAdmin):
     order_no.admin_order_field = 'order'
 
     def get_business(self, obj):
-        return obj.order.business
+        try:
+            return obj.order.business
+        except:
+            return "None"
+
     get_business.short_description = 'business'
     get_business.admin_order_field = 'order__business'
     readonly_fields = (
