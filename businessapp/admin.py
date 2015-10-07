@@ -1424,7 +1424,7 @@ admin.site.register(BusinessPricing,BusinessPricingAdmin)
 
 class ExportOrderAdmin(ImportExportModelAdmin):
     list_filter=('order__business__business_name','order__business__username','order__book_time','last_tracking_status','company','status')
-    search_fields = ['name', 'real_tracking_no','order__business_name','order__username','order_no']
+    search_fields = ['name', 'real_tracking_no','order__business__business_name','order__business__username','order__order_no']
     list_display = ('name', 'price', 'weight', 'status', 'real_tracking_no', 'order', 'barcode','date','last_tracking_status','update_time')
 
     readonly_fields = (
