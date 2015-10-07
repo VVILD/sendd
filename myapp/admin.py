@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import *
-from myapp.forms import ShipmentForm, OrderForm, OrderEditForm,NewShipmentForm,NewShipmentAddForm
+from myapp.forms import ShipmentForm, OrderForm, OrderEditForm,NewShipmentForm,NewShipmentAddForm,NewQcCommentForm
 from businessapp.models import Profile
 import reversion
 import json
