@@ -1422,7 +1422,11 @@ class BusinessPricingAdmin(reversion.VersionAdmin):
 admin.site.register(BusinessPricing,BusinessPricingAdmin)
 
 
-class ExportOrderAdmin(reversion.VersionAdmin):
+class ExportOrderAdmin(ImportExportModelAdmin):
+
+    def lookup_allowed(self, key):
+        return True
+
     list_filter=('order__business__business_name','order__business__username','order__book_time','last_tracking_status','company','status')
     search_fields = ['name', 'real_tracking_no','order__business__business_name','order__business__username','order__order_no']
     list_display = ('name', 'price', 'weight', 'status', 'real_tracking_no', 'order', 'barcode','date','last_tracking_status','update_time')
