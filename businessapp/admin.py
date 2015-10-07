@@ -827,9 +827,9 @@ class ProductInline(admin.TabularInline):
 
         if (valid):
             if (cod=='F'):
-                return 'All good!<br><a href="/stats/kartrocket/?%s" target="_blank" >Create Normal Order</a>' % (string)
+                return 'All good!<br><a href="/stats/kartrocket/?%s" target="_blank" >Create Kartrocket Normal Order</a>' % (string)
             elif (cod=='C'):
-                return 'All good!<br><a href="/stats/kartrocket/?%s" target="_blank" >Create Cod Order</a>' % (string)
+                return 'All good!<br><a href="/stats/kartrocket/?%s" target="_blank" >Create Kartrocket Cod Order</a>' % (string)
             else:
                 return "no payment_method set"
         else:
