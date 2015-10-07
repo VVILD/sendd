@@ -1424,13 +1424,22 @@ admin.site.register(BusinessPricing,BusinessPricingAdmin)
 
 class ExportOrderAdmin(ImportExportModelAdmin):
 
-    def lookup_allowed(self, key):
+    def lookup_allowed(self,key,value):
         return True
 
     list_filter=('order__business__business_name','order__business__username','order__book_time','last_tracking_status','company','status')
     search_fields = ['name', 'real_tracking_no','order__business__business_name','order__business__username','order__order_no']
-    list_display = ('name', 'price', 'weight', 'status', 'real_tracking_no', 'order', 'barcode','date','last_tracking_status','update_time')
+    list_display = ('order_no','get_business', 'status', 'applied_weight', 'real_tracking_no', 'barcode','date','last_tracking_status','mapped_tracking_no' ,'company')
 
+    def order_no(self, obj):
+        return '<a href="/admin/businessapp/order/%s/">%s</a>' % (obj.order.pk, obj.order.pk)
+    order_no.allow_tags = True
+    order_no.admin_order_field = 'order'
+
+    def get_business(self, obj):
+        return obj.order.business
+    get_business.short_description = 'business'
+    get_business.admin_order_field = 'order__business'
     readonly_fields = (
         'name', 'quantity', 'sku', 'price', 'weight', 'applied_weight', 'real_tracking_no', 'order',
         'kartrocket_order', 'shipping_cost', 'cod_cost', 'status', 'date', 'barcode')
