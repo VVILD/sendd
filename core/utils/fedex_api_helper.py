@@ -124,20 +124,21 @@ def create_shipment(sender, receiver, item, FEDEX_CONFIG_OBJ, service_type, sequ
     shipment.RequestedShipment.CustomsClearanceDetail.ClearanceBrokerage = None
     shipment.RequestedShipment.CustomsClearanceDetail.FreightOnValue = None
 
-    commodity = shipment.create_wsdl_object_of_type('Commodity')
-    commodity.Weight = shipment.create_wsdl_object_of_type('Weight')
-    commodity.UnitPrice = shipment.create_wsdl_object_of_type('Money')
-    commodity.CustomsValue = shipment.create_wsdl_object_of_type('Money')
-
-    commodity.NumberOfPieces = 1
-    commodity.CountryOfManufacture = 'IN'
-    commodity.Weight.Units = 'KG'
-    commodity.QuantityUnits = 'EA'
-    commodity.UnitPrice.Currency = 'INR'
-    commodity.CustomsValue.Currency = 'INR'
-    commodity.Quantity = 1
     total_weight = 0.0
     for i in item:
+        commodity = None
+        commodity = shipment.create_wsdl_object_of_type('Commodity')
+        commodity.Weight = shipment.create_wsdl_object_of_type('Weight')
+        commodity.UnitPrice = shipment.create_wsdl_object_of_type('Money')
+        commodity.CustomsValue = shipment.create_wsdl_object_of_type('Money')
+
+        commodity.NumberOfPieces = 1
+        commodity.CountryOfManufacture = 'IN'
+        commodity.Weight.Units = 'KG'
+        commodity.QuantityUnits = 'EA'
+        commodity.UnitPrice.Currency = 'INR'
+        commodity.CustomsValue.Currency = 'INR'
+        commodity.Quantity = 1
         commodity.Description = str(i['name'])
         commodity.Weight.Value = float(i['weight'])
         commodity.UnitPrice.Amount = float(i['price'])
