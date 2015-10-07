@@ -1434,7 +1434,7 @@ class ExportOrderAdmin(ImportExportModelAdmin):
     def order_no(self, obj):
         try:
             return '<a href="/admin/businessapp/order/%s/">%s</a>' % (obj.order.pk, obj.order.pk)
-        else:
+        except:
             return 'None'
     order_no.allow_tags = True
     order_no.admin_order_field = 'order'
