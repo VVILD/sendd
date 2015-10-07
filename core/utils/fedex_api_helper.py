@@ -87,7 +87,7 @@ def create_shipment(sender, receiver, item, FEDEX_CONFIG_OBJ, service_type, sequ
             'Money')
         shipment.RequestedShipment.SpecialServicesRequested.CodDetail.CodCollectionAmount.Currency = 'INR'
         shipment.RequestedShipment.SpecialServicesRequested.CodDetail.CodCollectionAmount.Amount = float(
-            item['price'])
+            item[0]['price'])
         shipment.RequestedShipment.SpecialServicesRequested.CodDetail.CollectionType = 'CASH'
         shipment.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress = shipment.create_wsdl_object_of_type(
             'Party')
@@ -114,30 +114,36 @@ def create_shipment(sender, receiver, item, FEDEX_CONFIG_OBJ, service_type, sequ
     shipment.RequestedShipment.CustomsClearanceDetail.DutiesPayment.Payor.ResponsibleParty.Address.CountryCode = 'IN'
     shipment.RequestedShipment.CustomsClearanceDetail.DocumentContent = 'NON_DOCUMENTS'
     shipment.RequestedShipment.CustomsClearanceDetail.CustomsValue.Currency = 'INR'
-    shipment.RequestedShipment.CustomsClearanceDetail.CustomsValue.Amount = float(item['price'])
+    shipment.RequestedShipment.CustomsClearanceDetail.CustomsValue.Amount = float(item[0]['price'])
     if sender['is_cod']:
         shipment.RequestedShipment.CustomsClearanceDetail.CommercialInvoice.Purpose = 'SOLD'
     else:
         shipment.RequestedShipment.CustomsClearanceDetail.CommercialInvoice.Purpose = 'NOT_SOLD'
     shipment.RequestedShipment.CustomsClearanceDetail.CommercialInvoice.TaxesOrMiscellaneousChargeType = None
-    shipment.RequestedShipment.CustomsClearanceDetail.Commodities.NumberOfPieces = 1
-    shipment.RequestedShipment.CustomsClearanceDetail.Commodities.Description = str(item['name'])
-    shipment.RequestedShipment.CustomsClearanceDetail.Commodities.CountryOfManufacture = 'IN'
-    shipment.RequestedShipment.CustomsClearanceDetail.Commodities.Weight.Value = float(item['weight'])
-    shipment.RequestedShipment.CustomsClearanceDetail.Commodities.Weight.Units = "KG"
-    shipment.RequestedShipment.CustomsClearanceDetail.Commodities.Quantity = 1
-    if 'quantity' in item:
-        shipment.RequestedShipment.CustomsClearanceDetail.Commodities.Quantity = int(item['quantity'])
-    item_qty = shipment.RequestedShipment.CustomsClearanceDetail.Commodities.Quantity
-    shipment.RequestedShipment.CustomsClearanceDetail.Commodities.QuantityUnits = 'EA'
-    shipment.RequestedShipment.CustomsClearanceDetail.Commodities.UnitPrice.Currency = 'INR'
-    shipment.RequestedShipment.CustomsClearanceDetail.Commodities.UnitPrice.Amount = float(item['price'])
-    shipment.RequestedShipment.CustomsClearanceDetail.Commodities.CustomsValue.Currency = 'INR'
-    shipment.RequestedShipment.CustomsClearanceDetail.Commodities.CustomsValue.Amount = float(item['price'])
     shipment.RequestedShipment.CustomsClearanceDetail.ExportDetail.B13AFilingOption = 'NOT_REQUIRED'
     shipment.RequestedShipment.CustomsClearanceDetail.ClearanceBrokerage = None
     shipment.RequestedShipment.CustomsClearanceDetail.FreightOnValue = None
 
+    commodity = shipment.create_wsdl_object_of_type('Commodity')
+    commodity.Weight = shipment.create_wsdl_object_of_type('Weight')
+    commodity.UnitPrice = shipment.create_wsdl_object_of_type('Money')
+    commodity.CustomsValue = shipment.create_wsdl_object_of_type('Money')
+
+    commodity.NumberOfPieces = 1
+    commodity.CountryOfManufacture = 'IN'
+    commodity.Weight.Units = 'KG'
+    commodity.QuantityUnits = 'EA'
+    commodity.UnitPrice.Currency = 'INR'
+    commodity.CustomsValue.Currency = 'INR'
+    commodity.Quantity = 1
+    total_weight = 0.0
+    for i in item:
+        commodity.Description = str(i['name'])
+        commodity.Weight.Value = float(i['weight'])
+        commodity.UnitPrice.Amount = float(i['price'])
+        commodity.CustomsValue.Amount = float(i['price'])
+        shipment.RequestedShipment.CustomsClearanceDetail.Commodities.append(commodity)
+        total_weight += float(i['weight'])
 
     # Specifies the label type to be returned.
     # LABEL_DATA_ONLY or COMMON2D
@@ -162,8 +168,8 @@ def create_shipment(sender, receiver, item, FEDEX_CONFIG_OBJ, service_type, sequ
         shipment.RequestedShipment.MasterTrackingId = shipment.create_wsdl_object_of_type('TrackingId')
         shipment.RequestedShipment.MasterTrackingId.TrackingIdType = "FEDEX"
         shipment.RequestedShipment.MasterTrackingId.TrackingNumber = master_tracking_no
-
-    shipment.RequestedShipment.PackageCount = package_count
+    else:
+        shipment.RequestedShipment.PackageCount = package_count
 
     shipment.RequestedShipment.ShippingDocumentSpecification.ShippingDocumentTypes = 'COMMERCIAL_INVOICE'
     shipment.RequestedShipment.ShippingDocumentSpecification.CommercialInvoiceDetail = shipment.create_wsdl_object_of_type('CommercialInvoiceDetail')
@@ -172,7 +178,7 @@ def create_shipment(sender, receiver, item, FEDEX_CONFIG_OBJ, service_type, sequ
 
     package1_weight = shipment.create_wsdl_object_of_type('Weight')
     # Weight, in pounds.
-    package1_weight.Value = float(item['weight'])
+    package1_weight.Value = float(item[0]['weight'])
     package1_weight.Units = "KG"
 
     package1 = shipment.create_wsdl_object_of_type('RequestedPackageLineItem')
@@ -185,7 +191,7 @@ def create_shipment(sender, receiver, item, FEDEX_CONFIG_OBJ, service_type, sequ
 
     package1.GroupPackageCount = 1
 
-    shipment.RequestedShipment.TotalWeight.Value = float(item['weight']) * item_qty
+    shipment.RequestedShipment.TotalWeight.Value = total_weight
     # Un-comment this to see the other variables you may set on a package.
     # print package1
 

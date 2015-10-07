@@ -23,14 +23,12 @@ def create_fedex_shipment(request):
     fedex_ship_docs_url = None
     output = PdfFileWriter()
     if client_type == 'business':
-        products = Product.objects.filter(order__pk=order_pk)
+        products = Product.objects.filter(order__pk=order_pk).select_related('order')
         package_count = products.count()
         for idx, product in enumerate(products, start=1):
             sender_details = None
             warehouse = None
-            item_name = product.name
             item_weight = product.applied_weight
-            item_qty = product.quantity
             receiver_name = product.order.name
             receiver_company = None
             receiver_phone = product.order.phone
@@ -52,7 +50,6 @@ def create_fedex_shipment(request):
                 is_cod = True
             service_type, config = fedex.get_service_type(str(product.order.method), float(product.price),
                                                           float(item_weight), receiver_city, is_cod)
-            item_price = product.price
             sender = {
                 "is_cod": is_cod,
                 "sender_details": sender_details,
@@ -69,12 +66,20 @@ def create_fedex_shipment(request):
                 "is_business": is_business_receiver,
                 "country_code": receiver_country_code
             }
-            item = {
-                "name": item_name,
-                "weight": item_weight,
-                "price": item_price,
-                "quantity": item_qty
-            }
+            if idx == 1:
+                item = [{
+                    "name": p.name,
+                    "weight": p.applied_weight,
+                    "price": p.price,
+                    "quantity": p.quantity
+                } for p in products]
+            else:
+                item = [{
+                    "name": product.name,
+                    "weight": product.applied_weight,
+                    "price": product.price,
+                    "quantity": product.quantity
+                }]
             result = fedex.create_shipment(sender, receiver, item, config, service_type, idx, package_count, master_tracking_no)
             if result['status'] != 'ERROR':
                 if product.mapped_tracking_no:
@@ -126,7 +131,7 @@ def create_fedex_shipment(request):
         fedex_ship_docs_url = str(order.fedex_ship_docs.name).split('/')[-1]
 
     elif client_type == 'customer':
-        shipments = Shipment.objects.filter(order__pk=order_pk)
+        shipments = Shipment.objects.filter(order__pk=order_pk).select_related('order')
         package_count = shipments.count()
         for idx, shipment in enumerate(shipments, start=1):
             sender_details = None
@@ -165,11 +170,18 @@ def create_fedex_shipment(request):
                 "is_business": is_business_receiver,
                 "country_code": receiver_country_code
             }
-            item = {
-                "name": item_name,
-                "weight": item_weight,
-                "price": item_price
-            }
+            if idx == 1:
+                item = [{
+                    "name": s.item_name,
+                    "weight": s.weight,
+                    "price": s.cost_of_courier
+                } for s in shipments]
+            else:
+                item = [{
+                    "name": shipment.item_name,
+                    "weight": shipment.weight,
+                    "price": shipment.cost_of_courier
+                }]
 
             result = fedex.create_shipment(sender, receiver, item, config, service_type, idx, package_count, master_tracking_no)
             if result['status'] != 'ERROR':

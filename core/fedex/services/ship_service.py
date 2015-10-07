@@ -101,10 +101,6 @@ class FedexProcessShipmentRequest(FedexBaseService):
         CustomsClearanceDetail.DutiesPayment.Payor.ResponsibleParty = self.client.factory.create('Party')
         CustomsClearanceDetail.CustomsValue = self.client.factory.create('Money')
         CustomsClearanceDetail.CommercialInvoice = self.client.factory.create('CommercialInvoice')
-        CustomsClearanceDetail.Commodities = self.client.factory.create('Commodity')
-        CustomsClearanceDetail.Commodities.Weight = self.client.factory.create('Weight')
-        CustomsClearanceDetail.Commodities.UnitPrice = self.client.factory.create('Money')
-        CustomsClearanceDetail.Commodities.CustomsValue = self.client.factory.create('Money')
         CustomsClearanceDetail.ExportDetail = self.client.factory.create('ExportDetail')
         CustomsClearanceDetail.ExportDetail.B13AFilingOption = self.client.factory.create('B13AFilingOptionType')
 
