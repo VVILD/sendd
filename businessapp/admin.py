@@ -1046,6 +1046,8 @@ class OrderAdmin(FilterUserAdmin):
                 return '<h2 style="color:red">Not COD Servicable</h2>'
 
         is_doc = True
+        if obj.product_set.all().count() == 0:
+            return "No products"
         for product in obj.product_set.all():
             if not product.applied_weight:
                 return "Enter applied weight for %s" % product.name
@@ -1058,6 +1060,10 @@ class OrderAdmin(FilterUserAdmin):
 
             if product.is_document is False:
                 is_doc = False
+
+            if product.fedex_ship_docs or product.fedex_outbound_label:
+                return "Order already created using legacy"
+
 
         if obj.state == 'Kerala' and obj.method == 'B':
             return '<h2 style="color:red">Not Servicable</h2>'

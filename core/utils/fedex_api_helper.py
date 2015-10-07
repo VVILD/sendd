@@ -86,8 +86,7 @@ def create_shipment(sender, receiver, item, FEDEX_CONFIG_OBJ, service_type, sequ
         shipment.RequestedShipment.SpecialServicesRequested.CodDetail.CodCollectionAmount = shipment.create_wsdl_object_of_type(
             'Money')
         shipment.RequestedShipment.SpecialServicesRequested.CodDetail.CodCollectionAmount.Currency = 'INR'
-        shipment.RequestedShipment.SpecialServicesRequested.CodDetail.CodCollectionAmount.Amount = float(
-            item['price'])
+        shipment.RequestedShipment.SpecialServicesRequested.CodDetail.CodCollectionAmount.Amount = sum(i['price'] for i in item)
         shipment.RequestedShipment.SpecialServicesRequested.CodDetail.CollectionType = 'CASH'
         shipment.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress = shipment.create_wsdl_object_of_type(
             'Party')
@@ -114,27 +113,37 @@ def create_shipment(sender, receiver, item, FEDEX_CONFIG_OBJ, service_type, sequ
     shipment.RequestedShipment.CustomsClearanceDetail.DutiesPayment.Payor.ResponsibleParty.Address.CountryCode = 'IN'
     shipment.RequestedShipment.CustomsClearanceDetail.DocumentContent = 'NON_DOCUMENTS'
     shipment.RequestedShipment.CustomsClearanceDetail.CustomsValue.Currency = 'INR'
-    shipment.RequestedShipment.CustomsClearanceDetail.CustomsValue.Amount = float(item['price'])
+    shipment.RequestedShipment.CustomsClearanceDetail.CustomsValue.Amount = float(item[0]['price'])
     if sender['is_cod']:
         shipment.RequestedShipment.CustomsClearanceDetail.CommercialInvoice.Purpose = 'SOLD'
     else:
         shipment.RequestedShipment.CustomsClearanceDetail.CommercialInvoice.Purpose = 'NOT_SOLD'
     shipment.RequestedShipment.CustomsClearanceDetail.CommercialInvoice.TaxesOrMiscellaneousChargeType = None
-    shipment.RequestedShipment.CustomsClearanceDetail.Commodities.NumberOfPieces = 1
-    shipment.RequestedShipment.CustomsClearanceDetail.Commodities.Description = str(item['name'])
-    shipment.RequestedShipment.CustomsClearanceDetail.Commodities.CountryOfManufacture = 'IN'
-    shipment.RequestedShipment.CustomsClearanceDetail.Commodities.Weight.Value = float(item['weight'])
-    shipment.RequestedShipment.CustomsClearanceDetail.Commodities.Weight.Units = "KG"
-    shipment.RequestedShipment.CustomsClearanceDetail.Commodities.Quantity = 1
-    shipment.RequestedShipment.CustomsClearanceDetail.Commodities.QuantityUnits = 'EA'
-    shipment.RequestedShipment.CustomsClearanceDetail.Commodities.UnitPrice.Currency = 'INR'
-    shipment.RequestedShipment.CustomsClearanceDetail.Commodities.UnitPrice.Amount = float(item['price'])
-    shipment.RequestedShipment.CustomsClearanceDetail.Commodities.CustomsValue.Currency = 'INR'
-    shipment.RequestedShipment.CustomsClearanceDetail.Commodities.CustomsValue.Amount = float(item['price'])
     shipment.RequestedShipment.CustomsClearanceDetail.ExportDetail.B13AFilingOption = 'NOT_REQUIRED'
     shipment.RequestedShipment.CustomsClearanceDetail.ClearanceBrokerage = None
     shipment.RequestedShipment.CustomsClearanceDetail.FreightOnValue = None
 
+    total_weight = 0.0
+    for i in item:
+        commodity = None
+        commodity = shipment.create_wsdl_object_of_type('Commodity')
+        commodity.Weight = shipment.create_wsdl_object_of_type('Weight')
+        commodity.UnitPrice = shipment.create_wsdl_object_of_type('Money')
+        commodity.CustomsValue = shipment.create_wsdl_object_of_type('Money')
+
+        commodity.NumberOfPieces = 1
+        commodity.CountryOfManufacture = 'IN'
+        commodity.Weight.Units = 'KG'
+        commodity.QuantityUnits = 'EA'
+        commodity.UnitPrice.Currency = 'INR'
+        commodity.CustomsValue.Currency = 'INR'
+        commodity.Quantity = 1
+        commodity.Description = str(i['name'])
+        commodity.Weight.Value = float(i['weight'])
+        commodity.UnitPrice.Amount = float(i['price'])
+        commodity.CustomsValue.Amount = float(i['price'])
+        shipment.RequestedShipment.CustomsClearanceDetail.Commodities.append(commodity)
+        total_weight += float(i['weight'])
 
     # Specifies the label type to be returned.
     # LABEL_DATA_ONLY or COMMON2D
@@ -169,7 +178,7 @@ def create_shipment(sender, receiver, item, FEDEX_CONFIG_OBJ, service_type, sequ
 
     package1_weight = shipment.create_wsdl_object_of_type('Weight')
     # Weight, in pounds.
-    package1_weight.Value = float(item['weight'])
+    package1_weight.Value = float(item[0]['weight'])
     package1_weight.Units = "KG"
 
     package1 = shipment.create_wsdl_object_of_type('RequestedPackageLineItem')
@@ -180,9 +189,9 @@ def create_shipment(sender, receiver, item, FEDEX_CONFIG_OBJ, service_type, sequ
     package1.CustomerReferences.Value = 'Bill D/T - Sender'
     package1.Weight = package1_weight
 
-    if master_tracking_no is None:
-        package1.GroupPackageCount = 1
+    package1.GroupPackageCount = 1
 
+    shipment.RequestedShipment.TotalWeight.Value = total_weight
     # Un-comment this to see the other variables you may set on a package.
     # print package1
 
@@ -199,16 +208,18 @@ def create_shipment(sender, receiver, item, FEDEX_CONFIG_OBJ, service_type, sequ
             "message": shipment.response.Notifications.Message
         }
 
-    if sender['is_cod']:
-        COD_RETURN_LABEL = shipment.response.CompletedShipmentDetail.AssociatedShipments[0].Label.Parts[0].Image
-    else:
-        COD_RETURN_LABEL = None
+
+    COD_RETURN_LABEL = None
+
     OUTBOUND_LABEL = shipment.response.CompletedShipmentDetail.CompletedPackageDetails[0].Label.Parts[0].Image
     COMMERCIAL_INVOICE = None
     shiping_cost = None
     if sequence_no == package_count:
         COMMERCIAL_INVOICE = shipment.response.CompletedShipmentDetail.ShipmentDocuments[0].Parts[0].Image
         shiping_cost = shipment.response.CompletedShipmentDetail.ShipmentRating.ShipmentRateDetails[0].TotalNetCharge.Amount
+
+        if sender['is_cod']:
+            COD_RETURN_LABEL = shipment.response.CompletedShipmentDetail.AssociatedShipments[0].Label.Parts[0].Image
 
     return {
         "status": shipment.response.HighestSeverity,
