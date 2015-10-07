@@ -209,16 +209,18 @@ def create_shipment(sender, receiver, item, FEDEX_CONFIG_OBJ, service_type, sequ
             "message": shipment.response.Notifications.Message
         }
 
-    if sender['is_cod']:
-        COD_RETURN_LABEL = shipment.response.CompletedShipmentDetail.AssociatedShipments[0].Label.Parts[0].Image
-    else:
-        COD_RETURN_LABEL = None
+
+    COD_RETURN_LABEL = None
+
     OUTBOUND_LABEL = shipment.response.CompletedShipmentDetail.CompletedPackageDetails[0].Label.Parts[0].Image
     COMMERCIAL_INVOICE = None
     shiping_cost = None
     if sequence_no == package_count:
         COMMERCIAL_INVOICE = shipment.response.CompletedShipmentDetail.ShipmentDocuments[0].Parts[0].Image
         shiping_cost = shipment.response.CompletedShipmentDetail.ShipmentRating.ShipmentRateDetails[0].TotalNetCharge.Amount
+
+        if sender['is_cod']:
+            COD_RETURN_LABEL = shipment.response.CompletedShipmentDetail.AssociatedShipments[0].Label.Parts[0].Image
 
     return {
         "status": shipment.response.HighestSeverity,

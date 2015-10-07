@@ -95,7 +95,7 @@ def create_fedex_shipment(request):
                 output.addPage(input1.getPage(1))
                 output.addPage(input1.getPage(2))
 
-                if is_cod:
+                if is_cod and result['COD_RETURN_LABEL'] is not None:
                     f2 = ContentFile(base64.b64decode(result['COD_RETURN_LABEL']))
                     input2 = PdfFileReader(f2, strict=False)
                     output.addPage(input2.getPage(0))
