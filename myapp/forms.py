@@ -27,6 +27,9 @@ class NewShipmentForm(ModelForm):
 #           exclude=['last_tracking_status','qc_comment','tracking_history']
 
 
+
+
+
 class NewShipmentAddForm(ModelForm):
     addressline1=forms.CharField(max_length=200,required=False)
     addressline2=forms.CharField(max_length=200,required=False)

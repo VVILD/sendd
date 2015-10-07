@@ -11,6 +11,8 @@ import datetime
 from datetime import date
 from django.contrib import admin
 from .models import *
+from businessapp.forms import NewQcCommentForm,NewTrackingStatus
+
 import reversion
 
 from django.http import HttpResponse, HttpResponseRedirect
@@ -26,6 +28,11 @@ from django.core.urlresolvers import reverse, NoReverseMatch
 from django.contrib.auth.models import User
 
 from django.utils import timezone
+
+
+from import_export.admin import ImportExportModelAdmin
+import export_xl
+
 
 
 action_names = {
@@ -449,8 +456,9 @@ admin.site.register(ApprovedBusiness, ApprovedBusinessAdmin)
 class DailyBusinessAdmin(CSBusinessAdmin):
     
     def get_queryset(self, request):
-        return self.model.objects.filter(daily='True')
-
+        qs = super(CSBusinessAdmin, self).queryset(request)
+        qs=qs.filter(daily='True')
+        return qs
 
 admin.site.register(DailyBusiness, DailyBusinessAdmin)
 
@@ -684,7 +692,8 @@ class ProductInline(admin.TabularInline):
             obj.real_tracking_no) + '<br>' + "<b>kartrocket_order:</b>" + str(
             obj.kartrocket_order) + '<br>' + "<b>Mapped_tracking_no:</b>" + str(
             obj.mapped_tracking_no) + '<br>'+ "<b>status</b>" + str(
-            obj.status) + '<br>' + "<b>company:</b>" + str(
+            obj.status) + '<br>' + "<b>history:</b>" + str(
+            obj.tracking_history) + '<br>' + "<b>company:</b>" + str(
             obj.company) + '<br>' + "<b>Shipping cost:</b>" + str(
             obj.shipping_cost) + '<br>' + "<b>Cod cost:</b>" + str(
             obj.cod_cost) + '<br>' + "<b>BARCODE:</b>" + str(
@@ -1199,20 +1208,69 @@ class QcProductAdmin(ProductAdmin):
     def get_queryset(self, request):
         return self.model.objects.filter(Q(order__status='DI')| Q(order__status='R')).exclude(status='C').exclude(order__business='ecell').exclude(order__business='ghasitaram').exclude(order__business='holachef')
     list_display = (
-        'order_no','tracking_no','company','book_date','dispatch_time','get_business','sent_to', 'tracking_status','last_location' ,'expected_delivery_date','last_updated','last_tracking_status','qc_comment')
+        'order_no','tracking_no','company','book_date','dispatch_time','get_business','sent_to', 'tracking_status','last_location' ,'expected_delivery_date','last_updated','last_tracking_status','history')
     list_filter = ['order__method','order__business','last_tracking_status','warning','company']
-    list_editable = ('qc_comment',)
-# readonly_fields = ('order__method','drop_phone', 'drop_name', 'status', 'address','barcode','tracking_data','real_tracking_no','name','weight','cost_of_courier','price')
+    list_editable = ()
+    readonly_fields = ('previous_comment','p_tracking')
     search_fields = ['order__order_no', 'real_tracking_no', 'mapped_tracking_no','tracking_data' ]
     
-    fieldsets = (
-        ('Tracking_details', {'fields': ['mapped_tracking_no', 'company','real_tracking_no','kartrocket_order','qc_comment'], 'classes': ('suit-tab', 'suit-tab-general')}),
-        ('General', {'fields': ['name', 'quantity','sku','price','weight','applied_weight','status','date','remittance','order'], 'classes': ('suit-tab', 'suit-tab-general')}),
-        ('Cost', {'fields': ['shipping_cost', 'cod_cost','return_cost'], 'classes': ('suit-tab', 'suit-tab-general')}),
-        ('Tracking', {'fields': ['tracking_data'], 'classes': ('suit-tab', 'suit-tab-tracking')}),
-        ('Barcode', {'fields': ['barcode','tracking_history'], 'classes': ('suit-tab', 'suit-tab-barcode')}),
-    )
 
+    def save_model(self, request, obj, form, change):
+        obj.qc_comment = '\n\n' + str(obj.qc_comment) + '<br>--' + str(request.user) +'(' + str(datetime.now().strftime("%Y-%m-%d %H:%M:%S")) + ')'
+        print "first"
+        obj.save()
+
+
+    def get_form(self, request, obj=None, **kwargs):
+        #tracking=request.GET.get["tracking",None]
+        tracking = request.GET.get('tracking',None)
+
+        if not tracking:  #add
+            self.form=NewQcCommentForm
+            self.fieldsets = (
+                ('Basic Information', {'fields': ['new_comment', 'previous_comment',], 'classes': ('suit-tab', 'suit-tab-general')}),
+                ('Basic Information', {'fields': ['qc_comment',], 'classes': ('suit-tab', 'suit-tab-barcode')}),
+            )
+
+        elif tracking: #change
+            self.form = NewTrackingStatus
+            self.fieldsets = (
+                ('Add new',
+                 {'fields': [('tstatus', 'time', 'location'), ], 'classes': ('suit-tab', 'suit-tab-general')}),
+                ('Previous tracking', {'fields': ['p_tracking', ],
+                                       'classes': ('suit-tab', 'suit-tab-general')}),
+                ('Do not edit this', {'fields': ['tracking_data', ], 'classes': ('suit-tab', 'suit-tab-tracking')}),
+                
+            )
+
+            self.suit_form_tabs = (('general', 'General'), ('tracking', 'Tracking'))
+
+
+
+        return super(QcProductAdmin, self).get_form(request, obj, **kwargs)
+
+    def response_change(self, request, obj):
+
+        return HttpResponse('''
+   <script type="text/javascript">
+      opener.dismissAddAnotherPopup(window);
+   </script>''')
+
+    def previous_comment(self,obj):
+        return obj.qc_comment
+
+    def p_tracking(self,obj):
+        import unicodedata
+        json_data=json.loads(obj.tracking_data)
+        display_str=''
+        for row in json_data:
+            display_str=display_str + unicodedata.normalize('NFKD',row["status"] ).encode('ascii', 'ignore') + "&nbsp;&nbsp;&nbsp;&nbsp; " + unicodedata.normalize('NFKD',row["date"] ).encode('ascii', 'ignore') + "&nbsp;&nbsp;&nbsp;&nbsp; " + unicodedata.normalize('NFKD',row["location"] ).encode('ascii', 'ignore') + "<br> <br>"
+        return display_str
+    p_tracking.allow_tags=True
+
+    def history(self,obj):
+        return str(obj.qc_comment) + '<br><br>' + '<a href="/admin/businessapp/qcproduct/%s/" onclick="return showAddAnotherPopup(this);">Add new</a> <br><br> <a href="/admin/businessapp/qcproduct/%s/?tracking=T" onclick="return showAddAnotherPopup(this);">Add tracking row</a>' % (obj.pk, obj.pk)   
+    history.allow_tags=True
 
     def order_no(self, obj):
         return '<a href="/admin/businessapp/order/%s/">%s</a>' % (obj.order.pk, obj.order.pk)
@@ -1357,6 +1415,21 @@ class BusinessPricingAdmin(reversion.VersionAdmin):
 
 admin.site.register(BusinessPricing,BusinessPricingAdmin)
 
+
+class ExportOrderAdmin(ImportExportModelAdmin):
+    list_filter=('order__business__business_name','order__business__username','order__book_time','last_tracking_status','company','status')
+    search_fields = ['name', 'real_tracking_no','order__business_name','order__username','order_no']
+    list_display = ('name', 'price', 'weight', 'status', 'real_tracking_no', 'order', 'barcode','date','last_tracking_status','update_time')
+
+    readonly_fields = (
+        'name', 'quantity', 'sku', 'price', 'weight', 'applied_weight', 'real_tracking_no', 'order',
+        'kartrocket_order', 'shipping_cost', 'cod_cost', 'status', 'date', 'barcode')
+
+    resource_class=export_xl.ProductResource
+
+
+
+admin.site.register(ExportOrder,ExportOrderAdmin)
 
 class Pricing2Admin(reversion.VersionAdmin):
     # search_fields=['name']

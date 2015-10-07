@@ -278,8 +278,9 @@ class Command(BaseCommand):
 
             while c < len(data):
                 new_data.append({"status" : data[c + 2], "date" : data[c],"location": data[c + 1] })
-                if "delivered" in row["status"].lower():
-                    completed=True
+                if "delivered" in str(data[c + 2]).lower():
+                    if "undelivered" not in str(data[c + 2]).lower():
+                        completed=True
                 c += 3
 
 
@@ -288,8 +289,8 @@ class Command(BaseCommand):
 
             # for row in new_tracking:
             #     tracking_data.append(row)
-                if "delivered" in row["status"].lower():
-                    completed=True
+                # if "delivered" in row["status"].lower():
+                #     completed=True
 
             result = {
                 "company": company,

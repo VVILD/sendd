@@ -368,6 +368,10 @@ class RemittanceProductPending(Product):
         proxy = True
 
 
+class ExportOrder(Product):
+    class Meta:
+        proxy = True
+
 class RemittanceProductComplete(Product):
     class Meta:
         proxy = True
