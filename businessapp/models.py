@@ -238,7 +238,7 @@ class Order(models.Model):
                               blank=True, null=True)
     master_tracking_number = models.CharField(max_length=10, blank=True, null=True)
     mapped_master_tracking_number = models.CharField(max_length=50, blank=True, null=True)
-    fedex_ship_docs = models.FileField(upload_to='shipment/', blank=True, null=True)
+    fedex_ship_docs = models.FileField(upload_to='shipment', blank=True, null=True)
     business = models.ForeignKey(Business)
     notification = models.CharField(max_length=1, choices=(('Y', 'yes'), ('N', 'no'),), null=True, blank=True,
                                          default='N')

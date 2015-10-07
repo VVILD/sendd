@@ -1037,6 +1037,8 @@ class OrderAdmin(FilterUserAdmin):
                 return '<h2 style="color:red">Not COD Servicable</h2>'
 
         is_doc = True
+        if obj.product_set.all().count() == 0:
+            return "No products"
         for product in obj.product_set.all():
             if not product.applied_weight:
                 return "Enter applied weight for %s" % product.name

@@ -128,6 +128,7 @@ def create_shipment(sender, receiver, item, FEDEX_CONFIG_OBJ, service_type, sequ
     shipment.RequestedShipment.CustomsClearanceDetail.Commodities.Quantity = 1
     if 'quantity' in item:
         shipment.RequestedShipment.CustomsClearanceDetail.Commodities.Quantity = int(item['quantity'])
+    item_qty = shipment.RequestedShipment.CustomsClearanceDetail.Commodities.Quantity
     shipment.RequestedShipment.CustomsClearanceDetail.Commodities.QuantityUnits = 'EA'
     shipment.RequestedShipment.CustomsClearanceDetail.Commodities.UnitPrice.Currency = 'INR'
     shipment.RequestedShipment.CustomsClearanceDetail.Commodities.UnitPrice.Amount = float(item['price'])
@@ -161,8 +162,8 @@ def create_shipment(sender, receiver, item, FEDEX_CONFIG_OBJ, service_type, sequ
         shipment.RequestedShipment.MasterTrackingId = shipment.create_wsdl_object_of_type('TrackingId')
         shipment.RequestedShipment.MasterTrackingId.TrackingIdType = "FEDEX"
         shipment.RequestedShipment.MasterTrackingId.TrackingNumber = master_tracking_no
-    else:
-        shipment.RequestedShipment.PackageCount = package_count
+
+    shipment.RequestedShipment.PackageCount = package_count
 
     shipment.RequestedShipment.ShippingDocumentSpecification.ShippingDocumentTypes = 'COMMERCIAL_INVOICE'
     shipment.RequestedShipment.ShippingDocumentSpecification.CommercialInvoiceDetail = shipment.create_wsdl_object_of_type('CommercialInvoiceDetail')
@@ -184,6 +185,7 @@ def create_shipment(sender, receiver, item, FEDEX_CONFIG_OBJ, service_type, sequ
 
     package1.GroupPackageCount = 1
 
+    shipment.RequestedShipment.TotalWeight.Value = float(item['weight']) * item_qty
     # Un-comment this to see the other variables you may set on a package.
     # print package1
 
