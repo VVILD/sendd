@@ -6,6 +6,7 @@ from django.shortcuts import render, redirect
 import base64
 from businessapp.models import Product
 from businessapp.models import Order as BusinessOrder
+from core.utils.fedex_legacy_helper import FedexLegacy
 from myapp.models import Order as CustomerOrder
 import core.utils.fedex_api_helper as fedex
 from myapp.models import Shipment
@@ -236,7 +237,6 @@ def create_fedex_shipment(request):
 
 
 def barcode_fedex_redirector(request, barcode):
-    print(barcode)
     try:
         shipment = Shipment.objects.get(barcode=barcode)
     except ObjectDoesNotExist:
@@ -254,3 +254,168 @@ def barcode_fedex_redirector(request, barcode):
     if shipment.fedex_cod_return_label is not None:
         labels.append(static_url + str(shipment.fedex_cod_return_label.name).split('/')[-1])
     return render(request, 'fedex_print.html', {"urlList": labels})
+
+
+def create_individual_fedex_shipment(request):
+    shipment_pk = request.GET.get('shipment_pk', None)
+    client_type = request.GET.get('client_type', None)
+    sender_details = None
+    warehouse = None
+    receiver_name = None
+    receiver_phone = None
+    receiver_company = None
+    receiver_address = None
+    receiver_city = None
+    receiver_state = None
+    receiver_pincode = None
+    receiver_country_code = None
+    is_business_receiver = None
+    item_name = None
+    item_weight = None
+    service_type = None
+    item_price = None
+    fedex_legacy = FedexLegacy()
+    is_cod = False
+    config = None
+    if client_type == 'business':
+        product = Product.objects.get(pk=shipment_pk)
+        item_name = product.name
+        item_weight = product.applied_weight
+        receiver_name = product.order.name
+        receiver_company = None
+        receiver_phone = product.order.phone
+        receiver_address1 = product.order.address1
+        receiver_address2 = product.order.address2
+        receiver_address = receiver_address1 + receiver_address2
+        receiver_city = product.order.city
+        receiver_state = product.order.state
+        receiver_pincode = product.order.pincode
+        receiver_country_code = 'IN'
+        is_business_receiver = False
+        product_type = product.order.payment_method
+        is_cod = False
+        if product.order.business.business_name is not None:
+            sender_details = product.order.business.__dict__
+        if product.order.business.warehouse is not None:
+            warehouse = product.order.business.warehouse.__dict__
+        if product_type == 'C':
+            is_cod = True
+        service_type, config = fedex_legacy.get_service_type(str(product.order.method), float(product.price),
+                                                      float(item_weight), receiver_city, is_cod)
+        item_price = product.price
+    elif client_type == 'customer':
+        shipment = Shipment.objects.get(pk=shipment_pk)
+        item_name = shipment.item_name
+        item_weight = shipment.weight
+        if shipment.order.warehouse is not None:
+            warehouse = shipment.order.warehouse.__dict__
+        if shipment.order.namemail.name is not None:
+            sender_details = {"business_name": shipment.order.namemail.name}
+        receiver_name = shipment.drop_name
+        receiver_company = None
+        receiver_phone = shipment.drop_phone
+        receiver_address = shipment.drop_address.flat_no + shipment.drop_address.locality
+        receiver_city = shipment.drop_address.city
+        receiver_state = shipment.drop_address.state
+        receiver_pincode = shipment.drop_address.pincode
+        receiver_country_code = 'IN'
+        is_business_receiver = False
+        service_type, config = fedex_legacy.get_service_type(str(shipment.category), float(shipment.cost_of_courier),
+                                                      float(item_weight), receiver_city)
+        item_price = shipment.cost_of_courier
+
+    sender = {
+        "is_cod": is_cod,
+        "sender_details": sender_details,
+        "warehouse": warehouse
+    }
+    receiver = {
+        "name": receiver_name,
+        "company": receiver_company,
+        "phone": receiver_phone,
+        "address": receiver_address,
+        "city": receiver_city,
+        "state": receiver_state,
+        "pincode": receiver_pincode,
+        "is_business": is_business_receiver,
+        "country_code": receiver_country_code
+    }
+    item = {
+        "name": item_name,
+        "weight": item_weight,
+        "price": item_price
+    }
+    result = fedex_legacy.create_shipment(sender, receiver, item, config, service_type)
+    fedex_ship_docs_url = None
+    if result['status'] != 'ERROR':
+        if client_type == 'business':
+            if product.mapped_tracking_no:
+                product.tracking_history= str(product.tracking_history) + ',' + str(product.mapped_tracking_no)
+            product.mapped_tracking_no = result['tracking_number']
+
+            output = PdfFileWriter()
+            f1 = ContentFile(base64.b64decode(result['OUTBOUND_LABEL']))
+            input1 = PdfFileReader(f1, strict=False)
+            output.addPage(input1.getPage(0))
+            output.addPage(input1.getPage(1))
+            output.addPage(input1.getPage(2))
+
+            if is_cod:
+                f2 = ContentFile(base64.b64decode(result['COD_RETURN_LABEL']))
+                input2 = PdfFileReader(f2, strict=False)
+                output.addPage(input2.getPage(0))
+                output.addPage(input2.getPage(1))
+
+            f3 = ContentFile(base64.b64decode(result['COMMERCIAL_INVOICE']))
+            input3 = PdfFileReader(f3, strict=False)
+            output.addPage(input3.getPage(0))
+
+            output.addJS("this.print({bUI:true,bSilent:false,bShrinkToFit:true});")
+            outputStream = cStringIO.StringIO()
+            output.write(outputStream)
+            product.fedex_ship_docs.save(result['tracking_number'] + '.pdf',
+                                              ContentFile(outputStream.getvalue()))
+            fedex_ship_docs_url = str(product.fedex_ship_docs.name).split('/')[-1]
+            if result["shipping_cost"]:
+                product.actual_shipping_cost = float(result["shipping_cost"])
+            product.status = 'DI'
+            product.company = 'F'
+            product.save()
+        elif client_type == 'customer':
+            if shipment.mapped_tracking_no:
+                shipment.tracking_history=str(shipment.tracking_history) + ',' + str(shipment.mapped_tracking_no)
+            shipment.mapped_tracking_no = result['tracking_number']
+
+            output = PdfFileWriter()
+            f1 = ContentFile(base64.b64decode(result['OUTBOUND_LABEL']))
+            input1 = PdfFileReader(f1, strict=False)
+            output.addPage(input1.getPage(0))
+            output.addPage(input1.getPage(1))
+            output.addPage(input1.getPage(2))
+
+            f3 = ContentFile(base64.b64decode(result['COMMERCIAL_INVOICE']))
+            input3 = PdfFileReader(f3, strict=False)
+            output.addPage(input3.getPage(0))
+
+            output.addJS("this.print({bUI:true,bSilent:false,bShrinkToFit:true});")
+            outputStream = cStringIO.StringIO()
+            output.write(outputStream)
+            shipment.fedex_ship_docs.save(result['tracking_number'] + '.pdf',
+                                               ContentFile(outputStream.getvalue()))
+            fedex_ship_docs_url = str(shipment.fedex_ship_docs.name).split('/')[-1]
+            if result["shipping_cost"]:
+                shipment.actual_shipping_cost = float(result["shipping_cost"])
+            shipment.status = 'DI'
+            shipment.company = 'F'
+
+            shipment.save()
+    context = {
+        "status": result['status'],
+        "tracking_number": result["tracking_number"],
+        "fedex_ship_docs_url": fedex_ship_docs_url,
+        "is_cod": is_cod,
+        "service_type": result["service_type"],
+        "account": result["account"],
+        "shipping_cost": result["shipping_cost"]
+    }
+    return render(request, 'fedex_legacy_shipment.html', {"result": context})
