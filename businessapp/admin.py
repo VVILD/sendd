@@ -1432,7 +1432,10 @@ class ExportOrderAdmin(ImportExportModelAdmin):
     list_display = ('order_no','get_business', 'status', 'applied_weight', 'real_tracking_no', 'barcode','date','last_tracking_status','mapped_tracking_no' ,'company')
 
     def order_no(self, obj):
-        return '<a href="/admin/businessapp/order/%s/">%s</a>' % (obj.order.pk, obj.order.pk)
+        try:
+            return '<a href="/admin/businessapp/order/%s/">%s</a>' % (obj.order.pk, obj.order.pk)
+        else:
+            return 'None'
     order_no.allow_tags = True
     order_no.admin_order_field = 'order'
 
