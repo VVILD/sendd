@@ -86,7 +86,7 @@ def create_shipment(sender, receiver, item, FEDEX_CONFIG_OBJ, service_type, sequ
         shipment.RequestedShipment.SpecialServicesRequested.CodDetail.CodCollectionAmount = shipment.create_wsdl_object_of_type(
             'Money')
         shipment.RequestedShipment.SpecialServicesRequested.CodDetail.CodCollectionAmount.Currency = 'INR'
-        shipment.RequestedShipment.SpecialServicesRequested.CodDetail.CodCollectionAmount.Amount = reduce(lambda x, y: x['price'] + y, item)
+        shipment.RequestedShipment.SpecialServicesRequested.CodDetail.CodCollectionAmount.Amount = sum(i['price'] for i in item)
         shipment.RequestedShipment.SpecialServicesRequested.CodDetail.CollectionType = 'CASH'
         shipment.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress = shipment.create_wsdl_object_of_type(
             'Party')
