@@ -1432,9 +1432,17 @@ class ExportOrderAdmin(ImportExportActionModelAdmin):
     def lookup_allowed(self,key,value):
         return True
 
-    list_filter=('order__business__business_name','order__business__username','order__book_time','last_tracking_status','company','status')
+    list_filter=('order__business__business_name','order__business__username','order__book_time','last_tracking_status','company','status','remittance','order__payment_method')
     search_fields = ['name', 'real_tracking_no','order__business__business_name','order__business__username','order__order_no']
-    list_display = ('order_no','get_business', 'status', 'applied_weight', 'real_tracking_no', 'barcode','date','last_tracking_status','mapped_tracking_no' ,'company')
+    list_display = ('order_no','get_business', 'status', 'applied_weight', 'real_tracking_no', 'barcode','date','last_tracking_status','mapped_tracking_no' ,'company','payment_method','remittance')
+
+
+    def payment_method(self, obj):
+        try:
+            return obj.order.payment_method
+        except:
+            return "None"
+
 
     def order_no(self, obj):
         try:
@@ -1614,7 +1622,7 @@ class BdheadAdmin(admin.ModelAdmin):
             sum_b2b = today_products_correct.aggregate(total=Sum('shipping_cost', field="shipping_cost+cod_cost"))['total']
             count_b2b = today_products_correct.count()
         context={'s':sum_b2b,'c':count_b2b}
-        
+
         return super(BdheadAdmin, self).changelist_view(request, extra_context=context)
 
     def total_revenue(self,obj):
