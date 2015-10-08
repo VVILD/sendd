@@ -31,6 +31,7 @@ from django.utils import timezone
 
 
 from import_export.admin import ImportExportModelAdmin
+from import_export.admin import ImportExportActionModelAdmin
 import export_xl
 
 
@@ -1208,7 +1209,7 @@ admin.site.register(RemittanceProductComplete, RemittanceProductCompleteAdmin)
 
 reversion.VersionAdmin.change_list_template='businessapp/templates/admin/businessapp/change_list.html'
 
-class QcProductAdmin(ProductAdmin):
+class QcProductAdmin(reversion.VersionAdmin,ImportExportActionModelAdmin):
 
     change_list_template='businessapp/templates/admin/businessapp/qcproduct/change_list.html'
     def get_queryset(self, request):
@@ -1361,6 +1362,8 @@ class QcProductAdmin(ProductAdmin):
         if css_class:
             return {'class': css_class, 'data': obj.name}
 
+    resource_class=export_xl.QcProductResource
+
 
 admin.site.register(QcProduct, QcProductAdmin)
 
@@ -1422,7 +1425,7 @@ class BusinessPricingAdmin(reversion.VersionAdmin):
 admin.site.register(BusinessPricing,BusinessPricingAdmin)
 
 
-class ExportOrderAdmin(ImportExportModelAdmin):
+class ExportOrderAdmin(ImportExportActionModelAdmin):
 
     def lookup_allowed(self,key,value):
         return True
