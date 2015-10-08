@@ -361,14 +361,14 @@ class Command(BaseCommand):
         aftership_track_queue = []
         # Track Bluedart shipments for businesses and customers
         business_shipments = Product.objects.filter(
-            (Q(company='B') | Q(company='A') | Q(company='DT') | Q(company='I')) & (
+            (Q(company='B') | Q(company='A') | Q(company='I')) & (
                 Q(status='P') | Q(status='DI'))).exclude(Q(order__status='C')| Q(order__status='N'))
 
         for business_shipment in business_shipments:
             aftership_track_queue.append((business_shipment, 'business'))
 
         customer_shipments = Shipment.objects.filter(
-            (Q(company='B') | Q(company='A') | Q(company='DT') | Q(company='I')) & (
+            (Q(company='B') | Q(company='A') |  Q(company='I')) & (
                 Q(status='P') | Q(status='DI'))).exclude( Q(order__order_status='N')| Q(order__order_status='D'))
 
         for customer_shipment in customer_shipments:
