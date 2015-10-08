@@ -344,11 +344,11 @@ class TrackingResource(CORSResource):
                                                                                                 "tracking_data")
             master = True
         elif str(tracking_id).lower().startswith('se'):
-            products = Product.objects.filter(barcode=tracking_id).values("real_tracking_no", "tracking_data")
+            products = Product.objects.filter(barcode=tracking_id).values("real_tracking_no", "tracking_data", "actual_delivery_timestamp", "estimated_delivery_timestamp")
         elif str(tracking_id).lower().startswith('b'):
-            products = Product.objects.filter(real_tracking_no=tracking_id).values("real_tracking_no", "tracking_data")
+            products = Product.objects.filter(real_tracking_no=tracking_id).values("real_tracking_no", "tracking_data", "actual_delivery_timestamp", "estimated_delivery_timestamp")
         else:
-            products = Shipment.objects.filter(real_tracking_no=tracking_id).values("real_tracking_no", "tracking_data")
+            products = Shipment.objects.filter(real_tracking_no=tracking_id).values("real_tracking_no", "tracking_data", "actual_delivery_timestamp", "estimated_delivery_timestamp")
 
         for product in products:
             product['tracking_data'] = json.loads(product['tracking_data'])
