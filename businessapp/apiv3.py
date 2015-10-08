@@ -834,7 +834,7 @@ class PincodecheckResource(CORSResource):
                 code="request_invalid",
                 message="enter correct pincode length")
 
-        if (pincode[:4] == '4000'):
+        if (pincode[:4] == '400'):
             valid = True
         else:
             valid = False
