@@ -1209,7 +1209,7 @@ admin.site.register(RemittanceProductComplete, RemittanceProductCompleteAdmin)
 
 reversion.VersionAdmin.change_list_template='businessapp/templates/admin/businessapp/change_list.html'
 
-class QcProductAdmin(reversion.VersionAdmin,ImportExportActionModelAdmin):
+class QcProductAdmin(ProductAdmin,reversion.VersionAdmin,ImportExportActionModelAdmin):
 
     change_list_template='businessapp/templates/admin/businessapp/qcproduct/change_list.html'
     def get_queryset(self, request):
@@ -1313,6 +1313,7 @@ class QcProductAdmin(reversion.VersionAdmin,ImportExportActionModelAdmin):
         else:
             return 'None'
     expected_delivery_date.short_description='expected delivery date'
+
 
     def tracking_status(self, obj):
 #pk=obj.namemail.pk
