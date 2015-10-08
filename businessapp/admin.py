@@ -623,7 +623,7 @@ class ProductAdmin(reversion.VersionAdmin):
 
     fieldsets = (
         ('Tracking_details', {'fields': ['mapped_tracking_no', 'company','real_tracking_no','kartrocket_order'], 'classes': ('suit-tab', 'suit-tab-general')}),
-        ('General', {'fields': ['name', 'quantity','sku','price','weight','applied_weight','status','date','remittance','order'], 'classes': ('suit-tab', 'suit-tab-general')}),
+        ('General', {'fields': ['name', 'quantity','sku','price','weight','applied_weight','status','date','remittance','order','actual_delivery_timestamp','estimated_delivery_timestamp'], 'classes': ('suit-tab', 'suit-tab-general')}),
         ('Cost', {'fields': ['shipping_cost', 'cod_cost','return_cost'], 'classes': ('suit-tab', 'suit-tab-general')}),
         ('Tracking', {'fields': ['tracking_data'], 'classes': ('suit-tab', 'suit-tab-tracking')}),
         ('Barcode', {'fields': ['barcode','tracking_history'], 'classes': ('suit-tab', 'suit-tab-barcode')}),
@@ -1212,6 +1212,7 @@ reversion.VersionAdmin.change_list_template='businessapp/templates/admin/busines
 class QcProductAdmin(ProductAdmin,reversion.VersionAdmin,ImportExportActionModelAdmin):
 
     change_list_template='businessapp/templates/admin/businessapp/qcproduct/change_list.html'
+
     def get_queryset(self, request):
         return self.model.objects.filter(Q(order__status='DI')| Q(order__status='R')).exclude(status='C').exclude(order__business='ecell').exclude(order__business='ghasitaram').exclude(order__business='holachef')
     list_display = (
@@ -1547,12 +1548,22 @@ class BmFilter(admin.SimpleListFilter):
 class BdheadAdmin(admin.ModelAdmin):
     # search_fields=['name']
 
+
     def get_queryset(self, request):
         todays_date=date.today()
         import datetime
         date_max = datetime.datetime.combine(todays_date, datetime.time.max)
         date_min = datetime.datetime.combine(todays_date, datetime.time.min)
 
+        try:
+            start_time=request.GET['order__book_time__gte']
+            end_time=request.GET['order__book_time__lte']
+            print start_time
+            print end_time
+
+        except:
+            start_time= date(1,1,1)
+            end_time=date.today() + datetime.timedelta(days=2)
 #'order_total','order_today','total_completed','total_revenue',
 
         return Business.objects.extra(select={
@@ -1564,7 +1575,7 @@ class BdheadAdmin(admin.ModelAdmin):
     search_fields=['username','business_name']
     list_display = ('username','business_name', 'warehouse', 'businessmanager','order_total','order_today','total_completed','total_revenue')
     #aw_id_fields = ('pb', 'warehouse')
-    list_filter = ['warehouse',BmFilter,]
+    list_filter = ['warehouse',BmFilter,('order__book_time', DateRangeFilter),]
 
 
     actions = [export_as_csv_action("CSV Export", fields=['username','business_name','apikey','name','email','contact_mob','contact_office','address','city','state','pincode'])]
