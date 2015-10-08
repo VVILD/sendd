@@ -20,6 +20,7 @@ from itertools import groupby
 
 import subprocess
 
+
 def index(request):
     todays_date = date.today()
     week_before = date.today() - datetime.timedelta(days=62)

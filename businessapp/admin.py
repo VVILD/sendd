@@ -11,6 +11,8 @@ import datetime
 from datetime import date
 from django.contrib import admin
 from .models import *
+from businessapp.forms import NewQcCommentForm,NewTrackingStatus
+
 import reversion
 
 from django.http import HttpResponse, HttpResponseRedirect
@@ -26,6 +28,11 @@ from django.core.urlresolvers import reverse, NoReverseMatch
 from django.contrib.auth.models import User
 
 from django.utils import timezone
+
+
+from import_export.admin import ImportExportModelAdmin
+import export_xl
+
 
 
 action_names = {
@@ -449,8 +456,9 @@ admin.site.register(ApprovedBusiness, ApprovedBusinessAdmin)
 class DailyBusinessAdmin(CSBusinessAdmin):
     
     def get_queryset(self, request):
-        return self.model.objects.filter(daily='True')
-
+        qs = super(CSBusinessAdmin, self).queryset(request)
+        qs=qs.filter(daily='True')
+        return qs
 
 admin.site.register(DailyBusiness, DailyBusinessAdmin)
 
@@ -684,7 +692,8 @@ class ProductInline(admin.TabularInline):
             obj.real_tracking_no) + '<br>' + "<b>kartrocket_order:</b>" + str(
             obj.kartrocket_order) + '<br>' + "<b>Mapped_tracking_no:</b>" + str(
             obj.mapped_tracking_no) + '<br>'+ "<b>status</b>" + str(
-            obj.status) + '<br>' + "<b>company:</b>" + str(
+            obj.status) + '<br>' + "<b>history:</b>" + str(
+            obj.tracking_history) + '<br>' + "<b>company:</b>" + str(
             obj.company) + '<br>' + "<b>Shipping cost:</b>" + str(
             obj.shipping_cost) + '<br>' + "<b>Cod cost:</b>" + str(
             obj.cod_cost) + '<br>' + "<b>BARCODE:</b>" + str(
@@ -818,9 +827,9 @@ class ProductInline(admin.TabularInline):
 
         if (valid):
             if (cod=='F'):
-                return 'All good!<br><a href="/stats/kartrocket/?%s" target="_blank" >Create Normal Order</a>' % (string)
+                return 'All good!<br><a href="/stats/kartrocket/?%s" target="_blank" >Create Kartrocket Normal Order</a>' % (string)
             elif (cod=='C'):
-                return 'All good!<br><a href="/stats/kartrocket/?%s" target="_blank" >Create Cod Order</a>' % (string)
+                return 'All good!<br><a href="/stats/kartrocket/?%s" target="_blank" >Create Kartrocket Cod Order</a>' % (string)
             else:
                 return "no payment_method set"
         else:
@@ -1205,20 +1214,69 @@ class QcProductAdmin(ProductAdmin):
     def get_queryset(self, request):
         return self.model.objects.filter(Q(order__status='DI')| Q(order__status='R')).exclude(status='C').exclude(order__business='ecell').exclude(order__business='ghasitaram').exclude(order__business='holachef')
     list_display = (
-        'order_no','tracking_no','company','book_date','dispatch_time','get_business','sent_to', 'tracking_status','last_location' ,'expected_delivery_date','last_updated','last_tracking_status','qc_comment')
+        'order_no','tracking_no','company','book_date','dispatch_time','get_business','sent_to', 'tracking_status','last_location' ,'expected_delivery_date','last_updated','last_tracking_status','history')
     list_filter = ['order__method','order__business','last_tracking_status','warning','company']
-    list_editable = ('qc_comment',)
-# readonly_fields = ('order__method','drop_phone', 'drop_name', 'status', 'address','barcode','tracking_data','real_tracking_no','name','weight','cost_of_courier','price')
+    list_editable = ()
+    readonly_fields = ('previous_comment','p_tracking')
     search_fields = ['order__order_no', 'real_tracking_no', 'mapped_tracking_no','tracking_data' ]
     
-    fieldsets = (
-        ('Tracking_details', {'fields': ['mapped_tracking_no', 'company','real_tracking_no','kartrocket_order','qc_comment'], 'classes': ('suit-tab', 'suit-tab-general')}),
-        ('General', {'fields': ['name', 'quantity','sku','price','weight','applied_weight','status','date','remittance','order'], 'classes': ('suit-tab', 'suit-tab-general')}),
-        ('Cost', {'fields': ['shipping_cost', 'cod_cost','return_cost'], 'classes': ('suit-tab', 'suit-tab-general')}),
-        ('Tracking', {'fields': ['tracking_data'], 'classes': ('suit-tab', 'suit-tab-tracking')}),
-        ('Barcode', {'fields': ['barcode','tracking_history'], 'classes': ('suit-tab', 'suit-tab-barcode')}),
-    )
 
+    def save_model(self, request, obj, form, change):
+        obj.qc_comment = '\n\n' + str(obj.qc_comment) + '<br>--' + str(request.user) +'(' + str(datetime.now().strftime("%Y-%m-%d %H:%M:%S")) + ')'
+        print "first"
+        obj.save()
+
+
+    def get_form(self, request, obj=None, **kwargs):
+        #tracking=request.GET.get["tracking",None]
+        tracking = request.GET.get('tracking',None)
+
+        if not tracking:  #add
+            self.form=NewQcCommentForm
+            self.fieldsets = (
+                ('Basic Information', {'fields': ['new_comment', 'previous_comment',], 'classes': ('suit-tab', 'suit-tab-general')}),
+                ('Basic Information', {'fields': ['qc_comment',], 'classes': ('suit-tab', 'suit-tab-barcode')}),
+            )
+
+        elif tracking: #change
+            self.form = NewTrackingStatus
+            self.fieldsets = (
+                ('Add new',
+                 {'fields': [('tstatus', 'time', 'location'), ], 'classes': ('suit-tab', 'suit-tab-general')}),
+                ('Previous tracking', {'fields': ['p_tracking', ],
+                                       'classes': ('suit-tab', 'suit-tab-general')}),
+                ('Do not edit this', {'fields': ['tracking_data', ], 'classes': ('suit-tab', 'suit-tab-tracking')}),
+                
+            )
+
+            self.suit_form_tabs = (('general', 'General'), ('tracking', 'Tracking'))
+
+
+
+        return super(QcProductAdmin, self).get_form(request, obj, **kwargs)
+
+    def response_change(self, request, obj):
+
+        return HttpResponse('''
+   <script type="text/javascript">
+      opener.dismissAddAnotherPopup(window);
+   </script>''')
+
+    def previous_comment(self,obj):
+        return obj.qc_comment
+
+    def p_tracking(self,obj):
+        import unicodedata
+        json_data=json.loads(obj.tracking_data)
+        display_str=''
+        for row in json_data:
+            display_str=display_str + unicodedata.normalize('NFKD',row["status"] ).encode('ascii', 'ignore') + "&nbsp;&nbsp;&nbsp;&nbsp; " + unicodedata.normalize('NFKD',row["date"] ).encode('ascii', 'ignore') + "&nbsp;&nbsp;&nbsp;&nbsp; " + unicodedata.normalize('NFKD',row["location"] ).encode('ascii', 'ignore') + "<br> <br>"
+        return display_str
+    p_tracking.allow_tags=True
+
+    def history(self,obj):
+        return str(obj.qc_comment) + '<br><br>' + '<a href="/admin/businessapp/qcproduct/%s/" onclick="return showAddAnotherPopup(this);">Add new</a> <br><br> <a href="/admin/businessapp/qcproduct/%s/?tracking=T" onclick="return showAddAnotherPopup(this);">Add tracking row</a>' % (obj.pk, obj.pk)   
+    history.allow_tags=True
 
     def order_no(self, obj):
         return '<a href="/admin/businessapp/order/%s/">%s</a>' % (obj.order.pk, obj.order.pk)
@@ -1306,12 +1364,110 @@ class QcProductAdmin(ProductAdmin):
 
 admin.site.register(QcProduct, QcProductAdmin)
 
+def createpricingfield(name,weight,type_of_pricing):
+    def func1(self,obj):
+        y=Pricing2.objects.filter(business=obj,weight__weight=weight,type=type_of_pricing)
+        pk_list=[]
+        for x in y:
+            pk_list.append((x.pk,x.price))
+        result_string='<table>'  
+        for item in pk_list:
+            result_string= result_string +' <th> <a href="/admin/businessapp/pricing2/'+str(item[0])+'/" target="_blank"> '+str(item[1]) +'</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </th>'
+        return result_string + '</table>'
+    func1.__name__ = name
+    return func1
+
+
+
+class BusinessPricingAdmin(reversion.VersionAdmin):
+    list_filter=('username','business_name')
+    list_display=('business_name',)
+    readonly_fields=('N0_25','N0_5','N1','N2','N3','N4','N5','N6','N7','N8','N9','N10','B1','B2','B3','B4','B5','B6','B7','B8','B9','B10')
+
+
+
+    N0_25=createpricingfield('N0_25',0.25,'N')
+    N0_5=createpricingfield('N0_5',0.5,'N')
+    N1=createpricingfield('N1',1.0,'N')
+    N2=createpricingfield('N2',2.0,'N')
+    N3=createpricingfield('N3',3.0,'N')
+    N4=createpricingfield('N4',4.0,'N')
+    N5=createpricingfield('N5',5.0,'N')
+    N6=createpricingfield('N6',6.0,'N')
+    N7=createpricingfield('N7',7.0,'N')
+    N8=createpricingfield('N8',8.0,'N')
+    N9=createpricingfield('N9',9.0,'N')
+    N10=createpricingfield('N10',10.0,'N')
+
+    B1=createpricingfield('B1',1.0,'B')
+    B2=createpricingfield('B2',2.0,'B')
+    B3=createpricingfield('B3',3.0,'B')
+    B4=createpricingfield('B4',4.0,'B')
+    B5=createpricingfield('B5',5.0,'B')
+    B6=createpricingfield('B6',6.0,'B')
+    B7=createpricingfield('B7',7.0,'B')
+    B8=createpricingfield('B8',8.0,'B')
+    B9=createpricingfield('B9',9.0,'B')
+    B10=createpricingfield('B10',1.0,'B')
+
+
+
+    fieldsets = (
+        ('Normal Pricing', {'fields': ['N0_25','N0_5','N1','N2','N3','N4','N5','N6','N7','N8','N9','N10']}),
+        ('Bulk Pricing', {'fields': ['B1','B2','B3','B4','B5','B6','B7','B8','B9','B10']}),
+        # ('Bulk Pricing',
+        #  {'fields': [('name', 'weight', 'cost_of_courier'), ], 'classes': ('suit-tab', 'suit-tab-general')}),
+    )
+
+admin.site.register(BusinessPricing,BusinessPricingAdmin)
+
+
+class ExportOrderAdmin(ImportExportModelAdmin):
+
+    def lookup_allowed(self,key,value):
+        return True
+
+    list_filter=('order__business__business_name','order__business__username','order__book_time','last_tracking_status','company','status')
+    search_fields = ['name', 'real_tracking_no','order__business__business_name','order__business__username','order__order_no']
+    list_display = ('order_no','get_business', 'status', 'applied_weight', 'real_tracking_no', 'barcode','date','last_tracking_status','mapped_tracking_no' ,'company')
+
+    def order_no(self, obj):
+        try:
+            return '<a href="/admin/businessapp/order/%s/">%s</a>' % (obj.order.pk, obj.order.pk)
+        except:
+            return 'None'
+    order_no.allow_tags = True
+    order_no.admin_order_field = 'order'
+
+    def get_business(self, obj):
+        try:
+            return obj.order.business
+        except:
+            return "None"
+
+    get_business.short_description = 'business'
+    get_business.admin_order_field = 'order__business'
+    readonly_fields = (
+        'name', 'quantity', 'sku', 'price', 'weight', 'applied_weight', 'real_tracking_no', 'order',
+        'kartrocket_order', 'shipping_cost', 'cod_cost', 'status', 'date', 'barcode')
+
+    resource_class=export_xl.ProductResource
+
+
+
+admin.site.register(ExportOrder,ExportOrderAdmin)
 
 class Pricing2Admin(reversion.VersionAdmin):
     # search_fields=['name']
     list_filter=('business__username','business__business_name','zone','weight','type')
-    list_display=('business','weight','zone','type','price','ppkg')
-    list_editable = ('price',)
+    list_display=('business',)
+
+    
+    readonly_fields=('ppkg','weight','zone','type','business')
+
+
+    
+
 
 admin.site.register(Pricing2,Pricing2Admin)
 

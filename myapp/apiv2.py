@@ -2392,7 +2392,7 @@ class PincodecheckResource2(MultipartResource, ModelResource):
         goodpincodes = ['400076', '400072', '400078', '400077', '400080', '400079', '400069', '400086']
         
         pincode=bundle.data['pincode']
-        if (pincode[:4] == '4000'):
+        if (pincode[:3] == '400'):
             bundle.data['valid'] = 1
         else:
             bundle.data['valid'] = 0

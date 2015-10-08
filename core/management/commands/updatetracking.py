@@ -284,15 +284,19 @@ class Command(BaseCommand):
 
             while c < len(data):
                 new_data.append({"status" : data[c + 2], "date" : data[c],"location": data[c + 1] })
+                if "delivered" in str(data[c + 2]).lower():
+                    if "undelivered" not in str(data[c + 2]).lower():
+                        completed=True
                 c += 3
 
-            new_tracking = sorted(new_data, key=lambda k: k["date"])
 
+            # new_tracking = sorted(new_data, key=lambda k: k["date"])
+            tracking_data=new_data[::-1]
 
-            for row in new_tracking:
-                tracking_data.append(row)
-                if "delivered" in row["status"].lower():
-                    completed=True
+            # for row in new_tracking:
+            #     tracking_data.append(row)
+                # if "delivered" in row["status"].lower():
+                #     completed=True
 
             result = {
                 "company": company,
@@ -363,14 +367,14 @@ class Command(BaseCommand):
         aftership_track_queue = []
         # Track Bluedart shipments for businesses and customers
         business_shipments = Product.objects.filter(
-            (Q(company='B') | Q(company='A') | Q(company='DT') | Q(company='I')) & (
+            (Q(company='B') | Q(company='A') | Q(company='I')) & (
                 Q(status='P') | Q(status='DI'))).exclude(Q(order__status='C')| Q(order__status='N'))
 
         for business_shipment in business_shipments:
             aftership_track_queue.append((business_shipment, 'business'))
 
         customer_shipments = Shipment.objects.filter(
-            (Q(company='B') | Q(company='A') | Q(company='DT') | Q(company='I')) & (
+            (Q(company='B') | Q(company='A') |  Q(company='I')) & (
                 Q(status='P') | Q(status='DI'))).exclude( Q(order__order_status='N')| Q(order__order_status='D'))
 
         for customer_shipment in customer_shipments:
