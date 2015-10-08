@@ -311,6 +311,8 @@ class Product(models.Model):
     tracking_history = models.TextField(null=True, blank=True)
     warning = models.BooleanField(default=False)
     last_tracking_status = models.CharField(max_length=300, null=True, blank=True)
+    actual_delivery_timestamp = models.DateTimeField(blank=True, null=True)
+    estimated_delivery_timestamp = models.DateTimeField(blank=True, null=True)
 
     def __unicode__(self):
         return str(self.name)

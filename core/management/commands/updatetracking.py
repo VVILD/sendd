@@ -80,6 +80,12 @@ class Command(BaseCommand):
             track.send_request()
 
             for match in track.response.TrackDetails:
+                if hasattr(match, 'ActualDeliveryTimestamp'):
+                    product.actual_delivery_timestamp = match.ActualDeliveryTimestamp
+                    product.estimated_delivery_timestamp = None
+                elif hasattr(match, 'EstimatedDeliveryTimestamp'):
+                    product.estimated_delivery_timestamp = match.EstimatedDeliveryTimestamp
+                    product.actual_delivery_timestamp = None
                 for event in match.Events:
                     if event.EventType == 'RS':
                         product.status = 'R'
