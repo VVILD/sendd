@@ -874,4 +874,4 @@ def add_pricing(sender, instance, created, **kwargs):
                 p.save()
 
 
-post_save.connect(add_pricing, sender=Business)
+#post_save.connect(add_pricing, sender=Business)
