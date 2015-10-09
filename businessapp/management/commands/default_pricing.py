@@ -34,7 +34,7 @@ class Command(BaseCommand):
       #y=Order.objects.filter()
 
       	for x in y:
-      		print str(x.username) +"|" str(x.business_name)
+      		print str(x.username) +"|" + str(x.business_name)
 
       		
 		
