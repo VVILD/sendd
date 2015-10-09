@@ -26,10 +26,22 @@ def create_fedex_shipment(request):
     if client_type == 'business':
         products = Product.objects.filter(order__pk=order_pk).select_related('order')
         package_count = products.count()
+        items = [{
+                    "name": p.name,
+                    "weight": p.applied_weight,
+                    "price": p.price,
+                    "quantity": p.quantity
+                } for p in products]
+        total_weight = sum(i['weight'] for i in items)
+        total_price = sum(i['price'] for i in items)
+        is_cod = False
+        if products[0].order.payment_method == 'C':
+            is_cod = True
+        service_type, config = fedex.get_service_type(str(products[0].order.method), total_price,
+                                                          total_weight, products[0].order.city, is_cod)
         for idx, product in enumerate(products, start=1):
             sender_details = None
             warehouse = None
-            item_weight = product.applied_weight
             receiver_name = product.order.name
             receiver_company = None
             receiver_phone = product.order.phone
@@ -49,8 +61,6 @@ def create_fedex_shipment(request):
                 warehouse = product.order.business.warehouse.__dict__
             if product_type == 'C':
                 is_cod = True
-            service_type, config = fedex.get_service_type(str(product.order.method), float(product.price),
-                                                          float(item_weight), receiver_city, is_cod)
             sender = {
                 "is_cod": is_cod,
                 "sender_details": sender_details,
@@ -68,12 +78,7 @@ def create_fedex_shipment(request):
                 "country_code": receiver_country_code
             }
             if idx == 1:
-                item = [{
-                    "name": p.name,
-                    "weight": p.applied_weight,
-                    "price": p.price,
-                    "quantity": p.quantity
-                } for p in products]
+                item = items
             else:
                 item = [{
                     "name": product.name,
