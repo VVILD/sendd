@@ -6,13 +6,12 @@ from django.contrib.admin.models import LogEntry, CHANGE
 from django.contrib.contenttypes.models import ContentType
 from random import randint
 
-from datetime import timedelta
 import datetime
-from datetime import date
+
 from django.contrib import admin
 from .models import *
 from businessapp.forms import NewQcCommentForm,NewTrackingStatus
-
+from datetime import date,timedelta
 import reversion
 
 from django.http import HttpResponse, HttpResponseRedirect
@@ -31,8 +30,9 @@ from django.utils import timezone
 
 
 from import_export.admin import ImportExportModelAdmin
+from import_export.admin import ImportExportActionModelAdmin
 import export_xl
-
+import datetime
 
 
 action_names = {
@@ -622,7 +622,7 @@ class ProductAdmin(reversion.VersionAdmin):
 
     fieldsets = (
         ('Tracking_details', {'fields': ['mapped_tracking_no', 'company','real_tracking_no','kartrocket_order'], 'classes': ('suit-tab', 'suit-tab-general')}),
-        ('General', {'fields': ['name', 'quantity','sku','price','weight','applied_weight','status','date','remittance','order'], 'classes': ('suit-tab', 'suit-tab-general')}),
+        ('General', {'fields': ['name', 'quantity','sku','price','weight','applied_weight','status','date','remittance','order','actual_delivery_timestamp','estimated_delivery_timestamp'], 'classes': ('suit-tab', 'suit-tab-general')}),
         ('Cost', {'fields': ['shipping_cost', 'cod_cost','return_cost'], 'classes': ('suit-tab', 'suit-tab-general')}),
         ('Tracking', {'fields': ['tracking_data'], 'classes': ('suit-tab', 'suit-tab-tracking')}),
         ('Barcode', {'fields': ['barcode','tracking_history'], 'classes': ('suit-tab', 'suit-tab-barcode')}),
@@ -1208,9 +1208,10 @@ admin.site.register(RemittanceProductComplete, RemittanceProductCompleteAdmin)
 
 reversion.VersionAdmin.change_list_template='businessapp/templates/admin/businessapp/change_list.html'
 
-class QcProductAdmin(ProductAdmin):
+class QcProductAdmin(ProductAdmin,reversion.VersionAdmin,ImportExportActionModelAdmin):
 
     change_list_template='businessapp/templates/admin/businessapp/qcproduct/change_list.html'
+
     def get_queryset(self, request):
         return self.model.objects.filter(Q(order__status='DI')| Q(order__status='R')).exclude(status='C').exclude(order__business='ecell').exclude(order__business='ghasitaram').exclude(order__business='holachef')
     list_display = (
@@ -1313,6 +1314,7 @@ class QcProductAdmin(ProductAdmin):
             return 'None'
     expected_delivery_date.short_description='expected delivery date'
 
+
     def tracking_status(self, obj):
 #pk=obj.namemail.pk
         return json.loads(obj.tracking_data)[-1]['status']
@@ -1360,6 +1362,8 @@ class QcProductAdmin(ProductAdmin):
         css_class = {False: 'success',True: 'error',}.get(obj.warning)
         if css_class:
             return {'class': css_class, 'data': obj.name}
+
+    resource_class=export_xl.QcProductResource
 
 
 admin.site.register(QcProduct, QcProductAdmin)
@@ -1422,14 +1426,22 @@ class BusinessPricingAdmin(reversion.VersionAdmin):
 admin.site.register(BusinessPricing,BusinessPricingAdmin)
 
 
-class ExportOrderAdmin(ImportExportModelAdmin):
+class ExportOrderAdmin(ImportExportActionModelAdmin):
 
     def lookup_allowed(self,key,value):
         return True
 
-    list_filter=('order__business__business_name','order__business__username','order__book_time','last_tracking_status','company','status')
+    list_filter=('order__business__business_name','order__business__username','order__book_time','last_tracking_status','company','status','remittance','order__payment_method')
     search_fields = ['name', 'real_tracking_no','order__business__business_name','order__business__username','order__order_no']
-    list_display = ('order_no','get_business', 'status', 'applied_weight', 'real_tracking_no', 'barcode','date','last_tracking_status','mapped_tracking_no' ,'company')
+    list_display = ('order_no','get_business', 'status', 'applied_weight', 'real_tracking_no', 'barcode','date','last_tracking_status','mapped_tracking_no' ,'company','payment_method','remittance')
+
+
+    def payment_method(self, obj):
+        try:
+            return obj.order.payment_method
+        except:
+            return "None"
+
 
     def order_no(self, obj):
         try:
@@ -1543,24 +1555,32 @@ class BmFilter(admin.SimpleListFilter):
 class BdheadAdmin(admin.ModelAdmin):
     # search_fields=['name']
 
+
     def get_queryset(self, request):
-        todays_date=date.today()
-        import datetime
+        todays_date=datetime.date.today()
         date_max = datetime.datetime.combine(todays_date, datetime.time.max)
         date_min = datetime.datetime.combine(todays_date, datetime.time.min)
 
+        try:
+            start_time=request.GET['order__book_time__gte']
+            end_time=request.GET['order__book_time__lte']
+        
+
+        except:
+            start_time= date(2015,1,1)
+            end_time=date.today() + datetime.timedelta(days=2)
 #'order_total','order_today','total_completed','total_revenue',
 
         return Business.objects.extra(select={
-            'order_total2': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.business_id = businessapp_business.username ",
-            'total_completed2': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.business_id = businessapp_business.username and businessapp_order.status='C' ",
+            'order_total2': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.business_id = businessapp_business.username and businessapp_order.book_time BETWEEN %s AND %s",
+            'total_completed2': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.business_id = businessapp_business.username and businessapp_order.status='C' and businessapp_order.book_time BETWEEN %s AND %s",
             'order_today2': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.business_id = businessapp_business.username and businessapp_order.book_time BETWEEN %s AND %s",},
-            select_params=(date_min,date_max,date_min,date_max,date_min,date_max,),
+            select_params=(date_min,date_max,start_time,end_time,start_time,end_time,),
             )
     search_fields=['username','business_name']
     list_display = ('username','business_name', 'warehouse', 'businessmanager','order_total','order_today','total_completed','total_revenue')
     #aw_id_fields = ('pb', 'warehouse')
-    list_filter = ['warehouse',BmFilter,]
+    list_filter = ['warehouse',BmFilter,('order__book_time', DateRangeFilter),]
 
 
     actions = [export_as_csv_action("CSV Export", fields=['username','business_name','apikey','name','email','contact_mob','contact_office','address','city','state','pincode'])]
@@ -1568,10 +1588,23 @@ class BdheadAdmin(admin.ModelAdmin):
     actions_on_top = True
 
     def changelist_view(self, request, extra_context=None):
+
         try:
+            start_time=request.GET['order__book_time__gte']
+            end_time=request.GET['order__book_time__lte']
+            start_time = datetime.datetime.strptime(start_time, '%Y-%m-%d')
+            end_time = datetime.datetime.strptime(end_time, '%Y-%m-%d')
+        except:
+            start_time= datetime.date(2015,1,1)
+            end_time=datetime.date.today() + datetime.timedelta(days=2)
+
+        try:
+            start_min = datetime.datetime.combine(start_time, datetime.time.min)
+            end_max = datetime.datetime.combine(end_time, datetime.time.max)
+
             bd_username= request.GET['decade']
             profile=Profile.objects.get(user__username=bd_username)
-            today_orders_b2b = Order.objects.filter(business__businessmanager=profile)
+            today_orders_b2b = Order.objects.filter(business__businessmanager=profile,book_time__range=(start_min, end_max))
             today_products_correct = Product.objects.filter(order=today_orders_b2b).exclude(shipping_cost__isnull=True)
             sum_b2b = today_products_correct.aggregate(total=Sum('shipping_cost', field="shipping_cost+cod_cost"))['total']
             count_b2b = today_products_correct.count()
@@ -1580,7 +1613,17 @@ class BdheadAdmin(admin.ModelAdmin):
             bd_username=None
             sum_b2b=0
             count_b2b=0
+            today_orders_b2b = Order.objects.filter(book_time__range=(start_min, end_max))
+            today_products_correct = Product.objects.filter(order=today_orders_b2b)
+            sum_b2b = today_products_correct.aggregate(total=Sum('shipping_cost', field="shipping_cost+cod_cost"))['total']
+            count_b2b = today_products_correct.count()
+            print count_b2b
+            print start_min
+            print end_max
+
+
         context={'s':sum_b2b,'c':count_b2b}
+
         return super(BdheadAdmin, self).changelist_view(request, extra_context=context)
 
     def total_revenue(self,obj):
