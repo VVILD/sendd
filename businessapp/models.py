@@ -110,6 +110,8 @@ class Business(models.Model):
                               null=True, blank=True,
                               default='N')
     warehouse = models.ForeignKey(Warehouse, null=True, blank=True)
+    cod_sum=models.FloatField(default=40.0)
+    cod_percentage=models.FloatField(default=1.5)
 
     class Meta:
         ordering = ['business_name', ]

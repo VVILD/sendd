@@ -1376,7 +1376,7 @@ def createpricingfield(name,weight,type_of_pricing):
             pk_list.append((x.pk,x.price))
         result_string='<table>'  
         for item in pk_list:
-            result_string= result_string +' <th> <a href="/admin/businessapp/pricing2/'+str(item[0])+'/" target="_blank"> '+str(item[1]) +'</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </th>'
+            result_string= result_string +' <th> <a href="/admin/businessapp/pricing2/'+str(item[0])+'/" onclick="return showAddAnotherPopup(this);"> '+str(item[1]) +'</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </th>'
         return result_string + '</table>'
     func1.__name__ = name
     return func1
@@ -1419,6 +1419,7 @@ class BusinessPricingAdmin(reversion.VersionAdmin):
     fieldsets = (
         ('Normal Pricing', {'fields': ['N0_25','N0_5','N1','N2','N3','N4','N5','N6','N7','N8','N9','N10']}),
         ('Bulk Pricing', {'fields': ['B1','B2','B3','B4','B5','B6','B7','B8','B9','B10']}),
+        ('Cod Pricing', {'fields': ['cod_sum','cod_percentage']}),
         # ('Bulk Pricing',
         #  {'fields': [('name', 'weight', 'cost_of_courier'), ], 'classes': ('suit-tab', 'suit-tab-general')}),
     )
@@ -1469,17 +1470,18 @@ class ExportOrderAdmin(ImportExportActionModelAdmin):
 
 admin.site.register(ExportOrder,ExportOrderAdmin)
 
-class Pricing2Admin(reversion.VersionAdmin):
+class Pricing2Admin(admin.ModelAdmin):
     # search_fields=['name']
     list_filter=('business__username','business__business_name','zone','weight','type')
     list_display=('business',)
 
     def response_change(self, request, obj):
-
+        print "rrrrrrrrrreturning  "
         return HttpResponse('''
    <script type="text/javascript">
       opener.dismissAddAnotherPopup(window);
    </script>''')
+
     readonly_fields=('ppkg','weight','zone','type','business')
 
 
