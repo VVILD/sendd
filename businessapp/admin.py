@@ -1564,11 +1564,7 @@ class BdheadAdmin(admin.ModelAdmin):
         try:
             start_time=request.GET['order__book_time__gte']
             end_time=request.GET['order__book_time__lte']
-            print "inside queryset"
-            print start_time
-            print end_time
-            print "-----"
-
+        
 
         except:
             start_time= date(2015,1,1)
@@ -1579,7 +1575,7 @@ class BdheadAdmin(admin.ModelAdmin):
             'order_total2': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.business_id = businessapp_business.username and businessapp_order.book_time BETWEEN %s AND %s",
             'total_completed2': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.business_id = businessapp_business.username and businessapp_order.status='C' and businessapp_order.book_time BETWEEN %s AND %s",
             'order_today2': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.business_id = businessapp_business.username and businessapp_order.book_time BETWEEN %s AND %s",},
-            select_params=(start_time,end_time,start_time,end_time,date_min,date_max,),
+            select_params=(date_min,date_max,start_time,end_time,start_time,end_time,),
             )
     search_fields=['username','business_name']
     list_display = ('username','business_name', 'warehouse', 'businessmanager','order_total','order_today','total_completed','total_revenue')
