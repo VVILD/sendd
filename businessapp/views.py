@@ -18,7 +18,7 @@ import os
 @login_required
 def readpdf(request):
 	print os.path.dirname(os.path.realpath(__file__))
-	input1 = PdfFileReader(open("ffmanual.pdf", "rb"))
+	input1 = PdfFileReader(open("/home/django/django_project/ffmanual.pdf", "rb"))
 	output =PdfFileWriter()
 
 	for i in range(0, input1.getNumPages()-1):

@@ -6,13 +6,12 @@ from django.contrib.admin.models import LogEntry, CHANGE
 from django.contrib.contenttypes.models import ContentType
 from random import randint
 
-from datetime import timedelta
 import datetime
-from datetime import date
+
 from django.contrib import admin
 from .models import *
 from businessapp.forms import NewQcCommentForm,NewTrackingStatus
-
+from datetime import date,timedelta
 import reversion
 
 from django.http import HttpResponse, HttpResponseRedirect
@@ -33,7 +32,7 @@ from django.utils import timezone
 from import_export.admin import ImportExportModelAdmin
 from import_export.admin import ImportExportActionModelAdmin
 import export_xl
-
+import datetime
 
 
 action_names = {
@@ -1558,19 +1557,21 @@ class BdheadAdmin(admin.ModelAdmin):
 
 
     def get_queryset(self, request):
-        todays_date=date.today()
-        import datetime
+        todays_date=datetime.date.today()
         date_max = datetime.datetime.combine(todays_date, datetime.time.max)
         date_min = datetime.datetime.combine(todays_date, datetime.time.min)
 
         try:
             start_time=request.GET['order__book_time__gte']
             end_time=request.GET['order__book_time__lte']
+            print "inside queryset"
             print start_time
             print end_time
+            print "-----"
+
 
         except:
-            start_time= date(1,1,1)
+            start_time= date(2015,1,1)
             end_time=date.today() + datetime.timedelta(days=2)
 #'order_total','order_today','total_completed','total_revenue',
 
@@ -1595,16 +1596,15 @@ class BdheadAdmin(admin.ModelAdmin):
         try:
             start_time=request.GET['order__book_time__gte']
             end_time=request.GET['order__book_time__lte']
-            print start_time
-            print end_time
-
+            start_time = datetime.datetime.strptime(start_time, '%Y-%m-%d')
+            end_time = datetime.datetime.strptime(end_time, '%Y-%m-%d')
         except:
-            start_time= date(1,1,1)
-            end_time=date.today() + datetime.timedelta(days=2)
+            start_time= datetime.date(2015,1,1)
+            end_time=datetime.date.today() + datetime.timedelta(days=2)
 
         try:
-            start_min = datetime.datetime.combine(todays_date, datetime.time.min)
-            end_max = datetime.datetime.combine(todays_date, datetime.time.max)
+            start_min = datetime.datetime.combine(start_time, datetime.time.min)
+            end_max = datetime.datetime.combine(end_time, datetime.time.max)
 
             bd_username= request.GET['decade']
             profile=Profile.objects.get(user__username=bd_username)
@@ -1618,9 +1618,14 @@ class BdheadAdmin(admin.ModelAdmin):
             sum_b2b=0
             count_b2b=0
             today_orders_b2b = Order.objects.filter(book_time__range=(start_min, end_max))
-            today_products_correct = Product.objects.filter(order=today_orders_b2b).exclude(shipping_cost__isnull=True)
+            today_products_correct = Product.objects.filter(order=today_orders_b2b)
             sum_b2b = today_products_correct.aggregate(total=Sum('shipping_cost', field="shipping_cost+cod_cost"))['total']
             count_b2b = today_products_correct.count()
+            print count_b2b
+            print start_min
+            print end_max
+
+
         context={'s':sum_b2b,'c':count_b2b}
 
         return super(BdheadAdmin, self).changelist_view(request, extra_context=context)
