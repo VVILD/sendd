@@ -315,6 +315,9 @@ class Product(models.Model):
     last_tracking_status = models.CharField(max_length=300, null=True, blank=True)
     actual_delivery_timestamp = models.DateTimeField(blank=True, null=True)
     estimated_delivery_timestamp = models.DateTimeField(blank=True, null=True)
+    return_action=models.CharField(max_length=2,blank=True,null=True,
+                              choices=(('R', 'Reshipped'),('RB','Returned to business')),
+                              default=None)
 
     def __unicode__(self):
         return str(self.name)
@@ -790,7 +793,7 @@ class Pricing2(models.Model):
         self.ppkg = self.price / self.weight.weight
 
         if not self.pk:
-            if Pricing2.objects.filter(zone__zone=self.zone.zone,weight__weight=self.weight.weight,type=self.type).count() > 0:
+            if Pricing2.objects.filter(zone__zone=self.zone.zone,weight__weight=self.weight.weight,type=self.type,business=self.business).count() > 0:
                 raise ValidationError("Pricing already exists")
         
         super(Pricing2, self).save(*args, **kwargs)
@@ -877,5 +880,18 @@ def add_pricing(sender, instance, created, **kwargs):
                 p=Pricing2(business=instance,zone=zone,weight=weight,price=w[1],type='B')
                 p.save()
 
+#for instance in y:
+#     for key in ndict:
+#         for w in ndict[key]:
+#             zone = Zone.objects.get(zone=key)
+#             weight = Weight.objects.get(weight=w[0])
+#             p=Pricing2(business=instance,zone=zone,weight=weight,price=w[1],type='N')
+#             p.save()
+#     for key in bdict:
+#         for w in bdict[key]:
+#             zone = Zone.objects.get(zone=key)
+#             weight = Weight.objects.get(weight=w[0])
+#             p=Pricing2(business=instance,zone=zone,weight=weight,price=w[1],type='B')
+#             p.save()
 
 #post_save.connect(add_pricing, sender=Business)

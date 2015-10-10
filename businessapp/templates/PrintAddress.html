@@ -27,6 +27,20 @@
                     <p>{{ order.address2 }}</p>
 					<p>{{ order.city }}, {{ order.state }} - {{ order.pincode }}</p>
 					<p>{{ order.phone }}</p>
+					<b>{% if order.payment_method == 'C'  %}
+					<h1>COD</h1>
+					
+				{% else %}
+    				<h1>NON- COD</h1>
+{% endif %}
+
+{% if order.method == 'B'  %}
+					<h1>BULK-SURFACE</h1>
+					
+				{% else %}
+    				<h1>PREMIUM-FLIGHT</h1>
+{% endif %}</b>
+
 				</div>
 			</div>
 		</div>
