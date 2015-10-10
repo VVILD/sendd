@@ -1223,7 +1223,7 @@ class QcProductAdmin(ProductAdmin,reversion.VersionAdmin,ImportExportActionModel
     
 
     def save_model(self, request, obj, form, change):
-        obj.qc_comment = '\n\n' + str(obj.qc_comment) + '<br>--' + str(request.user) +'(' + str(datetime.now().strftime("%Y-%m-%d %H:%M:%S")) + ')'
+        obj.qc_comment = '\n\n' + str(obj.qc_comment) + '<br>--' + str(request.user) +'(' + str(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")) + ')'
         print "first"
         obj.save()
 
@@ -1474,7 +1474,12 @@ class Pricing2Admin(reversion.VersionAdmin):
     list_filter=('business__username','business__business_name','zone','weight','type')
     list_display=('business',)
 
-    
+    def response_change(self, request, obj):
+
+        return HttpResponse('''
+   <script type="text/javascript">
+      opener.dismissAddAnotherPopup(window);
+   </script>''')
     readonly_fields=('ppkg','weight','zone','type','business')
 
 
