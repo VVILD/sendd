@@ -112,7 +112,7 @@ def create_shipment(sender, receiver, item, FEDEX_CONFIG_OBJ, service_type, sequ
     shipment.RequestedShipment.CustomsClearanceDetail.DutiesPayment.Payor.ResponsibleParty.Contact = ''
     shipment.RequestedShipment.CustomsClearanceDetail.DutiesPayment.Payor.ResponsibleParty.Address.CountryCode = 'IN'
     if item[0]['is_doc']:
-        shipment.RequestedShipment.CustomsClearanceDetail.DocumentContent = 'DOCUMENTS'
+        shipment.RequestedShipment.CustomsClearanceDetail.DocumentContent = 'DOCUMENTS_ONLY'
     else:
         shipment.RequestedShipment.CustomsClearanceDetail.DocumentContent = 'NON_DOCUMENTS'
     shipment.RequestedShipment.CustomsClearanceDetail.CustomsValue.Currency = 'INR'
