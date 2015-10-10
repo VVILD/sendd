@@ -101,16 +101,18 @@ def create_fedex_shipment(request):
                 f1 = ContentFile(base64.b64decode(result['OUTBOUND_LABEL']))
                 input1 = PdfFileReader(f1, strict=False)
                 output.addPage(input1.getPage(0))
-                output.addPage(input1.getPage(1))
-                output.addPage(input1.getPage(2))
+                if total_docs != package_count or is_cod:
+                    output.addPage(input1.getPage(1))
+                    output.addPage(input1.getPage(2))
 
                 if is_cod and result['COD_RETURN_LABEL'] is not None:
                     f2 = ContentFile(base64.b64decode(result['COD_RETURN_LABEL']))
                     input2 = PdfFileReader(f2, strict=False)
                     output.addPage(input2.getPage(0))
-                    output.addPage(input2.getPage(1))
+                    if total_docs != package_count or is_cod:
+                        output.addPage(input2.getPage(1))
 
-                if result['COMMERCIAL_INVOICE'] is not None and total_docs != package_count:
+                if result['COMMERCIAL_INVOICE'] is not None and (total_docs != package_count or is_cod):
                     f3 = ContentFile(base64.b64decode(result['COMMERCIAL_INVOICE']))
                     input3 = PdfFileReader(f3, strict=False)
                     output.addPage(input3.getPage(0))
