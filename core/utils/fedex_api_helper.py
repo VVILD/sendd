@@ -111,7 +111,10 @@ def create_shipment(sender, receiver, item, FEDEX_CONFIG_OBJ, service_type, sequ
     shipment.RequestedShipment.CustomsClearanceDetail.DutiesPayment.Payor.ResponsibleParty.AccountNumber = FEDEX_CONFIG_OBJ.account_number
     shipment.RequestedShipment.CustomsClearanceDetail.DutiesPayment.Payor.ResponsibleParty.Contact = ''
     shipment.RequestedShipment.CustomsClearanceDetail.DutiesPayment.Payor.ResponsibleParty.Address.CountryCode = 'IN'
-    shipment.RequestedShipment.CustomsClearanceDetail.DocumentContent = 'NON_DOCUMENTS'
+    if item['is_doc']:
+        shipment.RequestedShipment.CustomsClearanceDetail.DocumentContent = 'DOCUMENTS'
+    else:
+        shipment.RequestedShipment.CustomsClearanceDetail.DocumentContent = 'NON_DOCUMENTS'
     shipment.RequestedShipment.CustomsClearanceDetail.CustomsValue.Currency = 'INR'
     shipment.RequestedShipment.CustomsClearanceDetail.CustomsValue.Amount = float(item[0]['price'])
     if sender['is_cod']:

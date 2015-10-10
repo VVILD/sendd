@@ -30,8 +30,10 @@ def create_fedex_shipment(request):
                     "name": p.name,
                     "weight": p.applied_weight,
                     "price": p.price,
-                    "quantity": p.quantity
+                    "quantity": p.quantity,
+                    "is_doc": p.is_document
                 } for p in products]
+        total_docs = sum(i['is_doc'] for i in items)
         total_weight = sum(i['weight'] for i in items)
         total_price = sum(i['price'] for i in items)
         is_cod = False
@@ -84,12 +86,13 @@ def create_fedex_shipment(request):
                     "name": product.name,
                     "weight": product.applied_weight,
                     "price": product.price,
-                    "quantity": product.quantity
+                    "quantity": product.quantity,
+                    "is_doc": product.is_document
                 }]
             result = fedex.create_shipment(sender, receiver, item, config, service_type, idx, package_count, master_tracking_no)
             if result['status'] != 'ERROR':
                 if product.mapped_tracking_no:
-                    product.tracking_history= str(product.tracking_history) + ',' + str(product.mapped_tracking_no)
+                    product.tracking_history = str(product.tracking_history) + ',' + str(product.mapped_tracking_no)
                 product.mapped_tracking_no = result['tracking_number']
                 if idx == 1:
                     master_tracking_no = result['tracking_number']
@@ -107,7 +110,7 @@ def create_fedex_shipment(request):
                     output.addPage(input2.getPage(0))
                     output.addPage(input2.getPage(1))
 
-                if result['COMMERCIAL_INVOICE'] is not None:
+                if result['COMMERCIAL_INVOICE'] is not None and total_docs != package_count:
                     f3 = ContentFile(base64.b64decode(result['COMMERCIAL_INVOICE']))
                     input3 = PdfFileReader(f3, strict=False)
                     output.addPage(input3.getPage(0))
