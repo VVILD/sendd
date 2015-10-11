@@ -864,8 +864,6 @@ def add_pricing(sender, instance, created, **kwargs):
                  'd': [(1,130),(2,130), (3,130), (4,130), (5,130), (6,130), (7,130), (8,130), (9,130), (10,130)],
                  'e': [(1,150),(2,150), (3,150), (4,150), (5,150), (6,150), (7,150), (8,150), (9,150), (10,150)]}
 
-
-
         for key in ndict:
             for w in ndict[key]:
                 zone = Zone.objects.get(zone=key)
@@ -880,18 +878,5 @@ def add_pricing(sender, instance, created, **kwargs):
                 p=Pricing2(business=instance,zone=zone,weight=weight,price=w[1],type='B')
                 p.save()
 
-#for instance in y:
-#     for key in ndict:
-#         for w in ndict[key]:
-#             zone = Zone.objects.get(zone=key)
-#             weight = Weight.objects.get(weight=w[0])
-#             p=Pricing2(business=instance,zone=zone,weight=weight,price=w[1],type='N')
-#             p.save()
-#     for key in bdict:
-#         for w in bdict[key]:
-#             zone = Zone.objects.get(zone=key)
-#             weight = Weight.objects.get(weight=w[0])
-#             p=Pricing2(business=instance,zone=zone,weight=weight,price=w[1],type='B')
-#             p.save()
 
 #post_save.connect(add_pricing, sender=Business)

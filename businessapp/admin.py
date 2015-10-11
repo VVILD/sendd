@@ -1270,21 +1270,24 @@ class StatusFilter(admin.SimpleListFilter):
 
     def lookups(self, request, model_admin):
 
-        tracking_set=Product.objects.filter().values("last_tracking_status").annotate(n=Count("pk")).exclude(n__lt=5)
+        tracking_set=Product.objects.filter().values("last_tracking_status").annotate(n=Count("pk")).exclude(n__lt=3)
+        #tracking_set=Product.objects.filter().values("last_tracking_status").annotate(n=Count("pk"))
 
         bd_tupel=[]
-
-        club_list=["undelivered"]
-        ignore_list=["delivered","article delivered"]
+        club_list=[""]
+        ignore_list=["asdasd","article delivered"]
         bd_tupel.append(('nbm',_('No tracking status')))
-        for bd in tracking_set:
-            if any(word in bd["last_tracking_status"].lower() for word in ignore_list):
-                break;
-            if any(bd["last_tracking_status"].lower().startswith(word) for word in ignore_list):
-                break;
-            if bd["last_tracking_status"].lower() not in (club_list or ignore_list):
+        z=[x for x in tracking_set if x["last_tracking_status"] is not None]
+        tracking_set_nonone=[x for x in tracking_set if x["last_tracking_status"] is not None]
 
-                bd_tupel.append((bd["last_tracking_status"],_(bd["last_tracking_status"])))
+        for bd in tracking_set_nonone:
+            word= filter(lambda x: bd["last_tracking_status"].lower().startswith(x), club_list)
+            if bd["last_tracking_status"]:
+                if any(bd["last_tracking_status"].lower().startswith(word) for word in ignore_list):
+                    pass
+                elif len(word):
+                    if not word[0] in zip(*bd_tupel)[0]:
+                        bd_tupel.append((word[0],_(word[0])))
 
         return tuple(bd_tupel)
 
@@ -1296,7 +1299,7 @@ class StatusFilter(admin.SimpleListFilter):
             return queryset.filter(last_tracking_status__isnull=True)
 
 
-        return queryset.filter()
+        return queryset.filter(last_tracking_status__contains=self.value())
 
 
 reversion.VersionAdmin.change_list_template='businessapp/templates/admin/businessapp/change_list.html'
@@ -1311,7 +1314,7 @@ class QcProductAdmin(ProductAdmin,reversion.VersionAdmin,ImportExportActionModel
         return self.model.objects.filter(Q(order__status='DI')| Q(order__status='R')).exclude(Q(status='C')|Q(return_action='R')|Q(return_action='RB')).exclude(order__business='ecell').exclude(order__business='ghasitaram').exclude(order__business='holachef')
     list_display = (
         'order_no','tracking_no','company','book_date','dispatch_time','get_business','sent_to','last_location' ,'expected_delivery_date','last_updated','last_tracking_status','history')
-    list_filter = ['order__method','order__business','warning','company','last_tracking_status']
+    list_filter = ['order__method','order__business','warning','company',StatusFilter]
     list_editable = ()
     readonly_fields = ('previous_comment','p_tracking')
     search_fields = ['order__order_no', 'real_tracking_no', 'mapped_tracking_no','tracking_data' ]
