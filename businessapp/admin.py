@@ -1327,7 +1327,7 @@ class QcProductAdmin(ProductAdmin,reversion.VersionAdmin,ImportExportActionModel
         return self.model.objects.filter(Q(order__status='DI')| Q(order__status='R')).exclude(Q(status='C')|Q(return_action='R')|Q(return_action='RB')).exclude(order__business='ecell').exclude(order__business='ghasitaram').exclude(order__business='holachef')
     list_display = (
         'order_no','tracking_no','company','book_date','dispatch_time','get_business','sent_to','last_location' ,'expected_delivery_date','last_updated','last_tracking_status','history')
-    list_filter = ['order__method','order__business','warning','company',StatusFilter]
+    list_filter = ['order__method','order__business','warning','company',StatusFilter,'status']
     list_editable = ()
     readonly_fields = ('previous_comment','p_tracking')
     search_fields = ['order__order_no', 'real_tracking_no', 'mapped_tracking_no','tracking_data' ]
