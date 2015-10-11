@@ -995,9 +995,11 @@ class OrderAdmin(FilterUserAdmin):
                 return '<a href="https://www.fedex.com/apps/fedextrack/?action=track&trackingnumber=%s" target="_blank" >%s</a> ' % (only_product.mapped_tracking_no, only_product.mapped_tracking_no)
             elif (only_product.company=='B'):
                 return'<a href="http://www.bluedart.com/servlet/RoutingServlet?handler=tnt&action=awbquery&awb=awb&numbers=%s" target="_blank">%s</a>' % (only_product.mapped_tracking_no, only_product.mapped_tracking_no)
+            elif (only_product.mapped_tracking_no and only_product.company ):
+                return "1|" + only_product.mapped_tracking_no +"|"+only_product.company
             else:
-                return "1|" + only_product.mapped_tracking_no +"|"+only_product.mapped_tracking_no
-
+                return 1
+        return Product.objects.filter(order=obj).count()
 
 
     def total_cod_cost(self, obj):
