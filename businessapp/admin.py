@@ -1374,12 +1374,7 @@ class QcProductAdmin(ProductAdmin,reversion.VersionAdmin,ImportExportActionModel
 
         return super(QcProductAdmin, self).get_form(request, obj, **kwargs)
 
-    def response_change(self, request, obj):
 
-        return HttpResponse('''
-   <script type="text/javascript">
-      opener.dismissAddAnotherPopup(window);
-   </script>''')
 
     def previous_comment(self,obj):
         return obj.qc_comment
