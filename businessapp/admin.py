@@ -1274,7 +1274,7 @@ class StatusFilter(admin.SimpleListFilter):
         #tracking_set=Product.objects.filter().values("last_tracking_status").annotate(n=Count("pk"))
 
         bd_tupel=[]
-        club_list=["undelivered","article bagged to","bag despatched", "delivery exception","shipment at delivery location","shipment connected from","transit bag despatched"]
+        club_list=["undelivered","article bagged to","bag despatched", "delivery exception","shipment at delivery location","shipments connected from","transit bag despatched"]
         ignore_list=["delivered","article delivered","bag opened","item delivered"]
         bd_tupel.append(('nbm',_('No tracking status')))
         z=[x for x in tracking_set if x["last_tracking_status"] is not None]

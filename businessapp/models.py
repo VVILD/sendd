@@ -283,7 +283,7 @@ class Product(models.Model):
                                choices=[('F', 'FedEx'), ('D', 'Delhivery'), ('P', 'Professional'), ('G', 'Gati'),
                                         ('A', 'Aramex'), ('E', 'Ecomexpress'), ('DT', 'dtdc'), ('FF', 'First Flight'),
                                         ('M', 'Maruti courier'), ('I', 'India Post'), ('S', 'Sendd'), ('B', 'bluedart'),
-                                        ('T', 'trinity'), ('V', 'vichare')],
+                                        ('T', 'trinity'), ('V', 'vichare'), ('DH', 'dhl'), ('SK', 'skycom')],
                                blank=True, null=True)
     shipping_cost = models.FloatField(default=0.0)
     cod_cost = models.FloatField(default=0.0)
