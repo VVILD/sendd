@@ -1000,7 +1000,7 @@ class OrderAdmin(FilterUserAdmin):
             else:
                 return 1
         return Product.objects.filter(order=obj).count()
-
+    no_of_products.allow_tags = True
 
     def total_cod_cost(self, obj):
         return Product.objects.filter(order=obj).aggregate(Sum('cod_cost'))['cod_cost__sum']
