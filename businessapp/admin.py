@@ -1302,7 +1302,7 @@ class StatusFilter(admin.SimpleListFilter):
             return queryset.filter(last_tracking_status__isnull=True)
 
 
-        return queryset.filter(last_tracking_status__contains=self.value())
+        return queryset.filter(last_tracking_status__icontains=self.value())
 
 
 reversion.VersionAdmin.change_list_template='businessapp/templates/admin/businessapp/change_list.html'
