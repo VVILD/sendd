@@ -276,7 +276,8 @@ class OrderResource3(CORSModelResource):
         ordering = ['book_time']
         filtering = {
             "reference_id": ALL,
-            "book_time": ALL
+            "book_time": ALL,
+            "last_updated_status": ALL
         }
 
     def hydrate(self, bundle):

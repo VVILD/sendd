@@ -237,9 +237,16 @@ class Order(models.Model):
     business = models.ForeignKey(Business)
     notification = models.CharField(max_length=1, choices=(('Y', 'yes'), ('N', 'no'),), null=True, blank=True,
                                          default='N')
+    last_updated_status = models.DateTimeField(null=True, blank=True)
+    __status = None
 
     def __unicode__(self):
         return str(self.order_no)
+
+    def __init__(self, *args, **kwargs):
+        super(Order, self).__init__(*args, **kwargs)
+        if self.status:
+            self.__status = self.status
 
     def get_full_address(self):
         return str(self.address1 + " " + self.address2 + " " + self.city + " " + self.state + " - " + self.pincode)
@@ -257,6 +264,10 @@ class Order(models.Model):
             if str(order_no) > 4:
                 order_no = str(order_no)[:4]
             self.master_tracking_number = 'M' + order_no + str(uuid.uuid4().get_hex().upper()[:5])
+
+        if self.status != self.__status or not self.last_updated_status:
+            self.last_updated_status = datetime.now()
+
         if self.state:
             if not state_matcher.is_state(self.state):
                 closest_state = state_matcher.get_closest_state(self.state)
