@@ -29,6 +29,11 @@ class NewReturnForm(ModelForm):
 		model = Product
 		fields = ['status', 'return_action']
 
+        def clean(self):
+            if self.cleaned_data['return_action']:
+                if self.cleaned_data['status']!='R':
+                    raise forms.ValidationError("You cannot add a return_action unless status is return")
+
 
 
 class NewTrackingStatus(ModelForm):
