@@ -969,7 +969,7 @@ class OrderAdmin(FilterUserAdmin,ImportExportActionModelAdmin):
     list_display = (
         'order_no', 'book_time', 'business_details', 'name', 'status','mapped_ok', 'no_of_products', 'total_shipping_cost',
         'total_cod_cost', 'method', 'fedex','ff_comment')
-    list_editable = ('status',)
+    list_editable = ('status','ff_comment',)
     list_filter = ['business', 'status', 'book_time','product__company']
     actions = [export_as_csv_action("CSV Export", fields=['name','product__real_tracking_no'])]
     readonly_fields=('master_tracking_number', 'mapped_master_tracking_number', 'fedex')
