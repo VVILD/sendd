@@ -25,7 +25,7 @@ def barcode_stats_view(request):
     week_before = date.today() - datetime.timedelta(days=10)
     y=Order.objects.filter(Q(book_time__gt=week_before) & ( ~Q(status='P') & ~Q(status='CA')   ) ).extra({'date_created' : "date(book_time)"}).values('date_created').annotate(barcode_count=Count('product__barcode'),created_count=Count('product'))
 
-    data = {'date': ["sdaaf"], 'wbarcode': [2], 'wobarcode': [2]}
+    data = {'date': [], 'wbarcode': [], 'wobarcode': []}
 
 
     for x in y:
