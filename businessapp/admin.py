@@ -1337,6 +1337,8 @@ class QcProductAdmin(ProductAdmin,reversion.VersionAdmin,ImportExportActionModel
         if obj.qc_comment:
             obj.qc_comment = '\n\n' + str(obj.qc_comment) + '<br>--' + str(request.user) +'(' + str(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")) + ')'
             obj.save()
+        else:
+            obj.save()
 
 
     def get_form(self, request, obj=None, **kwargs):
