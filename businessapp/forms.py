@@ -24,6 +24,13 @@ class NewQcCommentForm(ModelForm):
 		self.cleaned_data['qc_comment']= self.cleaned_data['qc_comment'] + '<br><br> ' + str(new_comment)
 
 
+class NewReturnForm(ModelForm):
+	class Meta:
+		model = Product
+		fields = ['status', 'return_action']
+
+
+
 class NewTrackingStatus(ModelForm):
 	tstatus=forms.CharField(max_length=100,required=False)
 	location=forms.CharField(max_length=100,required=False)

@@ -10,7 +10,7 @@ import datetime
 
 from django.contrib import admin
 from .models import *
-from businessapp.forms import NewQcCommentForm,NewTrackingStatus
+from businessapp.forms import NewQcCommentForm,NewTrackingStatus,NewReturnForm
 from datetime import date,timedelta
 import reversion
 
@@ -1345,6 +1345,7 @@ class QcProductAdmin(ProductAdmin,reversion.VersionAdmin,ImportExportActionModel
         status = request.GET.get('status',None)
 
         if status:
+            self.form = NewReturnForm
             self.fieldsets = (
                 ('Basic Information', {'fields': ['status', 'return_action',], 'classes': ('suit-tab', 'suit-tab-general')}),
             )
