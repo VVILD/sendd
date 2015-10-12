@@ -277,7 +277,8 @@ class OrderResource3(CORSModelResource):
         filtering = {
             "reference_id": ALL,
             "book_time": ALL,
-            "last_updated_status": ALL
+            "last_updated_status": ALL,
+            "third_party_id": ALL
         }
 
     def hydrate(self, bundle):
@@ -317,6 +318,7 @@ class OrderResource3(CORSModelResource):
         new_bundle = {
             "order_no": bundle.data['order_no'],
             "reference_id": bundle.data['reference_id'],
+            "third_party_id": bundle.data['third_party_id'],
             "master_tracking_no": bundle.data['master_tracking_number'],
             "is_confirmed": bundle.data['confirmed'],
             "products": list(products),
@@ -380,6 +382,7 @@ class OrderPatchResource(CORSModelResource):
         new_bundle = {
             "order_no": bundle.data['order_no'],
             "reference_id": bundle.data['reference_id'],
+            "third_party_id": bundle.data['third_party_id'],
             "master_tracking_no": bundle.data['master_tracking_number'],
             "is_confirmed": bundle.data['confirmed'],
             "products": list(products)
@@ -437,6 +440,7 @@ class OrderPatchReferenceResource(CORSModelResource):
             updated_orders.append({
                 "order_no": db_obj.order_no,
                 "reference_id": db_obj.reference_id,
+                "third_party_id": db_obj.third_party_id,
                 "master_tracking_no": db_obj.master_tracking_number,
                 "is_confirmed": db_obj.confirmed,
                 "products": list(products)
@@ -466,7 +470,7 @@ def send_business_labels(db_objs, business_obj):
             description = product.name
             weight = product.weight
             price = product.price
-            sku = product.sku
+            sku = db_obj.reference_id
             trackingid = product.real_tracking_no
             params = urlencode({
                 "name": name,
@@ -482,7 +486,7 @@ def send_business_labels(db_objs, business_obj):
                 "description": description,
                 "weight": weight,
                 "price": price,
-                "sku": sku,
+                "reference_id": sku,
                 "trackingid": trackingid
             })
 
