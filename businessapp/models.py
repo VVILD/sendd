@@ -110,6 +110,8 @@ class Business(models.Model):
                               null=True, blank=True,
                               default='N')
     warehouse = models.ForeignKey(Warehouse, null=True, blank=True)
+    cod_sum=models.FloatField(default=40.0)
+    cod_percentage=models.FloatField(default=1.5)
 
     class Meta:
         ordering = ['business_name', ]
@@ -292,7 +294,7 @@ class Product(models.Model):
                                choices=[('F', 'FedEx'), ('D', 'Delhivery'), ('P', 'Professional'), ('G', 'Gati'),
                                         ('A', 'Aramex'), ('E', 'Ecomexpress'), ('DT', 'dtdc'), ('FF', 'First Flight'),
                                         ('M', 'Maruti courier'), ('I', 'India Post'), ('S', 'Sendd'), ('B', 'bluedart'),
-                                        ('T', 'trinity'), ('V', 'vichare')],
+                                        ('T', 'trinity'), ('V', 'vichare'), ('DH', 'dhl'), ('SK', 'skycom')],
                                blank=True, null=True)
     shipping_cost = models.FloatField(default=0.0)
     cod_cost = models.FloatField(default=0.0)
@@ -324,6 +326,9 @@ class Product(models.Model):
     last_tracking_status = models.CharField(max_length=300, null=True, blank=True)
     actual_delivery_timestamp = models.DateTimeField(blank=True, null=True)
     estimated_delivery_timestamp = models.DateTimeField(blank=True, null=True)
+    return_action=models.CharField(max_length=2,blank=True,null=True,
+                              choices=(('R', 'Reshipped'),('RB','Returned to business')),
+                              default=None)
 
     def __unicode__(self):
         return str(self.name)
@@ -799,7 +804,7 @@ class Pricing2(models.Model):
         self.ppkg = self.price / self.weight.weight
 
         if not self.pk:
-            if Pricing2.objects.filter(zone__zone=self.zone.zone,weight__weight=self.weight.weight,type=self.type).count() > 0:
+            if Pricing2.objects.filter(zone__zone=self.zone.zone,weight__weight=self.weight.weight,type=self.type,business=self.business).count() > 0:
                 raise ValidationError("Pricing already exists")
         
         super(Pricing2, self).save(*args, **kwargs)
@@ -869,8 +874,6 @@ def add_pricing(sender, instance, created, **kwargs):
                  'c': [(1,110),(2,110), (3,110), (4,110), (5,110), (6,110), (7,110), (8,110), (9,110), (10,110)],
                  'd': [(1,130),(2,130), (3,130), (4,130), (5,130), (6,130), (7,130), (8,130), (9,130), (10,130)],
                  'e': [(1,150),(2,150), (3,150), (4,150), (5,150), (6,150), (7,150), (8,150), (9,150), (10,150)]}
-
-
 
         for key in ndict:
             for w in ndict[key]:

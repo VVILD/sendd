@@ -10,7 +10,7 @@ import datetime
 
 from django.contrib import admin
 from .models import *
-from businessapp.forms import NewQcCommentForm,NewTrackingStatus
+from businessapp.forms import NewQcCommentForm,NewTrackingStatus,NewReturnForm
 from datetime import date,timedelta
 import reversion
 
@@ -33,6 +33,9 @@ from import_export.admin import ImportExportModelAdmin
 from import_export.admin import ImportExportActionModelAdmin
 import export_xl
 import datetime
+
+from django.contrib import admin
+from django.utils.translation import ugettext_lazy as _
 
 
 action_names = {
@@ -986,8 +989,18 @@ class OrderAdmin(FilterUserAdmin):
 
 
     def no_of_products(self, obj):
+        if (Product.objects.filter(order=obj).count()==1):
+            only_product=Product.objects.get(order=obj)
+            if (only_product.company=='F'):
+                return '<a href="https://www.fedex.com/apps/fedextrack/?action=track&trackingnumber=%s" target="_blank" >%s</a> ' % (only_product.mapped_tracking_no, only_product.mapped_tracking_no)
+            elif (only_product.company=='B'):
+                return'<a href="http://www.bluedart.com/servlet/RoutingServlet?handler=tnt&action=awbquery&awb=awb&numbers=%s" target="_blank">%s</a>' % (only_product.mapped_tracking_no, only_product.mapped_tracking_no)
+            elif (only_product.mapped_tracking_no and only_product.company ):
+                return "1|" + only_product.mapped_tracking_no +"|"+only_product.company
+            else:
+                return 1
         return Product.objects.filter(order=obj).count()
-
+    no_of_products.allow_tags = True
 
     def total_cod_cost(self, obj):
         return Product.objects.filter(order=obj).aggregate(Sum('cod_cost'))['cod_cost__sum']
@@ -1205,34 +1218,139 @@ class RemittanceProductCompleteAdmin(reversion.VersionAdmin):
 
 admin.site.register(RemittanceProductComplete, RemittanceProductCompleteAdmin)
 
+class BmFilter(admin.SimpleListFilter):
+    # Human-readable title which will be displayed in the
+    # right admin sidebar just above the filter options.
+    title = _('Businessmanager')
+
+    # Parameter for the filter that will be used in the URL query.
+    parameter_name = 'decade'
+
+    def lookups(self, request, model_admin):
+        """
+        Returns a list of tuples. The first element in each
+        tuple is the coded value for the option that will
+        appear in the URL query. The second element is the
+        human-readable name for the option that will appear
+        in the right sidebar.
+        """
+        bd_set=Profile.objects.filter(usertype='b')
+        bd_tupel=[]
+
+        bd_tupel.append(('nbm',_('No businessmanager')))
+        for bd in bd_set:
+            bd_tupel.append((bd.user.username,_(bd.user.username)))
+
+
+        print (bd_tupel,)
+        return tuple(bd_tupel)
+        # return (
+        #     ('80s', _('in the eighties')),
+        #     ('90s', _('in the nineties')),
+        # )
+
+    def queryset(self, request, queryset):
+        """
+        Returns the filtered queryset based on the value
+        provided in the query string and retrievable via
+        `self.value()`.
+        """
+        # Compare the requested value (either '80s' or '90s')
+        # to decide how to filter the queryset.
+        # if self.value() == '80s':
+        #     return queryset.filter(birthday__gte=date(1980, 1, 1),
+        #                             birthday__lte=date(1989, 12, 31))
+        # if self.value() == '90s':
+        #     return queryset.filter(birthday__gte=date(1990, 1, 1),
+        #                             birthday__lte=date(1999, 12, 31))
+
+        if self.value()==None:
+            return queryset.filter()
+        if self.value()=='nbm':
+            return queryset.filter(businessmanager__isnull=True)
+
+
+        return queryset.filter(businessmanager__user__username=self.value())
+
+
+class StatusFilter(admin.SimpleListFilter):
+    title = _('trackingstatus')
+
+    parameter_name = 'lts'
+
+    def lookups(self, request, model_admin):
+
+        tracking_set=Product.objects.filter().values("last_tracking_status").annotate(n=Count("pk")).exclude(n__lt=3)
+        #tracking_set=Product.objects.filter().values("last_tracking_status").annotate(n=Count("pk"))
+
+        bd_tupel=[]
+        club_list=["undelivered","article bagged to","bag despatched", "delivery exception","shipment at delivery location","shipments connected from","transit bag despatched"]
+        ignore_list=["delivered","article delivered","bag opened","item delivered"]
+        bd_tupel.append(('nbm',_('No tracking status')))
+        z=[x for x in tracking_set if x["last_tracking_status"] is not None]
+        tracking_set_nonone=[x for x in tracking_set if x["last_tracking_status"] is not None]
+
+        for bd in tracking_set_nonone:
+            word= filter(lambda x: bd["last_tracking_status"].lower().startswith(x), club_list)
+            if bd["last_tracking_status"]:
+                if any(bd["last_tracking_status"].lower().startswith(word) for word in ignore_list):
+                    pass
+                elif len(word):
+                    if not word[0] in zip(*bd_tupel)[0]:
+                        bd_tupel.append((word[0],_(word[0])))
+                else:
+                    bd_tupel.append((bd["last_tracking_status"],_(bd["last_tracking_status"])))
+
+
+        return tuple(bd_tupel)
+
+    def queryset(self, request, queryset):
+        print self.value()
+        if self.value()==None:
+            return queryset.filter()
+        if self.value()=='nbm':
+            return queryset.filter(last_tracking_status__isnull=True)
+
+
+        return queryset.filter(last_tracking_status__icontains=self.value())
+
 
 reversion.VersionAdmin.change_list_template='businessapp/templates/admin/businessapp/change_list.html'
+
+
 
 class QcProductAdmin(ProductAdmin,reversion.VersionAdmin,ImportExportActionModelAdmin):
 
     change_list_template='businessapp/templates/admin/businessapp/qcproduct/change_list.html'
 
     def get_queryset(self, request):
-        return self.model.objects.filter(Q(order__status='DI')| Q(order__status='R')).exclude(status='C').exclude(order__business='ecell').exclude(order__business='ghasitaram').exclude(order__business='holachef')
+        return self.model.objects.filter(Q(order__status='DI')| Q(order__status='R')).exclude(Q(status='C')|Q(return_action='R')|Q(return_action='RB')).exclude(order__business='ecell').exclude(order__business='ghasitaram').exclude(order__business='holachef')
     list_display = (
-        'order_no','tracking_no','company','book_date','dispatch_time','get_business','sent_to', 'tracking_status','last_location' ,'expected_delivery_date','last_updated','last_tracking_status','history')
-    list_filter = ['order__method','order__business','last_tracking_status','warning','company']
+        'order_no','tracking_no','company','book_date','dispatch_time','get_business','sent_to','last_location' ,'expected_delivery_date','last_updated','last_tracking_status','history')
+    list_filter = ['order__method','order__business','warning','company',StatusFilter,'status']
     list_editable = ()
     readonly_fields = ('previous_comment','p_tracking')
     search_fields = ['order__order_no', 'real_tracking_no', 'mapped_tracking_no','tracking_data' ]
     
 
     def save_model(self, request, obj, form, change):
-        obj.qc_comment = '\n\n' + str(obj.qc_comment) + '<br>--' + str(request.user) +'(' + str(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")) + ')'
-        print "first"
-        obj.save()
+        if obj.qc_comment:
+            obj.qc_comment = '\n\n' + str(obj.qc_comment) + '<br>--' + str(request.user) +'(' + str(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")) + ')'
+            obj.save()
 
 
     def get_form(self, request, obj=None, **kwargs):
         #tracking=request.GET.get["tracking",None]
         tracking = request.GET.get('tracking',None)
+        status = request.GET.get('status',None)
 
-        if not tracking:  #add
+        if status:
+            self.form = NewReturnForm
+            self.fieldsets = (
+                ('Basic Information', {'fields': ['status', 'return_action',], 'classes': ('suit-tab', 'suit-tab-general')}),
+            )
+
+        elif not tracking:  #add
             self.form=NewQcCommentForm
             self.fieldsets = (
                 ('Basic Information', {'fields': ['new_comment', 'previous_comment',], 'classes': ('suit-tab', 'suit-tab-general')}),
@@ -1243,7 +1361,7 @@ class QcProductAdmin(ProductAdmin,reversion.VersionAdmin,ImportExportActionModel
             self.form = NewTrackingStatus
             self.fieldsets = (
                 ('Add new',
-                 {'fields': [('tstatus', 'time', 'location'), ], 'classes': ('suit-tab', 'suit-tab-general')}),
+                 {'fields': [('tstatus', 'ttime', 'location'), ], 'classes': ('suit-tab', 'suit-tab-general')}),
                 ('Previous tracking', {'fields': ['p_tracking', ],
                                        'classes': ('suit-tab', 'suit-tab-general')}),
                 ('Do not edit this', {'fields': ['tracking_data', ], 'classes': ('suit-tab', 'suit-tab-tracking')}),
@@ -1251,6 +1369,7 @@ class QcProductAdmin(ProductAdmin,reversion.VersionAdmin,ImportExportActionModel
             )
 
             self.suit_form_tabs = (('general', 'General'), ('tracking', 'Tracking'))
+
 
 
 
@@ -1276,7 +1395,7 @@ class QcProductAdmin(ProductAdmin,reversion.VersionAdmin,ImportExportActionModel
     p_tracking.allow_tags=True
 
     def history(self,obj):
-        return str(obj.qc_comment) + '<br><br>' + '<a href="/admin/businessapp/qcproduct/%s/" onclick="return showAddAnotherPopup(this);">Add new</a> <br><br> <a href="/admin/businessapp/qcproduct/%s/?tracking=T" onclick="return showAddAnotherPopup(this);">Add tracking row</a>' % (obj.pk, obj.pk)   
+        return str(obj.qc_comment) + '<br><br>' + '<a href="/admin/businessapp/qcproduct/%s/" onclick="return showAddAnotherPopup(this);">Add new comment </a><br><a href="/admin/businessapp/qcproduct/%s/?tracking=T" onclick="return showAddAnotherPopup(this);">Add tracking row</a><br> <a href="/admin/businessapp/qcproduct/%s/?status=T" onclick="return showAddAnotherPopup(this);">Return action</a>' % (obj.pk, obj.pk,obj.pk)
     history.allow_tags=True
 
     def order_no(self, obj):
@@ -1313,13 +1432,6 @@ class QcProductAdmin(ProductAdmin,reversion.VersionAdmin,ImportExportActionModel
         else:
             return 'None'
     expected_delivery_date.short_description='expected delivery date'
-
-
-    def tracking_status(self, obj):
-#pk=obj.namemail.pk
-        return json.loads(obj.tracking_data)[-1]['status']
-    tracking_status.allow_tags = True
-    tracking_status.admin_order_field = 'tracking_data'
 
     def sent_to(self,obj):
         return obj.order.name
@@ -1376,7 +1488,7 @@ def createpricingfield(name,weight,type_of_pricing):
             pk_list.append((x.pk,x.price))
         result_string='<table>'  
         for item in pk_list:
-            result_string= result_string +' <th> <a href="/admin/businessapp/pricing2/'+str(item[0])+'/" target="_blank"> '+str(item[1]) +'</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </th>'
+            result_string= result_string +' <th> <a href="/admin/businessapp/pricing2/'+str(item[0])+'/" onclick="return showAddAnotherPopup(this);"> '+str(item[1]) +'</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </th>'
         return result_string + '</table>'
     func1.__name__ = name
     return func1
@@ -1419,6 +1531,7 @@ class BusinessPricingAdmin(reversion.VersionAdmin):
     fieldsets = (
         ('Normal Pricing', {'fields': ['N0_25','N0_5','N1','N2','N3','N4','N5','N6','N7','N8','N9','N10']}),
         ('Bulk Pricing', {'fields': ['B1','B2','B3','B4','B5','B6','B7','B8','B9','B10']}),
+        ('Cod Pricing', {'fields': ['cod_sum','cod_percentage']}),
         # ('Bulk Pricing',
         #  {'fields': [('name', 'weight', 'cost_of_courier'), ], 'classes': ('suit-tab', 'suit-tab-general')}),
     )
@@ -1469,17 +1582,18 @@ class ExportOrderAdmin(ImportExportActionModelAdmin):
 
 admin.site.register(ExportOrder,ExportOrderAdmin)
 
-class Pricing2Admin(reversion.VersionAdmin):
+class Pricing2Admin(admin.ModelAdmin):
     # search_fields=['name']
     list_filter=('business__username','business__business_name','zone','weight','type')
     list_display=('business',)
 
     def response_change(self, request, obj):
-
+        print "rrrrrrrrrreturning  "
         return HttpResponse('''
    <script type="text/javascript">
       opener.dismissAddAnotherPopup(window);
    </script>''')
+
     readonly_fields=('ppkg','weight','zone','type','business')
 
 
@@ -1499,8 +1613,8 @@ class ZoneAdmin(reversion.VersionAdmin):
 
 admin.site.register(Zone,ZoneAdmin)
 
-from django.contrib import admin
-from django.utils.translation import ugettext_lazy as _
+
+
 
 
 class BmFilter(admin.SimpleListFilter):
@@ -1622,9 +1736,6 @@ class BdheadAdmin(admin.ModelAdmin):
             today_products_correct = Product.objects.filter(order=today_orders_b2b)
             sum_b2b = today_products_correct.aggregate(total=Sum('shipping_cost', field="shipping_cost+cod_cost"))['total']
             count_b2b = today_products_correct.count()
-            print count_b2b
-            print start_min
-            print end_max
 
 
         context={'s':sum_b2b,'c':count_b2b}

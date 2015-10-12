@@ -24,26 +24,33 @@ class NewQcCommentForm(ModelForm):
 		self.cleaned_data['qc_comment']= self.cleaned_data['qc_comment'] + '<br><br> ' + str(new_comment)
 
 
+class NewReturnForm(ModelForm):
+	class Meta:
+		model = Product
+		fields = ['status', 'return_action']
+
+
+
 class NewTrackingStatus(ModelForm):
 	tstatus=forms.CharField(max_length=100,required=False)
 	location=forms.CharField(max_length=100,required=False)
-	time=forms.DateTimeField()
+	ttime=forms.DateTimeField()
 	class Meta:
 		model = Product
 
 	def __init__(self, *args, **kwargs):
 		super(NewTrackingStatus, self).__init__(*args, **kwargs)
-		self.fields['time'].widget = widgets.AdminSplitDateTime()
+		self.fields['ttime'].widget = widgets.AdminSplitDateTime()
 
 	def clean(self):
 		tstatus=self.cleaned_data['tstatus']
 		location=self.cleaned_data['location']
-		time=self.cleaned_data['time']
+		ttime=self.cleaned_data['ttime']
 
 
 		tracking_data=self.cleaned_data['tracking_data']
 		tracking_list=list(json.loads(tracking_data))
-		tracking_list.append({"status": tstatus , "date": str(time.strftime("%Y-%m-%d %H:%M:%S")), "location": location })
+		tracking_list.append({"status": tstatus , "date": str(ttime.strftime("%Y-%m-%d %H:%M:%S")), "location": location })
 		self.cleaned_data['tracking_data']= json.dumps(tracking_list)
 
 

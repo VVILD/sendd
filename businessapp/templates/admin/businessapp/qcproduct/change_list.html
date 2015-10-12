@@ -53,8 +53,14 @@ function dismissAddAnotherPopup(win) {
 <center>
 <a class="btn btn-success" href="/admin/myapp/qcshipment/?o=11"> Customers QC</a>
 
-<a class="btn btn-warning" href="/admin/businessapp/qcproduct/?o=11">Business QC</a>
+<a class="btn btn-warning" href="/admin/businessapp/qcproduct/?o=11&status__exact=DI">Business QC</a>
 
+<a class="btn btn-error" href="/admin/businessapp/qcproduct/?q=&warning__exact=1">Warnings</a>
+
+<a class="btn btn-warning" href="/admin/businessapp/qcproduct/?status__exact=R">Return</a>
+
+<a class="btn btn-error" href="/admin/businessapp/order/?status__in=PU,D">Unresolved Orders</a>
+<a class="btn btn-warning" href="/admin/businessapp/qcproduct/?company__in=D,P,G,A,DT,FF,M,I,S,T,V,DH,SK">Manual update</a>
 
 </center>
 

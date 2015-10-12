@@ -247,7 +247,7 @@ class Shipment(models.Model):
     company = models.CharField(max_length=2,
                                choices=[('F', 'FedEx'), ('D', 'Delhivery'), ('P', 'Professional'), ('G', 'Gati'),
                                         ('A', 'Aramex'), ('E', 'Ecomexpress'), ('DT', 'dtdc'), ('FF', 'First Flight'),
-                                        ('M', 'Maruti courier'), ('I', 'India Post'), ('S', 'Sendd'), ('B', 'Bluedart'), ('T', 'trinity'), ('V', 'vichare')],
+                                        ('M', 'Maruti courier'), ('I', 'India Post'), ('S', 'Sendd'), ('B', 'Bluedart'), ('T', 'trinity'), ('V', 'vichare'), ('DH', 'dhl'), ('S', 'skycom')],
                                blank=True, null=True)
 
     cost_of_courier = models.CharField(verbose_name='item cost', max_length=100, null=True, blank=True)
