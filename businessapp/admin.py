@@ -957,21 +957,24 @@ class FilterUserAdmin(BaseBusinessAdmin):
 
 
     
+    
+    
 
 
 
-class OrderAdmin(FilterUserAdmin):
+class OrderAdmin(FilterUserAdmin,ImportExportActionModelAdmin):
 
     inlines = (ProductInline,)
     search_fields = ['order_no','business__business_name', 'name', 'product__real_tracking_no', 'product__barcode','city','state','product__mapped_tracking_no']
     list_display = (
         'order_no', 'book_time', 'business_details', 'name', 'status','mapped_ok', 'no_of_products', 'total_shipping_cost',
-        'total_cod_cost', 'method', 'fedex')
+        'total_cod_cost', 'method', 'fedex','ff_comment')
     list_editable = ('status',)
-    list_filter = ['business', 'status', 'book_time']
+    list_filter = ['business', 'status', 'book_time','product__company']
     actions = [export_as_csv_action("CSV Export", fields=['name','product__real_tracking_no'])]
     readonly_fields=('master_tracking_number', 'mapped_master_tracking_number', 'fedex')
 
+    resource_class=export_xl.ProductResource
 
     def change_view(self, request, object_id, form_url='', extra_context=None):        
         extra_context = extra_context or {}
@@ -1482,58 +1485,287 @@ class QcProductAdmin(ProductAdmin,reversion.VersionAdmin,ImportExportActionModel
 
 admin.site.register(QcProduct, QcProductAdmin)
 
-def createpricingfield(name,weight,type_of_pricing):
+
+def createpricingfieldgeneric(display_name):
+    display_name=display_name.replace('_','.')
+    type_of_pricing=display_name[0]
+    zone=display_name[1]
+    weight=display_name[2:]
+    if zone=='a':
+        name=weight + 'kgs Zone ' + zone 
+    else:
+        name='Zone ' + zone
     def func1(self,obj):
-        y=Pricing2.objects.filter(business=obj,weight__weight=weight,type=type_of_pricing)
+        y=Pricing2.objects.filter(business=obj,weight__weight=weight,zone__zone=zone,type=type_of_pricing)
         pk_list=[]
         for x in y:
             pk_list.append((x.pk,x.price))
-        result_string='<table>'  
+        result_string=  ''
         for item in pk_list:
             result_string= result_string +' <th> <a href="/admin/businessapp/pricing2/'+str(item[0])+'/" onclick="return showAddAnotherPopup(this);"> '+str(item[1]) +'</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </th>'
-        return result_string + '</table>'
-    func1.__name__ = name
+        return result_string
+    func1.__name__ = display_name
+    func1.short_description = _(name)
     return func1
-
 
 
 class BusinessPricingAdmin(reversion.VersionAdmin):
     list_filter=('username','business_name')
     list_display=('business_name',)
-    readonly_fields=('N0_25','N0_5','N1','N2','N3','N4','N5','N6','N7','N8','N9','N10','B1','B2','B3','B4','B5','B6','B7','B8','B9','B10')
+#    readonly_fields=('N0_25','N0_5','N1','N2','N3','N4','N5','N6','N7','N8','N9','N10','B1','B2','B3','B4','B5','B6','B7','B8','B9','B10')
+    readonly_fields=('Na0_25','Nb0_25','Nc0_25','Nd0_25','Ne0_25','Na0_5','Nb0_5','Nc0_5','Nd0_5','Ne0_5',
+        'Na1','Nb1','Nc1','Nd1','Ne1','Na1_5','Nb1_5','Nc1_5','Nd1_5','Ne1_5',
+        'Na2','Nb2','Nc2','Nd2','Ne2','Na2_5','Nb2_5','Nc2_5','Nd2_5','Ne2_5',
+        'Na3','Nb3','Nc3','Nd3','Ne3','Na3_5','Nb3_5','Nc3_5','Nd3_5','Ne3_5',
+        'Na4','Nb4','Nc4','Nd4','Ne4','Na4_5','Nb4_5','Nc4_5','Nd4_5','Ne4_5',
+        'Na5','Nb5','Nc5','Nd5','Ne5','Na5_5','Nb5_5','Nc5_5','Nd5_5','Ne5_5',
+        'Na6','Nb6','Nc6','Nd6','Ne6','Na6_5','Nb6_5','Nc6_5','Nd6_5','Ne6_5',
+        'Na7','Nb7','Nc7','Nd7','Ne7','Na7_5','Nb7_5','Nc7_5','Nd7_5','Ne7_5',
+        'Na8','Nb8','Nc8','Nd8','Ne8','Na8_5','Nb8_5','Nc8_5','Nd8_5','Ne8_5',
+        'Na9','Nb9','Nc9','Nd9','Ne9','Na9_5','Nb9_5','Nc9_5','Nd9_5','Ne9_5',
+        'Na10','Nb10','Nc10','Nd10','Ne10','Na11','Nb11','Nc11','Nd11','Ne11',
+        'Ba1','Bb1','Bc1','Bd1','Be1',
+        'Ba2','Bb2','Bc2','Bd2','Be2',
+        'Ba3','Bb3','Bc3','Bd3','Be3',
+        'Ba4','Bb4','Bc4','Bd4','Be4',
+        'Ba5','Bb5','Bc5','Bd5','Be5',
+        'Ba6','Bb6','Bc6','Bd6','Be6',
+        'Ba7','Bb7','Bc7','Bd7','Be7',
+        'Ba8','Bb8','Bc8','Bd8','Be8',
+        'Ba9','Bb9','Bc9','Bd9','Be9',
+        'Ba10','Bb10','Bc10','Bd10','Be10',
+        'Ba11','Bb11','Bc11','Bd11','Be11',)
+
+    Na0_25=createpricingfieldgeneric('Na0_25')
+    Nb0_25=createpricingfieldgeneric('Nb0_25')
+    Nc0_25=createpricingfieldgeneric('Nc0_25')
+    Nd0_25=createpricingfieldgeneric('Nd0_25')
+    Ne0_25=createpricingfieldgeneric('Ne0_25')
+
+    Na0_5=createpricingfieldgeneric('Na0_5')
+    Nb0_5=createpricingfieldgeneric('Nb0_5')
+    Nc0_5=createpricingfieldgeneric('Nc0_5')
+    Nd0_5=createpricingfieldgeneric('Nd0_5')
+    Ne0_5=createpricingfieldgeneric('Ne0_5')
 
 
+    Na1=createpricingfieldgeneric('Na1')
+    Nb1=createpricingfieldgeneric('Nb1')
+    Nc1=createpricingfieldgeneric('Nc1')
+    Nd1=createpricingfieldgeneric('Nd1')
+    Ne1=createpricingfieldgeneric('Ne1')
 
-    N0_25=createpricingfield('N0_25',0.25,'N')
-    N0_5=createpricingfield('N0_5',0.5,'N')
-    N1=createpricingfield('N1',1.0,'N')
-    N2=createpricingfield('N2',2.0,'N')
-    N3=createpricingfield('N3',3.0,'N')
-    N4=createpricingfield('N4',4.0,'N')
-    N5=createpricingfield('N5',5.0,'N')
-    N6=createpricingfield('N6',6.0,'N')
-    N7=createpricingfield('N7',7.0,'N')
-    N8=createpricingfield('N8',8.0,'N')
-    N9=createpricingfield('N9',9.0,'N')
-    N10=createpricingfield('N10',10.0,'N')
+    Na1_5=createpricingfieldgeneric('Na1_5')
+    Nb1_5=createpricingfieldgeneric('Nb1_5')
+    Nc1_5=createpricingfieldgeneric('Nc1_5')
+    Nd1_5=createpricingfieldgeneric('Nd1_5')
+    Ne1_5=createpricingfieldgeneric('Ne1_5')
 
-    B1=createpricingfield('B1',1.0,'B')
-    B2=createpricingfield('B2',2.0,'B')
-    B3=createpricingfield('B3',3.0,'B')
-    B4=createpricingfield('B4',4.0,'B')
-    B5=createpricingfield('B5',5.0,'B')
-    B6=createpricingfield('B6',6.0,'B')
-    B7=createpricingfield('B7',7.0,'B')
-    B8=createpricingfield('B8',8.0,'B')
-    B9=createpricingfield('B9',9.0,'B')
-    B10=createpricingfield('B10',1.0,'B')
+    Na2=createpricingfieldgeneric('Na2')
+    Nb2=createpricingfieldgeneric('Nb2')
+    Nc2=createpricingfieldgeneric('Nc2')
+    Nd2=createpricingfieldgeneric('Nd2')
+    Ne2=createpricingfieldgeneric('Ne2')
+
+    Na2_5=createpricingfieldgeneric('Na2_5')
+    Nb2_5=createpricingfieldgeneric('Nb2_5')
+    Nc2_5=createpricingfieldgeneric('Nc2_5')
+    Nd2_5=createpricingfieldgeneric('Nd2_5')
+    Ne2_5=createpricingfieldgeneric('Ne2_5')
+
+    Na3=createpricingfieldgeneric('Na3')
+    Nb3=createpricingfieldgeneric('Nb3')
+    Nc3=createpricingfieldgeneric('Nc3')
+    Nd3=createpricingfieldgeneric('Nd3')
+    Ne3=createpricingfieldgeneric('Ne3')
+
+    Na3_5=createpricingfieldgeneric('Na3_5')
+    Nb3_5=createpricingfieldgeneric('Nb3_5')
+    Nc3_5=createpricingfieldgeneric('Nc3_5')
+    Nd3_5=createpricingfieldgeneric('Nd3_5')
+    Ne3_5=createpricingfieldgeneric('Ne3_5')
+
+    Na4=createpricingfieldgeneric('Na4')
+    Nb4=createpricingfieldgeneric('Nb4')
+    Nc4=createpricingfieldgeneric('Nc4')
+    Nd4=createpricingfieldgeneric('Nd4')
+    Ne4=createpricingfieldgeneric('Ne4')
+
+    Na4_5=createpricingfieldgeneric('Na4_5')
+    Nb4_5=createpricingfieldgeneric('Nb4_5')
+    Nc4_5=createpricingfieldgeneric('Nc4_5')
+    Nd4_5=createpricingfieldgeneric('Nd4_5')
+    Ne4_5=createpricingfieldgeneric('Ne4_5')
+
+    Na5=createpricingfieldgeneric('Na5')
+    Nb5=createpricingfieldgeneric('Nb5')
+    Nc5=createpricingfieldgeneric('Nc5')
+    Nd5=createpricingfieldgeneric('Nd5')
+    Ne5=createpricingfieldgeneric('Ne5')
+
+    Na5_5=createpricingfieldgeneric('Na5_5')
+    Nb5_5=createpricingfieldgeneric('Nb5_5')
+    Nc5_5=createpricingfieldgeneric('Nc5_5')
+    Nd5_5=createpricingfieldgeneric('Nd5_5')
+    Ne5_5=createpricingfieldgeneric('Ne5_5')
+
+    Na6=createpricingfieldgeneric('Na6')
+    Nb6=createpricingfieldgeneric('Nb6')
+    Nc6=createpricingfieldgeneric('Nc6')
+    Nd6=createpricingfieldgeneric('Nd6')
+    Ne6=createpricingfieldgeneric('Ne6')
+
+    Na6_5=createpricingfieldgeneric('Na6_5')
+    Nb6_5=createpricingfieldgeneric('Nb6_5')
+    Nc6_5=createpricingfieldgeneric('Nc6_5')
+    Nd6_5=createpricingfieldgeneric('Nd6_5')
+    Ne6_5=createpricingfieldgeneric('Ne6_5')
+
+    Na7=createpricingfieldgeneric('Na7')
+    Nb7=createpricingfieldgeneric('Nb7')
+    Nc7=createpricingfieldgeneric('Nc7')
+    Nd7=createpricingfieldgeneric('Nd7')
+    Ne7=createpricingfieldgeneric('Ne7')
+
+    Na7_5=createpricingfieldgeneric('Na7_5')
+    Nb7_5=createpricingfieldgeneric('Nb7_5')
+    Nc7_5=createpricingfieldgeneric('Nc7_5')
+    Nd7_5=createpricingfieldgeneric('Nd7_5')
+    Ne7_5=createpricingfieldgeneric('Ne7_5')
+
+    Na8=createpricingfieldgeneric('Na8')
+    Nb8=createpricingfieldgeneric('Nb8')
+    Nc8=createpricingfieldgeneric('Nc8')
+    Nd8=createpricingfieldgeneric('Nd8')
+    Ne8=createpricingfieldgeneric('Ne8')
+
+    Na8_5=createpricingfieldgeneric('Na8_5')
+    Nb8_5=createpricingfieldgeneric('Nb8_5')
+    Nc8_5=createpricingfieldgeneric('Nc8_5')
+    Nd8_5=createpricingfieldgeneric('Nd8_5')
+    Ne8_5=createpricingfieldgeneric('Ne8_5')
+
+    Na9=createpricingfieldgeneric('Na9')
+    Nb9=createpricingfieldgeneric('Nb9')
+    Nc9=createpricingfieldgeneric('Nc9')
+    Nd9=createpricingfieldgeneric('Nd9')
+    Ne9=createpricingfieldgeneric('Ne9')
+
+    Na9_5=createpricingfieldgeneric('Na9_5')
+    Nb9_5=createpricingfieldgeneric('Nb9_5')
+    Nc9_5=createpricingfieldgeneric('Nc9_5')
+    Nd9_5=createpricingfieldgeneric('Nd9_5')
+    Ne9_5=createpricingfieldgeneric('Ne9_5')
+
+    Na10=createpricingfieldgeneric('Na10')
+    Nb10=createpricingfieldgeneric('Nb10')
+    Nc10=createpricingfieldgeneric('Nc10')
+    Nd10=createpricingfieldgeneric('Nd10')
+    Ne10=createpricingfieldgeneric('Ne10')
+
+    Na11=createpricingfieldgeneric('Na11')
+    Nb11=createpricingfieldgeneric('Nb11')
+    Nc11=createpricingfieldgeneric('Nc11')
+    Nd11=createpricingfieldgeneric('Nd11')
+    Ne11=createpricingfieldgeneric('Ne11')
+
+
+    Ba1=createpricingfieldgeneric('Ba1')
+    Bb1=createpricingfieldgeneric('Bb1')
+    Bc1=createpricingfieldgeneric('Bc1')
+    Bd1=createpricingfieldgeneric('Bd1')
+    Be1=createpricingfieldgeneric('Be1')
+
+    Ba2=createpricingfieldgeneric('Ba2')
+    Bb2=createpricingfieldgeneric('Bb2')
+    Bc2=createpricingfieldgeneric('Bc2')
+    Bd2=createpricingfieldgeneric('Bd2')
+    Be2=createpricingfieldgeneric('Be2')
+
+    Ba3=createpricingfieldgeneric('Ba3')
+    Bb3=createpricingfieldgeneric('Bb3')
+    Bc3=createpricingfieldgeneric('Bc3')
+    Bd3=createpricingfieldgeneric('Bd3')
+    Be3=createpricingfieldgeneric('Be3')
+
+    Ba4=createpricingfieldgeneric('Ba4')
+    Bb4=createpricingfieldgeneric('Bb4')
+    Bc4=createpricingfieldgeneric('Bc4')
+    Bd4=createpricingfieldgeneric('Bd4')
+    Be4=createpricingfieldgeneric('Be4')
+
+    Ba5=createpricingfieldgeneric('Ba5')
+    Bb5=createpricingfieldgeneric('Bb5')
+    Bc5=createpricingfieldgeneric('Bc5')
+    Bd5=createpricingfieldgeneric('Bd5')
+    Be5=createpricingfieldgeneric('Be5')
+
+    Ba6=createpricingfieldgeneric('Ba6')
+    Bb6=createpricingfieldgeneric('Bb6')
+    Bc6=createpricingfieldgeneric('Bc6')
+    Bd6=createpricingfieldgeneric('Bd6')
+    Be6=createpricingfieldgeneric('Be6')
+
+    Ba7=createpricingfieldgeneric('Ba7')
+    Bb7=createpricingfieldgeneric('Bb7')
+    Bc7=createpricingfieldgeneric('Bc7')
+    Bd7=createpricingfieldgeneric('Bd7')
+    Be7=createpricingfieldgeneric('Be7')
+
+    Ba8=createpricingfieldgeneric('Ba8')
+    Bb8=createpricingfieldgeneric('Bb8')
+    Bc8=createpricingfieldgeneric('Bc8')
+    Bd8=createpricingfieldgeneric('Bd8')
+    Be8=createpricingfieldgeneric('Be8')
+
+    Ba9=createpricingfieldgeneric('Ba9')
+    Bb9=createpricingfieldgeneric('Bb9')
+    Bc9=createpricingfieldgeneric('Bc9')
+    Bd9=createpricingfieldgeneric('Bd9')
+    Be9=createpricingfieldgeneric('Be9')
+
+    Ba10=createpricingfieldgeneric('Ba10')
+    Bb10=createpricingfieldgeneric('Bb10')
+    Bc10=createpricingfieldgeneric('Bc10')
+    Bd10=createpricingfieldgeneric('Bd10')
+    Be10=createpricingfieldgeneric('Be10')
+
+    Ba11=createpricingfieldgeneric('Ba11')
+    Bb11=createpricingfieldgeneric('Bb11')
+    Bc11=createpricingfieldgeneric('Bc11')
+    Bd11=createpricingfieldgeneric('Bd11')
+    Be11=createpricingfieldgeneric('Be11')
 
 
 
     fieldsets = (
-        ('Normal Pricing', {'fields': ['N0_25','N0_5','N1','N2','N3','N4','N5','N6','N7','N8','N9','N10']}),
-        ('Bulk Pricing', {'fields': ['B1','B2','B3','B4','B5','B6','B7','B8','B9','B10']}),
-        ('Cod Pricing', {'fields': ['cod_sum','cod_percentage']}),
+        ('Normal Pricing', {'fields': [
+('Na0_25','Nb0_25','Nc0_25','Nd0_25','Ne0_25'),('Na0_5','Nb0_5','Nc0_5','Nd0_5','Ne0_5'),
+        ('Na1','Nb1','Nc1','Nd1','Ne1'),('Na1_5','Nb1_5','Nc1_5','Nd1_5','Ne1_5'),
+        ('Na2','Nb2','Nc2','Nd2','Ne2'),('Na2_5','Nb2_5','Nc2_5','Nd2_5','Ne2_5'),
+        ('Na3','Nb3','Nc3','Nd3','Ne3'),('Na3_5','Nb3_5','Nc3_5','Nd3_5','Ne3_5'),
+        ('Na4','Nb4','Nc4','Nd4','Ne4'),('Na4_5','Nb4_5','Nc4_5','Nd4_5','Ne4_5'),
+        ('Na5','Nb5','Nc5','Nd5','Ne5'),('Na5_5','Nb5_5','Nc5_5','Nd5_5','Ne5_5'),
+        ('Na6','Nb6','Nc6','Nd6','Ne6'),('Na6_5','Nb6_5','Nc6_5','Nd6_5','Ne6_5'),
+        ('Na7','Nb7','Nc7','Nd7','Ne7'),('Na7_5','Nb7_5','Nc7_5','Nd7_5','Ne7_5'),
+        ('Na8','Nb8','Nc8','Nd8','Ne8'),('Na8_5','Nb8_5','Nc8_5','Nd8_5','Ne8_5'),
+        ('Na9','Nb9','Nc9','Nd9','Ne9'),('Na9_5','Nb9_5','Nc9_5','Nd9_5','Ne9_5'),
+        ('Na10','Nb10','Nc10','Nd10','Ne10'),('Na11','Nb11','Nc11','Nd11','Ne11')
+            ]}),
+        ('Bulk Pricing', {'fields': [
+('Ba1','Bb1','Bc1','Bd1','Be1'),
+        ('Ba2','Bb2','Bc2','Bd2','Be2'),
+        ('Ba3','Bb3','Bc3','Bd3','Be3'),
+        ('Ba4','Bb4','Bc4','Bd4','Be4'),
+        ('Ba5','Bb5','Bc5','Bd5','Be5'),
+        ('Ba6','Bb6','Bc6','Bd6','Be6'),
+        ('Ba7','Bb7','Bc7','Bd7','Be7'),
+        ('Ba8','Bb8','Bc8','Bd8','Be8'),
+        ('Ba9','Bb9','Bc9','Bd9','Be9'),
+        ('Ba10','Bb10','Bc10','Bd10','Be10'),
+        ('Ba11','Bb11','Bc11','Bd11','Be11'),
+            ]}),
+        ('Cod Pricing', {'fields': [('cod_sum','cod_percentage'),'discount_percentage']}),
         # ('Bulk Pricing',
         #  {'fields': [('name', 'weight', 'cost_of_courier'), ], 'classes': ('suit-tab', 'suit-tab-general')}),
     )
