@@ -135,7 +135,6 @@ def index(request):
             "data": data['wbarcode']
         }]
 
-    print series
 
     context = {'product_groupedby_business': product_groupedby_business, 'average_b2c': average_b2c, 'sum_b2c': sum_b2c,
                'count_b2c': count_b2c, 'average_b2b': average_b2b, 'sum_b2b': sum_b2b, 'count_b2b': count_b2b,
