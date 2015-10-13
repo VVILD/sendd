@@ -527,28 +527,28 @@ class EmailLabelsResource(CORSModelResource):
 
         if not request.body:
             raise CustomBadRequest("error",
-                                   'Please supply a valid json in the format {"reference_ids":["ID1", "ID2", "ID3"]}')
+                                   'Please supply a valid json in the format {"third_party_ids":["ID1", "ID2", "ID3"]}')
 
-        reference_ids = self.deserialize(request, request.body)
+        third_party_ids = self.deserialize(request, request.body)
 
-        if not 'reference_ids' in reference_ids:
+        if not 'third_party_ids' in third_party_ids:
             raise CustomBadRequest("error",
-                                   'Please supply a valid json in the format {"reference_ids":["ID1", "ID2", "ID3"]}')
-        if type(reference_ids['reference_ids']) is not list:
+                                   'Please supply a valid json in the format {"third_party_ids":["ID1", "ID2", "ID3"]}')
+        if type(third_party_ids['reference_ids']) is not list:
             raise CustomBadRequest("error",
-                                   'Please supply a valid json in the format {"reference_ids":["ID1", "ID2", "ID3"]}')
+                                   'Please supply a valid json in the format {"third_party_ids":["ID1", "ID2", "ID3"]}')
 
-        if not 'username' in reference_ids:
+        if not 'username' in third_party_ids:
             raise CustomBadRequest("error", 'Please supply a username')
 
         try:
-            business_obj = Business.objects.get(username=reference_ids['username'])
+            business_obj = Business.objects.get(username=third_party_ids['username'])
         except Business.DoesNotExist:
             raise CustomBadRequest("error", "Username doesn't exist")
         except KeyError:
             raise CustomBadRequest("error", 'Please supply a valid username')
 
-        db_objs = Order.objects.filter(reference_id__in=reference_ids['reference_ids'], business=business_obj)
+        db_objs = Order.objects.filter(third_party_id__in=third_party_ids['third_party_ids'], business=business_obj)
         if db_objs.count() == 0:
             return self.create_response(request, {"success": False, "message": "No labels to create"})
 
