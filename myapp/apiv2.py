@@ -1701,9 +1701,10 @@ class WeborderResource2(CORSModelResource):
 
         #see if promocode exist
 
-        order = Order.objects.create(namemail=newnamemail, user=newuser, address=bundle.data['pickup_location'],
-                                     way='W', pick_now='N', pincode=bundle.data['pickup_pincode'],
-                                     date=bundle.data['pickup_date'], time=bundle.data['pickup_time'])
+        order = Order(namemail=newnamemail, user=newuser, address=bundle.data['pickup_location'],
+                     way='W', pick_now='N', pincode=bundle.data['pickup_pincode'],
+                     date=bundle.data['pickup_date'], time=bundle.data['pickup_time'])
+        order.save()
 
 
 
