@@ -24,9 +24,12 @@ CONFIG_OBJ = FedexConfig(key='jFdC6SAqFS9vz7gY',
 track = FedexTrackRequest(CONFIG_OBJ)
 track.TrackPackageIdentifier.Type = 'TRACKING_NUMBER_OR_DOORTAG'
 track.TrackPackageIdentifier.Value = '781468138603'
+track.IncludeDetailedScans = True
 
 # Fires off the request, sets the 'response' attribute on the object.
 track.send_request()
+
+# track.request
 
 # See the response printed out.
 print track.response

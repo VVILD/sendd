@@ -534,7 +534,7 @@ class EmailLabelsResource(CORSModelResource):
         if not 'third_party_ids' in third_party_ids:
             raise CustomBadRequest("error",
                                    'Please supply a valid json in the format {"third_party_ids":["ID1", "ID2", "ID3"]}')
-        if type(third_party_ids['reference_ids']) is not list:
+        if type(third_party_ids['third_party_ids']) is not list:
             raise CustomBadRequest("error",
                                    'Please supply a valid json in the format {"third_party_ids":["ID1", "ID2", "ID3"]}')
 
