@@ -119,10 +119,27 @@ def index(request):
         shipping_cost__isnull=True).values('order__business').annotate(
         total_revenue=Sum('shipping_cost', field="shipping_cost+cod_cost"), total_no=Count('order'))
 
+    y=BOrder.objects.filter(  ~Q(status='P') & ~Q(status='CA')  ).extra({'date_created' : "date(book_time)"}).values('date_created').annotate(barcode_count=Count('product__barcode'),created_count=Count('product'))
+
+    data = {'date': [], 'wbarcode': []}
+
+
+    for x in y:
+        data['date'].append(str(x["date_created"]))
+        data['wbarcode'].append((x["created_count"]))
+
+    categories=data['date']
+
+    series=[{
+            "name": 'business orders',
+            "data": data['wbarcode']
+        }]
+
+
     context = {'product_groupedby_business': product_groupedby_business, 'average_b2c': average_b2c, 'sum_b2c': sum_b2c,
                'count_b2c': count_b2c, 'average_b2b': average_b2b, 'sum_b2b': sum_b2b, 'count_b2b': count_b2b,
                'b2c_stats': b2c_stats, 'b2b_stats': b2b_stats, 'action_b2b': action_b2b, 'action_b2c': action_b2c,
-               'product': product}
+               'product': product,'series':series ,'categories':categories}
     return render(request, 'polls/index.html', context)
 
 
