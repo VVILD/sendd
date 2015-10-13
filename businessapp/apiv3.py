@@ -429,7 +429,7 @@ class OrderPatchReferenceResource(CORSModelResource):
         except KeyError:
             raise CustomBadRequest("error", 'Please supply a valid username')
 
-        db_objs = Order.objects.filter(reference_id__in=update_ids['update'], business=business_obj)
+        db_objs = Order.objects.filter(third_party_id__in=update_ids['update'], business=business_obj)
         updated_orders = []
         for db_obj in db_objs:
             db_obj.confirmed = True
