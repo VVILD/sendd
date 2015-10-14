@@ -329,7 +329,15 @@ class Product(models.Model):
     qc_comment = models.TextField(null=True, blank=True)
     tracking_history = models.TextField(null=True, blank=True)
     warning = models.BooleanField(default=False)
+
+    warning_type = models.CharField(max_length=3,blank=True,null=True,
+                              choices=(('FDE', 'fedex delivery exception'), ('I24', 'indiapost 24 hour'),('F24', 'fedex 24 hour'), ('FSI', 'fedex shipment information sent'), ('FLF', 'fedex local facility'),),
+                              default=None)
+
     last_tracking_status = models.CharField(max_length=300, null=True, blank=True)
+    
+    last_tracking_status_timestamp=models.DateTimeField(blank=True, null=True)
+
     actual_delivery_timestamp = models.DateTimeField(blank=True, null=True)
     estimated_delivery_timestamp = models.DateTimeField(blank=True, null=True)
     return_action=models.CharField(max_length=2,blank=True,null=True,
@@ -361,10 +369,25 @@ class Product(models.Model):
             ind_time = datetime.now(z)
             time = ind_time
             self.update_time = time
-            self.last_tracking_status = json.loads(self.tracking_data)[-1]['status']
+            if (self.last_tracking_status!=json.loads(self.tracking_data)[-1]['status']):
+                self.last_tracking_status = json.loads(self.tracking_data)[-1]['status']
+                self.last_tracking_status_timestamp=datetime.now(z)
+            else:
+                #now status hasnt changed
+                try:
+                    if self.last_tracking_status_timestamp:
+                        hours=(datetime.datetime.now()-self.last_tracking_status)//3600
+                        if (hours>24 and ("local facility" in self.last_tracking_status.lower())):
+                            self.warning_type='FLF'
+                            self.warning=True
+                except:
+                    pass
+
             # Warnings rule definations
-            if ('exception' in self.last_tracking_status):
+            if ('exception' in self.last_tracking_status.lower()):
                 self.warning = True
+                self.warning_type='FDE'
+                self.qc_comment=self.qc_comment + self.last_tracking_status.lower()
 
         if not self.pk:
             z = timezone('Asia/Kolkata')

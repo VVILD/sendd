@@ -22,6 +22,7 @@ class Command(BaseCommand):
     
     def handle(self, *args, **options):
 
+
         ndict = {'a': [(0.25,15), (0.5,15), (1,28), (1.5,41),(2,54), (2.5,67), (3,80), (3.5,93), (4,106), (4.5,119), (5,132), (5.5,145),(6,158), (6.5,171), (7,184),(7.5,197), (8,210), (8.5,223), (9,236),(9.5,249), (10,262), (11,286)],
                  'b': [(0.25,20), (0.5,30), (1,56), (1.5,82),(2,108), (2.5,134), (3,160), (3.5,186),(4,212),(4.5,238), (5,264), (5.5,290),(6,316), (6.5,342),(7,368),(7.5,394), (8,420), (8.5,446),(9,472),(9.5,498), (10,524), (11,572)],
                  'c': [(0.25,25), (0.5,33), (1,65), (1.5,97),(2,129), (2.5,161), (3,193), (3.5,225),(4,257),(4.5,289), (5,321), (5.5,353),(6,385), (6.5,417),(7,449),(7.5,481), (8,513), (8.5,545),(9,577),(9.5,609), (10,641), (11,704)],
@@ -41,13 +42,15 @@ class Command(BaseCommand):
                 for w in ndict[key]:
                     zone = Zone.objects.get(zone=key)
                     weight = Weight.objects.get(weight=w[0])
+                    print instance, weight , zone + "N"
                     p=Pricing2(business=instance,zone=zone,weight=weight,price=w[1],type='N')
                     p.save()
-                    
+
         for instance in y:
             for key in bdict:
                 for w in bdict[key]:
                     zone = Zone.objects.get(zone=key)
                     weight = Weight.objects.get(weight=w[0])
+                    print instance, weight , zone + "B"
                     p=Pricing2(business=instance,zone=zone,weight=weight,price=w[1],type='B')
                     p.save()

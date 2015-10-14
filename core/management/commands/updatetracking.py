@@ -15,7 +15,6 @@ from bs4 import BeautifulSoup
 import urllib2
 import json
 
-
 class Command(BaseCommand):
     help = 'Updates tracking info for all the services'
 
@@ -138,11 +137,18 @@ class Command(BaseCommand):
                             }
                         else:
                             hours=self.hours_gone(tracking_data[-1]['date'])
-                            if (hours>12):
-                                product.warning=True
-                                print product.pk
-                                print "warning ayi hai"
-                                product.save()
+                            if "Shipment information sent" in tracking_data[-1]['status']:
+                                if (hours>12):
+                                    product.warning=True
+                                    product.warning_type='FSI'                                    
+                                    product.save()
+                            else:
+                                if (hours>24):
+                                    product.warning=True
+                                    product.warning_type='F24'                                    
+                                    product.save()                                    
+
+
 
                             result = {
                                 "company": 'fedex',

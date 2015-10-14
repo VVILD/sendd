@@ -1144,7 +1144,7 @@ class ProxyProductAdmin(reversion.VersionAdmin):
 
 
 	def get_queryset(self, request):
-		return self.model.objects.filter(Q(order__business='souled_store')|Q(order__business='snoog'))
+		return self.model.objects.filter(Q(order__business='souled_store')|Q(order__business='snoogg'))
 
 	def sent_to(self,obj):
 		return obj.order.name
@@ -1308,7 +1308,7 @@ class StatusFilter(admin.SimpleListFilter):
 
 	def lookups(self, request, model_admin):
 
-		tracking_set=Product.objects.filter().values("last_tracking_status").annotate(n=Count("pk")).exclude(n__lt=3)
+		tracking_set=Product.objects.filter().values("last_tracking_status").annotate(n=Count("pk")).exclude(n__lt=2)
 		#tracking_set=Product.objects.filter().values("last_tracking_status").annotate(n=Count("pk"))
 
 		bd_tupel=[]
