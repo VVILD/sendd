@@ -43,7 +43,8 @@ class Command(BaseCommand):
                     weight = Weight.objects.get(weight=w[0])
                     p=Pricing2(business=instance,zone=zone,weight=weight,price=w[1],type='N')
                     p.save()
-
+                    
+        for instance in y:
             for key in bdict:
                 for w in bdict[key]:
                     zone = Zone.objects.get(zone=key)
