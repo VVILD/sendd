@@ -313,7 +313,7 @@ class OrderResource3(CORSModelResource):
         products = Product.objects.filter(order__pk=bundle.data['order_no']).values("real_tracking_no", "sku",
                                                                                     "weight",
                                                                                     "name", "quantity", "price",
-                                                                                    "status")
+                                                                                    "status", "barcode")
 
         new_bundle = {
             "order_no": bundle.data['order_no'],
