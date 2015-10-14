@@ -633,6 +633,9 @@ class ProductAdmin(reversion.VersionAdmin):
 
 	suit_form_tabs = (('general', 'General'), ('tracking', 'Tracking'),('barcode', 'Barcode'))
 
+
+
+
 	actions = [export_as_csv_action("CSV Export", fields=['name','real_tracking_no','order__name'])]
 
 admin.site.register(Product, ProductAdmin)
@@ -1530,6 +1533,28 @@ def createpricingfieldgeneric(display_name):
 	func1.short_description = _(name)
 	return func1
 
+def createpricingfieldgeneric2(display_name):
+	display_name=display_name.replace('_','.')
+	type_of_pricing=display_name[0]
+	zone=display_name[1]
+	weight=display_name[2:]
+	if zone=='a':
+		name=weight + 'kgs Zone ' + zone 
+	else:
+		name='Zone ' + zone
+	def func1(self,obj):
+		y=Pricing2.objects.filter(business=obj,weight__weight=weight,zone__zone=zone,type=type_of_pricing)
+		pk_list=[]
+		for x in y:
+			pk_list.append((x.pk,x.ppkg))
+		result_string=  ''
+		for item in pk_list:
+			result_string= result_string +' <th> <a href="/admin/businessapp/pricing2/'+str(item[0])+'/?ppk=True" onclick="return showAddAnotherPopup(this);"> '+str(item[1]) +'</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </th>'
+		return result_string
+	func1.__name__ = display_name
+	func1.short_description = _(name)
+	return func1
+
 
 class BusinessPricingAdmin(reversion.VersionAdmin):
 	list_filter=('username','business_name')
@@ -1685,11 +1710,11 @@ class BusinessPricingAdmin(reversion.VersionAdmin):
 	Nd10=createpricingfieldgeneric('Nd10')
 	Ne10=createpricingfieldgeneric('Ne10')
 
-	Na11=createpricingfieldgeneric('Na11')
-	Nb11=createpricingfieldgeneric('Nb11')
-	Nc11=createpricingfieldgeneric('Nc11')
-	Nd11=createpricingfieldgeneric('Nd11')
-	Ne11=createpricingfieldgeneric('Ne11')
+	Na11=createpricingfieldgeneric2('Na11')
+	Nb11=createpricingfieldgeneric2('Nb11')
+	Nc11=createpricingfieldgeneric2('Nc11')
+	Nd11=createpricingfieldgeneric2('Nd11')
+	Ne11=createpricingfieldgeneric2('Ne11')
 
 
 	Ba1=createpricingfieldgeneric('Ba1')
@@ -1752,11 +1777,11 @@ class BusinessPricingAdmin(reversion.VersionAdmin):
 	Bd10=createpricingfieldgeneric('Bd10')
 	Be10=createpricingfieldgeneric('Be10')
 
-	Ba11=createpricingfieldgeneric('Ba11')
-	Bb11=createpricingfieldgeneric('Bb11')
-	Bc11=createpricingfieldgeneric('Bc11')
-	Bd11=createpricingfieldgeneric('Bd11')
-	Be11=createpricingfieldgeneric('Be11')
+	Ba11=createpricingfieldgeneric2('Ba11')
+	Bb11=createpricingfieldgeneric2('Bb11')
+	Bc11=createpricingfieldgeneric2('Bc11')
+	Bd11=createpricingfieldgeneric2('Bd11')
+	Be11=createpricingfieldgeneric2('Be11')
 
 
 
@@ -1851,6 +1876,18 @@ class Pricing2Admin(admin.ModelAdmin):
    </script>''')
 
 	readonly_fields=('ppkg','weight','zone','type','business')
+	def get_form(self, request, obj=None, **kwargs):
+		#tracking=request.GET.get["tracking",None]
+		ppkg = request.GET.get('ppkg',None)
+		
+		if ppkg:
+			self.readonly_fields=('price','weight','zone','type','business')
+
+		else:
+			self.readonly_fields=('ppkg','weight','zone','type','business')
+
+
+		return super(Pricing2Admin, self).get_form(request, obj, **kwargs)
 
 
 	
