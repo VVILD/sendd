@@ -376,7 +376,7 @@ class Product(models.Model):
                 #now status hasnt changed
                 try:
                     if self.last_tracking_status_timestamp:
-                        hours=(datetime.datetime.now()-self.last_tracking_status)//3600
+                        hours=(datetime.datetime.now()-self.last_tracking_status_timestamp)//3600
                         if (hours>24 and ("local facility" in self.last_tracking_status.lower())):
                             self.warning_type='FLF'
                             self.warning=True
@@ -388,6 +388,7 @@ class Product(models.Model):
                 self.warning = True
                 self.warning_type='FDE'
                 self.qc_comment=self.qc_comment + self.last_tracking_status.lower()
+
 
         if not self.pk:
             z = timezone('Asia/Kolkata')
