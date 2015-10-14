@@ -42,7 +42,7 @@ class Command(BaseCommand):
                 for w in ndict[key]:
                     zone = Zone.objects.get(zone=key)
                     weight = Weight.objects.get(weight=w[0])
-                    print instance, weight , zone + "N"
+                    print str(instance), str(weight) , str(zone) + "N"
                     p=Pricing2(business=instance,zone=zone,weight=weight,price=w[1],type='N')
                     p.save()
 
@@ -51,6 +51,6 @@ class Command(BaseCommand):
                 for w in bdict[key]:
                     zone = Zone.objects.get(zone=key)
                     weight = Weight.objects.get(weight=w[0])
-                    print instance, weight , zone + "B"
+                    print str(instance), str(weight) , str(zone) + "B"
                     p=Pricing2(business=instance,zone=zone,weight=weight,price=w[1],type='B')
                     p.save()
