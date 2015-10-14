@@ -575,7 +575,7 @@ class InvoiceResource(CORSResource):
         end_date = datetime.strptime(str(end_date), "%d-%m-%Y") + timedelta(days=1)
 
         products = Product.objects.filter(Q(order__business=business), Q(status='C') | Q(status='R'),
-                                          Q(date__lt=end_date), Q(date__gt=start_date))
+                                          Q(date__lt=end_date), Q(date__gt=start_date)).select_related('order')
         orders = {}
         for product in products:
             p_order = str(product.order)
@@ -605,6 +605,7 @@ class InvoiceResource(CORSResource):
                     "drop_address_state": product.order.state,
                     "drop_address_city": product.order.city,
                     "receiver_name": product.order.name,
+                    "refund": product.order.refund,
                     "total_shipping_cost": int(product.shipping_cost) + int(product.return_cost) + int(
                         product.cod_cost),
                     "total_cod_remittance": 0,

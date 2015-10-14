@@ -244,6 +244,7 @@ class Order(models.Model):
     last_updated_status = models.DateTimeField(null=True, blank=True)
     __status = None
     ff_comment=models.TextField(null=True, blank=True)
+    refund = models.FloatField(default=0.0)
 
 
     def __unicode__(self):
