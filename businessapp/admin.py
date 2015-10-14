@@ -1549,7 +1549,7 @@ def createpricingfieldgeneric2(display_name):
 			pk_list.append((x.pk,x.ppkg))
 		result_string=  ''
 		for item in pk_list:
-			result_string= result_string +' <th> <a href="/admin/businessapp/pricing2/'+str(item[0])+'/?ppk=True" onclick="return showAddAnotherPopup(this);"> '+str(item[1]) +'</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </th>'
+			result_string= result_string +' <th> <a href="/admin/businessapp/pricing2/'+str(item[0])+'/?ppkg=True" onclick="return showAddAnotherPopup(this);"> '+str(item[1]) +'</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </th>'
 		return result_string
 	func1.__name__ = display_name
 	func1.short_description = _(name)

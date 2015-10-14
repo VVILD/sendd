@@ -837,7 +837,10 @@ class Pricing2(models.Model):
 
     def save(self, *args, **kwargs):
         ''' On save, update timestamps '''
-        self.ppkg = self.price / self.weight.weight
+        if self.weight.weight==11.0:
+            self.price=self.ppkg*11
+        else:
+            self.ppkg = self.price / self.weight.weight
 
         if not self.pk:
             if Pricing2.objects.filter(zone__zone=self.zone.zone,weight__weight=self.weight.weight,type=self.type,business=self.business).count() > 0:
