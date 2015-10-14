@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from businessapp.models import Product, Order,Business,Weight,Zone
+from businessapp.models import *
 from myapp.models import Shipment
 import easypost
 import aftership
