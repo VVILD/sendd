@@ -606,6 +606,7 @@ class InvoiceResource(CORSResource):
                     "drop_address_city": product.order.city,
                     "receiver_name": product.order.name,
                     "refund": product.order.refund,
+                    "is_cod": True if product.order.payment_method == 'C' else False,
                     "total_shipping_cost": int(product.shipping_cost) + int(product.return_cost) + int(
                         product.cod_cost),
                     "total_cod_remittance": 0,
