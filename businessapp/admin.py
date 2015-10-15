@@ -1184,15 +1184,69 @@ class ShipmentAdmin(reversion.VersionAdmin):
 '''
 from daterange_filter.filter import DateRangeFilter
 
-class RemittanceProductPendingAdmin(reversion.VersionAdmin):
+class RemittanceProductPendingAdmin(reversion.VersionAdmin,ImportExportActionModelAdmin):
+
+	def changelist_view(self, request, extra_context=None):
+
+		try:
+			start_time=request.GET['order__book_time__gte']
+			end_time=request.GET['order__book_time__lte']
+			start_time = datetime.datetime.strptime(start_time, '%Y-%m-%d')
+			end_time = datetime.datetime.strptime(end_time, '%Y-%m-%d')
+		except:
+			start_time= datetime.date(2015,1,1)
+			end_time=datetime.date.today() + datetime.timedelta(days=2)
+
+		try:
+			start_min = datetime.datetime.combine(start_time, datetime.time.min)
+			end_max = datetime.datetime.combine(end_time, datetime.time.max)
+
+			bd_username= request.GET['decade']
+			profile=Profile.objects.get(user__username=bd_username)
+			today_orders_b2b = Order.objects.filter(business__businessmanager=profile,book_time__range=(start_min, end_max))
+			today_products_correct = Product.objects.filter(order=today_orders_b2b).exclude(shipping_cost__isnull=True)
+			sum_b2b = today_products_correct.aggregate(total=Sum('shipping_cost', field="shipping_cost+cod_cost"))['total']
+			count_b2b = today_products_correct.count()
+
+		except:
+			bd_username=None
+			sum_b2b=0
+			count_b2b=0
+			today_orders_b2b = Order.objects.filter(book_time__range=(start_min, end_max))
+			today_products_correct = Product.objects.filter(order=today_orders_b2b)
+			sum_b2b = today_products_correct.aggregate(total=Sum('shipping_cost', field="shipping_cost+cod_cost"))['total']
+			count_b2b = today_products_correct.count()
+
+
+		context={'s':sum_b2b,'c':count_b2b}
+
+		return super(RemittanceProductPendingAdmin, self).changelist_view(request, extra_context=context)
+
+	resource_class=export_xl.ProductResource
 	list_filter=['order__business',('date', DateRangeFilter),]
-	list_editable=['remittance',]
 	list_display = (
 		'get_order_no','order_link', 'date', 'get_business', 'name', 'cod_cost', 'shipping_cost', 'status',
 		'price','remittance')
 	readonly_fields = (
 		'name', 'quantity', 'sku', 'price', 'weight', 'applied_weight', 'real_tracking_no', 'order', 'tracking_data',
 		'kartrocket_order', 'shipping_cost', 'cod_cost', 'date','barcode',)
+
+	def make_remittance_complete(modeladmin, request, queryset):
+		ct = ContentType.objects.get_for_model(queryset.model)
+		for obj in queryset:
+			LogEntry.objects.log_action(
+				user_id=request.user.id,
+				content_type_id=ct.pk,
+				object_id=obj.pk,
+				object_repr=str(obj.pk),
+				action_flag=CHANGE,
+				change_message="action button : remittance completed of these products")
+		queryset.update(remittance=True,remittance_date=datetime.datetime.now())
+
+
+	make_remittance_complete.short_description = "make remittance complete of selected products"
+	actions = [make_remittance_complete]
+
 
 	def get_order_no(self, obj):
 		return obj.order.order_no
@@ -1215,12 +1269,15 @@ class RemittanceProductPendingAdmin(reversion.VersionAdmin):
 
 admin.site.register(RemittanceProductPending, RemittanceProductPendingAdmin)
 
-class RemittanceProductCompleteAdmin(reversion.VersionAdmin):
+class RemittanceProductCompleteAdmin(reversion.VersionAdmin,ImportExportActionModelAdmin):
+
+	resource_class=export_xl.ProductResource
+
 	list_filter=['order__business',('date', DateRangeFilter),]
 	list_editable=['remittance',]
 	list_display = (
 		'get_order_no', 'order_link','date', 'get_business', 'name', 'cod_cost', 'shipping_cost', 'status',
-		'price','remittance')
+		'price','remittance_date','remittance')
 	readonly_fields = (
 		'name', 'quantity', 'sku', 'price', 'weight', 'applied_weight', 'real_tracking_no', 'order', 'tracking_data',
 		'kartrocket_order', 'shipping_cost', 'cod_cost', 'date','barcode',)

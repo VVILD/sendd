@@ -326,6 +326,8 @@ class Product(models.Model):
     update_time = models.DateTimeField(null=True, blank=True)
     dispatch_time = models.DateTimeField(null=True, blank=True)
 
+    remittance_date = models.DateTimeField(null=True, blank=True)
+
     qc_comment = models.TextField(null=True, blank=True)
     tracking_history = models.TextField(null=True, blank=True)
     warning = models.BooleanField(default=False)
@@ -481,8 +483,7 @@ def send_update(sender, instance, created, **kwargs):
                 price2 = pricing.normal_zone_a_1
                 price3 = pricing.normal_zone_a_2
 
-            elif (
-                                                        two_digits == '41' or two_digits == '42' or two_digits == '43' or two_digits == '44' or three_digits == '403' or two_digits == '36' or two_digits == '37' or two_digits == '38' or two_digits == '39'):
+            elif (two_digits == '41' or two_digits == '42' or two_digits == '43' or two_digits == '44' or three_digits == '403' or three_digits == '401' or two_digits == '36' or two_digits == '37' or two_digits == '38' or two_digits == '39'):
                 price1 = pricing.normal_zone_b_0
                 price2 = pricing.normal_zone_b_1
                 price3 = pricing.normal_zone_b_2
@@ -673,8 +674,7 @@ def send_update_order(sender, instance, created, **kwargs):
                     price2 = pricing.normal_zone_a_1
                     price3 = pricing.normal_zone_a_2
 
-                elif (
-                                                            two_digits == '41' or two_digits == '42' or two_digits == '43' or two_digits == '44' or three_digits == '403' or two_digits == '36' or two_digits == '37' or two_digits == '38' or two_digits == '39'):
+                elif (two_digits == '41' or two_digits == '42' or two_digits == '43' or two_digits == '44' or three_digits == '403' or three_digits == '401' or two_digits == '36' or two_digits == '37' or two_digits == '38' or two_digits == '39'):
                     price1 = pricing.normal_zone_b_0
                     price2 = pricing.normal_zone_b_1
                     price3 = pricing.normal_zone_b_2
