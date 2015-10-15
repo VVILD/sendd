@@ -283,6 +283,7 @@ class Order(models.Model):
         super(Order, self).save(*args, **kwargs)
 
 
+
 class Product(models.Model):
     name = models.TextField(null=True, blank=True)
     quantity = models.IntegerField(max_length=10, null=True, blank=True)
@@ -299,7 +300,7 @@ class Product(models.Model):
                                choices=[('F', 'FedEx'), ('D', 'Delhivery'), ('P', 'Professional'), ('G', 'Gati'),
                                         ('A', 'Aramex'), ('E', 'Ecomexpress'), ('DT', 'dtdc'), ('FF', 'First Flight'),
                                         ('M', 'Maruti courier'), ('I', 'India Post'), ('S', 'Sendd'), ('B', 'bluedart'),
-                                        ('T', 'trinity'), ('V', 'vichare'), ('DH', 'dhl'), ('SK', 'skycom'), ('NA', 'nandan')],
+                                        ('T', 'trinity'), ('V', 'vichare'), ('DH', 'dhl'), ('SK', 'skycom'), ('NA', 'nandan'),('FA','Fast train'),('TE','Tej')],
                                blank=True, null=True)
     shipping_cost = models.FloatField(default=0.0)
     cod_cost = models.FloatField(default=0.0)
@@ -328,7 +329,15 @@ class Product(models.Model):
     qc_comment = models.TextField(null=True, blank=True)
     tracking_history = models.TextField(null=True, blank=True)
     warning = models.BooleanField(default=False)
+
+    warning_type = models.CharField(max_length=3,blank=True,null=True,
+                              choices=(('FDE', 'fedex delivery exception'), ('I24', 'indiapost 24 hour'),('F24', 'fedex 24 hour'), ('FSI', 'fedex shipment information sent'), ('FLF', 'fedex local facility'),),
+                              default=None)
+
     last_tracking_status = models.CharField(max_length=300, null=True, blank=True)
+    
+    last_tracking_status_timestamp=models.DateTimeField(blank=True, null=True)
+
     actual_delivery_timestamp = models.DateTimeField(blank=True, null=True)
     estimated_delivery_timestamp = models.DateTimeField(blank=True, null=True)
     return_action=models.CharField(max_length=2,blank=True,null=True,
@@ -360,10 +369,26 @@ class Product(models.Model):
             ind_time = datetime.now(z)
             time = ind_time
             self.update_time = time
-            self.last_tracking_status = json.loads(self.tracking_data)[-1]['status']
+            if (self.last_tracking_status!=json.loads(self.tracking_data)[-1]['status']):
+                self.last_tracking_status = json.loads(self.tracking_data)[-1]['status']
+                self.last_tracking_status_timestamp=datetime.now(z)
+            else:
+                #now status hasnt changed
+                try:
+                    if self.last_tracking_status_timestamp:
+                        hours=(datetime.datetime.now()-self.last_tracking_status_timestamp)//3600
+                        if (hours>24 and ("local facility" in self.last_tracking_status.lower())):
+                            self.warning_type='FLF'
+                            self.warning=True
+                except:
+                    pass
+
             # Warnings rule definations
-            if ('exception' in self.last_tracking_status):
+            if ('exception' in self.last_tracking_status.lower()):
                 self.warning = True
+                self.warning_type='FDE'
+                self.qc_comment=self.qc_comment + self.last_tracking_status.lower()
+
 
         if not self.pk:
             z = timezone('Asia/Kolkata')
@@ -391,10 +416,16 @@ class Product(models.Model):
         super(Product, self).save(*args, **kwargs)
         self.__original_tracking_data = self.tracking_data
 
+class ProxyProduct(Product):
+    class Meta:
+        proxy = True
+
+
 
 class RemittanceProductPending(Product):
     class Meta:
         proxy = True
+
 
 
 class ExportOrder(Product):
@@ -806,7 +837,10 @@ class Pricing2(models.Model):
 
     def save(self, *args, **kwargs):
         ''' On save, update timestamps '''
-        self.ppkg = self.price / self.weight.weight
+        if self.weight.weight==11.0:
+            self.price=self.ppkg*11
+        else:
+            self.ppkg = self.price / self.weight.weight
 
         if not self.pk:
             if Pricing2.objects.filter(zone__zone=self.zone.zone,weight__weight=self.weight.weight,type=self.type,business=self.business).count() > 0:
@@ -868,10 +902,10 @@ class Barcode(models.Model):
 def add_pricing(sender, instance, created, **kwargs):
     if instance.pricing2s.count()==0:
         ndict = {'a': [(0.25,15), (0.5,15), (1,28), (1.5,41),(2,54), (2.5,67), (3,80), (3.5,93), (4,106), (4.5,119), (5,132), (5.5,145),(6,158), (6.5,171), (7,184),(7.5,197), (8,210), (8.5,223), (9,236),(9.5,249), (10,262), (11,286)],
-                 'b': [(0.25,20), (0.5,30), (1,56), (1.5,69),(2,82), (2.5,95), (3,108), (3.5,121),(4,134),(4.5,147), (5,160), (5.5,173),(6,186), (6.5,199),(7,212),(7.5,225), (8,238), (8.5,251),(9,264),(9.5,277), (10,290), (11,572)],
-                 'c': [(0.25,25), (0.5,33), (1,65), (1.5,78),(2,91), (2.5,104), (3,117), (3.5,130),(4,143),(4.5,156), (5,169), (5.5,182),(6,195), (6.5,208),(7,221),(7.5,234), (8,247), (8.5,260),(9,273),(9.5,286), (10,299), (11,262)],
-                 'd': [(0.25,30), (0.5,40), (1,78), (1.5,91),(2,104), (2.5,117), (3,130),(3.5,143), (4,156),(4.5,169), (5,182),(5.5,195), (6,208),(6.5,221), (7,234),(7.5,247), (8,260), (8.5,273),(9,286),(9.5,299), (10,312), (11,262)],
-                 'e': [(0.25,38), (0.5,48), (1,93), (1.5,106),(2,119), (2.5,132), (3,145),(3.5,158), (4,171),(4.5,184), (5,197),(5.5,210), (6,223),(6.5,236), (7,249),(7.5,262), (8,275),(8.5,288), (9,301),(9.5,314), (10,327), (11,262)],
+                 'b': [(0.25,20), (0.5,30), (1,56), (1.5,82),(2,108), (2.5,134), (3,160), (3.5,186),(4,212),(4.5,238), (5,264), (5.5,290),(6,316), (6.5,342),(7,368),(7.5,394), (8,420), (8.5,446),(9,472),(9.5,498), (10,524), (11,572)],
+                 'c': [(0.25,25), (0.5,33), (1,65), (1.5,97),(2,129), (2.5,161), (3,193), (3.5,225),(4,257),(4.5,289), (5,321), (5.5,353),(6,385), (6.5,417),(7,449),(7.5,481), (8,513), (8.5,545),(9,577),(9.5,609), (10,641), (11,704)],
+                 'd': [(0.25,30), (0.5,40), (1,78), (1.5,116),(2,154), (2.5,192), (3,230),(3.5,268), (4,306),(4.5,344), (5,382),(5.5,420), (6,458),(6.5,496), (7,534),(7.5,572), (8,610), (8.5,648),(9,686),(9.5,724), (10,762), (11,836)],
+                 'e': [(0.25,38), (0.5,48), (1,93), (1.5,138),(2,183), (2.5,228), (3,273),(3.5,318), (4,363),(4.5,408), (5,453),(5.5,498), (6,543),(6.5,588), (7,633),(7.5,678), (8,723),(8.5,768), (9,813),(9.5,858), (10,903), (11,990)],
                  }
 
         bdict = {'a': [(1,80),(2,80), (3,80), (4,80), (5,80), (6,80), (7,80), (8,80), (9,80), (10,80) , (11,88)],
@@ -895,4 +929,4 @@ def add_pricing(sender, instance, created, **kwargs):
                 p.save()
 
 
-#post_save.connect(add_pricing, sender=Business)
+post_save.connect(add_pricing, sender=Business)
