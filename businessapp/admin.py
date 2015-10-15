@@ -1186,39 +1186,64 @@ from daterange_filter.filter import DateRangeFilter
 
 class RemittanceProductPendingAdmin(reversion.VersionAdmin,ImportExportActionModelAdmin):
 
+	change_list_template='businessapp/templates/admin/businessapp/remittanceproductpending/change_list.html'
+
 	def changelist_view(self, request, extra_context=None):
 
 		try:
-			start_time=request.GET['order__book_time__gte']
-			end_time=request.GET['order__book_time__lte']
+			start_time=request.GET['date__gte']
+			end_time=request.GET['date__lte']
 			start_time = datetime.datetime.strptime(start_time, '%Y-%m-%d')
 			end_time = datetime.datetime.strptime(end_time, '%Y-%m-%d')
+
 		except:
 			start_time= datetime.date(2015,1,1)
 			end_time=datetime.date.today() + datetime.timedelta(days=2)
+
 
 		try:
 			start_min = datetime.datetime.combine(start_time, datetime.time.min)
 			end_max = datetime.datetime.combine(end_time, datetime.time.max)
 
-			bd_username= request.GET['decade']
-			profile=Profile.objects.get(user__username=bd_username)
-			today_orders_b2b = Order.objects.filter(business__businessmanager=profile,book_time__range=(start_min, end_max))
-			today_products_correct = Product.objects.filter(order=today_orders_b2b).exclude(shipping_cost__isnull=True)
-			sum_b2b = today_products_correct.aggregate(total=Sum('shipping_cost', field="shipping_cost+cod_cost"))['total']
-			count_b2b = today_products_correct.count()
+			business_username= request.GET['order__business__username__exact']
+			business=Business.objects.get(username=business_username)
+
+			today_orders_b2b = Order.objects.filter(business=business,payment_method='C',book_time__range=(start_min, end_max))
+
+			query_complete=Product.objects.filter(order=today_orders_b2b,status='C',remittance=False)
+			sum_complete = query_complete.aggregate(total=Sum('price'))['total']
+			count_complete = query_complete.count()
+
+			query_return=Product.objects.filter(order=today_orders_b2b,status='R',remittance=False)
+			sum_return = query_return.aggregate(total=Sum('price'))['total']
+			count_return = query_return.count()
+
+			query_dispatched=Product.objects.filter(order=today_orders_b2b,status='DI',remittance=False)
+			sum_dispatched = query_dispatched.aggregate(total=Sum('price'))['total']
+			count_dispatched = query_dispatched.count()
+
+			query_pending=Product.objects.filter(order=today_orders_b2b,status='P',remittance=False)
+			sum_pending = query_pending.aggregate(total=Sum('price'))['total']
+			count_pending = query_pending.count()
+
 
 		except:
-			bd_username=None
+			business_username="No business selected"
 			sum_b2b=0
 			count_b2b=0
-			today_orders_b2b = Order.objects.filter(book_time__range=(start_min, end_max))
-			today_products_correct = Product.objects.filter(order=today_orders_b2b)
-			sum_b2b = today_products_correct.aggregate(total=Sum('shipping_cost', field="shipping_cost+cod_cost"))['total']
-			count_b2b = today_products_correct.count()
+			sum_complete = 0
+			count_complete = 0
+			sum_return = 0
+			count_return = 0
+
+			sum_dispatched = 0
+			count_dispatched = 0
+
+			sum_pending = 0
+			count_pending = 0
 
 
-		context={'s':sum_b2b,'c':count_b2b}
+		context={'business':business_username,'sum_complete':sum_complete,'count_complete':count_complete,'sum_pending':sum_pending,'count_pending':count_pending,'sum_dispatched':sum_dispatched,'count_dispatched':count_dispatched,'sum_return':sum_return,'count_return':count_return}
 
 		return super(RemittanceProductPendingAdmin, self).changelist_view(request, extra_context=context)
 
