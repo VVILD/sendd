@@ -218,7 +218,7 @@ class AddressDetails(models.Model):
                               choices=(('Y', 'approved'), ('N', 'not approved'), ('C', 'cancelled'), ('A', 'alloted'),),
                               null=True, blank=True,
                               default='N')
-    default_pickup_time = models.DateTimeField()
+    default_pickup_time = models.TimeField()
     default = models.BooleanField(default=False)
     warehouse = models.ForeignKey(Warehouse, null=True, blank=True)
 
