@@ -1955,7 +1955,7 @@ class ExportOrderAdmin(ImportExportActionModelAdmin):
 	def lookup_allowed(self,key,value):
 		return True
 
-	list_max_show_all = 2000
+	list_max_show_all = 200000
 	list_filter=('order__business__business_name','order__business__username','order__book_time','last_tracking_status','company','status','remittance','order__payment_method','order__status')
 	search_fields = ['name', 'real_tracking_no','order__business__business_name','order__business__username','order__order_no']
 	list_display = ('order_no','get_business', 'status', 'applied_weight', 'real_tracking_no', 'barcode','date','last_tracking_status','mapped_tracking_no' ,'company','payment_method','remittance')
