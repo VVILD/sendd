@@ -964,10 +964,12 @@ class FilterUserAdmin(BaseBusinessAdmin):
 	
 
 
+resource_class=export_xl.ProductResource
 
 
-class OrderAdmin(FilterUserAdmin):
+class OrderAdmin(FilterUserAdmin,ImportExportActionModelAdmin):
 
+	resource_class=export_xl.FFOrderResource
 	inlines = (ProductInline,)
 	search_fields = ['order_no','business__business_name', 'name', 'product__real_tracking_no', 'product__barcode','city','state','product__mapped_tracking_no']
 	list_display = (
@@ -975,7 +977,7 @@ class OrderAdmin(FilterUserAdmin):
 		'total_cod_cost', 'method', 'fedex','ff_comment')
 	list_editable = ('status','ff_comment',)
 	list_filter = ['business', 'status', 'book_time','product__company']
-	actions = [export_as_csv_action("CSV Export", fields=['name','product__real_tracking_no'])]
+
 	readonly_fields=('master_tracking_number', 'mapped_master_tracking_number', 'fedex')
 
 
@@ -1184,9 +1186,57 @@ class ShipmentAdmin(reversion.VersionAdmin):
 '''
 from daterange_filter.filter import DateRangeFilter
 
+
+class CodBusinessPanelAdmin(admin.ModelAdmin):
+
+	def changelist_view(self, request, extra_context=None):
+		try:
+			start_time=request.GET['order__book_time__gte']
+			end_time=request.GET['order__book_time__lte']
+			self.start_time = datetime.datetime.strptime(start_time, '%Y-%m-%d')
+			self.end_time = datetime.datetime.strptime(end_time, '%Y-%m-%d')
+
+		except:
+			self.start_time= datetime.date(2015,1,1)
+			self.end_time=datetime.date.today() + datetime.timedelta(days=2)
+
+		return super(CodBusinessPanelAdmin, self).changelist_view(request, extra_context={})
+
+	list_filter=['username','business_name',('order__book_time', DateRangeFilter),]
+	list_display=['username','business_name','remittance_pending','remittance_complete']
+
+
+	def remittance_pending(self,obj):
+
+		start_min = datetime.datetime.combine(self.start_time, datetime.time.min)
+		end_max = datetime.datetime.combine(self.end_time, datetime.time.max)
+
+		today_orders_b2b = Order.objects.filter(business=obj,payment_method='C',book_time__range=(start_min, end_max))
+
+		query_complete=Product.objects.filter(order=today_orders_b2b,status='C',remittance=False)
+		sum_complete = query_complete.aggregate(total=Sum('price'))['total']
+		count_complete = query_complete.count()
+
+		return "Rs. "+ str(sum_complete) + "| Count= " + str(count_complete)
+
+	def remittance_complete(self,obj):
+		start_min = datetime.datetime.combine(self.start_time, datetime.time.min)
+		end_max = datetime.datetime.combine(self.end_time, datetime.time.max)
+
+		today_orders_b2b = Order.objects.filter(business=obj,payment_method='C',book_time__range=(start_min, end_max))
+
+		query_complete=Product.objects.filter(order=today_orders_b2b,status='C',remittance=True)
+		sum_complete = query_complete.aggregate(total=Sum('price'))['total']
+		count_complete = query_complete.count()
+
+		return "Rs. "+ str(sum_complete) + "| Count= " + str(count_complete)
+
+admin.site.register(CodBusinessPanel, CodBusinessPanelAdmin)
+
 class RemittanceProductPendingAdmin(reversion.VersionAdmin,ImportExportActionModelAdmin):
 
 	change_list_template='businessapp/templates/admin/businessapp/remittanceproductpending/change_list.html'
+
 
 	def changelist_view(self, request, extra_context=None):
 
@@ -1907,7 +1957,8 @@ class ExportOrderAdmin(ImportExportActionModelAdmin):
 	def lookup_allowed(self,key,value):
 		return True
 
-	list_filter=('order__business__business_name','order__business__username','order__book_time','last_tracking_status','company','status','remittance','order__payment_method','order__status')
+	list_max_show_all = 2000000
+	list_filter=('order__business__business_name','order__business__username','order__book_time','last_tracking_status','company','status','remittance','order__payment_method','order__status',('date', DateRangeFilter),)
 	search_fields = ['name', 'real_tracking_no','order__business__business_name','order__business__username','order__order_no']
 	list_display = ('order_no','get_business', 'status', 'applied_weight', 'real_tracking_no', 'barcode','date','last_tracking_status','mapped_tracking_no' ,'company','payment_method','remittance')
 

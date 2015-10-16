@@ -194,6 +194,11 @@ class CancelledBusiness(Business):
     class Meta:
         proxy = True
 
+class CodBusinessPanel(Business):
+    class Meta:
+        proxy = True
+        verbose_name_plural = "CodBusinessPanel"
+
 
 class LoginSession(models.Model):
     Business = models.ForeignKey(Business, null=True, blank=True)
