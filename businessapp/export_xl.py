@@ -1,4 +1,4 @@
-from businessapp.models import Product
+from businessapp.models import Product,Order
 from import_export import resources
 from import_export import fields
 from datetime import timedelta
@@ -9,7 +9,7 @@ class ProductResource(resources.ModelResource):
 	class Meta:
 		model = Product
 		import_id_fields = ('order_id',)
-		fields = ('order','order__book_time','order__reference_id','order__payment_method','order__name','order__city','order__pincode', 'real_tracking_no', 'mapped_tracking_no', 'company','status','last_tracking_status','weight','applied_weight','barcode','order__method','name','price','remittance')
+		fields = ('order','order__book_time','order__reference_id','order__payment_method','order__name','order__city','order__pincode', 'real_tracking_no', 'mapped_tracking_no', 'company','status','last_tracking_status','weight','applied_weight','barcode','order__method','name','price','remittance','remittance_date')
 
 
 
@@ -33,6 +33,36 @@ class QcProductResource(resources.ModelResource):
 	def dehydrate_last_location(self, product):
 		return json.loads(product.tracking_data)[-1]['location']
 
+
+
+
+class FFOrderResource(resources.ModelResource):
+	mapped_ok = fields.Field()
+	company = fields.Field()
+	no_of_products = fields.Field()
+
+	class Meta:
+		model = Order
+		fields = ('order_no','book_time','business__business_name','city','pincode','mapped_ok','no_of_products','company')
+		export_order = ('order_no','book_time','business__business_name','city','pincode','mapped_ok','no_of_products','company')
+
+	def dehydrate_mapped_ok(self,order):
+		products=Product.objects.filter(order=order)
+		mapped_ok=True
+		for product in products:
+			if (not product.mapped_tracking_no):
+				return False
+		return mapped_ok
+
+
+	def dehydrate_no_of_products(self, order):
+		return Product.objects.filter(order=order).count()
+
+	def dehydrate_company(self, order):
+		try:
+			return order.product_set.first().company
+		except:
+			return "no product"
 
 
 # 1.Order No.
