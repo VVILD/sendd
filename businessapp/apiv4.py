@@ -98,7 +98,7 @@ class BaseCorsResource(Resource):
             response['Access-Control-Allow-Origin'] = '*'
             response[
                 'Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-Requested-With, X-CSRFToken, X-HTTP-Method-Override'
-            response['Access-Control-Allow-Methods'] = "POST, PATCH, PUT, GET"
+            response['Access-Control-Allow-Methods'] = "POST, PATCH, PUT, GET, DELETE"
             response['Allow'] = allows
             raise ImmediateHttpResponse(response=response)
 
