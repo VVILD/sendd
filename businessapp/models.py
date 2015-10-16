@@ -1,3 +1,4 @@
+import uuid
 from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 from django.db import models
@@ -167,11 +168,29 @@ class AddressDetails(models.Model):
         to=Business,
         related_name="pickup_addresses"
     )
-    address = models.CharField(
-        verbose_name='address',
-        max_length=315,
+    company_name = models.CharField(
+        verbose_name='company name',
+        max_length=100
+    )
+    contact_person = models.CharField(
+        verbose_name='contact person',
+        max_length=100,
         blank=True,
         null=True
+    )
+    phone_office = models.CharField(
+        verbose_name='phone office',
+        max_length=20
+    )
+    phone_mobile = models.CharField(
+        verbose_name='phone mobile',
+        max_length=20,
+        blank=True,
+        null=True
+    )
+    address = models.CharField(
+        verbose_name='address',
+        max_length=250
     )
     city = models.CharField(
         verbose_name='city',
@@ -185,6 +204,16 @@ class AddressDetails(models.Model):
         verbose_name='pincode',
         max_length=20
     )
+    default_vehicle_choices = (
+        ('T', 'Tempo'),
+        ('B', 'Bike')
+    )
+    default_vehicle = models.CharField(
+        verbose_name='default vehicle',
+        max_length=1,
+        choices=default_vehicle_choices
+    )
+    default_pickup_time = models.DateTimeField()
     default = models.BooleanField(default=False)
 
     def __str__(self):
