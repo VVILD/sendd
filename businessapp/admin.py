@@ -964,10 +964,12 @@ class FilterUserAdmin(BaseBusinessAdmin):
 	
 
 
+resource_class=export_xl.ProductResource
 
 
-class OrderAdmin(FilterUserAdmin):
+class OrderAdmin(FilterUserAdmin,ImportExportActionModelAdmin):
 
+	resource_class=export_xl.FFOrderResource
 	inlines = (ProductInline,)
 	search_fields = ['order_no','business__business_name', 'name', 'product__real_tracking_no', 'product__barcode','city','state','product__mapped_tracking_no']
 	list_display = (
@@ -975,7 +977,7 @@ class OrderAdmin(FilterUserAdmin):
 		'total_cod_cost', 'method', 'fedex','ff_comment')
 	list_editable = ('status','ff_comment',)
 	list_filter = ['business', 'status', 'book_time','product__company']
-	actions = [export_as_csv_action("CSV Export", fields=['name','product__real_tracking_no'])]
+
 	readonly_fields=('master_tracking_number', 'mapped_master_tracking_number', 'fedex')
 
 
