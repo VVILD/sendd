@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>Fedex new Shipment Status</title>
+</head>
+<body>
+<h2>Status: {{ result.status }}</h2>
+{% if result.status == 'ERROR' %}
+    <h2>Message: {{ result.message }}</h2>
+{% else %}
+    <h2>Tracking #: {{ result.tracking_number }}</h2>
+    <h2>Service Type: {{ result.service_type }}</h2>
+    <h2>Account Used: {{ result.account }}</h2>
+    <h2>Estimated Shipping Cost: Rs. {{ result.shipping_cost }}</h2>
+    <a href={{ STATIC_URL }}{{ result.fedex_ship_docs_url }} target="_blank">Print Docs</a>
+{#    <h2>Shipping Cost: {{ result.shipping_cost }}</h2>#}
+{#    <br>#}
+{#    {% if result.is_cod %}#}
+{#        <a href={{ STATIC_URL }}{{ result.cod_return_label_url }} target="_blank">Print COD Return Label</a>#}
+{#    {% endif %}#}
+{% endif %}
+</body>
+</html>

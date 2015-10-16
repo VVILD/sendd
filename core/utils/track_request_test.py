@@ -23,17 +23,21 @@ CONFIG_OBJ = FedexConfig(key='jFdC6SAqFS9vz7gY',
 # We're using the FedexConfig object from example_config.py in this dir.
 track = FedexTrackRequest(CONFIG_OBJ)
 track.TrackPackageIdentifier.Type = 'TRACKING_NUMBER_OR_DOORTAG'
-track.TrackPackageIdentifier.Value = '781297352853'
+track.TrackPackageIdentifier.Value = '781468138603'
+track.IncludeDetailedScans = True
 
 # Fires off the request, sets the 'response' attribute on the object.
 track.send_request()
+
+# track.request
 
 # See the response printed out.
 print track.response
 
 # Look through the matches (there should only be one for a tracking number
 # query), and show a few details about each shipment.
-print "== Results =="
-for match in track.response.TrackDetails:
-    print "Tracking #:", match.TrackingNumber
-    print "Status:", match.StatusDescription
+# print "== Results =="
+# for match in track.response.TrackDetails:
+#     print "Tracking #:", match.TrackingNumber
+#     print "Status:", match.StatusDescription
+#     print "Estimated Delivery:", match.EstimatedDeliveryTimestamp

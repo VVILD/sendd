@@ -2,8 +2,10 @@ import traceback
 import sys
 from tastypie.resources import ModelResource
 from django.conf.urls import url
+from core.models import Offline
 from myapp.mail.bookingConfirmationMail import SendConfirmationMail
 from myapp.models import *
+from core.models import *
 from tastypie.authorization import Authorization
 from tastypie import fields
 from tastypie.serializers import Serializer
@@ -30,6 +32,7 @@ import logging
 from pickupboyapp.exceptions import CustomBadRequest
 from tastypie.utils import trailing_slash
 import redis
+from dateutil.parser import parse
 
 config = {
     'host': 'localhost',
@@ -1698,9 +1701,10 @@ class WeborderResource2(CORSModelResource):
 
         #see if promocode exist
 
-        order = Order.objects.create(namemail=newnamemail, user=newuser, address=bundle.data['pickup_location'],
-                                     way='W', pick_now='N', pincode=bundle.data['pickup_pincode'],
-                                     date=bundle.data['pickup_date'], time=bundle.data['pickup_time'])
+        order = Order(namemail=newnamemail, user=newuser, address=bundle.data['pickup_location'],
+                     way='W', pick_now='N', pincode=bundle.data['pickup_pincode'],
+                     date=bundle.data['pickup_date'], time=bundle.data['pickup_time'])
+        order.save()
 
 
 
@@ -1726,7 +1730,7 @@ class WeborderResource2(CORSModelResource):
         senderName = str(order.namemail.name)
         senderContact = str(order.user.phone)
         pickupAddress = str(order.address)
-        book_time = datetime.strptime(order.book_time, "%Y-%m-%d %H:%M:%S")
+        book_time = order.book_time
         bookingTime = str(book_time.strftime("%H:%M"))
         pickupTime = None
         if order.time:
@@ -1817,58 +1821,58 @@ class OrderResource2(MultipartResource, ModelResource):
         pk = int(bundle.data['user'])
 
         bundle.data['user'] = "/api/v2/user/" + str(bundle.data['user']) + "/"
-        print bundle.data['user']
         cust = User.objects.get(pk=pk)
 
-        # promocode
+        offline = None
+        try:
+            check_time = datetime.combine(parse(str(bundle.data['date'])).date(), datetime.strptime(bundle.data['time'], "%I:%M %p").time())
+            offline = Offline.objects.filter(start__lte=check_time, end__gte=check_time, active=True).values("message")
+            if len(offline) > 0:
+                raise CustomBadRequest(
+                    code="offline",
+                    message=offline[0]['message']
+                )
+        except:
+            if offline is not None:
+                if len(offline) > 0:
+                    raise CustomBadRequest(
+                        code="offline",
+                        message=offline[0]['message']
+                    )
+            pass
 
-        # print int(bundle.data['user'])
         try:
             promocode = Promocode.objects.get(pk=bundle.data['code'])
-
-            print '1'
 
             if (promocode.only_for_first == 'Y'):
 
                 shipment = Shipment.objects.filter(order__user__phone=pk, order__way='A')  # pk is the number
-                print "normal"
-                print shipment.count
-                print "with bracket"
-                print shipment.count()
+
                 if (shipment.count() == 0):
                     # everything good
                     bundle.data['promocode'] = "/api/v2/promocode/" + str(promocode.pk) + "/"
                     print str(bundle.data['code'])
                     bundle.data['valid'] = 'Y'
                 else:
-                    print "purane users"
                     bundle.data['promomsg'] = "You are not a first time user"
-                    # bundle.data['valid']='N'
             else:
                 bundle.data['promocode'] = "/api/v2/promocode/" + str(promocode.pk) + "/"
-                print str(bundle.data['code'])
-                # bundle.data['valid']='Y'
         except:
             bundle.data['promomsg'] = "Wrong promo code"
-            # bundle.data['valid']='N'
-            print '2'
-        # print bundle.data['promocode']
 
-        # create nameemail
         try:
             newnamemail = Namemail.objects.filter(user=cust, name=bundle.data['name'], email=bundle.data['email'])
             if (newnamemail.count() == 0):
                 newnamemail = Namemail.objects.create(user=cust, name=bundle.data['name'], email=bundle.data['email'])
                 newnamemail.save()
                 nm_pk = newnamemail.pk
-            # bundle.obj = Address(address="nick", locality = "", password,timezone.now(),"od_test")
             else:
                 for x in newnamemail:
                     nm_pk = x.pk
             bundle.data['namemail'] = "/api/v2/namemail/" + str(nm_pk) + "/"
 
         except:
-            print "cool shit"
+            pass
 
         return bundle
 
@@ -2111,16 +2115,11 @@ class PriceappResource2(CORSModelResource):
         try:
             zipcode = Zipcode.objects.get(pincode=bundle.data['pincode'])
         except:
-            bundle.data['msg'] = 'invalid pin'
-            return bundle
+            zipcode = Pincode.objects.filter(pincode=bundle.data['pincode'])
+            if (zipcode.count()==0):
 
-        print "count"
-
-        # print zipcode.count()==0
-
-        print "count"
-
-        # if (zipcode.count()==0):
+                bundle.data['msg'] = 'invalid pin'
+                return bundle
 
         bundle.data['msg'] = 'ok'
         zone = 3
@@ -2217,8 +2216,11 @@ class DateappResource2(CORSModelResource):
         try:
             zipcode = Zipcode.objects.get(pincode=bundle.data['pincode'])
         except:
-            bundle.data['msg'] = 'invalid pin'
-            return bundle
+            zipcode = Pincode.objects.filter(pincode=bundle.data['pincode'])
+            if (zipcode.count()==0):
+
+                bundle.data['msg'] = 'invalid pin'
+                return bundle
 
         bundle.data['msg'] = 'ok'
 
@@ -2378,14 +2380,6 @@ class InvoicesentResource2(MultipartResource, ModelResource):
         authorization = Authorization()
         always_return_data = True
 
-    def hydrate(self, bundle):
-        order_pk = bundle.data['order'].split('/')[-2]
-        order = Order.objects.get(pk=order_pk)
-        order.order_status = "C"
-        order.save()
-
-        return bundle
-
 
 class PincodecheckResource2(MultipartResource, ModelResource):
     class Meta:
@@ -2397,14 +2391,14 @@ class PincodecheckResource2(MultipartResource, ModelResource):
     def hydrate(self, bundle):
 
         goodpincodes = ['400076', '400072', '400078', '400077', '400080', '400079', '400069', '400086']
+        
+        pincode=bundle.data['pincode']
+        if (pincode[:3] == '400'):
+            bundle.data['valid'] = 1
+        else:
+            bundle.data['valid'] = 0
+            bundle.data['msg'] = 'we dont have pickup service available in your desired pickup location.'
 
-        # if bundle.data['pincode'] in goodpincodes:
-        #     bundle.data['valid'] = 1
-        # else:
-        #     bundle.data['valid'] = 0
-        #     bundle.data['msg'] = 'we dont have pickup service available in your desired pickup location.'
-
-        bundle.data['valid'] = 1
         return bundle
 
 

@@ -81,6 +81,7 @@ class OnlyAuthorization(Authorization):
             return bundle.obj.business.apikey == bundle.request.META["HTTP_AUTHORIZATION"]
         except:
             return False
+
     def update_list(self, object_list, bundle):
         allowed = []
 
@@ -250,7 +251,7 @@ class BusinessResource(CORSModelResource):
             return bundle
 
         try:
-            bundle.data['manager'] = business.businessmanager.user.first_name + business.businessmanager.user.first_name 
+            bundle.data['manager'] = business.businessmanager.user.first_name + business.businessmanager.user.first_name
             bundle.data['manager_number'] = business.businessmanager.phone
 
         except:
@@ -333,18 +334,28 @@ class TrackingResource(CORSResource):
         self.is_authenticated(request)
         self.throttle_check(request)
 
+        master = False
         if not tracking_id:
             raise CustomBadRequest(
                 code="request_invalid",
                 message="No tracking_id found. Please supply tracking_id as a GET URL parameter")
-        elif str(tracking_id).startswith('SE') or str(tracking_id).startswith('se'):
-            product = Product.objects.get(barcode=tracking_id)
-        elif str(tracking_id).startswith('B'):
-            product = Product.objects.get(real_tracking_no=tracking_id)
+        elif str(tracking_id).lower().startswith('m'):
+            products = Product.objects.filter(order__master_tracking_number=tracking_id).values("real_tracking_no",
+                                                                                                "tracking_data")
+            master = True
+        elif str(tracking_id).lower().startswith('se'):
+            products = Product.objects.filter(barcode=tracking_id).values("real_tracking_no", "tracking_data", "actual_delivery_timestamp", "estimated_delivery_timestamp")
+        elif str(tracking_id).lower().startswith('b'):
+            products = Product.objects.filter(real_tracking_no=tracking_id).values("real_tracking_no", "tracking_data", "actual_delivery_timestamp", "estimated_delivery_timestamp")
         else:
-            product = Shipment.objects.get(real_tracking_no=tracking_id)
+            products = Shipment.objects.filter(real_tracking_no=tracking_id).values("real_tracking_no", "tracking_data", "actual_delivery_timestamp", "estimated_delivery_timestamp")
 
-        bundle = {"tracking_data": product.tracking_data}
+        for product in products:
+            product['tracking_data'] = json.loads(product['tracking_data'])
+        bundle = {
+            "master": master,
+            "shipments": list(products)
+        }
         self.log_throttled_access(request)
         return self.create_response(request, bundle)
 
@@ -431,7 +442,7 @@ class ProductResource2(ModelResource):
             # create order
             # curl --dump-header - -H "Content-Type: application/json" -X POST --data '{ "username": "newuser3", "name": "asd" , "phone":"8879006197","street_address":"office no 307, powai plaza","city":"mumbai","state":"maharashtra" ,"pincode":"400076","country":"india" , "payment_method":"F" ,"pname":"['clothes','books']","pprice":"['50','60']" ,"pweight":"['2','7']" }' http://127.0.0.1:8000/bapi/v1/order/
             try:
-                order = Order.objects.create(business=business, name=bundle.data['customer_name'],
+                order = Order(business=business, name=bundle.data['customer_name'],
                                              phone=bundle.data['phone'], address1=bundle.data['address1'],
                                              address2=bundle.data['address2'], city=bundle.data['city'],
                                              state=bundle.data['state'], pincode=bundle.data['pincode'],
@@ -439,6 +450,7 @@ class ProductResource2(ModelResource):
                                              payment_method=bundle.data['payment_method'],
                                              reference_id=bundle.data['reference_id'], email=bundle.data['email'],
                                              method=bundle.data['shipping_method'])
+                order.save()
                 print "order created	"
 
             except:
@@ -519,7 +531,8 @@ class SearchResource(CORSResource):
             raise CustomBadRequest(
                 code="request_invalid",
                 message="No date found. Please supply date as a GET parameter")
-        orders = Order.objects.filter(business__username=business_username, book_time__gte=start_date, book_time__lt=end_date)
+        orders = Order.objects.filter(business__username=business_username, book_time__gte=start_date,
+                                      book_time__lt=end_date)
         result = []
         for order in orders:
             products = Product.objects.filter(order__pk=order.pk)
@@ -562,7 +575,7 @@ class InvoiceResource(CORSResource):
         end_date = datetime.strptime(str(end_date), "%d-%m-%Y") + timedelta(days=1)
 
         products = Product.objects.filter(Q(order__business=business), Q(status='C') | Q(status='R'),
-                                          Q(date__lt=end_date), Q(date__gt=start_date))
+                                          Q(date__lt=end_date), Q(date__gt=start_date)).select_related('order')
         orders = {}
         for product in products:
             p_order = str(product.order)
@@ -592,6 +605,8 @@ class InvoiceResource(CORSResource):
                     "drop_address_state": product.order.state,
                     "drop_address_city": product.order.city,
                     "receiver_name": product.order.name,
+                    "refund": product.order.refund,
+                    "is_cod": True if product.order.payment_method == 'C' else False,
                     "total_shipping_cost": int(product.shipping_cost) + int(product.return_cost) + int(
                         product.cod_cost),
                     "total_cod_remittance": 0,
@@ -697,12 +712,17 @@ class BarcodeFetchResource(CORSResource):
             product_exists = True
         except ObjectDoesNotExist:
             product_exists = False
+            try:
+                product = Shipment.objects.get(barcode=barcode)
+                product_exists = True
+            except ObjectDoesNotExist:
+                product_exists = False
 
         try:
             barcode_assoc = Barcode.objects.get(value=barcode)
             barcode_associated = True
             business_username = barcode_assoc.business.username
-            business_name = barcode_assoc.business.name
+            business_name = barcode_assoc.business.business_name
         except ObjectDoesNotExist:
             barcode_associated = False
             business_username = None

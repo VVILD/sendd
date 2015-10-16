@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0-alpha/css/bootstrap.min.css" type="text/css" media="all">
+</head>
+	<body>
+		<br>
+		<div class="row">
+			<div id="fromAddress" class="col-xs-6">
+				<h3>From:</h3>
+				<div class="col-xs-offset-1">
+					<h4>Sendd</h4>
+					<p>107 A-Wing Classique Center, Gundavali</p>
+                    <p>Andheri East, Mahakali Caves Road</p>
+					<p>Mumbai, Maharashtra - 400093</p>
+					<p>8080028081</p>
+				</div>
+			</div>
+		</div>
+		<div class="row"><br><br><br><br></div>
+		<div class="row">
+			<div id="toAddress" class="col-xs-6">
+				<h3>To:</h3>
+				<div class="col-xs-offset-1">
+					<h4>{{ order.name }}</h4>
+					<p>{{ order.address1 }}</p>
+                    <p>{{ order.address2 }}</p>
+					<p>{{ order.city }}, {{ order.state }} - {{ order.pincode }}</p>
+					<p>{{ order.phone }}</p>
+					<b>{% if order.payment_method == 'C'  %}
+					<h1>COD</h1>
+					
+				{% else %}
+    				<h1>NON- COD</h1>
+{% endif %}
+
+{% if order.method == 'B'  %}
+					<h1>BULK-SURFACE</h1>
+					
+				{% else %}
+    				<h1>PREMIUM-FLIGHT</h1>
+{% endif %}</b>
+
+				</div>
+			</div>
+		</div>
+	</body>
+    <script>
+        window.onload = function(){
+             window.print();
+        };
+
+    </script>
+</html>

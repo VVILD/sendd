@@ -1,7 +1,9 @@
+from django.core.exceptions import ValidationError
 from django.db import models
 from geopy.distance import vincenty
 from geopy.geocoders import googlev3
 # from businessapp.models import Business
+from core.utils import state_matcher
 
 
 class Warehouse(models.Model):
@@ -47,32 +49,44 @@ class Warehouse(models.Model):
         return str(self.name)
 
     def save(self, *args, **kwargs):
+        if self.pincode:
+            geolocator = googlev3.GoogleV3(api_key="AIzaSyBEfEgATQeVkoKUnaB4O9rIdX2K2Bsh63o")
+            location = geolocator.geocode("{}, India".format(self.pincode))
+            self.lat, self.long = location.latitude, location.longitude
+            super(Warehouse, self).save(*args, **kwargs)
 
-        geolocator = googlev3.GoogleV3(api_key="AIzaSyBEfEgATQeVkoKUnaB4O9rIdX2K2Bsh63o")
-        location = geolocator.geocode("{}, India".format(self.pincode))
-        self.lat, self.long = location.latitude, location.longitude
-        super(Warehouse, self).save(*args, **kwargs)
+            pincodes = Pincode.objects.filter(region_name=self.city).exclude(latitude__isnull=True)
+            warehouses = Warehouse.objects.filter(city=self.city)
+            from businessapp.models import Business
+            businesses = Business.objects.filter(pincode__isnull=False).exclude(pincode=u'')
 
-        pincodes = Pincode.objects.filter(region_name=self.city).exclude(latitude__isnull=True)
-        warehouses = Warehouse.objects.filter(city=self.city)
-        from businessapp.models import Business
-        businesses = Business.objects.filter(pincode__isnull=False)
+            for pincode in pincodes:
+                closest_warehouse = None
+                min_dist = 9999.9999
+                for warehouse in warehouses:
+                    distance = vincenty((pincode.latitude, pincode.longitude), (warehouse.lat, warehouse.long)).kilometers
+                    if distance < min_dist:
+                        min_dist = distance
+                        closest_warehouse = warehouse
+                pincode.warehouse = closest_warehouse
+                pincode.save()
 
-        for pincode in pincodes:
-            closest_warehouse = None
-            min_dist = 9999.9999
-            for warehouse in warehouses:
-                distance = vincenty((pincode.latitude, pincode.longitude), (warehouse.lat, warehouse.long)).kilometers
-                if distance < min_dist:
-                    min_dist = distance
-                    closest_warehouse = warehouse
-            pincode.warehouse = closest_warehouse
-            pincode.save()
-
-        for business in businesses:
-            pincode_search = Pincode.objects.filter(pincode=self.pincode).exclude(latitude__isnull=True)
-            business.warehouse = pincode_search[0].warehouse
-            business.save()
+            for business in businesses:
+                pincode_search = Pincode.objects.filter(pincode=str(business.pincode)).exclude(latitude__isnull=True, warehouse__isnull=True)
+                if pincode_search.count() > 0:
+                    business.warehouse = pincode_search[0].warehouse
+                else:
+                    business.warehouse = None
+                business.save()
+        else:
+            raise ValidationError("Please enter a pincode")
+        if self.state:
+            if not state_matcher.is_state(self.state):
+                closest_state = state_matcher.get_closest_state(self.state)
+                if closest_state:
+                    self.state = closest_state[0]
+        else:
+            raise ValidationError("Please enter a state")
         super(Warehouse, self).save(*args, **kwargs)
 
 
@@ -86,11 +100,7 @@ class Pincode(models.Model):
     """
     Model for pincodes. Synced with OGD database
     """
-    id = models.PositiveIntegerField(
-        verbose_name='id',
-        primary_key=True,
-        unique=True
-    )
+    id = models.AutoField(primary_key=True)
     created_at = models.DateTimeField(
         verbose_name='created at',
         auto_now_add=True
@@ -174,7 +184,7 @@ class Pincode(models.Model):
         null=True
     )
     fedex_oda_opa = models.BooleanField(default=False)
-    fedex_cod_service = models.BooleanField(default=True)
+    fedex_cod_service = models.BooleanField(default=False)
     fedex_servicable = models.BooleanField(default=False)
     warehouse = models.ForeignKey(Warehouse, null=True, blank=True, related_name="pincode_warehouse")
 
@@ -184,3 +194,13 @@ class Pincode(models.Model):
     class Meta:
         verbose_name = 'ogd pincodes'
         ordering = ['id', 'pincode']
+
+
+class Offline(models.Model):
+    start = models.DateTimeField()
+    end = models.DateTimeField()
+    message = models.TextField()
+    active = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.message

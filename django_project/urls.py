@@ -1,6 +1,7 @@
 from django.conf.urls import patterns, include, url
 from django.contrib import admin
-from core.views import create_fedex_shipment, barcode_fedex_redirector
+from businessapp.views import print_address_view,readpdf,barcode_stats_view
+from core.views import create_fedex_shipment, barcode_fedex_redirector, create_individual_fedex_shipment
 from myapp.api import UserResource,AddressResource,OrderResource,ShipmentResource,XResource,LoginSessionResource,WeborderResource,PriceappResource,DateappResource,ForgotpassResource
 from tastypie.api import Api
 from django_project import settings
@@ -46,6 +47,14 @@ v2_api.register(PincodecheckResource2())
 v2_api.register(InvoicesentResource2())
 v2_api.register(ZipcodeResource2())
 
+from myapp.apiv3 import ShipmentResource3,OrderResource3, UserResource3, NamemailResource3, AddressResource3
+
+v3_api = Api(api_name='v3')
+v3_api.register(OrderResource3())
+v3_api.register(ShipmentResource3())
+v3_api.register(UserResource3())
+v3_api.register(NamemailResource3())
+v3_api.register(AddressResource3())
 
 
 from businessapp.api import BusinessResource,LoginSessionResource,OrderResource,ProductResource,XResource,UsernamecheckResource,PaymentResource,PricingResource,ForgotpassResource,ChangepassResource,BillingResource,PincodecheckResource
@@ -80,7 +89,7 @@ bv2_api.register(OrderResource2())
 bv2_api.register(BarcodeAllotmentResource())
 bv2_api.register(BarcodeFetchResource())
 
-from businessapp.apiv3 import ProductResource3, OrderResource3, ShippingEstimateResource, OrderPatchResource, BusinessPatchResource,OrderCancelResource,PincodecheckResource
+from businessapp.apiv3 import ProductResource3, OrderResource3, ShippingEstimateResource, OrderPatchResource, BusinessPatchResource,OrderCancelResource,PincodecheckResource, OrderPatchReferenceResource, EmailLabelsResource
 from businessapp.apiv3 import TrackingResource as TrackingResourceV3
 bv3_api = Api(api_name='v3')
 bv3_api.register(ProductResource3())
@@ -91,6 +100,8 @@ bv3_api.register(TrackingResourceV3())
 bv3_api.register(BusinessPatchResource())
 bv3_api.register(OrderCancelResource())
 bv3_api.register(PincodecheckResource())
+bv3_api.register(OrderPatchReferenceResource())
+bv3_api.register(EmailLabelsResource())
 
 
 from businessapp.apiv4 import BusinessResource as BusinessResourceV4
@@ -116,6 +127,7 @@ urlpatterns = patterns('',
     url(r'^admin/', include(admin.site.urls)),
     url(r'^api/', include(v1_api.urls)),
     url(r'^api/', include(v2_api.urls)),
+    url(r'^api/', include(v3_api.urls)),
     url(r'^bapi/', include(bv1_api.urls)),
     url(r'^bapi/', include(bv2_api.urls)),
     url(r'^bapi/', include(bv3_api.urls)),
@@ -125,5 +137,13 @@ urlpatterns = patterns('',
     url(r'^pb_api/', include(pbv1_api.urls)),
     url(r'^pb_location/', pb_location_view, name='pb_location'),
     url(r'^create_fedex_shipment/', create_fedex_shipment, name='create_fedex'),
+    url(r'^create_fedex_legacy/', create_individual_fedex_shipment, name='create_fedex_legacy'),
+    url(r'^print_address/', print_address_view, name='print_business_address'),
+    url(r'^barcode_stats/', barcode_stats_view, name='barcode_stats'),
+    url(r'^ffmanual/', readpdf, name='readpdf'),
     url(r'^barcode_fedex_print/(?P<barcode>[\w]{10})/$', barcode_fedex_redirector, name='fedex_barcode_redirector')
+)
+
+urlpatterns += patterns('',
+    (r'^django-rq/', include('django_rq.urls')),
 )

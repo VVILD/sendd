@@ -1,4 +1,5 @@
 import random
+import uuid
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.db.models.signals import post_save
 from django.db import models
@@ -10,12 +11,11 @@ from push_notifications.models import GCMDevice
 from core.fedex.base_service import FedexError
 from core.models import Warehouse, Pincode
 from core.utils import state_matcher
-from core.utils.fedex_api_helper import Fedex
 from pickupboyapp.models import PBUser
 import urllib2
 
 import requests
-
+import json
 import urllib
 
 
@@ -38,7 +38,7 @@ class User(models.Model):
         z = timezone('Asia/Kolkata')
         fmt = '%Y-%m-%d %H:%M:%S'
         ind_time = datetime.now(z)
-        self.time = ind_time.strftime(fmt)
+        self.time = ind_time
         super(User, self).save(*args, **kwargs)
 
 
@@ -55,9 +55,7 @@ class Address(models.Model):
     country = models.CharField(max_length=30, null=True, blank=True)
 
     def __unicode__(self):
-        return str(
-            str(self.flat_no) + ',' + str(self.locality) + ',' + str(self.city) + ',' + str(self.state) + ',' + str(
-                self.country) + ',' + str(self.pincode))
+        return str(self.flat_no)+','+str(self.locality)+','+str(self.city)+','+str(self.state)+','+str(self.country)+'-'+str(self.pincode)
 
     def save(self, *args, **kwargs):
         if not state_matcher.is_state(self.state):
@@ -118,27 +116,17 @@ class Order(models.Model):
     pick_now = models.CharField(max_length=1,
                                 choices=(('Y', 'yes'), ('N', 'no'),),
                                 default='Y')
-    # source=models.CharField(max_length=1,
-    #								  choices=(('P','pending') ,('C','complete'),('N','cancelled'),('F','fake'),),
-    #								  default='F')
-    #cost=models.CharField(max_length = 10,null=True ,blank=True)
-    #paid=models.CharField(max_length=1,
-    #								  choices=(('Y','yes') ,('N','no'),),
-    #								  blank=True , null = True)
-
-    #cancelled=models.CharField(max_length=1,
-    # choices=(('Y','yes') ,('N','no'),),
-    #								  default='N')
     pb = models.ForeignKey(PBUser, null=True, blank=True)
     latitude = models.DecimalField(max_digits=25, decimal_places=20, null=True, blank=True)
     longitude = models.DecimalField(max_digits=25, decimal_places=20, null=True, blank=True)
     address = models.CharField(max_length=200, null=True, blank=True)
     pincode = models.CharField(max_length=30, null=True, blank=True)
     flat_no = models.CharField(max_length=100, null=True, blank=True)
-    #picked_up=models.BooleanField(default=False
-    #status_code=models.CharField(max_length=100, null=True, blank=True)
     book_time = models.DateTimeField(null=True, blank=True)
     warehouse = models.ForeignKey(Warehouse, null=True, blank=True, related_name="myapp_orders")
+    master_tracking_number = models.CharField(max_length=10, blank=True, null=True)
+    mapped_master_tracking_number = models.CharField(max_length=50, blank=True, null=True)
+    fedex_ship_docs = models.FileField(upload_to='shipment/', blank=True, null=True)
 
     def __unicode__(self):
         return str(self.order_no)
@@ -157,17 +145,19 @@ class Order(models.Model):
             msga = str(phone)
             msg1 = "&msg=Pickup+details+for+order+no%3A"+str(order_no)+".%0D%0AName%3A"+str(name)+"%2C+Address%3A"+str(address)+"%2C+Mobile+No%3A"+str(user_phone)+"&msg_type=TEXT&userid=2000142364&auth_scheme=plain&password=h0s6jgB4N&format=text"
             query = ''.join([msg0, msga, msg1])
-            print query
             req = requests.get(query)
-            # print "status_code here"
-            # print req.status_code
 
         ''' On save, update timestamps '''
         z = timezone('Asia/Kolkata')
         fmt = '%Y-%m-%d %H:%M:%S'
         ind_time = datetime.now(z)
         if not self.pk:
-            self.book_time = ind_time.strftime(fmt)
+            self.book_time = ind_time
+            super(Order, self).save(*args, **kwargs)
+            order_no = self.pk + 1000
+            if str(order_no) > 4:
+                order_no = str(order_no)[:4]
+            self.master_tracking_number = 'M' + order_no + str(uuid.uuid4().get_hex().upper()[:5])
         if not self.warehouse:
             pincode = Pincode.objects.filter(pincode=self.pincode).exclude(latitude__isnull=True)
             try:
@@ -257,7 +247,7 @@ class Shipment(models.Model):
     company = models.CharField(max_length=2,
                                choices=[('F', 'FedEx'), ('D', 'Delhivery'), ('P', 'Professional'), ('G', 'Gati'),
                                         ('A', 'Aramex'), ('E', 'Ecomexpress'), ('DT', 'dtdc'), ('FF', 'First Flight'),
-                                        ('M', 'Maruti courier'), ('I', 'India Post'), ('S', 'Sendd'), ('B', 'Bluedart'), ('T', 'trinity')],
+                                        ('M', 'Maruti courier'), ('I', 'India Post'), ('S', 'Sendd'), ('B', 'Bluedart'), ('T', 'trinity'), ('V', 'vichare'), ('DH', 'dhl'), ('S', 'skycom'), ('NA', 'nandan'),('FA','Fast train'),('TE','Tej')],
                                blank=True, null=True)
 
     cost_of_courier = models.CharField(verbose_name='item cost', max_length=100, null=True, blank=True)
@@ -266,6 +256,7 @@ class Shipment(models.Model):
     barcode = models.CharField(null=True, blank=True, default=None, max_length=12, unique=True)
     fedex_cod_return_label = models.FileField(upload_to='shipment/', blank=True, null=True)
     fedex_outbound_label = models.FileField(upload_to='shipment/', blank=True, null=True)
+    fedex_ship_docs = models.FileField(upload_to='shipment/', blank=True, null=True)
     actual_shipping_cost = models.FloatField(default=0.0)
     fedex_check = models.CharField(max_length=1,
                                    choices=(('I', 'Integrity Check'), ('O', 'ODA'), ('R', 'Restricted States'), ('P', 'Pass'), ('S', 'State Integrity Check'), ('A', 'Address Integrity Check'), ('N', 'Not Servicable'), ('Z', 'Invalid Pincode')),
@@ -280,6 +271,9 @@ class Shipment(models.Model):
     tracking_history = models.TextField(null=True, blank=True)
     warning = models.BooleanField(default=False)
     last_tracking_status=models.CharField(max_length=300, null=True, blank=True)
+    actual_delivery_timestamp = models.DateTimeField(blank=True, null=True)
+    estimated_delivery_timestamp = models.DateTimeField(blank=True, null=True)
+
 
     
     def __init__(self, *args, **kwargs):
@@ -288,11 +282,9 @@ class Shipment(models.Model):
 
     def save(self, *args, **kwargs):
 
-        z = timezone('Asia/Kolkata')
         fmt = '%Y-%m-%d %H:%M:%S'
-        ind_time = datetime.now(z)
-        time = ind_time.strftime(fmt)
-
+        ind_time = datetime.now()
+        time = ind_time
         if self.mapped_tracking_no and (self.status=='PU' or self.status=='DI' or self.status=='P'):
             self.status='DI'
             self.update_time=time
@@ -301,7 +293,7 @@ class Shipment(models.Model):
             #Warnings rule definations
             if ('exception' in self.last_tracking_status):
                 self.warning=True
-            
+
 
         if self.tracking_data != self.__original_tracking_data:
             self.update_time=time
@@ -312,9 +304,9 @@ class Shipment(models.Model):
             z = timezone('Asia/Kolkata')
             fmt = '%Y-%m-%d %H:%M:%S'
             ind_time = datetime.now(z)
-            time = ind_time.strftime(fmt)
-            self.update_time = ind_time.strftime(fmt)
-            time = str(time)
+            time = ind_time
+            self.update_time = ind_time
+            time = str(time.replace(second=0, microsecond=0,tzinfo=None))
             self.tracking_data = "[{\"status\": \"Booking Received\", \"date\"	: \"" + time + " \", \"location\": \"Mumbai (Maharashtra)\"}]"
             print self.tracking_data
             print self.status
@@ -353,7 +345,7 @@ class Forgotpass(models.Model):
         z = timezone('Asia/Kolkata')
         fmt = '%Y-%m-%d %H:%M:%S'
         ind_time = datetime.now(z)
-        self.time = ind_time.strftime(fmt)
+        self.time = ind_time
         super(Forgotpass, self).save(*args, **kwargs)
 
 
@@ -377,7 +369,7 @@ class LoginSession(models.Model):
         fmt = '%Y-%m-%d %H:%M:%S'
         ind_time = datetime.now(z)
         if not self.pk:
-            self.time = ind_time.strftime(fmt)
+            self.time = ind_time
         super(LoginSession, self).save(*args, **kwargs)
 
 
@@ -394,7 +386,7 @@ class Weborder(models.Model):
         z = timezone('Asia/Kolkata')
         fmt = '%Y-%m-%d %H:%M:%S'
         ind_time = datetime.now(z)
-        self.time = ind_time.strftime(fmt)
+        self.time = ind_time
         super(Weborder, self).save(*args, **kwargs)
 
 

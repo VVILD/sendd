@@ -139,13 +139,17 @@ shipment.RequestedShipment.LabelSpecification.ImageType = 'PDF'
 # label printer formats (ZPLII, EPL2, DPL).
 # See documentation for paper types, there quite a few.
 shipment.RequestedShipment.LabelSpecification.LabelStockType = 'PAPER_7X4.75'
-shipment.RequestedShipment.LabelSpecification.LabelOrder = None
+shipment.RequestedShipment.LabelSpecification.LabelOrder = 'SHIPPING_LABEL_FIRST'
 
 # This indicates if the top or bottom of the label comes out of the 
 # printer first.
 # BOTTOM_EDGE_OF_TEXT_FIRST or TOP_EDGE_OF_TEXT_FIRST
 shipment.RequestedShipment.LabelSpecification.LabelPrintingOrientation = 'BOTTOM_EDGE_OF_TEXT_FIRST'
 
+shipment.RequestedShipment.ShippingDocumentSpecification.ShippingDocumentTypes = 'COMMERCIAL_INVOICE'
+shipment.RequestedShipment.ShippingDocumentSpecification.CommercialInvoiceDetail = shipment.create_wsdl_object_of_type('CommercialInvoiceDetail')
+shipment.RequestedShipment.ShippingDocumentSpecification.CommercialInvoiceDetail.Format.ImageType = 'PDF'
+shipment.RequestedShipment.ShippingDocumentSpecification.CommercialInvoiceDetail.Format.StockType = 'PAPER_LETTER'
 # shipment.RequestedShipment.PackageCount = 1
 
 package1_weight = shipment.create_wsdl_object_of_type('Weight')
@@ -196,7 +200,7 @@ print "Tracking #:", shipment.response.CompletedShipmentDetail.CompletedPackageD
 # Get the label image in ASCII format from the reply. Note the list indices
 # we're using. You'll need to adjust or iterate through these if your shipment
 # has multiple packages.
-ascii_label_data = shipment.response.CompletedShipmentDetail.CompletedPackageDetails[0].Label.Parts[0].Image
+ascii_label_data = COMMERCIAL_INVOICE = shipment.response.CompletedShipmentDetail.ShipmentDocuments[0].Parts[0].Image
 # Convert the ASCII data to binary.
 label_binary_data = binascii.a2b_base64(ascii_label_data)
 
