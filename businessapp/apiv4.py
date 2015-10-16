@@ -11,6 +11,7 @@ from businessapp.models import Business, AddressDetails, Product, Order
 
 __author__ = 'vatsalshah'
 
+
 class BaseCorsResource(Resource):
     """
      Class implementing CORS
@@ -74,6 +75,14 @@ class BaseCorsResource(Resource):
         response = super(BaseCorsResource, self).patch_detail(request, **kwargs)
         return self.add_cors_headers(response, True)
 
+    def delete_list(self, request, **kwargs):
+        response = super(BaseCorsResource, self).delete_list(request, **kwargs)
+        return self.add_cors_headers(response, True)
+
+    def delete_detail(self, request, **kwargs):
+        response = super(BaseCorsResource, self).delete_detail(request, **kwargs)
+        return self.add_cors_headers(response, True)
+
     def method_check(self, request, allowed=None):
         """
           Check for an OPTIONS request. If so return the Allow- headers
@@ -109,8 +118,10 @@ class BaseCorsResource(Resource):
 
         return wrapper
 
+
 class CORSModelResource(BaseCorsResource, ModelResource):
     pass
+
 
 class BusinessResource(CORSModelResource):
     class Meta:

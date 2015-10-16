@@ -165,8 +165,7 @@ class AddressDetails(models.Model):
         auto_now=True
     )
     business = models.ForeignKey(
-        to=Business,
-        related_name="pickup_addresses"
+        to=Business
     )
     company_name = models.CharField(
         verbose_name='company name',
@@ -213,11 +212,26 @@ class AddressDetails(models.Model):
         max_length=1,
         choices=default_vehicle_choices
     )
+    pb = models.ForeignKey(PBUser, null=True, blank=True)
+    is_completed = models.BooleanField(default=False)
+    status = models.CharField(max_length=1,
+                              choices=(('Y', 'approved'), ('N', 'not approved'), ('C', 'cancelled'), ('A', 'alloted'),),
+                              null=True, blank=True,
+                              default='N')
     default_pickup_time = models.DateTimeField()
     default = models.BooleanField(default=False)
+    warehouse = models.ForeignKey(Warehouse, null=True, blank=True)
 
     def __str__(self):
         return "\n".join([self.address, self.city])
+
+    def save(self, force_insert=False, force_update=False, using=None,
+             update_fields=None):
+        if self.pincode and not self.warehouse:
+                pincode = Pincode.objects.filter(pincode=self.pincode).exclude(latitude__isnull=True)
+                if len(pincode) > 0:
+                    self.warehouse = pincode[0].warehouse
+        super(AddressDetails, self).save()
 
     class Meta:
         verbose_name = 'Address details'
