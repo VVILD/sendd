@@ -344,7 +344,9 @@ class Product(models.Model):
     last_tracking_status = models.CharField(max_length=300, null=True, blank=True)
     
     last_tracking_status_timestamp=models.DateTimeField(blank=True, null=True)
-
+    l=models.FloatField(default=0)
+    b=models.FloatField(default=0)
+    h=models.FloatField(default=0)
     actual_delivery_timestamp = models.DateTimeField(blank=True, null=True)
     estimated_delivery_timestamp = models.DateTimeField(blank=True, null=True)
     return_action=models.CharField(max_length=2,blank=True,null=True,
