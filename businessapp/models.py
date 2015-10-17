@@ -207,23 +207,24 @@ class AddressDetails(models.Model):
         ('T', 'Tempo'),
         ('B', 'Bike')
     )
+    cs_comment = models.TextField(null=True, blank=True)
+    ff_comment = models.TextField(null=True, blank=True)
     default_vehicle = models.CharField(
         verbose_name='default vehicle',
         max_length=1,
         choices=default_vehicle_choices
     )
     pb = models.ForeignKey(PBUser, null=True, blank=True)
-    is_completed = models.BooleanField(default=False)
-    status = models.CharField(max_length=1,
-                              choices=(('Y', 'approved'), ('N', 'not approved'), ('C', 'cancelled'), ('A', 'alloted'),),
+    status = models.CharField(max_length=2,
+                              choices=(('Y', 'approved'), ('N', 'not approved'), ('A', 'alloted'),('C', 'complete'),),
                               null=True, blank=True,
                               default='N')
-    default_pickup_time = models.TimeField()
+    default_pickup_time = models.DateTimeField()
     default = models.BooleanField(default=False)
     warehouse = models.ForeignKey(Warehouse, null=True, blank=True)
 
     def __str__(self):
-        return "\n".join([self.address, self.city])
+        return "\n".join([self.company_name,self.address, self.city,self.contact_person,"(",self.phone_office,",",self.phone_mobile,")"])
 
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
@@ -237,6 +238,32 @@ class AddressDetails(models.Model):
         verbose_name = 'Address details'
         verbose_name_plural = 'Address details'
 
+
+class CSApprovedPickup(AddressDetails):
+    class Meta:
+        proxy = True
+        verbose_name = 'Cs approved pickups'
+        verbose_name_plural = 'Cs approved pickups'
+
+
+class CSAllPickup(AddressDetails):
+    class Meta:
+        proxy = True
+        verbose_name = 'Cs all pickups'
+        verbose_name_plural = 'Cs all pickups'
+
+
+class FFApprovedPickup(AddressDetails):
+    class Meta:
+        proxy = True
+        verbose_name = 'ff approved pickups'
+        verbose_name_plural = 'ff approved pickups'
+
+class FFCompletedPickup(AddressDetails):
+    class Meta:
+        proxy = True
+        verbose_name = 'ff completed pickups'
+        verbose_name_plural = 'ff completed pickups'
 
 
 class NotApprovedBusiness(Business):

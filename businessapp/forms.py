@@ -59,4 +59,15 @@ class NewTrackingStatus(ModelForm):
 		self.cleaned_data['tracking_data']= json.dumps(tracking_list)
 
 
+class Approveconfirmform(ModelForm):
+	sure=forms.BooleanField(initial=True)
+	class Meta:
+		model = Product
+
+	def clean(self):
+		if self.cleaned_data['sure']:
+			self.cleaned_data['status']='Y'
+		else:
+			pass
+
 	

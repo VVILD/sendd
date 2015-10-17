@@ -10,7 +10,7 @@ import datetime
 
 from django.contrib import admin
 from .models import *
-from businessapp.forms import NewQcCommentForm,NewTrackingStatus,NewReturnForm
+from businessapp.forms import NewQcCommentForm,NewTrackingStatus,NewReturnForm,Approveconfirmform
 from datetime import date,timedelta
 import reversion
 
@@ -2196,4 +2196,96 @@ class BdheadAdmin(admin.ModelAdmin):
 admin.site.register(Bdheadpanel,BdheadAdmin)
 
 
+
+class BaseAddressAdmin(admin.ModelAdmin):
+	pass
+
+
+class CsAddressAdmin(BaseAddressAdmin):
+	search_fields = ['business','address','pincode','city']
+	list_filter = ['business__username','business__business_name','default_pickup_time']
+	list_display = ['__str__','business','warehouse','default_pickup_time','cs_comment','default_vehicle','status']
+	list_editable=['cs_comment']
+
+
+class FfAddressAdmin(BaseAddressAdmin):
+	pass
+
+
+class CsApprovedpickupAdmin(CsAddressAdmin):
+	def get_queryset(self, request):
+		qs = super(CsAddressAdmin, self).queryset(request)
+		qs = qs.filter(status__in=['Y','A','C'])
+		return qs
+
+
+admin.site.register(CSApprovedPickup,CsApprovedpickupAdmin)
+
+class CSAllPickupAdmin(CsAddressAdmin):
+	actions = None
+	list_display = CsAddressAdmin.list_display + ['approve']
+
+	def response_change(self, request, obj):
+		approve = request.GET.get('approve',None)
+
+
+		if approve:
+			return HttpResponse('''
+   <script type="text/javascript">
+	  opener.dismissAddAnotherPopup(window);
+   </script>''')
+		else:
+			return super(CSAllPickupAdmin, self).response_change( request, obj)
+
+
+	def get_form(self, request, obj=None, **kwargs):
+		#tracking=request.GET.get["tracking",None]
+		approve = request.GET.get('approve',None)
+
+		if approve:
+			self.form=Approveconfirmform
+			self.fieldsets = (
+				('s', {'fields': ['sure']}),
+			)
+
+		return super(CSAllPickupAdmin, self).get_form(request, obj, **kwargs)
+
+	def approve(self,obj):
+		if obj.status=='N':
+			return '<a href="/admin/businessapp/csallpickup/%s/?approve=True" onclick="return showAddAnotherPopup(this);">Approve </a><br>' % (obj.pk)
+		else:
+			return "already approved"
+	approve.allow_tags=True
+
+	def suit_row_attributes(self, obj, request):
+		css_class = {
+			'Y': 'success',
+			'A': 'success',
+			'C': 'success',
+			'N': 'error',
+		}.get(obj.status)
+		if css_class:
+			return {'class': css_class, 'data': obj.status}
+	pass
+
+admin.site.register(CSAllPickup,CSAllPickupAdmin)
+
+class FfApprovedpickupAdmin(FfAddressAdmin):
+
+
+	def get_queryset(self, request):
+		qs = super(FfAddressAdmin, self).queryset(request)
+		qs = qs.filter(status__in=['Y','A'])
+		return qs
+
+admin.site.register(FFApprovedPickup,FfApprovedpickupAdmin)
+
+class FFCompletedPickupAdmin(FfAddressAdmin):
+	def get_queryset(self, request):
+		qs = super(FfAddressAdmin, self).queryset(request)
+		qs = qs.filter(status='C')
+		return qs
+
+
+admin.site.register(FFCompletedPickup,FFCompletedPickupAdmin)
 

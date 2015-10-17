@@ -36,6 +36,11 @@
     });
 })(django.jQuery);
 
+function dismissAddAnotherPopup(win) {
+    win.close();
+    location.reload(true);
+    }
+
 </script>
 {% if cs %}
 
@@ -112,6 +117,10 @@ Fullfillment executive link
 </div>
 </center>
 
+    <a class="btn btn-warning" href="/admin/businessapp/csallpickup/">cs all</a>
+    <a class="btn btn-warning" href="/admin/businessapp/csapprovedpickup">cs approved</a>
+    <a class="btn btn-warning" href="/admin/businessapp/ffapprovedpickup/">ff aproved</a>
+    <a class="btn btn-warning" href="/admin/businessapp/ffcompletedpickup/">ff picked up</a>
 
 {% endif %}
 
