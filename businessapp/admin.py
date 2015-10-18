@@ -623,15 +623,42 @@ class ProductAdmin(reversion.VersionAdmin):
 		'kartrocket_order', 'shipping_cost', 'cod_cost', 'status', 'date', 'barcode')
 
 
-	fieldsets = (
-		('Tracking_details', {'fields': ['mapped_tracking_no', 'company','real_tracking_no','kartrocket_order'], 'classes': ('suit-tab', 'suit-tab-general')}),
-		('General', {'fields': ['name', 'quantity','sku','price','weight','applied_weight','status','date','remittance','order','actual_delivery_timestamp','estimated_delivery_timestamp'], 'classes': ('suit-tab', 'suit-tab-general')}),
-		('Cost', {'fields': ['shipping_cost', 'cod_cost','return_cost'], 'classes': ('suit-tab', 'suit-tab-general')}),
-		('Tracking', {'fields': ['tracking_data'], 'classes': ('suit-tab', 'suit-tab-tracking')}),
-		('Barcode', {'fields': ['barcode','tracking_history'], 'classes': ('suit-tab', 'suit-tab-barcode')}),
-	)
+	def response_change(self, request, obj):
+		volume = request.GET.get('volume',None)
 
-	suit_form_tabs = (('general', 'General'), ('tracking', 'Tracking'),('barcode', 'Barcode'))
+		if volume:
+			return HttpResponse('''
+   <script type="text/javascript">
+	  opener.dismissAddAnotherPopup(window);
+   </script>''')
+
+		return super(ProductAdmin, self).response_change(request, obj)
+
+
+	def get_form(self, request, obj=None, **kwargs):
+		volume = request.GET.get('volume',None)
+
+		if volume:
+			self.fieldsets = (
+				('Enter in cm', {'fields': ['l', 'b','h'],}),
+			)
+		else:
+
+			self.fieldsets = (
+				('Tracking_details', {'fields': ['mapped_tracking_no', 'company','real_tracking_no','kartrocket_order'], 'classes': ('suit-tab', 'suit-tab-general')}),
+				('General', {'fields': ['name', 'quantity','sku','price','weight','applied_weight','status','date','remittance','order','actual_delivery_timestamp','estimated_delivery_timestamp'], 'classes': ('suit-tab', 'suit-tab-general')}),
+				('Cost', {'fields': ['shipping_cost', 'cod_cost','return_cost'], 'classes': ('suit-tab', 'suit-tab-general')}),
+				('Tracking', {'fields': ['tracking_data'], 'classes': ('suit-tab', 'suit-tab-tracking')}),
+				('Barcode', {'fields': ['barcode','tracking_history'], 'classes': ('suit-tab', 'suit-tab-barcode')}),
+			)
+
+			self.suit_form_tabs = (('general', 'General'), ('tracking', 'Tracking'),('barcode', 'Barcode'))
+
+
+
+		return super(ProductAdmin, self).get_form(request, obj, **kwargs)
+
+
 
 
 
@@ -686,10 +713,15 @@ class ProductInline(admin.TabularInline):
 	model = Product
 	form = ProductForm
 	exclude = ['sku', 'weight', 'real_tracking_no', 'tracking_data']
-	readonly_fields = ('product_info', 'weight', 'shipping_cost', 'generate_order', 'fedex',)
+	readonly_fields = ('product_info', 'weight', 'shipping_cost', 'generate_order', 'fedex','dimensions')
 	fields = (
-		'product_info', 'name', 'quantity', 'price', 'weight', 'applied_weight', 'is_document', 'generate_order', 'fedex')
+		'product_info', 'name', 'quantity', 'price', 'weight', 'applied_weight', 'is_document','dimensions' ,'generate_order', 'fedex')
 	extra = 0
+
+	def dimensions(self,obj):
+
+		return "l = " + str(obj.l) + "<br> b=  " + str(obj.b)+ "<br> h=  " + str(obj.h)  +'<br><a href="/admin/businessapp/product/%s/?volume=T" onclick="return showAddAnotherPopup(this);">change</a>' % (obj.pk)
+	dimensions.allow_tags=True
 
 	def product_info(self, obj):
 		return '<b>Name:</b>' + str(obj.name) + '<br>' + '<b>Quantity:</b>' + str(
@@ -981,7 +1013,14 @@ class OrderAdmin(FilterUserAdmin,ImportExportActionModelAdmin):
 	readonly_fields=('master_tracking_number', 'mapped_master_tracking_number', 'fedex')
 
 
-	def change_view(self, request, object_id, form_url='', extra_context=None):        
+
+	def get_form(self, request, obj=None, **kwargs):
+		self.exclude = ['fedex_ship_docs']
+		if not request.user.is_superuser:
+			self.exclude.append('refund') #here!
+		return super(OrderAdmin, self).get_form(request, obj, **kwargs)
+
+	def change_view(self, request, object_id, form_url='', extra_context=None):
 		extra_context = extra_context or {}
 		extra_context['x'] = object_id
 		return super(OrderAdmin, self).change_view(request, object_id, form_url, extra_context=extra_context)
