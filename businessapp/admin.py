@@ -2244,9 +2244,7 @@ class CSAllPickupAdmin(CsAddressAdmin):
 
 		if approve:
 			self.form=Approveconfirmform
-			self.fieldsets = (
-				('s', {'fields': ['sure']}),
-			)
+
 
 		return super(CSAllPickupAdmin, self).get_form(request, obj, **kwargs)
 

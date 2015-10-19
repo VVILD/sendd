@@ -1,4 +1,4 @@
-from django.forms import ModelForm, Textarea 
+from django.forms import ModelForm, Textarea, HiddenInput
 from django import forms
 from myapp.mail.bookingConfirmationMail import SendConfirmationMail
 from myapp.models import Shipment, Order, User, Namemail, Address
@@ -59,15 +59,20 @@ class NewTrackingStatus(ModelForm):
 		self.cleaned_data['tracking_data']= json.dumps(tracking_list)
 
 
+
 class Approveconfirmform(ModelForm):
 	sure=forms.BooleanField(initial=True)
 	class Meta:
 		model = Product
+		fields = ('sure','status')
+		widgets = {
+			'status': HiddenInput,
+		}
 
 	def clean(self):
 		if self.cleaned_data['sure']:
 			self.cleaned_data['status']='Y'
-		else:
-			pass
+		# else:
+		# 	pass
 
 	
