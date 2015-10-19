@@ -1544,6 +1544,7 @@ class QcProductAdmin(reversion.VersionAdmin,ImportExportActionModelAdmin):
 		#tracking=request.GET.get["tracking",None]
 		tracking = request.GET.get('tracking',None)
 		status = request.GET.get('status',None)
+		comment = request.GET.get('comment',None)
 
 		if status:
 			self.form = NewReturnForm
@@ -1551,7 +1552,7 @@ class QcProductAdmin(reversion.VersionAdmin,ImportExportActionModelAdmin):
 				('Basic Information', {'fields': ['status', 'return_action',], 'classes': ('suit-tab', 'suit-tab-general')}),
 			)
 
-		elif not tracking:  #add
+		elif comment:  #add
 			self.form=NewQcCommentForm
 			self.fieldsets = (
 				('Basic Information', {'fields': ['new_comment', 'previous_comment',], 'classes': ('suit-tab', 'suit-tab-general')}),
@@ -1596,7 +1597,7 @@ class QcProductAdmin(reversion.VersionAdmin,ImportExportActionModelAdmin):
 	p_tracking.allow_tags=True
 
 	def history(self,obj):
-		return str(obj.qc_comment) + '<br><br>' + '<a href="/admin/businessapp/qcproduct/%s/" onclick="return showAddAnotherPopup(this);">Add new comment </a><br><a href="/admin/businessapp/qcproduct/%s/?tracking=T" onclick="return showAddAnotherPopup(this);">Add tracking row</a><br> <a href="/admin/businessapp/qcproduct/%s/?status=T" onclick="return showAddAnotherPopup(this);">Return action</a>' % (obj.pk, obj.pk,obj.pk)
+		return str(obj.qc_comment) + '<br><br>' + '<a href="/admin/businessapp/qcproduct/%s/?comment=True" onclick="return showAddAnotherPopup(this);">Add new comment </a><br><a href="/admin/businessapp/qcproduct/%s/?tracking=T" onclick="return showAddAnotherPopup(this);">Add tracking row</a><br> <a href="/admin/businessapp/qcproduct/%s/?status=T" onclick="return showAddAnotherPopup(this);">Return action</a>' % (obj.pk, obj.pk,obj.pk)
 	history.allow_tags=True
 
 	def order_no(self, obj):
