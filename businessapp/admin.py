@@ -1518,7 +1518,7 @@ reversion.VersionAdmin.change_list_template='businessapp/templates/admin/busines
 
 
 
-class QcProductAdmin(ProductAdmin,reversion.VersionAdmin,ImportExportActionModelAdmin):
+class QcProductAdmin(reversion.VersionAdmin,ImportExportActionModelAdmin):
 
 	change_list_template='businessapp/templates/admin/businessapp/qcproduct/change_list.html'
 
