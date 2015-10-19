@@ -1551,6 +1551,7 @@ class QcProductAdmin(reversion.VersionAdmin,ImportExportActionModelAdmin):
 			self.fieldsets = (
 				('Basic Information', {'fields': ['status', 'return_action',], 'classes': ('suit-tab', 'suit-tab-general')}),
 			)
+			self.suit_form_tabs = (('general', 'General'),)
 
 		elif comment:  #add
 			self.form=NewQcCommentForm
@@ -1558,6 +1559,7 @@ class QcProductAdmin(reversion.VersionAdmin,ImportExportActionModelAdmin):
 				('Basic Information', {'fields': ['new_comment', 'previous_comment',], 'classes': ('suit-tab', 'suit-tab-general')}),
 				('Basic Information', {'fields': ['qc_comment',], 'classes': ('suit-tab', 'suit-tab-tracking')}),
 			)
+			self.suit_form_tabs = (('general', 'General'), ('tracking', 'Tracking'))
 
 		elif tracking: #change
 			self.form = NewTrackingStatus
@@ -1570,7 +1572,7 @@ class QcProductAdmin(reversion.VersionAdmin,ImportExportActionModelAdmin):
 				
 			)
 
-			self.suit_form_tabs = (('general', 'General'), ('tracking', 'Tracking'), ('barcode', 'Barcode'))
+			self.suit_form_tabs = (('general', 'General'), ('tracking', 'Tracking'))
 
 
 
