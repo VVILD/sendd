@@ -1556,7 +1556,7 @@ class QcProductAdmin(reversion.VersionAdmin,ImportExportActionModelAdmin):
 			self.form=NewQcCommentForm
 			self.fieldsets = (
 				('Basic Information', {'fields': ['new_comment', 'previous_comment',], 'classes': ('suit-tab', 'suit-tab-general')}),
-				('Basic Information', {'fields': ['qc_comment',], 'classes': ('suit-tab', 'suit-tab-barcode')}),
+				('Basic Information', {'fields': ['qc_comment',], 'classes': ('suit-tab', 'suit-tab-tracking')}),
 			)
 
 		elif tracking: #change
@@ -1570,7 +1570,7 @@ class QcProductAdmin(reversion.VersionAdmin,ImportExportActionModelAdmin):
 				
 			)
 
-			self.suit_form_tabs = (('general', 'General'), ('tracking', 'Tracking'))
+			self.suit_form_tabs = (('general', 'General'), ('tracking', 'Tracking'), ('barcode', 'Barcode'))
 
 
 
@@ -1597,7 +1597,7 @@ class QcProductAdmin(reversion.VersionAdmin,ImportExportActionModelAdmin):
 	p_tracking.allow_tags=True
 
 	def history(self,obj):
-		return str(obj.qc_comment) + '<br><br>' + '<a href="/admin/businessapp/qcproduct/%s/?comment=True" onclick="return showAddAnotherPopup(this);">Add new comment </a><br><a href="/admin/businessapp/qcproduct/%s/?tracking=T" onclick="return showAddAnotherPopup(this);">Add tracking row</a><br> <a href="/admin/businessapp/qcproduct/%s/?status=T" onclick="return showAddAnotherPopup(this);">Return action</a>' % (obj.pk, obj.pk,obj.pk)
+		return str(obj.qc_comment) + '<br><br>' + '<a href="/admin/businessapp/qcproduct/%s/?comment=T" onclick="return showAddAnotherPopup(this);">Add new comment </a><br><a href="/admin/businessapp/qcproduct/%s/?tracking=T" onclick="return showAddAnotherPopup(this);">Add tracking row</a><br> <a href="/admin/businessapp/qcproduct/%s/?status=T" onclick="return showAddAnotherPopup(this);">Return action</a>' % (obj.pk, obj.pk,obj.pk)
 	history.allow_tags=True
 
 	def order_no(self, obj):
