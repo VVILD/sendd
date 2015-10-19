@@ -720,7 +720,7 @@ class ProductInline(admin.TabularInline):
 
 	def dimensions(self,obj):
 
-		return "l = " + str(obj.l) + "<br> b=  " + str(obj.b)+ "<br> h=  " + str(obj.h)  +'<br><a href="/admin/businessapp/product/%s/?volume=T" onclick="return showAddAnotherPopup(this);">change</a>' % (obj.pk)
+		return "l = " + str(obj.l) + "<br> b=  " + str(obj.b)+ "<br> h=  " + str(obj.h)  + "<br> Weight ="+ str(obj.l*obj.b*obj.h/5000)  + '<br><a href="/admin/businessapp/product/%s/?volume=T" onclick="return showAddAnotherPopup(this);">change</a>' % (obj.pk)
 	dimensions.allow_tags=True
 
 	def product_info(self, obj):

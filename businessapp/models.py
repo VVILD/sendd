@@ -463,7 +463,15 @@ def send_update(sender, instance, created, **kwargs):
 
     products_in_order = Product.objects.filter(order=instance.order)
 
-    if instance.applied_weight:
+    if (instance.l and instance.b and instance.h):
+        vol_weight= (instance.l *instance.b *instance.h)/5000
+    else:
+        vol_weight=None
+
+    best_weight=max(instance.applied_weight,vol_weight)
+
+
+    if best_weight:
         method = instance.order.method
 
         if (instance.order.payment_method == 'C'):
@@ -508,12 +516,12 @@ def send_update(sender, instance, created, **kwargs):
                 price2 = pricing.normal_zone_d_1
                 price3 = pricing.normal_zone_d_2
 
-            if (instance.applied_weight <= 0.25):
+            if (best_weight <= 0.25):
                 price = price1
-            elif (instance.applied_weight <= 0.50):
+            elif (best_weight <= 0.50):
                 price = price2
             else:
-                price = price2 + math.ceil((instance.applied_weight * 2 - 1)) * price3
+                price = price2 + math.ceil((best_weight * 2 - 1)) * price3
 
         if (method == 'B'):
             if (three_digits == '400'):
@@ -530,10 +538,10 @@ def send_update(sender, instance, created, **kwargs):
             else:
                 price1 = pricing.bulk_zone_d
 
-            if (instance.applied_weight <= 10):
+            if (best_weight <= 10):
                 price = price1 * 10
             else:
-                price = price1 * instance.applied_weight
+                price = price1 * best_weight
 
         Order.objects.filter(pk=instance.order.pk).update(status='D')
         #        print "prrriiiceee"
@@ -650,10 +658,15 @@ def send_update_order(sender, instance, created, **kwargs):
         signals.post_save.connect(send_update, sender=Product)
 
     for product in products:
-        print "look here for products"
-        print product.applied_weight
 
-        if product.applied_weight:
+        if (product.l and product.b and product.h):
+            vol_weight= (product.l *product.b *product.h)/5000
+        else:
+            vol_weight=None
+
+        best_weight=max(product.applied_weight,vol_weight)
+
+        if best_weight:
             method = instance.method
 
             if (instance.payment_method == 'C'):
@@ -699,12 +712,12 @@ def send_update_order(sender, instance, created, **kwargs):
                     price2 = pricing.normal_zone_d_1
                     price3 = pricing.normal_zone_d_2
 
-                if (product.applied_weight <= 0.25):
+                if (best_weight <= 0.25):
                     price = price1
-                elif (product.applied_weight <= 0.50):
+                elif (best_weight <= 0.50):
                     price = price2
                 else:
-                    price = price2 + math.ceil((product.applied_weight * 2 - 1)) * price3
+                    price = price2 + math.ceil((best_weight * 2 - 1)) * price3
 
             if (method == 'B'):
                 if (three_digits == '400'):
@@ -721,10 +734,10 @@ def send_update_order(sender, instance, created, **kwargs):
                 else:
                     price1 = pricing.bulk_zone_d
 
-                if (product.applied_weight <= 10):
+                if (best_weight <= 10):
                     price = price1 * 10
                 else:
-                    price = price1 * product.applied_weight
+                    price = price1 * best_weight
 
             # print "prrriiiceee"
 
