@@ -103,11 +103,12 @@ class Command(BaseCommand):
             pricingquerset=Pricing2.objects.filter(business=b,type='N')
             for p in pricingquerset:
                 if p.zone.zone=='a':
-                    p.price=price[0]*round(p.weight.weight)
+                    p.price=price[0]*round(p.weight.weight/0.5)
                     p.save()
                 elif p.zone.zone=='b':
-                    p.price=price[1]*round(p.weight.weight)
+                    p.price=price[1]*round(p.weight.weight/0.5)
                     p.save()
                 else:
-                    p.price=price[2]*round(p.weight.weight)
+                    p.price=price[2]*round(p.weight.weight/0.5)
                     p.save()
+

@@ -1736,6 +1736,7 @@ def createpricingfieldgeneric2(display_name):
 class BusinessPricingAdmin(reversion.VersionAdmin):
 	list_filter=('username','business_name')
 	list_display=('business_name',)
+	search_fields = ('username','business_name')
 #    readonly_fields=('N0_25','N0_5','N1','N2','N3','N4','N5','N6','N7','N8','N9','N10','B1','B2','B3','B4','B5','B6','B7','B8','B9','B10')
 	readonly_fields=('Na0_25','Nb0_25','Nc0_25','Nd0_25','Ne0_25','Na0_5','Nb0_5','Nc0_5','Nd0_5','Ne0_5',
 		'Na1','Nb1','Nc1','Nd1','Ne1','Na1_5','Nb1_5','Nc1_5','Nd1_5','Ne1_5',
