@@ -22,7 +22,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
 
-        b_list=["dealwithus","ecell","vedantaorganics","trident","toppersnotes"]
+        b_list=["DEARA","gogappa","KPS","laxmiprint"]
 
         price=[20,40]
 
@@ -36,9 +36,37 @@ class Command(BaseCommand):
                     p.price=price[1]*round(p.weight.weight/0.5)
                     p.save()
 
+        b_list=["mdfoods","shreeji_group"]
+
+        price=[20,45]
+
+        for b in b_list:
+            pricingquerset=Pricing2.objects.filter(business=b,type='N')
+            for p in pricingquerset:
+                if p.zone.zone=='a':
+                    p.price=price[0]*round(p.weight.weight/0.5)
+                    p.save()
+                else:
+                    p.price=price[1]*round(p.weight.weight/0.5)
+                    p.save()
 
 
-        b_list=["vedantaorganics","trident","dealwithus","ecell"]
+        b_list=["zorooms"]
+
+        price=[25,50]
+
+        for b in b_list:
+            pricingquerset=Pricing2.objects.filter(business=b,type='N')
+            for p in pricingquerset:
+                if p.zone.zone=='a':
+                    p.price=price[0]*round(p.weight.weight/0.5)
+                    p.save()
+                else:
+                    p.price=price[1]*round(p.weight.weight/0.5)
+                    p.save()
+
+
+        b_list=["DEARA","gogappa","KPS","mdfoods"]
 
         price=[8,12]
 
@@ -52,24 +80,9 @@ class Command(BaseCommand):
                     p.price=price[1]*round(p.weight.weight)
                     p.save()
 
-        b_list=["toppersnotes"]
+        b_list=["laxmiprint","shreeji_group"]
 
-        price=[10,15]
-
-        for b in b_list:
-            pricingquerset=Pricing2.objects.filter(business=b,type='B')
-            for p in pricingquerset:
-                if p.zone.zone=='a':
-                    p.price=price[0]*round(p.weight.weight)
-                    p.save()
-                else:
-                    p.price=price[1]*round(p.weight.weight)
-                    p.save()
-
-
-        b_list=["fortune_wwe"]
-
-        price=[12.5,12.5]
+        price=[20,20]
 
         for b in b_list:
             pricingquerset=Pricing2.objects.filter(business=b,type='B')
@@ -81,7 +94,8 @@ class Command(BaseCommand):
                     p.price=price[1]*round(p.weight.weight)
                     p.save()
 
-        b_list=["towelkingdom"]
+
+        b_list=["zorooms"]
 
         price=[10,14]
 
@@ -93,22 +107,5 @@ class Command(BaseCommand):
                     p.save()
                 else:
                     p.price=price[1]*round(p.weight.weight)
-                    p.save()
-
-        b_list=["towelkingdom"]
-
-        price=[20,32,40]
-
-        for b in b_list:
-            pricingquerset=Pricing2.objects.filter(business=b,type='N')
-            for p in pricingquerset:
-                if p.zone.zone=='a':
-                    p.price=price[0]*round(p.weight.weight/0.5)
-                    p.save()
-                elif p.zone.zone=='b':
-                    p.price=price[1]*round(p.weight.weight/0.5)
-                    p.save()
-                else:
-                    p.price=price[2]*round(p.weight.weight/0.5)
                     p.save()
 
