@@ -1016,7 +1016,8 @@ class OrderAdmin(FilterUserAdmin,ImportExportActionModelAdmin):
 
 	def get_form(self, request, obj=None, **kwargs):
 		self.exclude = ['fedex_ship_docs']
-		if not request.user.is_superuser or not request.user.username in ["abhilash.sivan","shahbaz"]:
+
+		if not request.user.is_superuser and not request.user.username in ["abhilash.sivan","shahbaz","gulati"]:
 			self.exclude.append('refund') #here!
 		return super(OrderAdmin, self).get_form(request, obj, **kwargs)
 
