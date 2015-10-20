@@ -949,4 +949,27 @@ def add_pricing(sender, instance, created, **kwargs):
                 p.save()
 
 
+        price=[20,40]
+
+        pricingquerset=Pricing2.objects.filter(business=instance,type='N')
+        for p in pricingquerset:
+            if p.zone.zone=='a':
+                p.price=price[0]*round(p.weight.weight/0.5)
+                p.save()
+            else:
+                p.price=price[1]*round(p.weight.weight/0.5)
+                p.save()
+
+        price=[8,12]
+        pricingquerset=Pricing2.objects.filter(business=instance,type='B')
+        for p in pricingquerset:
+            if p.zone.zone=='a':
+                p.price=price[0]*round(p.weight.weight)
+                p.save()
+            else:
+                p.price=price[1]*round(p.weight.weight)
+                p.save()
+
+
+
 post_save.connect(add_pricing, sender=Business)
