@@ -277,7 +277,7 @@ class BusinessAdmin(BaseBusinessAdmin):
 	list_editable = ('pb', 'assigned_pickup_time','daily','cs_comment','ff_comment')
 	raw_id_fields = ('pb', 'warehouse')
 	list_filter = ['username', 'daily','pb', 'warehouse']
-	readonly_fields = ('status',)
+	readonly_fields = ('status','is_completed')
 	#actions = [export_as_csv_action("CSV Export", fields=['username','business_name','apikey','name','email','contact_mob','contact_office','address','city','state','pincode'])]
 	actions_on_bottom = False
 	actions_on_top = True
