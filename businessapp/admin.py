@@ -253,7 +253,7 @@ class BaseBusinessAdmin(reversion.VersionAdmin):
 		a = Business.objects.filter(status='A',is_completed=False).count()
 		
 		nap = Order.objects.filter(business__status='N',status='P').count()
-		ap = Business.objects.filter(status='Y').count()
+		ap = Business.objects.filter(status='Y',is_completed=False).count()
 		apcs=Business.objects.filter().exclude(status='N').count()
 		d = Business.objects.filter(daily=True).count()
 		c = Business.objects.filter(status='C').count()
@@ -277,7 +277,7 @@ class BusinessAdmin(BaseBusinessAdmin):
 	list_editable = ('pb', 'assigned_pickup_time','daily','cs_comment','ff_comment')
 	raw_id_fields = ('pb', 'warehouse')
 	list_filter = ['username', 'daily','pb', 'warehouse']
-
+	readonly_fields = ('status',)
 	#actions = [export_as_csv_action("CSV Export", fields=['username','business_name','apikey','name','email','contact_mob','contact_office','address','city','state','pincode'])]
 	actions_on_bottom = False
 	actions_on_top = True
