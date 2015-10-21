@@ -19,8 +19,8 @@ class QcProductResource(resources.ModelResource):
 	
 	class Meta:
 		model = Product
-		fields = ('order','order__book_time','order__name','order__city','order__pincode', 'real_tracking_no', 'mapped_tracking_no', 'company','applied_weight','dispatch_time','order__business','update_time','last_tracking_status')
-		export_order = ('order', 'real_tracking_no','mapped_tracking_no','company','order__book_time','dispatch_time','order__book_time', 'order__name', 'update_time','last_tracking_status')
+		fields = ('order','order__book_time','order__name','order__city','order__pincode', 'real_tracking_no', 'mapped_tracking_no', 'company','applied_weight','dispatch_time','order__business','update_time','last_tracking_status','qc_comment')
+		export_order = ('order', 'real_tracking_no','mapped_tracking_no','company','order__book_time','dispatch_time','order__book_time', 'order__name', 'update_time','last_tracking_status','qc_comment')
 
 	def dehydrate_expected_delivery_date(self, product):
 		if (product.order.method=='B'):
@@ -43,8 +43,8 @@ class FFOrderResource(resources.ModelResource):
 
 	class Meta:
 		model = Order
-		fields = ('order_no','book_time','business__business_name','city','pincode','mapped_ok','no_of_products','company')
-		export_order = ('order_no','book_time','business__business_name','city','pincode','mapped_ok','no_of_products','company')
+		fields = ('order_no','book_time','business__business_name','city','pincode','mapped_ok','no_of_products','company','ff_comment')
+		export_order = ('order_no','book_time','business__business_name','city','pincode','mapped_ok','no_of_products','company','ff_comment')
 
 	def dehydrate_mapped_ok(self,order):
 		products=Product.objects.filter(order=order)
