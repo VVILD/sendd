@@ -2218,8 +2218,8 @@ class BaseAddressAdmin(admin.ModelAdmin):
 			'transit': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.pickup_address_id = businessapp_addressdetails.id and businessapp_order.status='D' ",
 			'dispatch': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.pickup_address_id = businessapp_addressdetails.id and businessapp_order.status='DI' ",
 			'pending_today': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.pickup_address_id = businessapp_addressdetails.id and businessapp_order.status='P' and businessapp_order.book_time BETWEEN %s AND %s",
-			'pickedup_today': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.pickup_address_id = businessapp_addressdetails.id and businessapp_order.status='PU' and businessapp_order.pickup_time BETWEEN %s AND %s",
-			'dispatched_today': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.pickup_address_id = businessapp_addressdetails.id and businessapp_order.status='DI' and businessapp_order.dispatch_time BETWEEN %s AND %s",},
+			'pickedup_today': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.pickup_address_id = businessapp_addressdetails.id and businessapp_order.status='PU' and businessapp_order.book_time BETWEEN %s AND %s",
+			'dispatched_today': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.pickup_address_id = businessapp_addressdetails.id and businessapp_order.status='DI' and businessapp_order.book_time BETWEEN %s AND %s",},
 			select_params=(date_min,date_max,date_min,date_max,date_min,date_max,),
 			)
 

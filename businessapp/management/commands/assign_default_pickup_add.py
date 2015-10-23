@@ -1,6 +1,6 @@
 import datetime
 from django.core.management import BaseCommand
-from businessapp.models import Business, AddressDetails
+from businessapp.models import Business, AddressDetails,Order
 from datetime import date
 
 __author__ = 'vatsalshah'
@@ -12,6 +12,11 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         businesses = Business.objects.all().select_related('addressdetails_set')
         for business in businesses:
+            if business.assigned_pickup_time:
+                default_time=datetime.datetime.combine(date.today(),business.assigned_pickup_time)
+            else:
+                default_time=datetime.datetime.combine(date.today(),datetime.time(18, 00))
+
             if business.addressdetails_set.count() > 0:
                 for address in business.addressdetails_set.all():
                     if address.default is True:
@@ -24,14 +29,14 @@ class Command(BaseCommand):
                         address.state = business.state,
                         address.pincode = business.pincode,
                         address.default_vehicle = 'B' if address.default_vehicle is None else address.default_vehicle,
-                        address.default_pickup_time = business.assigned_pickup_time if business.assigned_pickup_time is not None else datetime.time(hour=18, minute=0, second=0)
+                        address.default_pickup_time = default_time
                         address.save()
+                        Orders=Order.objects.filter(business=business)
+                        for order in Orders:
+                            order.pickup_address=address
+                            order.save()
             elif business.address and business.city and business.pincode and business.state:
 
-                if business.assigned_pickup_time:
-                    default_time=datetime.datetime.combine(date.today(),business.assigned_pickup_time)
-                else:
-                    default_time=datetime.datetime.combine(date.today(),datetime.time(18, 00))
 
                 pickup_default = AddressDetails(
                     business = business,
@@ -49,3 +54,8 @@ class Command(BaseCommand):
                 )
                 pickup_default.save()
                 print(pickup_default)
+
+                Orders=Order.objects.filter(business=business)
+                for order in Orders:
+                    order.pickup_address=pickup_default
+                    order.save()
