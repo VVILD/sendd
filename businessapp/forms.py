@@ -5,7 +5,7 @@ from myapp.models import Shipment, Order, User, Namemail, Address
 from suit.widgets import AutosizedTextarea
 from django.core.mail import send_mail
 from django.core.validators import RegexValidator
-from businessapp.models import Product
+from businessapp.models import Product,AddressDetails
 import json
 from django.contrib.admin import widgets
 
@@ -59,6 +59,9 @@ class NewTrackingStatus(ModelForm):
 		self.cleaned_data['tracking_data']= json.dumps(tracking_list)
 
 
+class AddressForm(ModelForm):
+	class Meta:
+		model = AddressDetails
 
 class Approveconfirmform(ModelForm):
 	sure=forms.BooleanField(initial=True)
@@ -72,7 +75,21 @@ class Approveconfirmform(ModelForm):
 	def clean(self):
 		if self.cleaned_data['sure']:
 			self.cleaned_data['status']='Y'
+			self.cleaned_data['is_approved']=True
 		# else:
 		# 	pass
 
-	
+
+class Completeconfirmform(ModelForm):
+	sure=forms.BooleanField(initial=True)
+	class Meta:
+		model = Product
+		fields = ('sure','status')
+		widgets = {
+			'status': HiddenInput,
+		}
+
+	def clean(self):
+		if self.cleaned_data['sure']:
+			self.cleaned_data['status']='C'
+

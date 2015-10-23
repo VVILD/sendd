@@ -1,6 +1,7 @@
 import datetime
 from django.core.management import BaseCommand
 from businessapp.models import Business, AddressDetails
+from datetime import date
 
 __author__ = 'vatsalshah'
 
@@ -12,7 +13,7 @@ class Command(BaseCommand):
         businesses = Business.objects.all().select_related('addressdetails_set')
         for business in businesses:
             if business.addressdetails_set.count() > 0:
-                for address in business.addressdetails_set:
+                for address in business.addressdetails_set.all():
                     if address.default is True:
                         address.company_name = business.business_name if business.business_name is not None else business.username,
                         address.contact_person = business.name if business.name is not None else business.username,
@@ -26,6 +27,12 @@ class Command(BaseCommand):
                         address.default_pickup_time = business.assigned_pickup_time if business.assigned_pickup_time is not None else datetime.time(hour=18, minute=0, second=0)
                         address.save()
             elif business.address and business.city and business.pincode and business.state:
+
+                if business.assigned_pickup_time:
+                    default_time=datetime.datetime.combine(date.today(),business.assigned_pickup_time)
+                else:
+                    default_time=datetime.datetime.combine(date.today(),datetime.time(18, 00))
+
                 pickup_default = AddressDetails(
                     business = business,
                     company_name = business.business_name if business.business_name is not None else business.username,
@@ -38,7 +45,7 @@ class Command(BaseCommand):
                     state = business.state,
                     pincode = business.pincode,
                     default_vehicle = 'B',
-                    default_pickup_time = business.assigned_pickup_time if business.assigned_pickup_time is not None else datetime.time(hour=18, minute=0, second=0)
+                    default_pickup_time = default_time
                 )
                 pickup_default.save()
                 print(pickup_default)

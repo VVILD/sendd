@@ -222,6 +222,7 @@ class AddressDetails(models.Model):
     default_pickup_time = models.DateTimeField()
     default = models.BooleanField(default=False)
     warehouse = models.ForeignKey(Warehouse, null=True, blank=True)
+    daily = models.BooleanField(default=False)
 
     def __str__(self):
         return "\n".join([self.company_name,self.address, self.city,self.contact_person,"(",self.phone_office,",",self.phone_mobile,")"])
@@ -252,12 +253,18 @@ class CSAllPickup(AddressDetails):
         verbose_name = 'Cs all pickups'
         verbose_name_plural = 'Cs all pickups'
 
+class CSDailyPickup(AddressDetails):
+    class Meta:
+        proxy = True
+        verbose_name = 'Cs daily pickups'
+        verbose_name_plural = 'Cs daily pickups'
+
 
 class FFApprovedPickup(AddressDetails):
     class Meta:
         proxy = True
-        verbose_name = 'ff approved pickups'
-        verbose_name_plural = 'ff approved pickups'
+        verbose_name = 'pickup address'
+        verbose_name_plural = 'pickupaddress'
 
 class FFCompletedPickup(AddressDetails):
     class Meta:
@@ -404,6 +411,15 @@ class Order(models.Model):
         super(Order, self).save(*args, **kwargs)
 
 
+class PendingOrder(Order):
+    class Meta:
+        proxy = True
+
+class DispatchedOrder(Order):
+    class Meta:
+        proxy = True
+
+
 
 class Product(models.Model):
     name = models.TextField(null=True, blank=True)
@@ -446,6 +462,7 @@ class Product(models.Model):
     __original_tracking_data = None
     update_time = models.DateTimeField(null=True, blank=True)
     dispatch_time = models.DateTimeField(null=True, blank=True)
+    pickup_time = models.DateTimeField(null=True, blank=True)
 
     remittance_date = models.DateTimeField(null=True, blank=True)
 
@@ -479,6 +496,9 @@ class Product(models.Model):
         fmt = '%Y-%m-%d %H:%M:%S'
         ind_time = datetime.now(z)
         time = ind_time
+
+        if self.status == 'PU' and not self.pickup_time:
+            self.pickup_time = time
 
         if self.mapped_tracking_no and (self.status == 'PU' or self.status == 'D' or self.status == 'P'):
             self.status = 'DI'

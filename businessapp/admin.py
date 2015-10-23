@@ -10,7 +10,7 @@ import datetime
 
 from django.contrib import admin
 from .models import *
-from businessapp.forms import NewQcCommentForm,NewTrackingStatus,NewReturnForm,Approveconfirmform
+from businessapp.forms import NewQcCommentForm,NewTrackingStatus,NewReturnForm,Approveconfirmform,AddressForm,Completeconfirmform
 from datetime import date,timedelta
 import reversion
 
@@ -2198,19 +2198,95 @@ admin.site.register(Bdheadpanel,BdheadAdmin)
 
 
 class BaseAddressAdmin(admin.ModelAdmin):
+
+	def get_queryset(self, request):
+#total_order
+#pick_order
+#pending_count
+#transit_count
+#dispatch_count
+		todays_date=date.today()
+		import datetime
+		date_max = datetime.datetime.combine(todays_date, datetime.time.max)
+		date_min = datetime.datetime.combine(todays_date, datetime.time.min)
+
+
+
+		return AddressDetails.objects.extra(select={
+			'pending': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.pickup_address_id = businessapp_addressdetails.id and businessapp_order.status='P' ",
+			'picked': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.pickup_address_id = businessapp_addressdetails.id and businessapp_order.status='PU' ",
+			'transit': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.pickup_address_id = businessapp_addressdetails.id and businessapp_order.status='D' ",
+			'dispatch': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.pickup_address_id = businessapp_addressdetails.id and businessapp_order.status='DI' ",
+			'pending_today': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.pickup_address_id = businessapp_addressdetails.id and businessapp_order.status='P' and businessapp_order.book_time BETWEEN %s AND %s",
+			'pickedup_today': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.pickup_address_id = businessapp_addressdetails.id and businessapp_order.status='PU' and businessapp_order.pickup_time BETWEEN %s AND %s",
+			'dispatched_today': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.pickup_address_id = businessapp_addressdetails.id and businessapp_order.status='DI' and businessapp_order.dispatch_time BETWEEN %s AND %s",},
+			select_params=(date_min,date_max,date_min,date_max,date_min,date_max,),
+			)
+
+
+
+
+	def changelist_view(self, request, extra_context=None):
+		extra_context = extra_context or {}
+
+		cs=False
+		op=False
+		try:
+			print "jkjkjkjkjkjkjkjkjkjk"
+			print "see"
+			profile=Profile.objects.get(user=request.user)
+			usertype=profile.usertype
+			if (usertype=='C'):
+				print "jkjkjkjkjkjkjkjkjkjk"
+				cs=True
+			if (usertype=='O'):
+				op=True
+		except:
+			pass
+		csall=AddressDetails.objects.all().count()
+		threshold_time =datetime.datetime.combine(date.today(),datetime.time(19, 00))
+																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																
+
+		a = Business.objects.filter(status='A',is_completed=False).count()
+
+		csall = AddressDetails.objects.filter().count()
+
+		nap = Order.objects.filter(business__status='N',status='P').count()
+		ap = AddressDetails.objects.filter(status__in=['Y','A'],default_pickup_time__lt=threshold_time).distinct().count()
+		apcs=AddressDetails.objects.filter(status__in=['Y','A','C']).count()
+		d = AddressDetails.objects.filter(daily=True).count()
+		c = Business.objects.filter(status='C').count()
+		#pa = Business.objects.filter(order_status='AP').count()
+		#c = Business.objects.filter(order_status='DI').count()
+		p= Order.objects.filter(status='P').count()
+		pu= Order.objects.filter(status='PU').count()
+		di= Order.objects.filter(status='DI').count()
+		un= Order.objects.filter(status__in=['PU','D']).count()
+		picked= AddressDetails.objects.filter(status='C').count()
+
+		context = {'cs':cs,'op':op,'nap':nap,'ap':ap,'d':d,'c':c,'p':p,'pu':pu,'di':di,'a':a,'apcs':apcs,'un':un,'picked':picked,'csall':csall}
+		return super(BaseAddressAdmin, self).changelist_view(request, extra_context=context)
+
+
+	def business_details(self, obj):
+		return '<a href="/admin/businessapp/business/%s/">%s</a>' % (obj.business.username, obj.business.business_name)
+	business_details.allow_tags = True
 	pass
 
 
 class CsAddressAdmin(BaseAddressAdmin):
 	search_fields = ['business','address','pincode','city']
 	list_filter = ['business__username','business__business_name','default_pickup_time']
-	list_display = ['__str__','business','warehouse','default_pickup_time','cs_comment','default_vehicle','status']
-	list_editable=['cs_comment']
+	list_display = ['__str__','business_details','warehouse','default_pickup_time','default_vehicle','cs_comment','default_vehicle','status']
+	list_editable=['cs_comment','default_vehicle']
 
 
 class FfAddressAdmin(BaseAddressAdmin):
-	pass
-
+	search_fields = ['business','address','pincode','city']
+	list_filter = ['business__username','business__business_name','default_pickup_time']
+	list_display = ['__str__','business_details','warehouse','default_pickup_time','pb','cs_comment','ff_comment','default_vehicle','status']
+	raw_id_fields = ['pb']
+	list_editable = ['pb','ff_comment']
 
 class CsApprovedpickupAdmin(CsAddressAdmin):
 	def get_queryset(self, request):
@@ -2224,6 +2300,9 @@ admin.site.register(CSApprovedPickup,CsApprovedpickupAdmin)
 class CSAllPickupAdmin(CsAddressAdmin):
 	actions = None
 	list_display = CsAddressAdmin.list_display + ['approve']
+
+
+
 
 	def response_change(self, request, obj):
 		approve = request.GET.get('approve',None)
@@ -2241,10 +2320,13 @@ class CSAllPickupAdmin(CsAddressAdmin):
 	def get_form(self, request, obj=None, **kwargs):
 		#tracking=request.GET.get["tracking",None]
 		approve = request.GET.get('approve',None)
+		#print self.form
 
 		if approve:
 			self.form=Approveconfirmform
-
+			#print "inside"
+		else:
+			self.form=AddressForm
 
 		return super(CSAllPickupAdmin, self).get_form(request, obj, **kwargs)
 
@@ -2264,26 +2346,155 @@ class CSAllPickupAdmin(CsAddressAdmin):
 		}.get(obj.status)
 		if css_class:
 			return {'class': css_class, 'data': obj.status}
-	pass
 
 admin.site.register(CSAllPickup,CSAllPickupAdmin)
 
-class FfApprovedpickupAdmin(FfAddressAdmin):
-
+class CSDailyPickupAdmin(CSAllPickupAdmin):
 
 	def get_queryset(self, request):
-		qs = super(FfAddressAdmin, self).queryset(request)
-		qs = qs.filter(status__in=['Y','A'])
+		qs = super(CSAllPickupAdmin, self).queryset(request)
+		qs = qs.filter(daily=True)
 		return qs
+
+
+admin.site.register(CSDailyPickup,CSDailyPickupAdmin)
+
+class FfApprovedpickupAdmin(FfAddressAdmin):
+
+	list_display = FfAddressAdmin.list_display + ['tasks','pending']
+
+	def pending(self,obj):
+		return obj.pending
+
+	def tasks(self,obj):
+		return '<a href="/admin/businessapp/ffapprovedpickup/%s/?reschedule=True" onclick="return showAddAnotherPopup(this);">reschedule</a><br><a href="/admin/businessapp/ffapprovedpickup/%s/?complete=True" onclick="return showAddAnotherPopup(this);">complete</a> ' % (obj.pk,obj.pk)
+	tasks.allow_tags=True
+
+	def suit_row_attributes(self, obj, request):
+		css_class = {
+			'Y': 'error',
+			'A': 'success',
+		}.get(obj.status)
+		if css_class:
+			return {'class': css_class, 'data': obj.status}
+
+	def get_queryset(self, request):
+		threshold_time =datetime.datetime.combine(date.today(),datetime.time(19, 00))
+		qs = super(FfAddressAdmin, self).queryset(request)
+		qs = qs.filter((Q(status='Y')|Q(status='A')),default_pickup_time__lt=threshold_time).distinct()
+		return qs
+
+	def response_change(self, request, obj):
+		reschedule = request.GET.get('reschedule',None)
+		complete = request.GET.get('complete',None)
+
+
+		if reschedule or complete:
+			return HttpResponse('''
+   <script type="text/javascript">
+	  opener.dismissAddAnotherPopup(window);
+   </script>''')
+		else:
+			return super(FfApprovedpickupAdmin, self).response_change( request, obj)
+
+	def get_form(self, request, obj=None, **kwargs):
+		#tracking=request.GET.get["tracking",None]
+		reschedule = request.GET.get('reschedule',None)
+		#print self.form
+		complete = request.GET.get('complete',None)
+
+		if reschedule:
+			self.fieldsets = (
+				('Basic Information', {'fields': ['default_pickup_time']}),
+			)
+			#print "inside"
+		elif complete:
+			self.form=Completeconfirmform
+		else:
+			self.form=AddressForm
+
+		return super(FfAddressAdmin, self).get_form(request, obj, **kwargs)
+
+
+	def save_model(self, request, obj, form, change):
+		if obj.pb and obj.status=='Y':
+			obj.status='A'
+			obj.save()
+		else:
+			obj.save()
+
+
+
 
 admin.site.register(FFApprovedPickup,FfApprovedpickupAdmin)
 
 class FFCompletedPickupAdmin(FfAddressAdmin):
+
+	list_display = FfAddressAdmin.list_display +['pending_orders_total','pickedup_orders','dispatched_orders']
+
+	def pending_orders_total(self, obj):
+
+		return '<a href="/admin/businessapp/order/?q=&business__username__exact=%s&status__exact=P"> %s </a>' % (
+			obj.username, obj.pending)
+
+	pending_orders_total.allow_tags = True
+	pending_orders_total.admin_order_field='pending'
+
+	def pickedup_orders(self, obj):
+		return '<a href="/admin/businessapp/order/?q=&business__username__exact=%s&status__exact=PU"> %s </a>' % (obj.username, obj.pickedup_today)
+	pickedup_orders.allow_tags = True
+	pickedup_orders.admin_order_field='pickedup_today'
+
+	def dispatched_orders(self, obj):
+		return '<a href="/admin/businessapp/order/?q=&business__username__exact=%s&status__exact=DI"> %s </a>' % (obj.username, obj.dispatched_today)
+	dispatched_orders.allow_tags = True
+	dispatched_orders.admin_order_field='dispatched_today'
+
+
+
 	def get_queryset(self, request):
+		threshold_time =datetime.datetime.combine(date.today(),datetime.time(19, 00))
 		qs = super(FfAddressAdmin, self).queryset(request)
-		qs = qs.filter(status='C')
+		qs = qs.filter(status='C',default_pickup_time__lt=threshold_time).distinct()
 		return qs
 
 
+
 admin.site.register(FFCompletedPickup,FFCompletedPickupAdmin)
+
+
+class PendingOrderAdmin(OrderAdmin):
+	# list_editable = ['ff_comment']
+	# list_display = (
+	# 	'order_no', 'book_time', 'business_details', 'name', 'status_action','mapped_ok', 'no_of_products', 'total_shipping_cost',
+	# 	'total_cod_cost', 'method', 'fedex','ff_comment')
+    #
+	# def status_action(self,obj):
+	# 	return obj.get_status_display() + '<br>'
+	# status_action.allow_tags = True
+
+
+	def get_queryset(self, request):
+		#threshold_time =datetime.datetime.combine(date.today(),datetime.time(19, 00))
+		qs = super(OrderAdmin, self).queryset(request)
+		qs = qs.filter(status='P')
+		return qs
+
+
+
+admin.site.register(PendingOrder,PendingOrderAdmin)
+
+
+class DispatchedOrderAdmin(OrderAdmin):
+
+
+	def get_queryset(self, request):
+		#threshold_time =datetime.datetime.combine(date.today(),datetime.time(19, 00))
+		qs = super(OrderAdmin, self).queryset(request)
+		qs = qs.filter(status='DI')
+		return qs
+
+
+
+admin.site.register(DispatchedOrder,DispatchedOrderAdmin)
 
