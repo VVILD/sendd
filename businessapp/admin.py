@@ -2435,18 +2435,18 @@ class FFCompletedPickupAdmin(FfAddressAdmin):
 	def pending_orders_total(self, obj):
 
 		return '<a href="/admin/businessapp/order/?q=&business__username__exact=%s&status__exact=P"> %s </a>' % (
-			obj.username, obj.pending)
+			obj.business.username, obj.pending)
 
 	pending_orders_total.allow_tags = True
 	pending_orders_total.admin_order_field='pending'
 
 	def pickedup_orders(self, obj):
-		return '<a href="/admin/businessapp/order/?q=&business__username__exact=%s&status__exact=PU"> %s </a>' % (obj.username, obj.pickedup_today)
+		return '<a href="/admin/businessapp/order/?q=&business__username__exact=%s&status__exact=PU"> %s </a>' % (obj.business.username, obj.pickedup_today)
 	pickedup_orders.allow_tags = True
 	pickedup_orders.admin_order_field='pickedup_today'
 
 	def dispatched_orders(self, obj):
-		return '<a href="/admin/businessapp/order/?q=&business__username__exact=%s&status__exact=DI"> %s </a>' % (obj.username, obj.dispatched_today)
+		return '<a href="/admin/businessapp/order/?q=&business__username__exact=%s&status__exact=DI"> %s </a>' % (obj.business.username, obj.dispatched_today)
 	dispatched_orders.allow_tags = True
 	dispatched_orders.admin_order_field='dispatched_today'
 
