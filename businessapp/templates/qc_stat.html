@@ -214,12 +214,13 @@ Total with followup update: {{ nofollowup_products_count }}<br>
 <th>with followup</th>
 
 {% for row in baap %}
-
+{{ row }}
 <tr>
-    {% for key,value in row.items %}
-    <td>    {{ value }} </td>
-
-        {% endfor %}
+    <td>{{ row.company }}</td>
+    <td>{{ row.total }}</td>
+    <td>{{ row.withwarning }}</td>
+    <td>{{ row.withcomment }}</td>
+    <td>{{ row.withfollowup }}</td>
 </tr>
 {% endfor %}
 </table>
