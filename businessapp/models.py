@@ -352,6 +352,7 @@ class Product(models.Model):
     return_action=models.CharField(max_length=2,blank=True,null=True,
                               choices=(('R', 'Reshipped'),('RB','Returned to business')),
                               default=None)
+    follow_up=models.DateTimeField(blank=True, null=True)
 
     def __unicode__(self):
         return str(self.name)
