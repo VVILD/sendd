@@ -367,6 +367,9 @@ class Product(models.Model):
         ind_time = datetime.now(z)
         time = ind_time
 
+        if " " in self.mapped_tracking_no:
+            self.mapped_tracking_no=self.mapped_tracking_no.replace(" ","")
+
         if self.mapped_tracking_no and (self.status == 'PU' or self.status == 'D' or self.status == 'P'):
             self.status = 'DI'
             self.update_time = time
