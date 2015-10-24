@@ -109,7 +109,7 @@ def qc_stats_view(request):
         x['name']=str(x['name'])
 
 
-    nofollowup_products=total_products.filter(follow_up__isnull=True)
+    nofollowup_products=total_products.filter(follow_up__isnull=False)
     nofollowup_products_count=nofollowup_products.count()
     nofollowup_products_data=nofollowup_products.extra(select={'name': 'company'}).values('name').annotate(y=Count('company'))
 
