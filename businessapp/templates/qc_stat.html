@@ -199,14 +199,15 @@ th, td {
     text-align: left;
 }
 </style>
-
+<b><h3>
 Total Products: {{ total_products_count }}<br>
 Total Warnings: {{ warning_products_count }}<br>
 Total with comments: {{ comment_products_count }}<br>
 Total without comments: {{ noncomment_products_count }}<br>
 Total with followup update: {{ nofollowup_products_count }}<br>
-
-<table style="width:100%">
+</b>
+</h3>
+<table style="width:30%">
 <th>company</th>
 <th>total order</th>
 <th>with warning</th>
@@ -214,7 +215,7 @@ Total with followup update: {{ nofollowup_products_count }}<br>
 <th>with followup</th>
 
 {% for row in baap %}
-{{ row }}
+
 <tr>
     <td>{{ row.company }}</td>
     <td>{{ row.total }}</td>
