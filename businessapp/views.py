@@ -85,14 +85,14 @@ def qc_stats_view(request):
 
     warning_products=total_products.filter(warning_type__isnull=True)
     warning_products_count=warning_products.count()
-    warning_products_data=total_products.extra(select={'name': 'company'}).values('name').annotate(y=Count('company'))
+    warning_products_data=warning_products.extra(select={'name': 'company'}).values('name').annotate(y=Count('company'))
     for x in warning_products_data:
         x['name']=str(x['name'])
 
 
     comment_products=total_products.filter(qc_comment__isnull=False)
     comment_products_count=comment_products.count()
-    comment_products_data=total_products.extra(select={'name': 'company'}).values('name').annotate(y=Count('company'))
+    comment_products_data=comment_products.extra(select={'name': 'company'}).values('name').annotate(y=Count('company'))
 
     for x in comment_products_data:
         x['name']=str(x['name'])
@@ -100,7 +100,7 @@ def qc_stats_view(request):
 
     noncomment_products=total_products.filter(qc_comment__isnull=True)
     noncomment_products_count=noncomment_products.count()
-    noncomment_products_data=total_products.extra(select={'name': 'company'}).values('name').annotate(y=Count('company'))
+    noncomment_products_data=noncomment_products.extra(select={'name': 'company'}).values('name').annotate(y=Count('company'))
 
     for x in noncomment_products_data:
         x['name']=str(x['name'])
@@ -108,7 +108,7 @@ def qc_stats_view(request):
 
     nofollowup_products=total_products.filter(follow_up__isnull=True)
     nofollowup_products_count=nofollowup_products.count()
-    nofollowup_products_data=total_products.extra(select={'name': 'company'}).values('name').annotate(y=Count('company'))
+    nofollowup_products_data=nofollowup_products.extra(select={'name': 'company'}).values('name').annotate(y=Count('company'))
 
     for x in nofollowup_products_data:
         x['name']=str(x['name'])
