@@ -80,6 +80,9 @@ def qc_stats_view(request):
 
     total_products_count=total_products.count()
     total_products_data=total_products.extra(select={'name': 'company'}).values('name').annotate(y=Count('company'))
+
+    baap=total_products.values('company').annotate(total=Count('company')).annotate(withwarning=Count('warning_type')).annotate(withcomment=Count('qc_comment')).annotate(withfollowup=Count('follow_up'))
+
     for x in total_products_data:
         x['name']=str(x['name'])
 
@@ -115,4 +118,4 @@ def qc_stats_view(request):
 
 
 
-    return render(request, 'qc_stat.html', {"nofollowup_products_count": nofollowup_products_count,"nofollowup_products_data": nofollowup_products_data,"warning_products_count": warning_products_count,"warning_products_data": warning_products_data,"total_products_count": total_products_count,"total_products_data": total_products_data,"comment_products_count": comment_products_count,"comment_products_data": comment_products_data,"noncomment_products_count": noncomment_products_count,"noncomment_products_data": noncomment_products_data,"date":date_old})
+    return render(request, 'qc_stat.html', {"nofollowup_products_count": nofollowup_products_count,"nofollowup_products_data": nofollowup_products_data,"warning_products_count": warning_products_count,"warning_products_data": warning_products_data,"total_products_count": total_products_count,"total_products_data": total_products_data,"comment_products_count": comment_products_count,"comment_products_data": comment_products_data,"noncomment_products_count": noncomment_products_count,"noncomment_products_data": noncomment_products_data,"date":date_old,"baap":baap})

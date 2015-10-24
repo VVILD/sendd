@@ -189,12 +189,40 @@ $(function () {
 </script>
 </head>
 <body>
+<style>
+table, th, td {
+    border: 1px solid black;
+    border-collapse: collapse;
+}
+th, td {
+    padding: 5px;
+    text-align: left;
+}
+</style>
+
 Total Products: {{ total_products_count }}<br>
 Total Warnings: {{ warning_products_count }}<br>
 Total with comments: {{ comment_products_count }}<br>
 Total without comments: {{ noncomment_products_count }}<br>
 Total with no followup update: {{ nofollowup_products_count }}<br>
 
+<table style="width:100%">
+<th>company</th>
+<th>total order</th>
+<th>with warning</th>
+<th>with comment</th>
+<th>with followup</th>
+
+{% for row in baap %}
+
+<tr>
+    {% for key,value in row.items %}
+    <td>    {{ value }} </td>
+
+        {% endfor %}
+</tr>
+{% endfor %}
+</table>
 <h1>Division</h1>
 
 Total Products
