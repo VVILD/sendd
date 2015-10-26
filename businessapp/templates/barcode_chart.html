@@ -37,15 +37,26 @@ $(function () {
 </script>
 </head>
 <body>
+<style>
+table, th, td {
+    border: 1px solid black;
+    border-collapse: collapse;
+}
+th, td {
+    padding: 5px;
+    text-align: left;
+}
+</style>
+
 <div id="container" style="width:100%; height:400px;"></div>
 <table style="width:30%">
 
-<th>company</th>
-<th>PICKUPBOY</th>
+<th>Company</th>
+<th>Pickupboy</th>
 
-    <th>total order</th>
-<th>with BARCODE</th>
-<th>without BARCODE</th>
+    <th>Total order</th>
+<th>with barcode</th>
+<th>without barcode</th>
 {% for row in data2 %}
 
 <tr>
