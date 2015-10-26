@@ -437,7 +437,7 @@ class Product(models.Model):
                                choices=[('F', 'FedEx'), ('D', 'Delhivery'), ('P', 'Professional'), ('G', 'Gati'),
                                         ('A', 'Aramex'), ('E', 'Ecomexpress'), ('DT', 'dtdc'), ('FF', 'First Flight'),
                                         ('M', 'Maruti courier'), ('I', 'India Post'), ('S', 'Sendd'), ('B', 'bluedart'),
-                                        ('T', 'trinity'), ('V', 'vichare'), ('DH', 'dhl'), ('SK', 'skycom'), ('NA', 'nandan'),('FA','Fast train'),('TE','Tej')],
+                                        ('T', 'trinity'), ('V', 'vichare'), ('DH', 'dhl'), ('SK', 'skycom'), ('NA', 'nandan'),('FA','Fast train'),('TE','Tej'),('TR','Track on')],
                                blank=True, null=True)
     shipping_cost = models.FloatField(default=0.0)
     cod_cost = models.FloatField(default=0.0)
@@ -477,12 +477,15 @@ class Product(models.Model):
     last_tracking_status = models.CharField(max_length=300, null=True, blank=True)
     
     last_tracking_status_timestamp=models.DateTimeField(blank=True, null=True)
-
+    l=models.FloatField(default=0)
+    b=models.FloatField(default=0)
+    h=models.FloatField(default=0)
     actual_delivery_timestamp = models.DateTimeField(blank=True, null=True)
     estimated_delivery_timestamp = models.DateTimeField(blank=True, null=True)
     return_action=models.CharField(max_length=2,blank=True,null=True,
                               choices=(('R', 'Reshipped'),('RB','Returned to business')),
                               default=None)
+    follow_up=models.DateTimeField(blank=True, null=True)
 
     def __unicode__(self):
         return str(self.name)
@@ -499,6 +502,10 @@ class Product(models.Model):
 
         if self.status == 'PU' and not self.pickup_time:
             self.pickup_time = time
+
+        if self.mapped_tracking_no:
+            if " " in self.mapped_tracking_no:
+                self.mapped_tracking_no=self.mapped_tracking_no.replace(" ","")
 
         if self.mapped_tracking_no and (self.status == 'PU' or self.status == 'D' or self.status == 'P'):
             self.status = 'DI'
@@ -597,7 +604,15 @@ def send_update(sender, instance, created, **kwargs):
 
     products_in_order = Product.objects.filter(order=instance.order)
 
-    if instance.applied_weight:
+    if (instance.l and instance.b and instance.h):
+        vol_weight= (instance.l *instance.b *instance.h)/5000
+    else:
+        vol_weight=None
+
+    best_weight=max(instance.applied_weight,vol_weight)
+
+
+    if best_weight:
         method = instance.order.method
 
         if (instance.order.payment_method == 'C'):
@@ -642,12 +657,12 @@ def send_update(sender, instance, created, **kwargs):
                 price2 = pricing.normal_zone_d_1
                 price3 = pricing.normal_zone_d_2
 
-            if (instance.applied_weight <= 0.25):
+            if (best_weight <= 0.25):
                 price = price1
-            elif (instance.applied_weight <= 0.50):
+            elif (best_weight <= 0.50):
                 price = price2
             else:
-                price = price2 + math.ceil((instance.applied_weight * 2 - 1)) * price3
+                price = price2 + math.ceil((best_weight * 2 - 1)) * price3
 
         if (method == 'B'):
             if (three_digits == '400'):
@@ -664,10 +679,10 @@ def send_update(sender, instance, created, **kwargs):
             else:
                 price1 = pricing.bulk_zone_d
 
-            if (instance.applied_weight <= 10):
+            if (best_weight <= 10):
                 price = price1 * 10
             else:
-                price = price1 * instance.applied_weight
+                price = price1 * best_weight
 
         Order.objects.filter(pk=instance.order.pk).update(status='D')
         #        print "prrriiiceee"
@@ -784,10 +799,15 @@ def send_update_order(sender, instance, created, **kwargs):
         signals.post_save.connect(send_update, sender=Product)
 
     for product in products:
-        print "look here for products"
-        print product.applied_weight
 
-        if product.applied_weight:
+        if (product.l and product.b and product.h):
+            vol_weight= (product.l *product.b *product.h)/5000
+        else:
+            vol_weight=None
+
+        best_weight=max(product.applied_weight,vol_weight)
+
+        if best_weight:
             method = instance.method
 
             if (instance.payment_method == 'C'):
@@ -833,12 +853,12 @@ def send_update_order(sender, instance, created, **kwargs):
                     price2 = pricing.normal_zone_d_1
                     price3 = pricing.normal_zone_d_2
 
-                if (product.applied_weight <= 0.25):
+                if (best_weight <= 0.25):
                     price = price1
-                elif (product.applied_weight <= 0.50):
+                elif (best_weight <= 0.50):
                     price = price2
                 else:
-                    price = price2 + math.ceil((product.applied_weight * 2 - 1)) * price3
+                    price = price2 + math.ceil((best_weight * 2 - 1)) * price3
 
             if (method == 'B'):
                 if (three_digits == '400'):
@@ -855,10 +875,10 @@ def send_update_order(sender, instance, created, **kwargs):
                 else:
                     price1 = pricing.bulk_zone_d
 
-                if (product.applied_weight <= 10):
+                if (best_weight <= 10):
                     price = price1 * 10
                 else:
-                    price = price1 * product.applied_weight
+                    price = price1 * best_weight
 
             # print "prrriiiceee"
 
@@ -1068,6 +1088,29 @@ def add_pricing(sender, instance, created, **kwargs):
                 weight = Weight.objects.get(weight=w[0])
                 p=Pricing2(business=instance,zone=zone,weight=weight,price=w[1],type='B')
                 p.save()
+
+
+        price=[20,40]
+
+        pricingquerset=Pricing2.objects.filter(business=instance,type='N')
+        for p in pricingquerset:
+            if p.zone.zone=='a':
+                p.price=price[0]*round(p.weight.weight/0.5)
+                p.save()
+            else:
+                p.price=price[1]*round(p.weight.weight/0.5)
+                p.save()
+
+        price=[8,12]
+        pricingquerset=Pricing2.objects.filter(business=instance,type='B')
+        for p in pricingquerset:
+            if p.zone.zone=='a':
+                p.price=price[0]*round(p.weight.weight)
+                p.save()
+            else:
+                p.price=price[1]*round(p.weight.weight)
+                p.save()
+
 
 
 post_save.connect(add_pricing, sender=Business)

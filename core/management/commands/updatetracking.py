@@ -12,6 +12,8 @@ from django.db.models import Q
 from concurrent import futures
 import datetime
 from bs4 import BeautifulSoup
+import requests
+import unicodedata
 import urllib2
 import json
 
@@ -48,6 +50,73 @@ class Command(BaseCommand):
     def remove_non_ascii_1(raw_text):
         return ''.join(i for i in raw_text if ord(i) < 128)
     
+
+    @staticmethod
+    def is_dtdc_complete(awbno):
+        url = "http://dtdc.com/tracking/tracking_results.asp"
+
+        headers = {
+            'Origin': 'http://dtdc.com',
+            'Accept-Encoding': 'gzip, deflate',
+            'Upgrade-Insecure-Requests': 1,
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/45.0.2454.101 Safari/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+            'Cache-Control': 'max-age=0',
+            'Referer': 'http://dtdc.com/tracking/tracking_results.asp',
+            'Connection': 'keep-alive',
+            'Content-Type':'application/x-www-form-urlencoded'
+        }
+        data = {
+            'action':'track',
+            'sec':'tr',
+            'ctlActiveVal':'1',
+            'Ttype':'awb_no',
+            'GES':'N',
+            'strCnno2': awbno,
+            'strCnno': awbno
+        }
+        r = requests.post(url,data=data,headers=headers)
+        if(r.status_code ==200):
+            html2=r.text
+            soup2 = BeautifulSoup(html2,'html.parser')
+            try:
+                return 'DELIVERED' in soup2.find("input", {"name":"cn_status"})['value']
+            except:
+                return False
+        else:
+    #		print "Unable to get the tracking webpage\n"
+            #print "Status: "+r.status_code
+            return False
+
+
+    @staticmethod
+    def make_request(awbno):
+        url = "http://dtdc.com/tracking/tracking_results_detail.asp"
+
+        headers = {
+            'Origin': 'http://dtdc.com',
+            'Accept-Encoding': 'gzip, deflate',
+            'Upgrade-Insecure-Requests': 1,
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/45.0.2454.101 Safari/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+            'Cache-Control': 'max-age=0',
+            'Referer': 'http://dtdc.com/tracking/tracking_results.asp',
+            'Connection': 'keep-alive',
+            'Content-Type':'application/x-www-form-urlencoded'
+        }
+        data = {
+            'tracktype':'D',
+            'shiptype':'awb_no',
+            'textno': awbno,
+            'shipno': awbno
+        }
+        r = requests.post(url,data=data,headers=headers)
+        if(r.status_code ==200):
+            return r.text
+        else:
+            #print "Unable to get the tracking webpage\n"
+            #print "Status: "+r.status_code
+            return "error"
 
     #takes string object as param
     # return numbe of hours away from today
@@ -347,11 +416,118 @@ class Command(BaseCommand):
 
         return result
 
+    def dtdc_track(self,tp):
+
+        product, client_type = tp[0], tp[1]
+        company='Dtdc'
+        completed=False
+        tracking_data=[]
+        patt = re.compile('(\s*)DTDC')
+        try:
+            html = self.make_request(str(product.mapped_tracking_no))
+            if(html != "error"):
+                soup = BeautifulSoup(html,'html.parser')
+
+                #print soup
+
+                all_the_tables = soup.find_all(id="box-table-a")
+                tracking_table = all_the_tables[2]
+
+                #print all_the_tables[1]
+
+
+                tracking_data = []
+                table_rows = tracking_table.find_all('tbody')[0].find_all('tr')
+
+
+                for row in table_rows:
+                    #print  encode_contents(row.get('class'))
+                    rowClass = unicodedata.normalize('NFKD', row.get('class')[0]).encode('ascii','ignore')
+                    if(rowClass=='altRow'):
+                        date = row.find('strong').text
+                    if(rowClass == 'divider'):
+                        row_td = row.find_all('td')
+                        status = patt.sub('', row_td[0].text)
+                        location = row_td[1].text
+                        time = date + row_td[2].text
+                        tracking_data.append({'status':status,'location':location,'date':time})
+
+                print json.dumps(tracking_data)
+
+                # for row in new_tracking:
+                #     tracking_data.append(row)
+                    # if "delivered" in row["status"].lower():
+                    #     completed=True
+
+                result = {
+                    "company": company,
+                    "tracking_no": product.mapped_tracking_no,
+                    "updated": True,
+                    "error": False
+                }
+
+        except:
+            result = {
+                "company": company,
+                "tracking_no": product.mapped_tracking_no,
+                "updated": False,
+                "error": True
+            }
+
+        if json.dumps(tracking_data) != '[]':
+            product.tracking_data = json.dumps(tracking_data)
+            product.save()
+            try:
+                completed=self.is_dtdc_complete(product.mapped_tracking_no)
+            except:
+                pass
+
+        if (completed):
+            product.status = 'C'
+            product.save()
+            order = product.order
+            # getting all products of that order
+
+            if client_type == 'customer':
+                specific_products = Shipment.objects.filter(order=order)
+            else:
+                specific_products = Product.objects.filter(order=order)
+            order_complete = True
+            for specific_product in specific_products:
+                if specific_product.status == 'P':
+                    order_complete = False
+
+            if order_complete:
+                if client_type == 'customer':
+                    order.order_status = 'D'
+                else:
+                    order.status = 'C'
+                order.save()
+
+        return result
+
 #parser("https://billing.ecomexpress.in/track_me/multipleawb_open/?awb=122066652&order&news_go=track+now")
 
 
 
     def handle(self, *args, **options):
+
+        dtdc_track_queue = []
+        # Track Bluedart shipments for businesses and customers
+        business_shipments = Product.objects.filter(
+            (Q(company='DT')) & (
+                Q(status='P') | Q(status='DI'))).exclude(Q(order__status='C')| Q(order__status='N'))
+
+        for business_shipment in business_shipments:
+            dtdc_track_queue.append((business_shipment, 'business'))
+
+        customer_shipments = Shipment.objects.filter(
+            ( Q(company='DT')) & (
+                Q(status='P') | Q(status='DI'))).exclude( Q(order__order_status='N')| Q(order__order_status='D'))
+
+        for customer_shipment in customer_shipments:
+            dtdc_track_queue.append((customer_shipment, 'customer'))
+
 
         ecom_track_queue = []
         # Track Bluedart shipments for businesses and customers
@@ -430,3 +606,12 @@ class Command(BaseCommand):
                     else:
                         print(result.result())
 
+
+        if len(dtdc_track_queue) > 0:
+            with futures.ThreadPoolExecutor(max_workers=workers) as executor:
+                futures_track = (executor.submit(self.dtdc_track, item) for item in dtdc_track_queue)
+                for result in futures.as_completed(futures_track):
+                    if result.exception() is not None:
+                        print('%s' % result.exception())
+                    else:
+                        print(result.result())

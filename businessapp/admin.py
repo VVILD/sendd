@@ -253,7 +253,7 @@ class BaseBusinessAdmin(reversion.VersionAdmin):
 		a = Business.objects.filter(status='A',is_completed=False).count()
 		
 		nap = Order.objects.filter(business__status='N',status='P').count()
-		ap = Business.objects.filter(status='Y').count()
+		ap = Business.objects.filter(status='Y',is_completed=False).count()
 		apcs=Business.objects.filter().exclude(status='N').count()
 		d = Business.objects.filter(daily=True).count()
 		c = Business.objects.filter(status='C').count()
@@ -262,7 +262,7 @@ class BaseBusinessAdmin(reversion.VersionAdmin):
 		p= Order.objects.filter(status='P').count()
 		pu= Order.objects.filter(status='PU').count()
 		di= Order.objects.filter(status='DI').count()
-		un= Order.objects.filter(status__in=['PU','D']).count()
+		un=Product.objects.filter(Q(order__book_time__gt=datetime.date(2015, 9, 1)) & (Q(order__status__in=['PU','D'])) &(Q(mapped_tracking_no__isnull=True) | Q(mapped_tracking_no__exact="")) ).count()
 		picked= Business.objects.filter(is_completed=True,status='A').count()
 
 		context = {'cs':cs,'op':op,'nap':nap,'ap':ap,'d':d,'c':c,'p':p,'pu':pu,'di':di,'a':a,'apcs':apcs,'un':un,'picked':picked}
@@ -277,7 +277,7 @@ class BusinessAdmin(BaseBusinessAdmin):
 	list_editable = ('pb', 'assigned_pickup_time','daily','cs_comment','ff_comment')
 	raw_id_fields = ('pb', 'warehouse')
 	list_filter = ['username', 'daily','pb', 'warehouse']
-
+	readonly_fields = ('status','is_completed')
 	#actions = [export_as_csv_action("CSV Export", fields=['username','business_name','apikey','name','email','contact_mob','contact_office','address','city','state','pincode'])]
 	actions_on_bottom = False
 	actions_on_top = True
@@ -623,15 +623,42 @@ class ProductAdmin(reversion.VersionAdmin):
 		'kartrocket_order', 'shipping_cost', 'cod_cost', 'status', 'date', 'barcode')
 
 
-	fieldsets = (
-		('Tracking_details', {'fields': ['mapped_tracking_no', 'company','real_tracking_no','kartrocket_order'], 'classes': ('suit-tab', 'suit-tab-general')}),
-		('General', {'fields': ['name', 'quantity','sku','price','weight','applied_weight','status','date','remittance','order','actual_delivery_timestamp','estimated_delivery_timestamp'], 'classes': ('suit-tab', 'suit-tab-general')}),
-		('Cost', {'fields': ['shipping_cost', 'cod_cost','return_cost'], 'classes': ('suit-tab', 'suit-tab-general')}),
-		('Tracking', {'fields': ['tracking_data'], 'classes': ('suit-tab', 'suit-tab-tracking')}),
-		('Barcode', {'fields': ['barcode','tracking_history'], 'classes': ('suit-tab', 'suit-tab-barcode')}),
-	)
+	def response_change(self, request, obj):
+		volume = request.GET.get('volume',None)
 
-	suit_form_tabs = (('general', 'General'), ('tracking', 'Tracking'),('barcode', 'Barcode'))
+		if volume:
+			return HttpResponse('''
+   <script type="text/javascript">
+	  opener.dismissAddAnotherPopup(window);
+   </script>''')
+
+		return super(ProductAdmin, self).response_change(request, obj)
+
+
+	def get_form(self, request, obj=None, **kwargs):
+		volume = request.GET.get('volume',None)
+
+		if volume:
+			self.fieldsets = (
+				('Enter in cm', {'fields': ['l', 'b','h'],}),
+			)
+		else:
+
+			self.fieldsets = (
+				('Tracking_details', {'fields': ['mapped_tracking_no', 'company','real_tracking_no','kartrocket_order'], 'classes': ('suit-tab', 'suit-tab-general')}),
+				('General', {'fields': ['name', 'quantity','sku','price','weight','applied_weight','status','date','remittance','order','actual_delivery_timestamp','estimated_delivery_timestamp'], 'classes': ('suit-tab', 'suit-tab-general')}),
+				('Cost', {'fields': ['shipping_cost', 'cod_cost','return_cost'], 'classes': ('suit-tab', 'suit-tab-general')}),
+				('Tracking', {'fields': ['tracking_data'], 'classes': ('suit-tab', 'suit-tab-tracking')}),
+				('Barcode', {'fields': ['barcode','tracking_history'], 'classes': ('suit-tab', 'suit-tab-barcode')}),
+			)
+
+			self.suit_form_tabs = (('general', 'General'), ('tracking', 'Tracking'),('barcode', 'Barcode'))
+
+
+
+		return super(ProductAdmin, self).get_form(request, obj, **kwargs)
+
+
 
 
 
@@ -686,10 +713,15 @@ class ProductInline(admin.TabularInline):
 	model = Product
 	form = ProductForm
 	exclude = ['sku', 'weight', 'real_tracking_no', 'tracking_data']
-	readonly_fields = ('product_info', 'weight', 'shipping_cost', 'generate_order', 'fedex',)
+	readonly_fields = ('product_info', 'weight', 'shipping_cost', 'generate_order', 'fedex','dimensions')
 	fields = (
-		'product_info', 'name', 'quantity', 'price', 'weight', 'applied_weight', 'is_document', 'generate_order', 'fedex')
+		'product_info', 'name', 'quantity', 'price', 'weight', 'applied_weight', 'is_document','dimensions' ,'generate_order', 'fedex')
 	extra = 0
+
+	def dimensions(self,obj):
+
+		return "l = " + str(obj.l) + "<br> b=  " + str(obj.b)+ "<br> h=  " + str(obj.h)  + "<br> Weight ="+ str(obj.l*obj.b*obj.h/5000)  + '<br><a href="/admin/businessapp/product/%s/?volume=T" onclick="return showAddAnotherPopup(this);">change</a>' % (obj.pk)
+	dimensions.allow_tags=True
 
 	def product_info(self, obj):
 		return '<b>Name:</b>' + str(obj.name) + '<br>' + '<b>Quantity:</b>' + str(
@@ -976,12 +1008,20 @@ class OrderAdmin(FilterUserAdmin,ImportExportActionModelAdmin):
 		'order_no', 'book_time', 'business_details', 'name', 'status','mapped_ok', 'no_of_products', 'total_shipping_cost',
 		'total_cod_cost', 'method', 'fedex','ff_comment')
 	list_editable = ('status','ff_comment',)
-	list_filter = ['business', 'status', 'book_time','product__company']
+	list_filter = ['business', 'status', 'book_time','product__company','product__return_action']
 
 	readonly_fields=('master_tracking_number', 'mapped_master_tracking_number', 'fedex')
 
 
-	def change_view(self, request, object_id, form_url='', extra_context=None):        
+
+	def get_form(self, request, obj=None, **kwargs):
+		self.exclude = ['fedex_ship_docs']
+
+		if not request.user.is_superuser and not request.user.username in ["abhilash.sivan","shahbaz","gulati"]:
+			self.exclude.append('refund') #here!
+		return super(OrderAdmin, self).get_form(request, obj, **kwargs)
+
+	def change_view(self, request, object_id, form_url='', extra_context=None):
 		extra_context = extra_context or {}
 		extra_context['x'] = object_id
 		return super(OrderAdmin, self).change_view(request, object_id, form_url, extra_context=extra_context)
@@ -1096,6 +1136,8 @@ class OrderAdmin(FilterUserAdmin,ImportExportActionModelAdmin):
 		if obj.fedex_ship_docs:
 			if obj.state == 'Gujarat' and obj.method == 'B':
 				return '<a href="/static/%s" target="_blank">%s</a>' % (str(obj.fedex_ship_docs.name).split('/')[-1], "Print Docs")+'<br><br>' + '<br><br><a style="color:red" href="/create_fedex_shipment/?%s" target="_blank">%s</a>' % (params, "Re-Create Order") + '<br><br><a href="http://commercialtax.gujarat.gov.in/vatwebsite/download/form/403.pdf" target="_blank">%s</a>' % "Print Form 403"
+			elif state_matcher.is_restricted(obj.state):
+				return '<a href="/static/%s" target="_blank">%s</a>' % (str(obj.fedex_ship_docs.name).split('/')[-1], "Print Docs")+'<br><br>' + '<br><br><a style="color:red" href="/create_fedex_shipment/?%s" target="_blank">%s</a>' % (params, "Re-Create Order <b>Restricted States </b>")
 			else:
 				return '<a href="/static/%s" target="_blank">%s</a>' % (str(obj.fedex_ship_docs.name).split('/')[-1], "Print Docs")+'<br><br>' + '<br><br><a style="color:red" href="/create_fedex_shipment/?%s" target="_blank">%s</a>' % (params, "Re-Create Order")
 
@@ -1137,19 +1179,40 @@ reference_id=models.CharField(max_length=100)
 admin.site.register(Order, OrderAdmin)
 
 
-class ProxyProductAdmin(reversion.VersionAdmin):
-	
-	list_display = ('get_business','sent_to','barcode',)
-	search_fields=['order__name',]    
-	fieldsets=(
-		('Basic Information', {'fields':['barcode',]}),)
+class ProxyProductAdmin(BaseBusinessAdmin):
 
+
+	change_list_template='businessapp/templates/admin/businessapp/change_list.html'
+	list_display = ('order_no','get_business','sent_to','city','pincode','time',"applied_weight","mapped_tracking_no","company")
+	list_editable = ("mapped_tracking_no","company")
+	search_fields = ['order__order_no', 'real_tracking_no', 'mapped_tracking_no','tracking_data','order__name','order__city','order__pincode']
+	list_filter = ['order__business']
+
+	def order_no(self, obj):
+		return '<a href="/admin/businessapp/order/%s/">%s</a>' % (obj.order.pk, obj.order.pk)
+	order_no.allow_tags = True
+	order_no.admin_order_field = 'order'
 
 	def get_queryset(self, request):
-		return self.model.objects.filter(Q(order__business='souled_store')|Q(order__business='snoogg'))
+		return self.model.objects.filter(Q(order__book_time__gt=datetime.date(2015, 9, 1)) & (Q(order__status__in=['PU','D'])) &(Q(mapped_tracking_no__isnull=True) | Q(mapped_tracking_no__exact="")) )
+
+	def get_readonly_fields(self, request, obj=None):
+		return [f.name for f in self.model._meta.fields]
 
 	def sent_to(self,obj):
 		return obj.order.name
+
+	def city(self,obj):
+		return obj.order.city
+
+	def pincode(self,obj):
+		return obj.order.pincode
+
+	def time(self,obj):
+		return obj.order.book_time
+
+
+
 	def get_business(self, obj):
 		return obj.order.business
 	get_business.short_description = 'business'
@@ -1479,16 +1542,16 @@ reversion.VersionAdmin.change_list_template='businessapp/templates/admin/busines
 
 
 
-class QcProductAdmin(ProductAdmin,reversion.VersionAdmin,ImportExportActionModelAdmin):
+class QcProductAdmin(reversion.VersionAdmin,ImportExportActionModelAdmin):
 
 	change_list_template='businessapp/templates/admin/businessapp/qcproduct/change_list.html'
 
 	def get_queryset(self, request):
-		return self.model.objects.filter(Q(order__status='DI')| Q(order__status='R')).exclude(Q(status='C')|Q(return_action='R')|Q(return_action='RB')).exclude(order__business='ecell').exclude(order__business='ghasitaram').exclude(order__business='holachef')
+		return self.model.objects.filter(Q(order__book_time__gt=datetime.date(2015, 9, 1))&(Q(order__status='DI')| Q(order__status='R'))).exclude(Q(status='C')|Q(return_action='R')|Q(return_action='RB')).exclude(order__business='ecell').exclude(order__business='ghasitaram').exclude(order__business='holachef')
 	list_display = (
-		'order_no','tracking_no','company','book_date','dispatch_time','get_business','sent_to','last_location' ,'expected_delivery_date','last_updated','last_tracking_status','history')
+		'order_no','tracking_no','company','book_date','dispatch_time','get_business','sent_to','last_location' ,'expected_delivery_date','last_updated','last_tracking_status','history','follow_up')
 	list_filter = ['order__method','order__business','warning','company',StatusFilter,'status','warning_type']
-	list_editable = ()
+	list_editable = ('follow_up',)
 	readonly_fields = ('previous_comment','p_tracking')
 	search_fields = ['order__order_no', 'real_tracking_no', 'mapped_tracking_no','tracking_data' ]
 	
@@ -1505,19 +1568,22 @@ class QcProductAdmin(ProductAdmin,reversion.VersionAdmin,ImportExportActionModel
 		#tracking=request.GET.get["tracking",None]
 		tracking = request.GET.get('tracking',None)
 		status = request.GET.get('status',None)
+		comment = request.GET.get('comment',None)
 
 		if status:
 			self.form = NewReturnForm
 			self.fieldsets = (
 				('Basic Information', {'fields': ['status', 'return_action',], 'classes': ('suit-tab', 'suit-tab-general')}),
 			)
+			self.suit_form_tabs = (('general', 'General'),)
 
-		elif not tracking:  #add
+		elif comment:  #add
 			self.form=NewQcCommentForm
 			self.fieldsets = (
 				('Basic Information', {'fields': ['new_comment', 'previous_comment',], 'classes': ('suit-tab', 'suit-tab-general')}),
-				('Basic Information', {'fields': ['qc_comment',], 'classes': ('suit-tab', 'suit-tab-barcode')}),
+				('Basic Information', {'fields': ['qc_comment',], 'classes': ('suit-tab', 'suit-tab-tracking')}),
 			)
+			self.suit_form_tabs = (('general', 'General'), ('tracking', 'Tracking'))
 
 		elif tracking: #change
 			self.form = NewTrackingStatus
@@ -1557,7 +1623,7 @@ class QcProductAdmin(ProductAdmin,reversion.VersionAdmin,ImportExportActionModel
 	p_tracking.allow_tags=True
 
 	def history(self,obj):
-		return str(obj.qc_comment) + '<br><br>' + '<a href="/admin/businessapp/qcproduct/%s/" onclick="return showAddAnotherPopup(this);">Add new comment </a><br><a href="/admin/businessapp/qcproduct/%s/?tracking=T" onclick="return showAddAnotherPopup(this);">Add tracking row</a><br> <a href="/admin/businessapp/qcproduct/%s/?status=T" onclick="return showAddAnotherPopup(this);">Return action</a>' % (obj.pk, obj.pk,obj.pk)
+		return str(obj.qc_comment) + '<br><br>' + '<a href="/admin/businessapp/qcproduct/%s/?comment=T" onclick="return showAddAnotherPopup(this);">Add new comment </a><br><a href="/admin/businessapp/qcproduct/%s/?tracking=T" onclick="return showAddAnotherPopup(this);">Add tracking row</a><br> <a href="/admin/businessapp/qcproduct/%s/?status=T" onclick="return showAddAnotherPopup(this);">Return action</a>' % (obj.pk, obj.pk,obj.pk)
 	history.allow_tags=True
 
 	def order_no(self, obj):
@@ -1691,6 +1757,7 @@ def createpricingfieldgeneric2(display_name):
 class BusinessPricingAdmin(reversion.VersionAdmin):
 	list_filter=('username','business_name')
 	list_display=('business_name',)
+	search_fields = ('username','business_name')
 #    readonly_fields=('N0_25','N0_5','N1','N2','N3','N4','N5','N6','N7','N8','N9','N10','B1','B2','B3','B4','B5','B6','B7','B8','B9','B10')
 	readonly_fields=('Na0_25','Nb0_25','Nc0_25','Nd0_25','Ne0_25','Na0_5','Nb0_5','Nc0_5','Nd0_5','Ne0_5',
 		'Na1','Nb1','Nc1','Nd1','Ne1','Na1_5','Nb1_5','Nc1_5','Nd1_5','Ne1_5',

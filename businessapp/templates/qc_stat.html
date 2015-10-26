@@ -1,0 +1,246 @@
+<center><h1>Products older than {{ date }} days </h1></center> <br>
+
+
+
+<html>
+<head>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+<script src="http://code.highcharts.com/highcharts.js"></script>
+
+<script>
+$(function () {
+    $('#container').highcharts({
+        chart: {
+            plotBackgroundColor: null,
+            plotBorderWidth: null,
+            plotShadow: false,
+            type: 'pie'
+        },
+        title: {
+            text: 'Total products'
+        },
+        tooltip: {
+            pointFormat: '{series.name}: <b>{point.y:.1f}%</b>'
+        },
+        plotOptions: {
+            pie: {
+                allowPointSelect: true,
+                cursor: 'pointer',
+                dataLabels: {
+                    enabled: true,
+                    format: '<b>{point.name}</b>: {point.y:.1f} %',
+                    style: {
+                        color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
+                    }
+                }
+            }
+        },
+        series: [{
+            name: "products",
+            colorByPoint: true,
+            data: {{ total_products_data |safe }}
+        }]
+    });
+});
+
+$(function () {
+    $('#container1').highcharts({
+        chart: {
+            plotBackgroundColor: null,
+            plotBorderWidth: null,
+            plotShadow: false,
+            type: 'pie'
+        },
+        title: {
+            text: 'warning_products'
+        },
+        tooltip: {
+            pointFormat: '{series.name}: <b>{point.y:.1f}%</b>'
+        },
+        plotOptions: {
+            pie: {
+                allowPointSelect: true,
+                cursor: 'pointer',
+                dataLabels: {
+                    enabled: true,
+                    format: '<b>{point.name}</b>: {point.y:.1f} %',
+                    style: {
+                        color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
+                    }
+                }
+            }
+        },
+        series: [{
+            name: "products",
+            colorByPoint: true,
+            data: {{ warning_products_data |safe }}
+        }]
+    });
+});
+
+$(function () {
+    $('#container2').highcharts({
+        chart: {
+            plotBackgroundColor: null,
+            plotBorderWidth: null,
+            plotShadow: false,
+            type: 'pie'
+        },
+        title: {
+            text: 'comment_products'
+        },
+        tooltip: {
+            pointFormat: '{series.name}: <b>{point.y:.1f}%</b>'
+        },
+        plotOptions: {
+            pie: {
+                allowPointSelect: true,
+                cursor: 'pointer',
+                dataLabels: {
+                    enabled: true,
+                    format: '<b>{point.name}</b>: {point.y:.1f} %',
+                    style: {
+                        color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
+                    }
+                }
+            }
+        },
+        series: [{
+            name: "products",
+            colorByPoint: true,
+            data: {{ comment_products_data |safe }}
+        }]
+    });
+});
+
+$(function () {
+    $('#container3').highcharts({
+        chart: {
+            plotBackgroundColor: null,
+            plotBorderWidth: null,
+            plotShadow: false,
+            type: 'pie'
+        },
+        title: {
+            text: 'noncomment_products'
+        },
+        tooltip: {
+            pointFormat: '{series.name}: <b>{point.y:.1f}%</b>'
+        },
+        plotOptions: {
+            pie: {
+                allowPointSelect: true,
+                cursor: 'pointer',
+                dataLabels: {
+                    enabled: true,
+                    format: '<b>{point.name}</b>: {point.y:.1f} %',
+                    style: {
+                        color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
+                    }
+                }
+            }
+        },
+        series: [{
+            name: "products",
+            colorByPoint: true,
+            data: {{ noncomment_products_data |safe }}
+        }]
+    });
+});
+
+
+$(function () {
+    $('#container4').highcharts({
+        chart: {
+            plotBackgroundColor: null,
+            plotBorderWidth: null,
+            plotShadow: false,
+            type: 'pie'
+        },
+        title: {
+            text: 'nofollowup_products'
+        },
+        tooltip: {
+            pointFormat: '{series.name}: <b>{point.y:.1f}%</b>'
+        },
+        plotOptions: {
+            pie: {
+                allowPointSelect: true,
+                cursor: 'pointer',
+                dataLabels: {
+                    enabled: true,
+                    format: '<b>{point.name}</b>: {point.y:.1f} %',
+                    style: {
+                        color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
+                    }
+                }
+            }
+        },
+        series: [{
+            name: "products",
+            colorByPoint: true,
+            data: {{ nofollowup_products_data |safe }}
+        }]
+    });
+});
+
+
+
+</script>
+</head>
+<body>
+<style>
+table, th, td {
+    border: 1px solid black;
+    border-collapse: collapse;
+}
+th, td {
+    padding: 5px;
+    text-align: left;
+}
+</style>
+<b><h3>
+Total Products: {{ total_products_count }}<br>
+Total Warnings: {{ warning_products_count }}<br>
+Total with comments: {{ comment_products_count }}<br>
+Total without comments: {{ noncomment_products_count }}<br>
+Total with followup update: {{ nofollowup_products_count }}<br>
+Total without mapped ids: {{ un_count }}<br>
+
+</b>
+</h3>
+<table style="width:30%">
+<th>company</th>
+<th>total order</th>
+<th>with warning</th>
+<th>with comment</th>
+<th>with followup</th>
+
+{% for row in baap %}
+
+<tr>
+    <td>{{ row.company }}</td>
+    <td>{{ row.total }}</td>
+    <td>{{ row.withwarning }}</td>
+    <td>{{ row.withcomment }}</td>
+    <td>{{ row.withfollowup }}</td>
+</tr>
+{% endfor %}
+</table>
+<h1>Division</h1>
+
+Total Products
+<div id="container" style="width:100%; height:400px;"></div> <br>
+
+Total Warnings:
+<div id="container1" style="width:100%; height:400px;"></div> <br>
+
+Total with comments:
+<div id="container2" style="width:100%; height:400px;"></div> <br>
+
+Total without comments:
+<div id="container3" style="width:100%; height:400px;"></div> <br>
+
+Total with no followup update:
+<div id="container4" style="width:100%; height:400px;"></div> <br>
+</body>

@@ -1,6 +1,6 @@
 from django.core.exceptions import ValidationError
 from django.shortcuts import render
-from businessapp.models import Order
+from businessapp.models import Order,Product
 from PyPDF2 import PdfFileWriter, PdfFileReader
 import cStringIO
 from django.http import HttpResponse
@@ -64,3 +64,58 @@ def readpdf(request):
     response.write(outputStream.getvalue())
 
     return response
+
+
+@login_required
+def qc_stats_view(request):
+
+
+    date_old=request.GET['date']
+    todays_date = date.today()
+    threshold_before = date.today() - datetime.timedelta(days=int(date_old))
+
+    total_products=Product.objects.filter(Q(order__book_time__lt=threshold_before)&Q(order__status='DI')).exclude(Q(status='C')|Q(return_action='R')|Q(return_action='RB')).exclude(order__business='ecell').exclude(order__business='ghasitaram').exclude(order__business='holachef')
+
+
+
+    total_products_count=total_products.count()
+    total_products_data=total_products.extra(select={'name': 'company'}).values('name').annotate(y=Count('company'))
+
+    baap=total_products.values('company').annotate(total=Count('company')).annotate(withwarning=Count('warning_type')).annotate(withcomment=Count('qc_comment')).annotate(withfollowup=Count('follow_up'))
+
+    for x in total_products_data:
+        x['name']=str(x['name'])
+
+    warning_products=total_products.filter(warning_type__isnull=True)
+    warning_products_count=warning_products.count()
+    warning_products_data=warning_products.extra(select={'name': 'company'}).values('name').annotate(y=Count('company'))
+    for x in warning_products_data:
+        x['name']=str(x['name'])
+
+
+    comment_products=total_products.filter(qc_comment__isnull=False)
+    comment_products_count=comment_products.count()
+    comment_products_data=comment_products.extra(select={'name': 'company'}).values('name').annotate(y=Count('company'))
+
+    for x in comment_products_data:
+        x['name']=str(x['name'])
+
+
+    noncomment_products=total_products.filter(qc_comment__isnull=True)
+    noncomment_products_count=noncomment_products.count()
+    noncomment_products_data=noncomment_products.extra(select={'name': 'company'}).values('name').annotate(y=Count('company'))
+
+    for x in noncomment_products_data:
+        x['name']=str(x['name'])
+
+    print ""
+    nofollowup_products=total_products.filter(follow_up__isnull=False)
+    nofollowup_products_count=nofollowup_products.count()
+    nofollowup_products_data=nofollowup_products.extra(select={'name': 'company'}).values('name').annotate(y=Count('company'))
+
+    for x in nofollowup_products_data:
+        x['name']=str(x['name'])
+
+    un_count=Product.objects.filter(Q(order__book_time__lt=threshold_before) & Q(order__book_time__gt=datetime.date(2015, 9, 1)) & (Q(order__status__in=['PU','D'])) &(Q(mapped_tracking_no__isnull=True) | Q(mapped_tracking_no__exact=""))).count()
+
+    return render(request, 'qc_stat.html', {"nofollowup_products_count": nofollowup_products_count,"nofollowup_products_data": nofollowup_products_data,"warning_products_count": warning_products_count,"warning_products_data": warning_products_data,"total_products_count": total_products_count,"total_products_data": total_products_data,"comment_products_count": comment_products_count,"comment_products_data": comment_products_data,"noncomment_products_count": noncomment_products_count,"noncomment_products_data": noncomment_products_data,"date":date_old,"baap":baap,"un_count":un_count})

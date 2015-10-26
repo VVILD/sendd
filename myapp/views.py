@@ -119,7 +119,7 @@ def index(request):
         shipping_cost__isnull=True).values('order__business').annotate(
         total_revenue=Sum('shipping_cost', field="shipping_cost+cod_cost"), total_no=Count('order'))
 
-    y=BOrder.objects.filter(  ~Q(status='P') & ~Q(status='CA')  ).extra({'date_created' : "date(book_time)"}).values('date_created').annotate(barcode_count=Count('product__barcode'),created_count=Count('product'))
+    y=BOrder.objects.filter(  ~Q(status='P') & ~Q(status='N')  ).extra({'date_created' : "date(book_time)"}).values('date_created').annotate(barcode_count=Count('product__barcode'),created_count=Count('product'))
 
     data = {'date': [], 'wbarcode': []}
 
