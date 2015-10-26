@@ -1193,7 +1193,7 @@ class ProxyProductAdmin(reversion.VersionAdmin):
 	order_no.admin_order_field = 'order'
 
 	def get_queryset(self, request):
-		return self.model.objects.filter(Q(order__book_time__gt=datetime.date(2015, 9, 1)) & (Q(mapped_tracking_no__isnull=True) | Q(mapped_tracking_no__exact="")) )
+		return self.model.objects.filter(Q(order__book_time__gt=datetime.date(2015, 9, 1)) & (Q(order__status__in=['PU','D'])) &(Q(mapped_tracking_no__isnull=True) | Q(mapped_tracking_no__exact="")) )
 
 	def get_readonly_fields(self, request, obj=None):
 		return [f.name for f in self.model._meta.fields]
