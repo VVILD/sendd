@@ -1,6 +1,7 @@
+from django.contrib.admin.filters import SimpleListFilter
 import urllib
 import json
-from django.contrib.admin import ModelAdmin, RelatedFieldListFilter
+from django.contrib.admin import ModelAdmin, RelatedFieldListFilter, BooleanFieldListFilter
 
 from django.contrib.admin.models import LogEntry, CHANGE
 from django.contrib.contenttypes.models import ContentType
@@ -620,7 +621,7 @@ class ProductAdmin(reversion.VersionAdmin):
 	list_filter=['order__business','last_tracking_status','company','status']
 	readonly_fields = (
 		'name', 'quantity', 'sku', 'price', 'weight', 'applied_weight', 'real_tracking_no', 'order',
-		'kartrocket_order', 'shipping_cost', 'cod_cost', 'status', 'date', 'barcode')
+		'kartrocket_order', 'shipping_cost', 'cod_cost', 'status', 'date', 'barcode','return_action')
 
 
 	def response_change(self, request, obj):
@@ -647,7 +648,7 @@ class ProductAdmin(reversion.VersionAdmin):
 			self.fieldsets = (
 				('Tracking_details', {'fields': ['mapped_tracking_no', 'company','real_tracking_no','kartrocket_order'], 'classes': ('suit-tab', 'suit-tab-general')}),
 				('General', {'fields': ['name', 'quantity','sku','price','weight','applied_weight','status','date','remittance','order','actual_delivery_timestamp','estimated_delivery_timestamp'], 'classes': ('suit-tab', 'suit-tab-general')}),
-				('Cost', {'fields': ['shipping_cost', 'cod_cost','return_cost'], 'classes': ('suit-tab', 'suit-tab-general')}),
+				('Cost', {'fields': ['shipping_cost', 'cod_cost','return_cost','return_action'], 'classes': ('suit-tab', 'suit-tab-general')}),
 				('Tracking', {'fields': ['tracking_data'], 'classes': ('suit-tab', 'suit-tab-tracking')}),
 				('Barcode', {'fields': ['barcode','tracking_history'], 'classes': ('suit-tab', 'suit-tab-barcode')}),
 			)
@@ -1540,17 +1541,42 @@ class StatusFilter(admin.SimpleListFilter):
 
 reversion.VersionAdmin.change_list_template='businessapp/templates/admin/businessapp/change_list.html'
 
+class NullFilterSpec(SimpleListFilter):
+    title = u''
 
+    parameter_name = u''
+
+    def lookups(self, request, model_admin):
+        return (
+            ('R', _('reshipped'), ),
+            ('RB', _('returned to business'), ),
+			('0', _('None'), ),
+        )
+
+    def queryset(self, request, queryset):
+    	print self.value()
+    	if not self.value():
+    		return queryset.filter()
+        if self.value() == '0':
+            return queryset.filter(return_action__isnull=True)
+        if self.value() != '0':
+            return queryset.filter(return_action=self.value())
+
+
+
+class StartNullFilterSpec(NullFilterSpec):
+    title = u'return_action'
+    parameter_name = u'return_action'
 
 class QcProductAdmin(reversion.VersionAdmin,ImportExportActionModelAdmin):
 
 	change_list_template='businessapp/templates/admin/businessapp/qcproduct/change_list.html'
 
 	def get_queryset(self, request):
-		return self.model.objects.filter(Q(order__book_time__gt=datetime.date(2015, 9, 1))&(Q(order__status='DI')| Q(order__status='R'))).exclude(Q(status='C')|Q(return_action='R')|Q(return_action='RB')).exclude(order__business='ecell').exclude(order__business='ghasitaram').exclude(order__business='holachef')
+		return self.model.objects.filter(Q(order__book_time__gt=datetime.date(2015, 9, 1))&(Q(order__status='DI')| Q(order__status='R'))).exclude(Q(status='C')).exclude(order__business='ecell').exclude(order__business='ghasitaram').exclude(order__business='holachef')
 	list_display = (
 		'order_no','tracking_no','company','book_date','dispatch_time','get_business','sent_to','last_location' ,'expected_delivery_date','last_updated','last_tracking_status','history','follow_up')
-	list_filter = ['order__method','order__business','warning','company',StatusFilter,'status','warning_type']
+	list_filter = ['order__method','order__business','warning','company',StatusFilter,'status','warning_type',StartNullFilterSpec]
 	list_editable = ('follow_up',)
 	readonly_fields = ('previous_comment','p_tracking')
 	search_fields = ['order__order_no', 'real_tracking_no', 'mapped_tracking_no','tracking_data','order__name']

@@ -399,6 +399,22 @@ class Command(BaseCommand):
 			product.tracking_data = json.dumps(tracking_data)
 			product.save()
 
+		if (returned):
+			product.status = 'R'
+			product.save()
+			order = product.order
+			# getting all products of that order
+
+			specific_products = Product.objects.filter(order=order)
+			order_return = True
+			for specific_product in specific_products:
+				if specific_product.status != 'R':
+					order_return = False
+
+			if order_return:
+				order.status = 'R'
+				order.save()
+
 		if (completed):
 			product.status = 'C'
 			product.save()
@@ -420,10 +436,7 @@ class Command(BaseCommand):
 				else:
 					order.status = 'C'
 				order.save()
-		elif (returned):
-			product.status = 'R'
-			product.return_cost = product.shipping_cost
-			product.save()
+
 
 		return result
 
