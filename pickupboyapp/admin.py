@@ -98,7 +98,7 @@ admin.site.register(PBPincodes, PBPincodeAdmin)
 
 
 
-class PBLocations(reversion.VersionAdmin):
+class PBLocationsAdmin(reversion.VersionAdmin):
     list_display = ['pbuser','updated_at','lat','lon']
     list_filter = ['pbuser__name','pbuser__phone']
     search_fields = ['pbuser__name','pbuser__phone']
