@@ -116,6 +116,6 @@ def qc_stats_view(request):
     for x in nofollowup_products_data:
         x['name']=str(x['name'])
 
-    un_count=Product.model.objects.filter(Q(order__book_time__lt=threshold_before) & Q(order__book_time__gt=datetime.date(2015, 9, 1)) & (Q(order__status__in=['PU','D'])) &(Q(mapped_tracking_no__isnull=True) | Q(mapped_tracking_no__exact=""))).count()
+    un_count=Product.objects.filter(Q(order__book_time__lt=threshold_before) & Q(order__book_time__gt=datetime.date(2015, 9, 1)) & (Q(order__status__in=['PU','D'])) &(Q(mapped_tracking_no__isnull=True) | Q(mapped_tracking_no__exact=""))).count()
 
     return render(request, 'qc_stat.html', {"nofollowup_products_count": nofollowup_products_count,"nofollowup_products_data": nofollowup_products_data,"warning_products_count": warning_products_count,"warning_products_data": warning_products_data,"total_products_count": total_products_count,"total_products_data": total_products_data,"comment_products_count": comment_products_count,"comment_products_data": comment_products_data,"noncomment_products_count": noncomment_products_count,"noncomment_products_data": noncomment_products_data,"date":date_old,"baap":baap,"un_count":un_count})
