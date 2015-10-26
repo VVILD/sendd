@@ -29,9 +29,10 @@ def barcode_stats_view(request):
 
     #data= Business.objects.filter(order__book_time__gt=todays_date).annotate(product_total=Count('order__product')).annotate(barcode_total=Count('product__barcode')).annotate(pickupboy='pb')
 
-    data2=Product.objects.filter(Q(order__book_time__gt=todays_date) & ( ~Q(status='P') & ~Q(status='CA')   )).values('order__business','order__business__pb__name').annotate(product_total=Count('pk')).annotate(barcode_total=Count('barcode'))
+    data2=Product.objects.filter(Q(order__book_time__gt=todays_date) & ( ~Q(status='P') & ~Q(status='CA')   )).values('order__business','order__business__pb__name').annotate(product_total=Count('pk')).annotate(barcode_total=Count('barcode')).annotate(barcode_diff=Count('pk')-Count('barcode'))
 
-
+    for x in data2:
+        x['without']=x['product_total']-x['barcode_total']
 
     for x in y:
         data['date'].append(str(x["date_created"]))
