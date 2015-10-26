@@ -38,4 +38,25 @@ $(function () {
 </head>
 <body>
 <div id="container" style="width:100%; height:400px;"></div>
+<table style="width:30%">
+[{'order__business__pb__name': None, 'order__business': u'aakaar', 'product_total': 1, 'barcode_total': 1}
+
+<th>company</th>
+<th>PICKUPBOY</th>
+
+    <th>total order</th>
+<th>with BARCODE</th>
+<th>without BARCODE</th>
+{% for row in data2 %}
+
+<tr>
+    <td>{{ row.order__business }}</td>
+    <td>{{ row.order__business__pb__name }}</td>
+    <td>{{ row.product_total }}</td>
+    <td>{{ row.barcode_total }}</td>
+    <td>{{ row.product_total }} - {{ row.barcode_total }}</td>
+</tr>
+{% endfor %}
+</table>
+
 </body>

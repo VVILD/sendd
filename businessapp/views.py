@@ -1,6 +1,6 @@
 from django.core.exceptions import ValidationError
 from django.shortcuts import render
-from businessapp.models import Order,Product
+from businessapp.models import Order,Product,Business
 from PyPDF2 import PdfFileWriter, PdfFileReader
 import cStringIO
 from django.http import HttpResponse
@@ -27,6 +27,11 @@ def barcode_stats_view(request):
 
     data = {'date': [], 'wbarcode': [], 'wobarcode': []}
 
+    data= Business.objects.filter(order__book_time__gt=todays_date).annotate(product_total=Count('order__product')).annotate(barcode_total=Count('product__barcode')).annotate(pickupboy='pb')
+
+    data2=Product.objects.filter(Q(order__book_time__gt=todays_date) & ( ~Q(status='P') & ~Q(status='CA')   )).values('order__business','order__business__pb__name').annotate(product_total=Count('pk')).annotate(barcode_total=Count('barcode'))
+
+
 
     for x in y:
         data['date'].append(str(x["date_created"]))
@@ -42,7 +47,7 @@ def barcode_stats_view(request):
             "name": 'with barcode',
             "data": data['wbarcode']
         }]
-    return render(request, 'barcode_chart.html', {"series": series,"categories": categories})
+    return render(request, 'barcode_chart.html', {"series": series,"categories": categories,"data2":data2})
 
 
 import os

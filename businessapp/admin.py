@@ -1553,7 +1553,7 @@ class QcProductAdmin(reversion.VersionAdmin,ImportExportActionModelAdmin):
 	list_filter = ['order__method','order__business','warning','company',StatusFilter,'status','warning_type']
 	list_editable = ('follow_up',)
 	readonly_fields = ('previous_comment','p_tracking')
-	search_fields = ['order__order_no', 'real_tracking_no', 'mapped_tracking_no','tracking_data' ]
+	search_fields = ['order__order_no', 'real_tracking_no', 'mapped_tracking_no','tracking_data','order__name']
 	
 
 	def save_model(self, request, obj, form, change):
