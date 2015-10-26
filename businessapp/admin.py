@@ -1193,7 +1193,7 @@ class ProxyProductAdmin(reversion.VersionAdmin):
 	order_no.admin_order_field = 'order'
 
 	def get_queryset(self, request):
-		return self.model.objects.filter(Q(mapped_tracking_no__isnull=True) | Q(mapped_tracking_no__exact="") )
+		return self.model.objects.filter(Q(order__book_time__gt=datetime.date(2015, 9, 1)) & (Q(mapped_tracking_no__isnull=True) | Q(mapped_tracking_no__exact="")) )
 
 	def get_readonly_fields(self, request, obj=None):
 		return [f.name for f in self.model._meta.fields]
@@ -1546,7 +1546,7 @@ class QcProductAdmin(reversion.VersionAdmin,ImportExportActionModelAdmin):
 	change_list_template='businessapp/templates/admin/businessapp/qcproduct/change_list.html'
 
 	def get_queryset(self, request):
-		return self.model.objects.filter(Q(order__status='DI')| Q(order__status='R')).exclude(Q(status='C')|Q(return_action='R')|Q(return_action='RB')).exclude(order__business='ecell').exclude(order__business='ghasitaram').exclude(order__business='holachef')
+		return self.model.objects.filter(Q(order__book_time__gt=datetime.date(2015, 9, 1))&(Q(order__status='DI')| Q(order__status='R'))).exclude(Q(status='C')|Q(return_action='R')|Q(return_action='RB')).exclude(order__business='ecell').exclude(order__business='ghasitaram').exclude(order__business='holachef')
 	list_display = (
 		'order_no','tracking_no','company','book_date','dispatch_time','get_business','sent_to','last_location' ,'expected_delivery_date','last_updated','last_tracking_status','history','follow_up')
 	list_filter = ['order__method','order__business','warning','company',StatusFilter,'status','warning_type']
