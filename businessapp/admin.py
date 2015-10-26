@@ -262,7 +262,7 @@ class BaseBusinessAdmin(reversion.VersionAdmin):
 		p= Order.objects.filter(status='P').count()
 		pu= Order.objects.filter(status='PU').count()
 		di= Order.objects.filter(status='DI').count()
-		un= Order.objects.filter(status__in=['PU','D']).count()
+		un=Product.objects.filter(Q(order__book_time__gt=datetime.date(2015, 9, 1)) & (Q(order__status__in=['PU','D'])) &(Q(mapped_tracking_no__isnull=True) | Q(mapped_tracking_no__exact="")) ).count()
 		picked= Business.objects.filter(is_completed=True,status='A').count()
 
 		context = {'cs':cs,'op':op,'nap':nap,'ap':ap,'d':d,'c':c,'p':p,'pu':pu,'di':di,'a':a,'apcs':apcs,'un':un,'picked':picked}
@@ -1179,7 +1179,8 @@ reference_id=models.CharField(max_length=100)
 admin.site.register(Order, OrderAdmin)
 
 
-class ProxyProductAdmin(reversion.VersionAdmin):
+class ProxyProductAdmin(BaseBusinessAdmin):
+
 
 	change_list_template='businessapp/templates/admin/businessapp/change_list.html'
 	list_display = ('order_no','get_business','sent_to','city','pincode','time',"applied_weight","mapped_tracking_no","company")
