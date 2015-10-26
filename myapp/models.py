@@ -55,8 +55,7 @@ class Address(models.Model):
     country = models.CharField(max_length=30, null=True, blank=True)
 
     def __unicode__(self):
-        return str(self.flat_no)+','+str(self.locality)+','+str(self.city)+','+str(self.state)+','+str(self.country)+'-'+str(self.pincode)
-
+        return (self.flat_no+','+self.locality+','+self.city+','+self.state+','+self.country+'-'+self.pincode).decode('utf-8')
     def save(self, *args, **kwargs):
         if not state_matcher.is_state(self.state):
             closest_state = state_matcher.get_closest_state(self.state)
