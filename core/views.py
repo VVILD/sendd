@@ -116,8 +116,9 @@ def create_fedex_shipment(request):
                     f3 = ContentFile(base64.b64decode(result['COMMERCIAL_INVOICE']))
                     input3 = PdfFileReader(f3, strict=False)
                     output.addPage(input3.getPage(0))
-                    if products[0].order.method == 'B':
-                        output.addPage(input3.getPage(0))
+                    output.addPage(input3.getPage(0))
+                    output.addPage(input3.getPage(0))
+                    if products[0].order.method == 'B' or service_type == "FEDEX_EXPRESS_SAVER":
                         output.addPage(input3.getPage(0))
 
                 if result["shipping_cost"]:
