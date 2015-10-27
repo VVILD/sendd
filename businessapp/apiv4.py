@@ -250,29 +250,29 @@ class ReverseOrderResource(BaseCorsResource):
             raise CustomBadRequest(code="error", message="No tracking ids found")
 
         temp_pickup_address = AddressDetails(
-            company_name=existing_order.name,
-            contact_person=existing_order.name,
-            phone_office=existing_order.phone,
+            company_name=str(existing_order.name),
+            contact_person=str(existing_order.name),
+            phone_office=str(existing_order.phone),
             address=str(existing_order.address1) + " " + str(existing_order.address2),
-            city=existing_order.city,
-            state=existing_order.state,
-            pincode=existing_order.pincode
+            city=str(existing_order.city),
+            state=str(existing_order.state),
+            pincode=str(existing_order.pincode)
         )
         temp_pickup_address.save()
 
         try:
             new_order = Order(
-                reference_id=existing_order.order_no,
-                name=existing_order.pickup_address.company_name,
-                phone=existing_order.pickup_address.phone_office,
-                email=existing_order.pickup_address.email,
-                address1=existing_order.pickup_address.address,
-                city=existing_order.pickup_address.city,
-                state=existing_order.pickup_address.state,
-                pincode=existing_order.pickup_address.pincode,
+                reference_id=str(existing_order.order_no),
+                name=str(existing_order.pickup_address.company_name),
+                phone=str(existing_order.pickup_address.phone_office),
+                email=str(existing_order.pickup_address.email) if existing_order.pickup_address.email is not None else None,
+                address1=str(existing_order.pickup_address.address),
+                city=str(existing_order.pickup_address.city),
+                state=str(existing_order.pickup_address.state),
+                pincode=str(existing_order.pickup_address.pincode),
                 country='India',
                 payment_method='F',
-                method=existing_order.method,
+                method=str(existing_order.method),
                 business=existing_order.business,
                 pickup_address=temp_pickup_address,
                 is_reverse=True
@@ -286,15 +286,15 @@ class ReverseOrderResource(BaseCorsResource):
         try:
             for product in products:
                 new_product = Product(
-                    name=product.name,
-                    quantity=product.quantity,
-                    sku=product.sku,
-                    price=product.price,
-                    weight=product.weight,
-                    applied_weight=product.applied_weight,
+                    name=str(product.name),
+                    quantity=int(product.quantity),
+                    sku=str(product.sku),
+                    price=float(product.price),
+                    weight=float(product.weight),
+                    applied_weight=float(product.applied_weight),
                     order=new_order,
                     company='F',
-                    shipping_cost=product.shipping_cost,
+                    shipping_cost=float(product.shipping_cost),
                     is_document=product.is_document,
                     is_fragile=product.is_fragile
                 )
