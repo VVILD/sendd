@@ -699,8 +699,7 @@ class ShipmentAdmin(reversion.VersionAdmin):
         try:
             address = obj.drop_address
             pk = address.pk
-            add = str(address.flat_no) + ',' + str(address.locality) + ',' + str(address.city) + ',' + str(
-                address.state) + '-' + str(address.pincode)
+            add = (address.flat_no+','+address.locality+','+address.city+','+address.state+','+address.country+'-'+address.pincode).decode('utf-8')
             return '<a href="/admin/myapp/address/%s/" onclick="return showAddAnotherPopup(this);">%s</a>' % (pk, add)
         except:
             return "no add"

@@ -320,6 +320,9 @@ class Product(models.Model):
 
     date = models.DateTimeField(null=True, blank=True)
     remittance = models.BooleanField(default=False)
+    remittance_status=models.CharField(max_length=1,
+                              choices=(('P', 'pending'), ('C', 'complete'), ('I', 'pickedup')),
+                              default='P')
     fedex_cod_return_label = models.FileField(upload_to='shipment/', blank=True, null=True)
     fedex_outbound_label = models.FileField(upload_to='shipment/', blank=True, null=True)
     fedex_ship_docs = models.FileField(upload_to='shipment/', blank=True, null=True)

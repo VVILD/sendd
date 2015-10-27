@@ -80,8 +80,27 @@ class PickupboyAdmin(reversion.VersionAdmin):
 admin.site.register(PBUser, PickupboyAdmin)
 
 
+class CheckappAdmin(reversion.VersionAdmin):
+    search_fields = ['phone','name']
+    list_display = ('name', 'phone', 'count')
+    search_fields= ['name','phone']
+
+    def count(self, obj):
+        return PBLocations.objects.filter(pbuser=obj).count()
+
+admin.site.register(Checkapp, CheckappAdmin)
+
 class PBPincodeAdmin(reversion.VersionAdmin):
     pass
 
-
 admin.site.register(PBPincodes, PBPincodeAdmin)
+
+
+
+
+class PBLocationsAdmin(reversion.VersionAdmin):
+    list_display = ['pbuser','updated_at','lat','lon']
+    list_filter = ['pbuser__name','pbuser__phone']
+    search_fields = ['pbuser__name','pbuser__phone']
+
+admin.site.register(PBLocations, PBLocationsAdmin)
