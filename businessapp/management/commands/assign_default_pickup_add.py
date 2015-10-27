@@ -40,7 +40,7 @@ class Command(BaseCommand):
                         address.warehouse = business.warehouse
                         address.save()
                         orders = Order.objects.filter(business=business)
-                        with futures.ThreadPoolExecutor(max_workers=15) as executor:
+                        with futures.ThreadPoolExecutor(max_workers=10) as executor:
                             futures_track = (executor.submit(self.order_saver, order, address) for order in orders)
                             for result in futures.as_completed(futures_track):
                                 if result.exception() is not None:
@@ -69,7 +69,7 @@ class Command(BaseCommand):
                 print(pickup_default)
 
                 orders = Order.objects.filter(business=business)
-                with futures.ThreadPoolExecutor(max_workers=15) as executor:
+                with futures.ThreadPoolExecutor(max_workers=10) as executor:
                     futures_track = (executor.submit(self.order_saver, order, pickup_default) for order in orders)
                     for result in futures.as_completed(futures_track):
                         if result.exception() is not None:
