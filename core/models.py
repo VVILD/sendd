@@ -186,6 +186,7 @@ class Pincode(models.Model):
     fedex_oda_opa = models.BooleanField(default=False)
     fedex_cod_service = models.BooleanField(default=False)
     fedex_servicable = models.BooleanField(default=False)
+    fedex_delivery_only = models.BooleanField(default=False)
     warehouse = models.ForeignKey(Warehouse, null=True, blank=True, related_name="pincode_warehouse")
 
     def __str__(self):

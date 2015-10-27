@@ -1,5 +1,6 @@
 import datetime
 from django.core.management import BaseCommand
+import django_rq
 from businessapp.models import Business, AddressDetails,Order
 from datetime import date
 
@@ -8,6 +9,10 @@ __author__ = 'vatsalshah'
 
 class Command(BaseCommand):
     help = 'Assign default barcodes to the pickup address'
+
+    def order_saver(self, order, address):
+        order.pickup_address=address
+        order.save()
 
     def handle(self, *args, **options):
         businesses = Business.objects.all().select_related('addressdetails_set')
@@ -30,11 +35,11 @@ class Command(BaseCommand):
                         address.pincode = business.pincode,
                         address.default_vehicle = 'B' if address.default_vehicle is None else address.default_vehicle,
                         address.default_pickup_time = default_time
+                        address.warehouse = business.warehouse
                         address.save()
                         Orders=Order.objects.filter(business=business)
                         for order in Orders:
-                            order.pickup_address=address
-                            order.save()
+                            django_rq.enqueue(self.order_saver, order, address)
             elif business.address and business.city and business.pincode and business.state:
 
 
@@ -50,12 +55,12 @@ class Command(BaseCommand):
                     state = business.state,
                     pincode = business.pincode,
                     default_vehicle = 'B',
-                    default_pickup_time = default_time
+                    default_pickup_time = default_time,
+                    warehouse=business.warehouse
                 )
                 pickup_default.save()
                 print(pickup_default)
 
-                Orders=Order.objects.filter(business=business)
+                Orders = Order.objects.filter(business=business)
                 for order in Orders:
-                    order.pickup_address=pickup_default
-                    order.save()
+                    django_rq.enqueue(self.order_saver, order, pickup_default)

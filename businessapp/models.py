@@ -165,7 +165,9 @@ class AddressDetails(models.Model):
         auto_now=True
     )
     business = models.ForeignKey(
-        to=Business
+        to=Business,
+        null=True,
+        blank=True
     )
     company_name = models.CharField(
         verbose_name='company name',
@@ -187,6 +189,7 @@ class AddressDetails(models.Model):
         blank=True,
         null=True
     )
+    email = models.EmailField(blank=True, null=True)
     address = models.CharField(
         verbose_name='address',
         max_length=250
@@ -211,7 +214,7 @@ class AddressDetails(models.Model):
     ff_comment = models.TextField(null=True, blank=True)
     default_vehicle = models.CharField(
         verbose_name='default vehicle',
-        max_length=1,
+        max_length=2,
         choices=default_vehicle_choices
     )
     pb = models.ForeignKey(PBUser, null=True, blank=True)
@@ -230,7 +233,7 @@ class AddressDetails(models.Model):
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
         if self.pincode and not self.warehouse:
-                pincode = Pincode.objects.filter(pincode=self.pincode).exclude(latitude__isnull=True)
+                pincode = Pincode.objects.filter(pincode=self.pincode).exclude(latitude__isnull=True, warehouse__isnull=True)
                 if len(pincode) > 0:
                     self.warehouse = pincode[0].warehouse
         super(AddressDetails, self).save()
@@ -373,6 +376,7 @@ class Order(models.Model):
     ff_comment=models.TextField(null=True, blank=True)
     refund = models.FloatField(default=0.0)
     pickup_address = models.ForeignKey(AddressDetails, null=True, blank=True, related_name='orders')
+    is_reverse = models.BooleanField(default=False)
 
 
     def __unicode__(self):

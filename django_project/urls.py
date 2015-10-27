@@ -107,12 +107,14 @@ bv3_api.register(EmailLabelsResource())
 from businessapp.apiv4 import BusinessResource as BusinessResourceV4
 from businessapp.apiv4 import OrderResource as OrderResourceV4
 from businessapp.apiv4 import ProductResource as ProductResourceV4
+from businessapp.apiv4 import FedexCheckResource as FedexCheckResourceV4
 from businessapp.apiv4 import BusinessPickupAddressResource
 bv4_api = Api(api_name='v4')
 bv4_api.register(BusinessResourceV4())
 bv4_api.register(BusinessPickupAddressResource())
 bv4_api.register(ProductResourceV4())
 bv4_api.register(OrderResourceV4())
+bv4_api.register(FedexCheckResourceV4())
 
 from core.api import PincodeResource
 pv1_api = Api(api_name='v1')

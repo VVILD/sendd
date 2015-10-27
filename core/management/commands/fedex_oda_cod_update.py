@@ -41,6 +41,10 @@ class Command(BaseCommand):
             cod_servicable = True
         else:
             cod_servicable = False
+        if row['Domestic Service'] == 'Delivery Only':
+            delivery_only = True
+        else:
+            delivery_only = False
         db_objs = Pincode.objects.filter(pincode=row['Postal Code'])
         if len(db_objs) > 0:
             count = 0
@@ -49,6 +53,7 @@ class Command(BaseCommand):
                 obj.fedex_oda_opa = is_oda
                 obj.fedex_cod_service = cod_servicable
                 obj.fedex_servicable = True
+                obj.fedex_delivery_only = delivery_only
                 obj.save()
                 pincode = obj.pincode
                 count += 1
@@ -64,7 +69,8 @@ class Command(BaseCommand):
                 state_name=row['State'],
                 fedex_oda_opa=is_oda,
                 fedex_cod_service=cod_servicable,
-                fedex_servicable=True
+                fedex_servicable=True,
+                fedex_delivery_only=delivery_only
             )
             new_obj.save()
             updated = False
@@ -78,7 +84,8 @@ class Command(BaseCommand):
             "added": added,
             "updated": updated,
             "is_oda": is_oda,
-            "cod_servicable": cod_servicable
+            "cod_servicable": cod_servicable,
+            "delivery_only": delivery_only
         }
 
     def handle(self, *args, **options):

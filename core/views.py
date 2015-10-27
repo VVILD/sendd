@@ -18,6 +18,11 @@ __author__ = 'vatsalshah'
 def create_fedex_shipment(request):
     order_pk = request.GET.get('order_pk', None)
     client_type = request.GET.get('client_type', None)
+
+    return render(request, 'fedex_new_shipment.html', fedex_view_util(order_pk, client_type))
+
+
+def fedex_view_util(order_pk, client_type):
     data = []
     master_tracking_no = None
     shipping_cost = None
@@ -44,6 +49,7 @@ def create_fedex_shipment(request):
         for idx, product in enumerate(products, start=1):
             sender_details = None
             warehouse = None
+            receiver_warehouse = None
             receiver_name = product.order.name
             receiver_company = None
             receiver_phone = product.order.phone
@@ -57,10 +63,13 @@ def create_fedex_shipment(request):
             is_business_receiver = False
             product_type = product.order.payment_method
             is_cod = False
-            if product.order.business.business_name is not None:
-                sender_details = product.order.business.__dict__
-            if product.order.business.warehouse is not None:
-                warehouse = product.order.business.warehouse.__dict__
+            if product.order.pickup_address is not None:
+                sender_details = product.order.pickup_address.__dict__
+            if product.order.pickup_address.warehouse is not None:
+                warehouse = product.order.pickup_address.warehouse.__dict__
+            if product.order.is_reverse:
+                previous_order = BusinessOrder.objects.get(pk=product.order.reference_id).select_related('pickup_address')
+                receiver_warehouse = previous_order.pickup_address.warehouse
             if product_type == 'C':
                 is_cod = True
             sender = {
@@ -77,7 +86,8 @@ def create_fedex_shipment(request):
                 "state": receiver_state,
                 "pincode": receiver_pincode,
                 "is_business": is_business_receiver,
-                "country_code": receiver_country_code
+                "country_code": receiver_country_code,
+                "warehouse": receiver_warehouse
             }
             if idx == 1:
                 item = items
@@ -89,7 +99,7 @@ def create_fedex_shipment(request):
                     "quantity": product.quantity,
                     "is_doc": product.is_document
                 }]
-            result = fedex.create_shipment(sender, receiver, item, config, service_type, idx, package_count, master_tracking_no)
+            result = fedex.create_shipment(sender, receiver, item, config, service_type, idx, package_count, master_tracking_no, product.order.is_reverse)
             if result['status'] != 'ERROR':
                 if product.mapped_tracking_no:
                     product.tracking_history = str(product.tracking_history) + ',' + str(product.mapped_tracking_no)
@@ -197,7 +207,7 @@ def create_fedex_shipment(request):
                     "price": shipment.cost_of_courier
                 }]
 
-            result = fedex.create_shipment(sender, receiver, item, config, service_type, idx, package_count, master_tracking_no)
+            result = fedex.create_shipment(sender, receiver, item, config, service_type, idx, package_count, master_tracking_no, False)
             if result['status'] != 'ERROR':
 
                 if shipment.mapped_tracking_no:
@@ -241,12 +251,11 @@ def create_fedex_shipment(request):
         fedex_ship_docs_url = str(order.fedex_ship_docs.name).split('/')[-1]
         order.mapped_master_tracking_number = master_tracking_no
         order.save()
-    context = {
+    return {
         "data": data,
         "shipping_cost": shipping_cost,
         "fedex_ship_docs_url": fedex_ship_docs_url
     }
-    return render(request, 'fedex_new_shipment.html', context)
 
 
 def barcode_fedex_redirector(request, barcode):
