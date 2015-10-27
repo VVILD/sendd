@@ -1,4 +1,5 @@
 import datetime
+from concurrent import futures
 from django.core.management import BaseCommand
 import django_rq
 from businessapp.models import Business, AddressDetails,Order
@@ -13,6 +14,7 @@ class Command(BaseCommand):
     def order_saver(self, order, address):
         order.pickup_address=address
         order.save()
+        return True
 
     def handle(self, *args, **options):
         businesses = Business.objects.all().select_related('addressdetails_set')
@@ -37,9 +39,14 @@ class Command(BaseCommand):
                         address.default_pickup_time = default_time
                         address.warehouse = business.warehouse
                         address.save()
-                        Orders=Order.objects.filter(business=business)
-                        for order in Orders:
-                            django_rq.enqueue(self.order_saver, order, address)
+                        orders = Order.objects.filter(business=business)
+                        with futures.ThreadPoolExecutor(max_workers=15) as executor:
+                            futures_track = (executor.submit(self.order_saver, order, address) for order in orders)
+                            for result in futures.as_completed(futures_track):
+                                if result.exception() is not None:
+                                    print('%s' % result.exception())
+                                else:
+                                    print(result.result())
             elif business.address and business.city and business.pincode and business.state:
 
 
@@ -61,6 +68,11 @@ class Command(BaseCommand):
                 pickup_default.save()
                 print(pickup_default)
 
-                Orders = Order.objects.filter(business=business)
-                for order in Orders:
-                    django_rq.enqueue(self.order_saver, order, pickup_default)
+                orders = Order.objects.filter(business=business)
+                with futures.ThreadPoolExecutor(max_workers=15) as executor:
+                    futures_track = (executor.submit(self.order_saver, order, pickup_default) for order in orders)
+                    for result in futures.as_completed(futures_track):
+                        if result.exception() is not None:
+                            print('%s' % result.exception())
+                        else:
+                            print(result.result())
