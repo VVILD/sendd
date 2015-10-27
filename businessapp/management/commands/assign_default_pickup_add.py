@@ -19,10 +19,10 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         businesses = Business.objects.all().select_related('addressdetails_set')
         for business in businesses:
-            if business.assigned_pickup_time:
-                default_time=datetime.datetime.combine(date.today(),business.assigned_pickup_time)
+            if business.assigned_pickup_time is not None:
+                default_time=datetime.datetime.combine(date.today(), business.assigned_pickup_time)
             else:
-                default_time=datetime.datetime.combine(date.today(),datetime.time(18, 00))
+                default_time=datetime.datetime.combine(date.today(), datetime.time(18, 00))
 
             if business.addressdetails_set.count() > 0:
                 for address in business.addressdetails_set.all():
