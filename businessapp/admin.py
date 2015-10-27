@@ -1180,7 +1180,7 @@ reference_id=models.CharField(max_length=100)
 admin.site.register(Order, OrderAdmin)
 
 
-class ProxyProductAdmin(BaseBusinessAdmin):
+class ProxyProductAdmin(BaseBusinessAdmin,ImportExportActionModelAdmin):
 
 
 	change_list_template='businessapp/templates/admin/businessapp/change_list.html'
@@ -1188,7 +1188,7 @@ class ProxyProductAdmin(BaseBusinessAdmin):
 	list_editable = ("mapped_tracking_no","company")
 	search_fields = ['order__order_no', 'real_tracking_no', 'mapped_tracking_no','tracking_data','order__name','order__city','order__pincode']
 	list_filter = ['order__business']
-
+	resource_class=export_xl.ProductResource
 	def order_no(self, obj):
 		return '<a href="/admin/businessapp/order/%s/">%s</a>' % (obj.order.pk, obj.order.pk)
 	order_no.allow_tags = True
@@ -1268,6 +1268,9 @@ class CodBusinessPanelAdmin(admin.ModelAdmin):
 
 	list_filter=['username','business_name',('order__book_time', DateRangeFilter),]
 	list_display=['username','business_name','remittance_pending','remittance_complete']
+
+	def get_queryset(self, request):
+		return self.model.objects.filter(order__payment_method='C',order__product__remittance=False).distinct()
 
 
 	def remittance_pending(self,obj):
@@ -1365,7 +1368,7 @@ class RemittanceProductPendingAdmin(reversion.VersionAdmin,ImportExportActionMod
 	list_filter=['order__business',('date', DateRangeFilter),]
 	list_display = (
 		'get_order_no','order_link', 'date', 'get_business', 'name', 'cod_cost', 'shipping_cost', 'status',
-		'price','remittance')
+		'price','remittance','remittance_status')
 	readonly_fields = (
 		'name', 'quantity', 'sku', 'price', 'weight', 'applied_weight', 'real_tracking_no', 'order', 'tracking_data',
 		'kartrocket_order', 'shipping_cost', 'cod_cost', 'date','barcode',)
@@ -1416,7 +1419,7 @@ class RemittanceProductCompleteAdmin(reversion.VersionAdmin,ImportExportActionMo
 	list_editable=['remittance',]
 	list_display = (
 		'get_order_no', 'order_link','date', 'get_business', 'name', 'cod_cost', 'shipping_cost', 'status',
-		'price','remittance_date','remittance')
+		'price','remittance_date','remittance','remittance_status')
 	readonly_fields = (
 		'name', 'quantity', 'sku', 'price', 'weight', 'applied_weight', 'real_tracking_no', 'order', 'tracking_data',
 		'kartrocket_order', 'shipping_cost', 'cod_cost', 'date','barcode',)

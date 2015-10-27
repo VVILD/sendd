@@ -10,7 +10,7 @@ from django.http import HttpResponse
 
 from myapp.forms import NewShipmentForm
 from django.views.generic.edit import FormView
-
+from django.contrib.auth.decorators import login_required
 import datetime
 from datetime import date
 import datetime
@@ -25,7 +25,7 @@ import subprocess
 
 
 
-
+@login_required
 def index(request):
     todays_date = date.today()
     week_before = date.today() - datetime.timedelta(days=62)
@@ -142,7 +142,7 @@ def index(request):
                'product': product,'series':series ,'categories':categories}
     return render(request, 'polls/index.html', context)
 
-
+@login_required
 def detail(request):
     todays_date = date.today()
     week_before = date.today() - datetime.timedelta(days=7)
@@ -180,7 +180,7 @@ def detail(request):
     context = {'week_shipments': week_shipments, 'week_products_b2b': week_products_b2b}
     return render(request, 'polls/index1.html', context)
 
-
+@login_required
 def results(request):
     todays_date = date.today()
     threshold_days_before = date.today() - datetime.timedelta(days=2)
@@ -215,7 +215,7 @@ def results(request):
 
     return render(request, 'polls/index2.html', context)
 
-
+@login_required
 def vote(request):
     # for july
 
@@ -282,7 +282,7 @@ class NewShipmentView(FormView):
 from django.shortcuts import render
 from django.http import HttpResponseRedirect
 
-
+@login_required
 def get_name(request):
     # if this is a POST request we need to process the form data
     if request.method == 'POST':
@@ -306,7 +306,7 @@ def get_name(request):
 
     return render(request, 'newshipment.html', {'form': form})
 
-
+@login_required
 def redirect(request):
     barcode = request.GET.get('q', '')
 
@@ -331,7 +331,7 @@ def redirect(request):
 
 
 
-
+@login_required
 def kartrocket(request):
 
 
