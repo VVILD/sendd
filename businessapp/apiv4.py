@@ -241,11 +241,11 @@ class ReverseOrderResource(BaseCorsResource):
                                    message="Please supply valid parameters. order_no, tracking_ids and username")
 
         try:
-            existing_order = Order.objects.get(business__username=username, pk=order_no).select_related('business')
+            existing_order = Order.objects.get(business__username=username, pk=order_no)
         except ObjectDoesNotExist:
             raise CustomBadRequest(code="error", message="No corresponding order found")
 
-        products = existing_order.product_set(real_tracking_no__in=tracking_ids)
+        products = existing_order.product_set.filter(real_tracking_no__in=tracking_ids)
         if products.count() == 0:
             raise CustomBadRequest(code="error", message="No tracking ids found")
 
@@ -253,7 +253,7 @@ class ReverseOrderResource(BaseCorsResource):
             company_name=existing_order.name,
             contact_person=existing_order.name,
             phone_office=existing_order.phone,
-            address=existing_order.address1 + " " + existing_order.address2,
+            address=str(existing_order.address1) + " " + str(existing_order.address2),
             city=existing_order.city,
             state=existing_order.state,
             pincode=existing_order.pincode

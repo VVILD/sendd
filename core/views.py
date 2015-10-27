@@ -53,8 +53,8 @@ def fedex_view_util(order_pk, client_type):
             receiver_name = product.order.name
             receiver_company = None
             receiver_phone = product.order.phone
-            receiver_address1 = product.order.address1
-            receiver_address2 = product.order.address2
+            receiver_address1 = str(product.order.address1)
+            receiver_address2 = str(getattr(product.order, 'address2', ''))
             receiver_address = receiver_address1 + receiver_address2
             receiver_city = product.order.city
             receiver_state = product.order.state
@@ -68,8 +68,8 @@ def fedex_view_util(order_pk, client_type):
             if product.order.pickup_address.warehouse is not None:
                 warehouse = product.order.pickup_address.warehouse.__dict__
             if product.order.is_reverse:
-                previous_order = BusinessOrder.objects.get(pk=product.order.reference_id).select_related('pickup_address')
-                receiver_warehouse = previous_order.pickup_address.warehouse
+                previous_order = BusinessOrder.objects.get(pk=product.order.reference_id)
+                receiver_warehouse = previous_order.pickup_address.warehouse.__dict__
             if product_type == 'C':
                 is_cod = True
             sender = {

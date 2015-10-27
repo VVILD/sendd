@@ -35,7 +35,7 @@ class Command(BaseCommand):
                         address.city = business.city,
                         address.state = business.state,
                         address.pincode = business.pincode,
-                        address.default_vehicle = 'B' if address.default_vehicle is None else address.default_vehicle,
+                        # address.default_vehicle = 'B' if address.default_vehicle is None else address.default_vehicle,
                         address.default_pickup_time = default_time
                         address.warehouse = business.warehouse
                         address.save()
@@ -61,7 +61,7 @@ class Command(BaseCommand):
                     city = business.city,
                     state = business.state,
                     pincode = business.pincode,
-                    default_vehicle = 'B',
+                    # default_vehicle = 'B',
                     default_pickup_time = default_time,
                     warehouse=business.warehouse
                 )

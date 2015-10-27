@@ -215,7 +215,8 @@ class AddressDetails(models.Model):
     default_vehicle = models.CharField(
         verbose_name='default vehicle',
         max_length=2,
-        choices=default_vehicle_choices
+        choices=default_vehicle_choices,
+        default='B'
     )
     pb = models.ForeignKey(PBUser, null=True, blank=True)
     status = models.CharField(max_length=2,
@@ -227,7 +228,7 @@ class AddressDetails(models.Model):
     warehouse = models.ForeignKey(Warehouse, null=True, blank=True)
     daily = models.BooleanField(default=False)
 
-    def __str__(self):
+    def get_full_address(self):
         return "\n".join([self.company_name,self.address, self.city,self.contact_person,"(",self.phone_office,",",self.phone_mobile,")"])
 
     def save(self, force_insert=False, force_update=False, using=None,
