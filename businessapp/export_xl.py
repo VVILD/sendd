@@ -1,15 +1,33 @@
-from businessapp.models import Product,Order
+from businessapp.models import Product,Order,Business
 from import_export import resources
 from import_export import fields
 from datetime import timedelta
 import json
-
+from django.db.models import Avg, Count, F, Max, Min, Sum, Q, Prefetch
 class ProductResource(resources.ModelResource):
 
 	class Meta:
 		model = Product
 		import_id_fields = ('order_id',)
 		fields = ('order','order__book_time','order__reference_id','order__payment_method','order__name','order__city','order__pincode', 'real_tracking_no', 'mapped_tracking_no', 'company','status','last_tracking_status','weight','applied_weight','barcode','order__method','name','price','remittance','remittance_date')
+
+
+class CodBusinessResource(resources.ModelResource):
+	amount = fields.Field()
+
+
+	class Meta:
+		model = Business
+		fields = ('username','business_name','amount')
+
+	def dehydrate_amount(self, business):
+
+		today_orders_b2b = Order.objects.filter(business=business,payment_method='C')
+
+		query_complete=Product.objects.filter(order=today_orders_b2b,status='C',remittance_status='I')
+		sum_complete = query_complete.aggregate(total=Sum('price'))['total']
+		return sum_complete
+
 
 
 

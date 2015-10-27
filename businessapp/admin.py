@@ -999,7 +999,6 @@ class FilterUserAdmin(BaseBusinessAdmin):
 
 resource_class=export_xl.ProductResource
 
-
 class OrderAdmin(FilterUserAdmin,ImportExportActionModelAdmin):
 
 	resource_class=export_xl.FFOrderResource
@@ -1266,12 +1265,9 @@ class CodBusinessPanelAdmin(admin.ModelAdmin):
 
 		return super(CodBusinessPanelAdmin, self).changelist_view(request, extra_context={})
 
-	list_filter=['username','business_name',('order__book_time', DateRangeFilter),]
+	list_filter=['username','business_name']
 	list_display=['username','business_name','remittance_pending','remittance_complete']
 
-	def get_queryset(self, request):
-		plist=Product.objects.filter(status='C',order__payment_method='C',remittance=False)
-		return self.model.objects.filter(order__product__in=plist).distinct()
 
 
 	def remittance_pending(self,obj):
@@ -1300,6 +1296,138 @@ class CodBusinessPanelAdmin(admin.ModelAdmin):
 		return "Rs. "+ str(sum_complete) + "| Count= " + str(count_complete)
 
 admin.site.register(CodBusinessPanel, CodBusinessPanelAdmin)
+
+class InitiatedBusinessRemittanceAdmin(admin.ModelAdmin,ImportExportActionModelAdmin):
+
+
+	resource_class=export_xl.CodBusinessResource
+
+	def changelist_view(self, request, extra_context=None):
+		try:
+			start_time=request.GET['order__book_time__gte']
+			end_time=request.GET['order__book_time__lte']
+			self.start_time = datetime.datetime.strptime(start_time, '%Y-%m-%d')
+			self.end_time = datetime.datetime.strptime(end_time, '%Y-%m-%d')
+
+		except:
+			self.start_time= datetime.date(2015,1,1)
+			self.end_time=datetime.date.today() + datetime.timedelta(days=2)
+
+		return super(InitiatedBusinessRemittanceAdmin, self).changelist_view(request, extra_context={})
+
+	list_filter=['username','business_name']
+	list_display=['username','business_name','remittance_initiated']
+
+	def make_remittance_complete(modeladmin, request, queryset):
+		ct = ContentType.objects.get_for_model(queryset.model)
+		for obj in queryset:
+			LogEntry.objects.log_action(
+				user_id=request.user.id,
+				content_type_id=ct.pk,
+				object_id=obj.pk,
+				object_repr=str(obj.pk),
+				action_flag=CHANGE,
+				change_message="action button : remittance complete of these business")
+
+
+		product_queryset=Product.objects.filter(order__business__in=queryset,order__payment_method='C',status='C',remittance_status='I')
+		product_queryset.update(remittance_status='C',remittance_date=datetime.datetime.now())
+
+
+	make_remittance_complete.short_description = "make remittance complete of selected businesses"
+	actions = [make_remittance_complete]
+
+
+	def get_queryset(self, request):
+		plist=Product.objects.filter(status='C',order__payment_method='C',remittance_status='I')
+		return self.model.objects.filter(order__product__in=plist).distinct()
+
+
+	def remittance_initiated(self,obj):
+
+		start_min = datetime.datetime.combine(self.start_time, datetime.time.min)
+		end_max = datetime.datetime.combine(self.end_time, datetime.time.max)
+
+		today_orders_b2b = Order.objects.filter(business=obj,payment_method='C',book_time__range=(start_min, end_max))
+
+		query_complete=Product.objects.filter(order=today_orders_b2b,status='C',remittance_status='I')
+		sum_complete = query_complete.aggregate(total=Sum('price'))['total']
+		count_complete = query_complete.count()
+
+		return "Rs. "+ str(sum_complete) + "| Count= " + str(count_complete)
+
+
+admin.site.register(InitiatedBusinessRemittance, InitiatedBusinessRemittanceAdmin)
+
+
+class PendingBusinessRemittanceAdmin(admin.ModelAdmin):
+
+	def changelist_view(self, request, extra_context=None):
+		try:
+			start_time=request.GET['order__book_time__gte']
+			end_time=request.GET['order__book_time__lte']
+			self.start_time = datetime.datetime.strptime(start_time, '%Y-%m-%d')
+			self.end_time = datetime.datetime.strptime(end_time, '%Y-%m-%d')
+
+		except:
+			self.start_time= datetime.date(2015,1,1)
+			self.end_time=datetime.date.today() + datetime.timedelta(days=2)
+
+		return super(PendingBusinessRemittanceAdmin, self).changelist_view(request, extra_context={})
+
+	list_filter=['username','business_name']
+	list_display=['username','business_name','remittance_pending']
+
+	def make_remittance_initiated(modeladmin, request, queryset):
+		ct = ContentType.objects.get_for_model(queryset.model)
+		for obj in queryset:
+			LogEntry.objects.log_action(
+				user_id=request.user.id,
+				content_type_id=ct.pk,
+				object_id=obj.pk,
+				object_repr=str(obj.pk),
+				action_flag=CHANGE,
+				change_message="action button : remittance initiated of these products")
+
+
+		product_queryset=Product.objects.filter(order__business__in=queryset,order__payment_method='C',status='C',remittance_status='P')
+		product_queryset.update(remittance_status='I')
+
+
+	make_remittance_initiated.short_description = "make remittance initiated of selected businesses"
+	actions = [make_remittance_initiated]
+
+	def get_actions(self, request):
+		actions = super(PendingBusinessRemittanceAdmin, self).get_actions(request)
+
+		plist=Product.objects.filter(status='C',order__payment_method='C',remittance_status='I')
+		c=Business.objects.filter(order__product__in=plist).distinct().count()
+		if c>0:
+			del actions['make_remittance_initiated']
+		return actions
+
+
+	def get_queryset(self, request):
+		plist=Product.objects.filter(status='C',order__payment_method='C',remittance_status='P')
+		return self.model.objects.filter(order__product__in=plist).distinct()
+
+
+	def remittance_pending(self,obj):
+
+		start_min = datetime.datetime.combine(self.start_time, datetime.time.min)
+		end_max = datetime.datetime.combine(self.end_time, datetime.time.max)
+
+		today_orders_b2b = Order.objects.filter(business=obj,payment_method='C',book_time__range=(start_min, end_max))
+
+		query_complete=Product.objects.filter(order=today_orders_b2b,status='C',remittance_status='P')
+		sum_complete = query_complete.aggregate(total=Sum('price'))['total']
+		count_complete = query_complete.count()
+
+		return "Rs. "+ str(sum_complete) + "| Count= " + str(count_complete)
+
+
+admin.site.register(PendingBusinessRemittance, PendingBusinessRemittanceAdmin)
+
 
 class RemittanceProductPendingAdmin(reversion.VersionAdmin,ImportExportActionModelAdmin):
 
@@ -1373,6 +1501,7 @@ class RemittanceProductPendingAdmin(reversion.VersionAdmin,ImportExportActionMod
 	readonly_fields = (
 		'name', 'quantity', 'sku', 'price', 'weight', 'applied_weight', 'real_tracking_no', 'order', 'tracking_data',
 		'kartrocket_order', 'shipping_cost', 'cod_cost', 'date','barcode',)
+	list_editable = ('remittance_status',)
 
 	def make_remittance_complete(modeladmin, request, queryset):
 		ct = ContentType.objects.get_for_model(queryset.model)
@@ -1424,6 +1553,7 @@ class RemittanceProductCompleteAdmin(reversion.VersionAdmin,ImportExportActionMo
 	readonly_fields = (
 		'name', 'quantity', 'sku', 'price', 'weight', 'applied_weight', 'real_tracking_no', 'order', 'tracking_data',
 		'kartrocket_order', 'shipping_cost', 'cod_cost', 'date','barcode',)
+	list_editable = ('remittance_status',)
 
 	def get_order_no(self, obj):
 		return obj.order.order_no

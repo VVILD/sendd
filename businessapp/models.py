@@ -199,6 +199,16 @@ class CodBusinessPanel(Business):
         proxy = True
         verbose_name_plural = "CodBusinessPanel"
 
+class InitiatedBusinessRemittance(Business):
+    class Meta:
+        proxy = True
+        verbose_name_plural = "InitiatedBusinessRemittance"
+
+class PendingBusinessRemittance(Business):
+    class Meta:
+        proxy = True
+        verbose_name_plural = "PendingBusinessRemittance"
+
 
 class LoginSession(models.Model):
     Business = models.ForeignKey(Business, null=True, blank=True)
@@ -321,7 +331,7 @@ class Product(models.Model):
     date = models.DateTimeField(null=True, blank=True)
     remittance = models.BooleanField(default=False)
     remittance_status=models.CharField(max_length=1,
-                              choices=(('P', 'pending'), ('C', 'complete'), ('I', 'pickedup')),
+                              choices=(('P', 'pending'), ('C', 'complete'), ('I', 'initiated')),
                               default='P')
     fedex_cod_return_label = models.FileField(upload_to='shipment/', blank=True, null=True)
     fedex_outbound_label = models.FileField(upload_to='shipment/', blank=True, null=True)
