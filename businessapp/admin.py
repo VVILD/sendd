@@ -1270,7 +1270,8 @@ class CodBusinessPanelAdmin(admin.ModelAdmin):
 	list_display=['username','business_name','remittance_pending','remittance_complete']
 
 	def get_queryset(self, request):
-		return self.model.objects.filter(order__payment_method='C',order__product__remittance=False).distinct()
+		plist=Product.objects.filter(status='C',order__payment_method='C',remittance=False)
+		return self.model.objects.filter(order__product__in=plist).distinct()
 
 
 	def remittance_pending(self,obj):
