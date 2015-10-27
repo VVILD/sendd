@@ -290,7 +290,7 @@ class ReverseOrderResource(BaseCorsResource):
                     quantity=int(product.quantity),
                     sku=str(product.sku),
                     price=float(product.price),
-                    weight=float(product.weight),
+                    weight=float(product.weight) if product.weight else None,
                     applied_weight=float(product.applied_weight),
                     order=new_order,
                     company='F',
