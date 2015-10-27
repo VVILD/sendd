@@ -278,9 +278,9 @@ class ReverseOrderResource(BaseCorsResource):
                 is_reverse=True
             )
             new_order.save()
-        except:
+        except Exception, e:
             temp_pickup_address.delete()
-            raise CustomBadRequest(code="error", message="Order couldn't be created. Reverting...")
+            raise CustomBadRequest(code="error", message=str(e))
 
         new_products = []
         try:
@@ -300,12 +300,12 @@ class ReverseOrderResource(BaseCorsResource):
                 )
                 new_product.save()
                 new_products.append(new_product)
-        except:
+        except Exception, e:
             temp_pickup_address.delete()
             new_order.delete()
             for np in new_products:
                 np.delete()
-            raise CustomBadRequest(code="error", message="Products couldn't be created. Reverting...")
+            raise CustomBadRequest(code="error", message=str(e))
 
         response = fedex_view_util(new_order.pk, 'business')
         self.log_throttled_access(request)
