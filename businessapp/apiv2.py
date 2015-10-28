@@ -511,9 +511,13 @@ class SearchResource(CORSResource):
                 code="request_invalid",
                 message="No tracking_id found. Please supply tracking_id as a GET parameter")
 
+        try:
+            tracking_id_int = int(tracking_id)
+        except:
+            tracking_id_int = 000
         orders = Order.objects.filter(Q(product__real_tracking_no=tracking_id) | Q(product__barcode=tracking_id) |
                                       Q(product__sku=tracking_id) | Q(reference_id=tracking_id) |
-                                      Q(third_party_id=tracking_id) | Q(pk=int(tracking_id)) |
+                                      Q(third_party_id=tracking_id) | Q(pk=tracking_id_int) |
                                       Q(master_tracking_number=tracking_id)).distinct().select_related('product_set')
 
         result = []
