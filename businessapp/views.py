@@ -8,6 +8,7 @@ from django.contrib.auth.decorators import login_required
 from datetime import date,timedelta
 import datetime
 from django.db.models import Avg, Count, F, Max, Min, Sum, Q, Prefetch
+import inflect
 
 @login_required
 def print_address_view(request):
@@ -16,6 +17,49 @@ def print_address_view(request):
         raise ValidationError("Please provide an order_no")
     order = Order.objects.get(pk=order_no)
     return render(request, 'PrintAddress.html', {"order": order})
+
+
+@login_required
+def print_invoice_order_view(request):
+    order_no = request.GET.get("order_no", None)
+
+    if order_no is None:
+        raise ValidationError("Please provide an order_no")
+    order = Order.objects.get(pk=order_no)
+    product_set=order.product_set.all()
+    total=0
+    total_quantity=0
+    for product in product_set:
+        total=total+ int(product.price)
+        total_quantity=total_quantity+ int(product.quantity)
+    p = inflect.engine()
+    total_word=p.number_to_words(int(total))
+    total_word=total_word + " Only"
+
+    return render(request, 'invoice.html', {"order": order,"total":total,"total_word":total_word,"total_quantity":total_quantity})
+
+
+@login_required
+def print_invoice_product_view(request):
+    order_no = request.GET.get("order_no", None)
+    price = request.GET.get("price", None)
+    if order_no is None:
+        raise ValidationError("Please provide an order_no")
+    product = Product.objects.get(pk=order_no)
+    total=product.price
+    total_quantity=product.quantity
+    p = inflect.engine()
+    total_word=p.number_to_words(int(total))
+    total_word=total_word + " Only"
+    if price:
+        product.price=price
+        total=product.price
+        total_quantity=product.quantity
+        p = inflect.engine()
+        total_word=p.number_to_words(int(total))
+        total_word=total_word + " Only"
+
+    return render(request, 'invoice2.html', {"product": product,"total":total,"total_word":total_word,"total_quantity":total_quantity})
 
 
 @login_required

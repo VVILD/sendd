@@ -1024,6 +1024,7 @@ class OrderAdmin(FilterUserAdmin,ImportExportActionModelAdmin):
 	def change_view(self, request, object_id, form_url='', extra_context=None):
 		extra_context = extra_context or {}
 		extra_context['x'] = object_id
+		extra_context['product_list'] = Order.objects.get(pk=object_id).product_set.all()
 		return super(OrderAdmin, self).change_view(request, object_id, form_url, extra_context=extra_context)
 
 	def mapped_ok(self,obj):
