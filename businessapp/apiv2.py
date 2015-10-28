@@ -320,7 +320,7 @@ class OrderResource(CORSModelResource):
             bundle.data['reversible'] = True
 
         if bundle.obj.is_reverse:
-            bundle.data['reverse_label_url'] = bundle.obj.fedex_ship_docs.url if bundle.obj.fedex_ship_docs is not None else None
+            bundle.data['reverse_label_url'] = str(bundle.obj.fedex_ship_docs.name).split('/')[-1] if bundle.obj.fedex_ship_docs is not None else None
 
         return bundle
 
