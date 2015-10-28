@@ -2565,3 +2565,8 @@ class DispatchedOrderAdmin(OrderAdmin):
 
 admin.site.register(DispatchedOrder,DispatchedOrderAdmin)
 
+
+class AddressDetailsAdmin(admin.ModelAdmin):
+	pass
+
+admin.site.register(AddressDetails, AddressDetailsAdmin)
