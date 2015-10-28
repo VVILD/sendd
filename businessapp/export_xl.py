@@ -12,13 +12,14 @@ class ProductResource(resources.ModelResource):
 		fields = ('order','order__book_time','order__reference_id','order__payment_method','order__name','order__city','order__pincode', 'real_tracking_no', 'mapped_tracking_no', 'company','status','last_tracking_status','weight','applied_weight','barcode','order__method','name','price','remittance','remittance_date')
 
 
+
 class CodBusinessResource(resources.ModelResource):
 	amount = fields.Field()
 
 
 	class Meta:
 		model = Business
-		fields = ('username','business_name','amount')
+		fields = ('username','business_name','amount','billed_to','account_name','account_type','bank_name','branch','ifsc_code')
 
 	def dehydrate_amount(self, business):
 

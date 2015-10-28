@@ -113,6 +113,14 @@ class Business(models.Model):
     cod_sum=models.FloatField(default=40.0)
     cod_percentage=models.FloatField(default=1.5)
     discount_percentage=models.FloatField(default=0.0)
+    billed_to=models.CharField(max_length=100,blank=True,null=True)
+    account_name=models.CharField(max_length=100,blank=True,null=True)
+    account_type=models.CharField(max_length=1,
+                              choices=(('S', 'savings'), ('C', 'current'),),
+                              null=True, blank=True)
+    bank_name=models.CharField(max_length=100,blank=True,null=True)
+    branch=models.CharField(max_length=100,blank=True,null=True)
+    ifsc_code=models.CharField(max_length=100,blank=True,null=True)
 
     class Meta:
         ordering = ['business_name', ]
@@ -453,6 +461,9 @@ class RemittanceProductPending(Product):
     class Meta:
         proxy = True
 
+class RemittanceProductInitiated(Product):
+    class Meta:
+        proxy = True
 
 
 class ExportOrder(Product):
