@@ -15,8 +15,6 @@ class ProductResource(resources.ModelResource):
 
 class CodBusinessResource(resources.ModelResource):
 	amount = fields.Field()
-
-
 	class Meta:
 		model = Business
 		fields = ('username','business_name','amount','billed_to','account_name','account_type','bank_name','branch','ifsc_code')
