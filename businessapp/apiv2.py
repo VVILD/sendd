@@ -525,8 +525,8 @@ class SearchResource(CORSResource):
         result = []
         for order in orders:
             products = list(order.product_set.all().values())
-            for product in products:
-                product['tracking_data'] = json.loads(product['tracking_data'])
+            # for product in products:
+            #     product['tracking_data'] = json.loads(product['tracking_data'])
             order = order.__dict__
             order['products'] =products
             result.append(order)
