@@ -513,14 +513,8 @@ class SearchResource(CORSResource):
 
         orders = Order.objects.filter(Q(product__real_tracking_no=tracking_id) | Q(product__barcode=tracking_id) |
                                       Q(product__sku=tracking_id) | Q(reference_id=tracking_id) |
-                                      Q(third_party_id=tracking_id) |
+                                      Q(third_party_id=tracking_id) | Q(pk=int(tracking_id)) |
                                       Q(master_tracking_number=tracking_id)).distinct().select_related('product_set')
-
-        if orders.count() == 0:
-            try:
-                orders = Order.objects.filter(pk=tracking_id)
-            except:
-                pass
 
         result = []
         for order in orders:
