@@ -378,6 +378,7 @@ class Order(models.Model):
     refund = models.FloatField(default=0.0)
     pickup_address = models.ForeignKey(AddressDetails, null=True, blank=True, related_name='orders')
     is_reverse = models.BooleanField(default=False)
+    reversed = models.BooleanField(default=False)
 
 
     def __unicode__(self):

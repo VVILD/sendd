@@ -307,6 +307,17 @@ class ReverseOrderResource(BaseCorsResource):
                 np.delete()
             raise CustomBadRequest(code="error", message=str(e))
 
-        response = fedex_view_util(new_order.pk, 'business')
+        try:
+            response = fedex_view_util(new_order.pk, 'business')
+        except Exception, e:
+            temp_pickup_address.delete()
+            new_order.delete()
+            for np in new_products:
+                np.delete()
+            raise CustomBadRequest(code="error", message=str(e))
+
+        existing_order.reversed = True
+        existing_order.save()
+
         self.log_throttled_access(request)
         return self.create_response(request, response)
