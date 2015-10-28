@@ -231,6 +231,9 @@ class AddressDetails(models.Model):
     def get_full_address(self):
         return "\n".join([self.company_name,self.address, self.city,self.contact_person,"(",self.phone_office,",",self.phone_mobile,")"])
 
+    def __unicode__(self):
+        return str(self.company_name + " " + self.address)
+
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
         if self.pincode and not self.warehouse:
