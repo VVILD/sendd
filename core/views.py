@@ -1,7 +1,8 @@
 from PyPDF2 import PdfFileWriter, PdfFileReader, PdfFileMerger
 import cStringIO
+from django.contrib.auth.decorators import login_required
 from django.core.files.base import ContentFile
-from django.http import HttpResponseBadRequest
+from django.http import HttpResponseBadRequest, HttpResponseNotFound, HttpResponse
 from django.shortcuts import render, redirect
 import base64
 from businessapp.models import Product
@@ -15,6 +16,7 @@ from django.core.exceptions import ObjectDoesNotExist
 __author__ = 'vatsalshah'
 
 
+@login_required()
 def create_fedex_shipment(request):
     order_pk = request.GET.get('order_pk', None)
     client_type = request.GET.get('client_type', None)
@@ -257,7 +259,7 @@ def fedex_view_util(order_pk, client_type):
         "fedex_ship_docs_url": fedex_ship_docs_url
     }
 
-
+@login_required()
 def barcode_fedex_redirector(request, barcode):
     try:
         shipment = Shipment.objects.get(barcode=barcode)
@@ -277,7 +279,7 @@ def barcode_fedex_redirector(request, barcode):
         labels.append(static_url + str(shipment.fedex_cod_return_label.name).split('/')[-1])
     return render(request, 'fedex_print.html', {"urlList": labels})
 
-
+@login_required()
 def create_individual_fedex_shipment(request):
     shipment_pk = request.GET.get('shipment_pk', None)
     client_type = request.GET.get('client_type', None)
@@ -441,3 +443,20 @@ def create_individual_fedex_shipment(request):
         "shipping_cost": result["shipping_cost"]
     }
     return render(request, 'fedex_legacy_shipment.html', {"result": context})
+
+
+# @login_required()
+def schedule_reverse_pickup(request):
+    order_no = request.GET.get('order_no', None)
+    ready_timestamp = request.GET.get('ready_timestamp', None)
+    business_closetime = request.GET.get('business_closetime', None)
+
+    if not (order_no and ready_timestamp and business_closetime):
+        return HttpResponseBadRequest("Please provide all three parameters")
+
+    try:
+        order = BusinessOrder.objects.get(pk=order_no)
+    except ObjectDoesNotExist:
+        return HttpResponseNotFound("Order not found. Please check the order no")
+
+    return HttpResponse(fedex.pickup_scheduler(order, ready_timestamp, business_closetime))

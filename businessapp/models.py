@@ -71,6 +71,14 @@ class Zone(models.Model):
 
 
 class Business(models.Model):
+    created_at = models.DateTimeField(
+        verbose_name='created at',
+        auto_now_add=True
+    )
+    updated_at = models.DateTimeField(
+        verbose_name='updated at',
+        auto_now=True
+    )
     # phone_regex = RegexValidator(regex=r'^[0-9]*$', message="Phone number must be entered in the format: '999999999'. Up to 12 digits allowed.")
     username = models.CharField(max_length=20, primary_key=True)
     apikey = models.CharField(max_length=100, null=True, blank=True)
@@ -240,6 +248,13 @@ class AddressDetails(models.Model):
                 pincode = Pincode.objects.filter(pincode=self.pincode).exclude(latitude__isnull=True, warehouse__isnull=True)
                 if len(pincode) > 0:
                     self.warehouse = pincode[0].warehouse
+
+        if self.state:
+            if not state_matcher.is_state(self.state):
+                closest_state = state_matcher.get_closest_state(self.state)
+                if closest_state:
+                    self.state = closest_state[0]
+
         super(AddressDetails, self).save()
 
     class Meta:
