@@ -393,9 +393,9 @@ class Product(models.Model):
             if " " in self.mapped_tracking_no:
                 self.mapped_tracking_no=self.mapped_tracking_no.replace(" ","")
             if not self.applied_weight:
-                raise ValidationError("please enter applied weight as well after entering mapped tracking id")
+                raise ValidationError("please enter applied weight as well after entering mapped tracking no on order"+str(self.order.pk))
             if not self.company:
-                raise ValidationError("please enter company as well after entering mapped tracking id")
+                raise ValidationError("please enter company as well after entering mapped tracking no on order"+str(self.order.pk))
 
 
         if self.mapped_tracking_no and (self.status == 'PU' or self.status == 'D' or self.status == 'P'):
