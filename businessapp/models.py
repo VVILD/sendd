@@ -398,6 +398,10 @@ class Order(models.Model):
     is_reverse = models.BooleanField(default=False)
     reversed = models.BooleanField(default=False)
 
+# reverse pickup timezone
+#
+# reverse confirmation id
+
 
     def __unicode__(self):
         return str(self.order_no)
@@ -440,6 +444,10 @@ class PendingOrder(Order):
         proxy = True
 
 class DispatchedOrder(Order):
+    class Meta:
+        proxy = True
+
+class ReverseOrder(Order):
     class Meta:
         proxy = True
 
