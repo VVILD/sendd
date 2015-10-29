@@ -1181,7 +1181,7 @@ admin.site.register(Order, OrderAdmin)
 
 
 class ProxyProductAdmin(BaseBusinessAdmin,ImportExportActionModelAdmin):
-
+	list_per_page=500
 
 	change_list_template='businessapp/templates/admin/businessapp/change_list.html'
 	list_display = ('order_no','get_business','sent_to','city','pincode','time',"applied_weight","mapped_tracking_no","company")

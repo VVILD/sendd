@@ -67,13 +67,16 @@ def barcode_stats_view(request):
 
     todays_date = date.today()
     week_before = date.today() - datetime.timedelta(days=10)
+    yesterdays_date=date.today() - datetime.timedelta(days=1)
     y=Order.objects.filter(Q(book_time__gt=week_before) & ( ~Q(status='P') & ~Q(status='CA')   ) ).extra({'date_created' : "date(book_time)"}).values('date_created').annotate(barcode_count=Count('product__barcode'),created_count=Count('product'))
 
     data = {'date': [], 'wbarcode': [], 'wobarcode': []}
 
     #data= Business.objects.filter(order__book_time__gt=todays_date).annotate(product_total=Count('order__product')).annotate(barcode_total=Count('product__barcode')).annotate(pickupboy='pb')
 
-    data2=Product.objects.filter(Q(order__book_time__gt=todays_date) & ( ~Q(status='P') & ~Q(status='CA')   )).values('order__business','order__business__pb__name').annotate(product_total=Count('pk')).annotate(barcode_total=Count('barcode'))
+    data2=Product.objects.filter(Q(order__book_time__gt=todays_date) & ( ~Q(status='P') & ~Q(status='CA')   )).values('order__business','order__business__pb__name','order__business__warehouse__name').annotate(product_total=Count('pk')).annotate(barcode_total=Count('barcode'))
+
+    data3=Product.objects.filter(Q(order__book_time__lt=todays_date) & Q(order__book_time__gt=yesterdays_date) & ( ~Q(status='P') & ~Q(status='CA')   )).values('order__business','order__business__pb__name','order__business__warehouse__name').annotate(product_total=Count('pk')).annotate(barcode_total=Count('barcode'))
 
     for x in data2:
         x['without']=x['product_total']-x['barcode_total']
@@ -92,7 +95,7 @@ def barcode_stats_view(request):
             "name": 'with barcode',
             "data": data['wbarcode']
         }]
-    return render(request, 'barcode_chart.html', {"series": series,"categories": categories,"data2":data2})
+    return render(request, 'barcode_chart.html', {"series": series,"categories": categories,"data2":data2,"data3":data3})
 
 
 import os
