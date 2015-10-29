@@ -1006,12 +1006,16 @@ class OrderAdmin(FilterUserAdmin,ImportExportActionModelAdmin):
 	search_fields = ['order_no','business__business_name', 'name', 'product__real_tracking_no', 'product__barcode','city','state','product__mapped_tracking_no']
 	list_display = (
 		'order_no', 'book_time', 'business_details', 'name', 'status','mapped_ok', 'no_of_products', 'total_shipping_cost',
-		'total_cod_cost', 'method', 'fedex','ff_comment')
+		'total_cod_cost', 'method', 'fedex','print_links','ff_comment')
 	list_editable = ('status','ff_comment',)
 	list_filter = ['business', 'status', 'book_time','product__company','product__return_action']
 
 	readonly_fields=('master_tracking_number', 'mapped_master_tracking_number', 'fedex')
 
+
+	def print_links(self,obj):
+		return '<a class="btn btn-info" href="/print_address/?order_no=%s" target="_blank" class="historylink" style="color:black">Print Address</a><br><a class="btn btn-info" href="/print_invoice/?order_no=%s" target="_blank" class="historylink" style="color:black">invoice for order</a>'  % (obj.pk,obj.pk)
+	print_links.allow_tags=True
 
 
 	def get_form(self, request, obj=None, **kwargs):
