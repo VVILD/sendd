@@ -535,4 +535,14 @@ def pickup_scheduler(order, ready_timestamp, closetime):
 
     pickup.send_request()
 
-    return pickup.response
+    if pickup.response.HighestSeverity == "SUCCESS":
+        result = {
+            "pickup_confirmation_number":  pickup.response.Location + " " + pickup.response.PickupConfirmationNumber
+        }
+        return result
+    else:
+        result = {
+            "status": pickup.response.HighestSeverity,
+            "message": pickup.response.Notifications.Message
+        }
+        return result

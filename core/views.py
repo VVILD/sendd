@@ -1,3 +1,4 @@
+import json
 from PyPDF2 import PdfFileWriter, PdfFileReader, PdfFileMerger
 import cStringIO
 from django.contrib.auth.decorators import login_required
@@ -34,12 +35,12 @@ def fedex_view_util(order_pk, client_type):
         products = Product.objects.filter(order__pk=order_pk).select_related('order')
         package_count = products.count()
         items = [{
-                    "name": p.name,
-                    "weight": p.applied_weight,
-                    "price": p.price,
-                    "quantity": p.quantity,
-                    "is_doc": p.is_document
-                } for p in products]
+                     "name": p.name,
+                     "weight": p.applied_weight,
+                     "price": p.price,
+                     "quantity": p.quantity,
+                     "is_doc": p.is_document
+                 } for p in products]
         total_docs = sum(i['is_doc'] for i in items)
         total_weight = sum(i['weight'] for i in items)
         total_price = sum(i['price'] for i in items)
@@ -47,7 +48,7 @@ def fedex_view_util(order_pk, client_type):
         if products[0].order.payment_method == 'C':
             is_cod = True
         service_type, config = fedex.get_service_type(str(products[0].order.method), total_price,
-                                                          total_weight, products[0].order.city, is_cod)
+                                                      total_weight, products[0].order.city, is_cod)
         for idx, product in enumerate(products, start=1):
             sender_details = None
             warehouse = None
@@ -101,14 +102,14 @@ def fedex_view_util(order_pk, client_type):
                     "quantity": product.quantity,
                     "is_doc": product.is_document
                 }]
-            result = fedex.create_shipment(sender, receiver, item, config, service_type, idx, package_count, master_tracking_no, product.order.is_reverse)
+            result = fedex.create_shipment(sender, receiver, item, config, service_type, idx, package_count,
+                                           master_tracking_no, product.order.is_reverse)
             if result['status'] != 'ERROR':
                 if product.mapped_tracking_no:
                     product.tracking_history = str(product.tracking_history) + ',' + str(product.mapped_tracking_no)
                 product.mapped_tracking_no = result['tracking_number']
                 if idx == 1:
                     master_tracking_no = result['tracking_number']
-
 
                 f1 = ContentFile(base64.b64decode(result['OUTBOUND_LABEL']))
                 input1 = PdfFileReader(f1, strict=False)
@@ -198,10 +199,10 @@ def fedex_view_util(order_pk, client_type):
             }
             if idx == 1:
                 item = [{
-                    "name": s.item_name,
-                    "weight": s.weight,
-                    "price": s.cost_of_courier
-                } for s in shipments]
+                            "name": s.item_name,
+                            "weight": s.weight,
+                            "price": s.cost_of_courier
+                        } for s in shipments]
             else:
                 item = [{
                     "name": shipment.item_name,
@@ -209,11 +210,12 @@ def fedex_view_util(order_pk, client_type):
                     "price": shipment.cost_of_courier
                 }]
 
-            result = fedex.create_shipment(sender, receiver, item, config, service_type, idx, package_count, master_tracking_no, False)
+            result = fedex.create_shipment(sender, receiver, item, config, service_type, idx, package_count,
+                                           master_tracking_no, False)
             if result['status'] != 'ERROR':
 
                 if shipment.mapped_tracking_no:
-                    shipment.tracking_history=str(shipment.tracking_history) + ',' + str(shipment.mapped_tracking_no)
+                    shipment.tracking_history = str(shipment.tracking_history) + ',' + str(shipment.mapped_tracking_no)
                 shipment.mapped_tracking_no = result['tracking_number']
                 if idx == 1:
                     master_tracking_no = result['tracking_number']
@@ -259,6 +261,7 @@ def fedex_view_util(order_pk, client_type):
         "fedex_ship_docs_url": fedex_ship_docs_url
     }
 
+
 @login_required()
 def barcode_fedex_redirector(request, barcode):
     try:
@@ -278,6 +281,7 @@ def barcode_fedex_redirector(request, barcode):
     if shipment.fedex_cod_return_label is not None:
         labels.append(static_url + str(shipment.fedex_cod_return_label.name).split('/')[-1])
     return render(request, 'fedex_print.html', {"urlList": labels})
+
 
 @login_required()
 def create_individual_fedex_shipment(request):
@@ -325,7 +329,7 @@ def create_individual_fedex_shipment(request):
         if product_type == 'C':
             is_cod = True
         service_type, config = fedex_legacy.get_service_type(str(product.order.method), float(product.price),
-                                                      float(item_weight), receiver_city, is_cod)
+                                                             float(item_weight), receiver_city, is_cod)
         item_price = product.price
     elif client_type == 'customer':
         shipment = Shipment.objects.get(pk=shipment_pk)
@@ -345,7 +349,7 @@ def create_individual_fedex_shipment(request):
         receiver_country_code = 'IN'
         is_business_receiver = False
         service_type, config = fedex_legacy.get_service_type(str(shipment.category), float(shipment.cost_of_courier),
-                                                      float(item_weight), receiver_city)
+                                                             float(item_weight), receiver_city)
         item_price = shipment.cost_of_courier
 
     sender = {
@@ -374,7 +378,7 @@ def create_individual_fedex_shipment(request):
     if result['status'] != 'ERROR':
         if client_type == 'business':
             if product.mapped_tracking_no:
-                product.tracking_history= str(product.tracking_history) + ',' + str(product.mapped_tracking_no)
+                product.tracking_history = str(product.tracking_history) + ',' + str(product.mapped_tracking_no)
             product.mapped_tracking_no = result['tracking_number']
 
             output = PdfFileWriter()
@@ -398,7 +402,7 @@ def create_individual_fedex_shipment(request):
             outputStream = cStringIO.StringIO()
             output.write(outputStream)
             product.fedex_ship_docs.save(result['tracking_number'] + '.pdf',
-                                              ContentFile(outputStream.getvalue()))
+                                         ContentFile(outputStream.getvalue()))
             fedex_ship_docs_url = str(product.fedex_ship_docs.name).split('/')[-1]
             if result["shipping_cost"]:
                 product.actual_shipping_cost = float(result["shipping_cost"])
@@ -407,7 +411,7 @@ def create_individual_fedex_shipment(request):
             product.save()
         elif client_type == 'customer':
             if shipment.mapped_tracking_no:
-                shipment.tracking_history=str(shipment.tracking_history) + ',' + str(shipment.mapped_tracking_no)
+                shipment.tracking_history = str(shipment.tracking_history) + ',' + str(shipment.mapped_tracking_no)
             shipment.mapped_tracking_no = result['tracking_number']
 
             output = PdfFileWriter()
@@ -425,7 +429,7 @@ def create_individual_fedex_shipment(request):
             outputStream = cStringIO.StringIO()
             output.write(outputStream)
             shipment.fedex_ship_docs.save(result['tracking_number'] + '.pdf',
-                                               ContentFile(outputStream.getvalue()))
+                                          ContentFile(outputStream.getvalue()))
             fedex_ship_docs_url = str(shipment.fedex_ship_docs.name).split('/')[-1]
             if result["shipping_cost"]:
                 shipment.actual_shipping_cost = float(result["shipping_cost"])
@@ -459,4 +463,5 @@ def schedule_reverse_pickup(request):
     except ObjectDoesNotExist:
         return HttpResponseNotFound("Order not found. Please check the order no")
 
-    return HttpResponse(fedex.pickup_scheduler(order, ready_timestamp, business_closetime))
+    result = json.dumps(fedex.pickup_scheduler(order, ready_timestamp, business_closetime))
+    return HttpResponse(result, content_type='application/json')
