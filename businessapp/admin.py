@@ -1126,9 +1126,8 @@ class OrderAdmin(FilterUserAdmin,ImportExportActionModelAdmin):
 			if product.fedex_ship_docs or product.fedex_outbound_label:
 				return "Order already created using legacy"
 
-
-		if obj.state == 'Kerala' and obj.method == 'B':
-			return '<h2 style="color:red">Not Servicable</h2>'
+			if obj.state == 'Kerala' and obj.method == 'B' and float(product.price) > 5000:
+				return '<h2 style="color:red">Product %s value should be <5000 for Kerala</h2>'
 
 		# Temporary ban
 		if obj.state == 'Kerala' and obj.payment_method == 'C':
