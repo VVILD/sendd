@@ -1,0 +1,505 @@
+{% load filters %}
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+
+	<meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+	<title></title>
+	<meta name="generator" content="LibreOffice 4.4.5.2 (Linux)"/>
+	<meta name="author" content="edp"/>
+	<meta name="created" content="2005-12-03T12:34:11"/>
+	<meta name="changed" content="2015-10-27T09:55:27.454995400"/>
+	<meta name="KSOProductBuildVer" content="1033-9.1.0.4550"/>
+	<meta name="KSOReadingLayout" content="false"/>
+
+	<style type="text/css">
+		body,div,table,thead,tbody,tfoot,tr,th,td,p { font-family:"Arial"; font-size:x-small }
+	</style>
+
+</head>
+
+<body>
+<table cellspacing="0" border="0">
+	<colgroup width="187"></colgroup>
+	<colgroup width="94"></colgroup>
+	<colgroup width="313"></colgroup>
+	<colgroup width="6"></colgroup>
+	<colgroup width="85"></colgroup>
+	<colgroup width="75"></colgroup>
+	<colgroup width="84"></colgroup>
+	<colgroup width="4"></colgroup>
+	<colgroup span="2" width="68"></colgroup>
+	<tr>
+		<td style="border-top: 2px solid #3c3c3c; border-left: 2px solid #3c3c3c; border-right: 2px solid #3c3c3c" colspan=7 height="29" align="center" valign=middle><b><font size=3>INVOICE CUM PACKING LIST </font></b></td>
+		<td style="border-top: 2px solid #3c3c3c; border-right: 2px solid #3c3c3c" align="left" valign=middle><b><br></b></td>
+		<td align="left" valign=middle><b><br></b></td>
+		<td align="left" valign=middle><b><br></b></td>
+	</tr>
+	<tr>
+		<td style="border-top: 2px solid #3c3c3c; border-bottom: 1px solid #3c3c3c; border-left: 2px solid #3c3c3c" height="20" align="left" valign=middle><b><u><font color="#000000">CONSIGNOR</font></u></b></td>
+		<td style="border-top: 2px solid #3c3c3c; border-bottom: 1px solid #3c3c3c" align="left" valign=middle><b><font color="#000000"><br></font></b></td>
+		<td style="border-top: 2px solid #3c3c3c; border-left: 2px solid #3c3c3c; border-right: 2px solid #3c3c3c" align="left" valign=middle><b><font color="#000000"><br></font></b></td>
+		<td style="border-top: 2px solid #3c3c3c" align="left" valign=middle><b><font color="#000000"><br></font></b></td>
+		<td style="border-top: 2px solid #3c3c3c; border-left: 2px solid #3c3c3c" colspan=2 align="center" valign=middle><b><font color="#000000">Invoice No. &amp; Date</font></b></td>
+		<td style="border-top: 2px solid #3c3c3c; border-right: 2px solid #3c3c3c" align="left" valign=middle sdnum="1033;0;0.00"><b><font color="#000000"><br></font></b></td>
+		<td style="border-right: 2px solid #3c3c3c" align="left" valign=middle><b><br></b></td>
+		<td align="left" valign=middle><b><br></b></td>
+		<td align="left" valign=middle><b><br></b></td>
+	</tr>
+	<tr>
+		<td style="border-left: 2px solid #3c3c3c" height="20" align="left"><b><font face="Cambria" color="#000000">{{ product.order.business.business_name }}</font></b></td>
+		<td align="left"><font face="Cambria"><br></font></td>
+		<td style="border-left: 2px solid #3c3c3c; border-right: 2px solid #3c3c3c" align="left"><font face="Cambria"><br></font></td>
+		<td align="left" valign=middle><b><font color="#000000"><br></font></b></td>
+		<td style="border-bottom: 1px solid #3c3c3c; border-left: 2px solid #3c3c3c" colspan=2 align="center" valign=middle><b><font color="#000000"><br></font></b></td>
+		<td style="border-bottom: 1px solid #3c3c3c; border-right: 2px solid #3c3c3c" align="left" valign=middle sdnum="1033;0;0.00"><b><font color="#000000"><br></font></b></td>
+		<td style="border-right: 2px solid #3c3c3c" align="left" valign=middle><b><br></b></td>
+		<td align="left" valign=middle><b><br></b></td>
+		<td align="left" valign=middle><b><br></b></td>
+	</tr>
+	<tr>
+		<td style="border-left: 2px solid #3c3c3c" height="70" align="left"><font face="Cambria" color="#000000">{{ product.order.business.address }}<br>{{ product.order.business.city }} -{{ product.order.business.pincode }}<br>Mob:{{ product.order.business.contact_mob }} , {{ product.order.business.contact_office }}</font></td>
+		<td align="left"><font face="Cambria" color="#000000"><br></font></td>
+		<td style="border-left: 2px solid #3c3c3c; border-right: 2px solid #3c3c3c" align="left"><font face="Cambria"><br></font></td>
+		<td align="left" valign=middle sdnum="1033;0;0.00"><b><font color="#000000"><br></font></b></td>
+		<td style="border-top: 1px solid #3c3c3c; border-bottom: 1px solid #3c3c3c; border-left: 2px solid #3c3c3c" align="left" valign=middle><b><font color="#000000"><br></font></b></td>
+		<td style="border-top: 1px solid #3c3c3c; border-bottom: 1px solid #3c3c3c" align="left" valign=middle><b><font color="#000000"><br></font></b></td>
+		<td style="border-top: 1px solid #3c3c3c; border-bottom: 1px solid #3c3c3c; border-right: 2px solid #3c3c3c" align="left" valign=middle sdnum="1033;0;0.00"><b><font color="#000000"><br></font></b></td>
+		<td style="border-right: 2px solid #3c3c3c" align="left" valign=middle><b><br></b></td>
+		<td align="left" valign=middle><b><br></b></td>
+		<td align="left" valign=middle><b><br></b></td>
+	</tr>
+	<tr>
+		<td style="border-left: 2px solid #3c3c3c" height="20" align="left"><font face="Cambria" color="#000000"><br></font></td>
+		<td align="left"><font face="Cambria" color="#000000"><br></font></td>
+		<td style="border-left: 2px solid #3c3c3c; border-right: 2px solid #3c3c3c" align="left"><font face="Cambria" color="#000000"><br></font></td>
+		<td align="left" valign=middle sdnum="1033;0;0.00"><b><font color="#000000"><br></font></b></td>
+		<td style="border-top: 1px solid #3c3c3c; border-left: 2px solid #3c3c3c" align="left" valign=middle><b><font color="#000000">Buyer's Order No. &amp; Date</font></b></td>
+		<td style="border-top: 1px solid #3c3c3c" align="left" valign=middle><b><font color="#000000"><br></font></b></td>
+		<td style="border-top: 1px solid #3c3c3c; border-right: 2px solid #3c3c3c" align="left" valign=middle sdnum="1033;0;0.00"><b><font color="#000000"><br></font></b></td>
+		<td style="border-right: 2px solid #3c3c3c" align="left" valign=middle><b><br></b></td>
+		<td align="left" valign=middle><b><br></b></td>
+		<td align="left" valign=middle><b><br></b></td>
+	</tr>
+	<tr>
+		<td style="border-left: 2px solid #3c3c3c" height="20" align="left"><font face="Cambria" color="#000000"><br></font></td>
+		<td align="left"><font face="Cambria" color="#000000"><br></font></td>
+		<td style="border-left: 2px solid #3c3c3c; border-right: 2px solid #3c3c3c" align="left"><font face="Cambria"><br></font></td>
+		<td align="left" valign=middle><font color="#000000"><br></font></td>
+		<td style="border-bottom: 1px solid #3c3c3c; border-left: 2px solid #3c3c3c" align="left" valign=middle><b><font color="#000000"><br></font></b></td>
+		<td style="border-bottom: 1px solid #3c3c3c" align="left" valign=middle><b><font color="#000000"><br></font></b></td>
+		<td style="border-bottom: 1px solid #3c3c3c; border-right: 2px solid #3c3c3c" align="left" valign=middle sdnum="1033;0;0.00"><b><font color="#000000"><br></font></b></td>
+		<td style="border-right: 2px solid #3c3c3c" align="left" valign=middle><b><br></b></td>
+		<td align="left" valign=middle><b><br></b></td>
+		<td align="left" valign=middle><b><br></b></td>
+	</tr>
+	<tr>
+		<td style="border-left: 2px solid #3c3c3c" height="20" align="left"><font face="Cambria" color="#000000"><br></font></td>
+		<td align="left"><font face="Cambria"><br></font></td>
+		<td style="border-left: 2px solid #3c3c3c; border-right: 2px solid #3c3c3c" align="left"><font face="Cambria"><br></font></td>
+		<td align="left" valign=middle><font color="#000000"><br></font></td>
+		<td style="border-top: 1px solid #3c3c3c; border-left: 2px solid #3c3c3c" align="left" valign=middle><b><font color="#000000">Other Reference (s) :-</font></b></td>
+		<td style="border-top: 1px solid #3c3c3c" align="left" valign=middle><b><font color="#000000"><br></font></b></td>
+		<td style="border-top: 1px solid #3c3c3c; border-right: 2px solid #3c3c3c" align="left" valign=middle sdnum="1033;0;0.00"><b><font color="#000000"><br></font></b></td>
+		<td style="border-right: 2px solid #3c3c3c" align="left" valign=middle><b><br></b></td>
+		<td align="left" valign=middle><b><br></b></td>
+		<td align="left" valign=middle><b><br></b></td>
+	</tr>
+	<tr>
+		<td style="border-left: 2px solid #3c3c3c" height="20" align="left"><font face="Cambria" color="#000000"><br></font></td>
+		<td align="left"><font face="Cambria"><br></font></td>
+		<td style="border-left: 2px solid #3c3c3c; border-right: 2px solid #3c3c3c" align="left"><font face="Cambria"><br></font></td>
+		<td align="left" valign=middle><font color="#000000"><br></font></td>
+		<td style="border-bottom: 1px solid #3c3c3c; border-left: 2px solid #3c3c3c" align="left" valign=middle><b><font color="#000000">Buyer (If other than Consignee) :-</font></b></td>
+		<td style="border-bottom: 1px solid #3c3c3c" align="left" valign=middle><b><font color="#000000"><br></font></b></td>
+		<td style="border-bottom: 1px solid #3c3c3c; border-right: 2px solid #3c3c3c" align="left" valign=middle sdnum="1033;0;0.00"><b><font color="#000000"><br></font></b></td>
+		<td style="border-right: 2px solid #3c3c3c" align="left" valign=middle><b><br></b></td>
+		<td align="left" valign=middle><b><br></b></td>
+		<td align="left" valign=middle><b><br></b></td>
+	</tr>
+	<tr>
+		<td style="border-top: 1px solid #3c3c3c; border-bottom: 1px solid #3c3c3c; border-left: 2px solid #3c3c3c" height="20" align="left" valign=middle><b><u><font color="#000000">CONSIGNEE</font></u></b></td>
+		<td style="border-top: 1px solid #3c3c3c; border-bottom: 1px solid #3c3c3c" align="left" valign=middle><b><u><font color="#000000"><br></font></u></b></td>
+		<td style="border-top: 1px solid #3c3c3c; border-left: 2px solid #3c3c3c; border-right: 2px solid #3c3c3c" align="left" valign=middle><b><font color="#000000"><br></font></b></td>
+		<td style="border-top: 1px solid #3c3c3c" align="left" valign=middle><b><font color="#000000"><br></font></b></td>
+		<td style="border-top: 1px solid #3c3c3c; border-left: 2px solid #3c3c3c" align="left" valign=middle><b><font color="#000000"><br></font></b></td>
+		<td style="border-top: 1px solid #3c3c3c" align="left" valign=middle><b><font color="#000000"><br></font></b></td>
+		<td style="border-top: 1px solid #3c3c3c; border-right: 2px solid #3c3c3c" align="left" valign=middle sdnum="1033;0;0.00"><b><font color="#000000"><br></font></b></td>
+		<td style="border-right: 2px solid #3c3c3c" align="left" valign=middle><b><br></b></td>
+		<td align="left" valign=middle><b> </b></td>
+		<td align="left" valign=middle><b><br></b></td>
+	</tr>
+	<tr>
+		<td style="border-left: 2px solid #3c3c3c" height="20" align="left"><b><font face="Cambria" color="#000000">{{ product.order.name }}</font></b></td>
+		<td align="left" valign=middle><font color="#000000"><br></font></td>
+		<td style="border-left: 2px solid #3c3c3c; border-right: 2px solid #3c3c3c" align="left" valign=middle><font color="#000000"><br></font></td>
+		<td align="left" valign=middle><b><font color="#000000"><br></font></b></td>
+		<td style="border-top: 1px solid #3c3c3c; border-left: 2px solid #3c3c3c" align="left" valign=middle><b><font color="#000000">Country of Origin of Goods </font></b></td>
+		<td style="border-top: 1px solid #3c3c3c" align="left" valign=middle><b><font color="#000000"><br></font></b></td>
+		<td style="border-top: 1px solid #3c3c3c; border-right: 2px solid #3c3c3c" align="left" valign=middle sdnum="1033;0;0.00"><b><font color="#000000"><br></font></b></td>
+		<td style="border-right: 2px solid #3c3c3c" align="left" valign=middle><b><br></b></td>
+		<td align="left" valign=middle><b><br></b></td>
+		<td align="left" bgcolor="#FFFFFF"><font color="#333333"><br></font></td>
+	</tr>
+	<tr>
+		<td height="51" align="left"><font face="Calibri" color="#333333"> {{ product.order.address1 }} {{ product.order.address2 }} {{ product.order.address1 }} {{ product.order.address2 }}<br>{{ product.order.city }}<br>{{ product.order.state }} - {{ product.order.pincode }}</font></td>
+		<td align="left" valign=middle><font color="#000000"><br></font></td>
+		<td style="border-left: 2px solid #3c3c3c; border-right: 2px solid #3c3c3c" align="left" valign=middle><font color="#000000"></font></td>
+		<td align="left" valign=middle><b><font color="#000000"><br></font></b></td>
+		<td style="border-bottom: 2px solid #3c3c3c; border-left: 2px solid #3c3c3c" align="left" valign=middle><b><font color="#000000">INDIA</font></b></td>
+		<td style="border-bottom: 2px solid #3c3c3c" align="left" valign=middle><b><font color="#000000"><br></font></b></td>
+		<td style="border-bottom: 2px solid #3c3c3c; border-right: 2px solid #3c3c3c" align="left" valign=middle sdnum="1033;0;0.00"><b><font color="#000000"><br></font></b></td>
+		<td style="border-right: 2px solid #3c3c3c" align="left" valign=middle><b><br></b></td>
+		<td align="left" valign=middle><b><br></b></td>
+		<td align="left" bgcolor="#FFFFFF"><font color="#333333"><br></font></td>
+	</tr>
+	<tr>
+		<td style="border-left: 2px solid #3c3c3c" height="20" align="left"><font face="Cambria" color="#000000"><br></font></td>
+		<td align="left" valign=middle><font color="#000000"><br></font></td>
+		<td style="border-left: 2px solid #3c3c3c; border-right: 2px solid #3c3c3c" align="left" valign=middle><font color="#000000"><br></font></td>
+		<td style="border-right: 1px solid #3c3c3c" align="left" valign=middle><b><font color="#000000"><br></font></b></td>
+		<td style="border-left: 1px solid #3c3c3c" align="left" valign=middle><b><font color="#000000"><br></font></b></td>
+		<td align="left" valign=middle><b><font color="#000000"> </font></b></td>
+		<td style="border-right: 2px solid #3c3c3c" align="left" valign=middle sdnum="1033;0;0.00"><b><font color="#000000"><br></font></b></td>
+		<td style="border-right: 2px solid #3c3c3c" align="left" valign=middle><b><br></b></td>
+		<td align="left" valign=middle><b><br></b></td>
+		<td align="left" bgcolor="#FFFFFF"><font color="#333333"><br></font></td>
+	</tr>
+	<tr>
+		<td style="border-left: 2px solid #3c3c3c" height="20" align="left"><font face="Cambria" color="#000000"><br></font></td>
+		<td align="left" valign=middle><font color="#000000"><br></font></td>
+		<td style="border-left: 2px solid #3c3c3c; border-right: 2px solid #3c3c3c" align="left" valign=middle><font color="#000000"><br></font></td>
+		<td style="border-right: 1px solid #3c3c3c" align="left" valign=middle><b><font color="#000000"><br></font></b></td>
+		<td align="left" valign=middle><b><font color="#000000"><br></font></b></td>
+		<td align="left" valign=middle><b><font color="#000000"><br></font></b></td>
+		<td style="border-right: 2px solid #3c3c3c" align="left" valign=middle sdnum="1033;0;0.00"><b><font color="#000000"><br></font></b></td>
+		<td style="border-right: 2px solid #3c3c3c" align="left" valign=middle><b><br></b></td>
+		<td align="left" valign=middle><b><br></b></td>
+		<td align="left" bgcolor="#FFFFFF"><font color="#333333"><br></font></td>
+	</tr>
+	<tr>
+		<td height="20" align="left" valign=middle><font size=1><br></font></td>
+		<td align="left" valign=middle><font color="#000000"><br></font></td>
+		<td style="border-left: 2px solid #3c3c3c; border-right: 2px solid #3c3c3c" align="left" valign=middle><font color="#000000"><br></font></td>
+		<td style="border-right: 1px solid #3c3c3c" align="left" valign=middle><b><font color="#000000"><br></font></b></td>
+		<td align="left" valign=middle><b><font color="#000000"><br></font></b></td>
+		<td align="left" valign=middle><b><font color="#000000"><br></font></b></td>
+		<td style="border-right: 2px solid #3c3c3c" align="left" valign=middle sdnum="1033;0;0.00"><b><font color="#000000"><br></font></b></td>
+		<td style="border-right: 2px solid #3c3c3c" align="left" valign=middle><b><br></b></td>
+		<td align="left" valign=middle><b><br></b></td>
+		<td align="left" bgcolor="#FFFFFF"><font color="#333333"><br></font></td>
+	</tr>
+	<tr>
+		<td style="border-left: 2px solid #3c3c3c" height="20" align="left"><font face="Cambria" color="#000000">mob:{{ product.order.phone }}</font></td>
+		<td align="left" valign=middle><font color="#000000"><br></font></td>
+		<td style="border-left: 2px solid #3c3c3c; border-right: 2px solid #3c3c3c" align="left" valign=middle><font color="#000000"><br></font></td>
+		<td style="border-right: 1px solid #3c3c3c" align="left" valign=middle><b><font color="#000000"><br></font></b></td>
+		<td align="left" valign=middle><b><font color="#000000"><br></font></b></td>
+		<td align="left" valign=middle><b><font color="#000000"><br></font></b></td>
+		<td style="border-right: 2px solid #3c3c3c" align="left" valign=middle sdnum="1033;0;0.00"><b><font color="#000000"><br></font></b></td>
+		<td style="border-right: 2px solid #3c3c3c" align="left" valign=middle><b><br></b></td>
+		<td align="left" valign=middle><b><br></b></td>
+		<td align="left" bgcolor="#FFFFFF"><font color="#333333"><br></font></td>
+	</tr>
+	<tr>
+		<td style="border-left: 2px solid #3c3c3c" height="20" align="left"><font face="Cambria" color="#000000"><br></font></td>
+		<td align="left" valign=middle><font color="#000000"><br></font></td>
+		<td style="border-left: 2px solid #3c3c3c; border-right: 2px solid #3c3c3c" align="left" valign=middle><font color="#000000"><br></font></td>
+		<td style="border-right: 1px solid #3c3c3c" align="left" valign=middle><b><font color="#000000"><br></font></b></td>
+		<td align="left" valign=middle><b><font color="#000000"><br></font></b></td>
+		<td align="left" valign=middle><b><font color="#000000"><br></font></b></td>
+		<td style="border-right: 2px solid #3c3c3c" align="left" valign=middle sdnum="1033;0;0.00"><b><font color="#000000"><br></font></b></td>
+		<td style="border-right: 2px solid #3c3c3c" align="left" valign=middle><b><br></b></td>
+		<td align="left" valign=middle><b><br></b></td>
+		<td align="left" bgcolor="#FFFFFF"><font color="#333333"><br></font></td>
+	</tr>
+	<tr>
+		<td style="border-top: 2px solid #3c3c3c; border-left: 2px solid #3c3c3c" height="20" align="left" valign=middle><b><font color="#000000">Port of Loading</font></b></td>
+		<td style="border-top: 2px solid #3c3c3c; border-left: 2px solid #3c3c3c; border-right: 2px solid #3c3c3c" align="left" valign=middle><b><font color="#000000"><br></font></b></td>
+		<td style="border-top: 2px solid #3c3c3c; border-right: 2px solid #3c3c3c" align="left" valign=middle><b><font color="#000000">Port of Discharge</font></b></td>
+		<td style="border-top: 1px solid #3c3c3c; border-right: 1px solid #3c3c3c" align="left" valign=middle><b><font color="#000000"><br></font></b></td>
+		<td align="left" valign=middle><b><font color="#000000"><br></font></b></td>
+		<td align="left" valign=middle><b><font color="#000000"><br></font></b></td>
+		<td style="border-right: 2px solid #3c3c3c" align="left" valign=middle sdnum="1033;0;0.00"><b><font color="#000000"><br></font></b></td>
+		<td style="border-right: 2px solid #3c3c3c" align="left" valign=middle><b><br></b></td>
+		<td align="left" valign=middle><b><br></b></td>
+		<td align="left" bgcolor="#FFFFFF"><font color="#333333"><br></font></td>
+	</tr>
+	<tr>
+		<td style="border-top: 2px solid #3c3c3c; border-bottom: 2px solid #3c3c3c; border-left: 2px solid #3c3c3c" height="20" align="left" valign=middle><b><font color="#000000">MUMBAI (INDIA)</font></b></td>
+		<td style="border-left: 2px solid #3c3c3c; border-right: 2px solid #3c3c3c" align="left" valign=middle><b><font color="#000000"><br></font></b></td>
+		<td style="border-top: 2px solid #3c3c3c; border-bottom: 2px solid #3c3c3c; border-right: 2px solid #3c3c3c" align="left" valign=middle><b><font color="#000000"><br></font></b></td>
+		<td style="border-bottom: 1px solid #3c3c3c; border-right: 1px solid #3c3c3c" align="left" valign=middle><b><font color="#000000"><br></font></b></td>
+		<td align="left" valign=middle><b><font color="#000000"><br></font></b></td>
+		<td align="left" valign=middle><b><font color="#000000"><br></font></b></td>
+		<td style="border-right: 2px solid #3c3c3c" align="left" valign=middle sdnum="1033;0;0.00"><b><font color="#000000"><br></font></b></td>
+		<td style="border-right: 2px solid #3c3c3c" align="left" valign=middle><b><br></b></td>
+		<td align="left" valign=middle><b><br></b></td>
+		<td align="left"><b><font color="#333333"><br></font></b></td>
+	</tr>
+	<tr>
+		<td style="border-left: 2px solid #3c3c3c" height="20" align="left" valign=middle><b><font color="#000000"><br></font></b></td>
+		<td style="border-top: 2px solid #3c3c3c; border-left: 2px solid #3c3c3c; border-right: 2px solid #3c3c3c" align="center" valign=middle><b><font color="#000000"><br></font></b></td>
+		<td style="border-right: 2px solid #3c3c3c" align="left" valign=middle><b><font color="#000000">Final Destination</font></b></td>
+		<td style="border-top: 1px solid #3c3c3c; border-right: 1px solid #3c3c3c" align="left" valign=middle><b><font color="#000000"><br></font></b></td>
+		<td align="left" valign=middle><b><font color="#000000"><br></font></b></td>
+		<td align="left" valign=middle><b><font color="#000000"><br></font></b></td>
+		<td style="border-right: 2px solid #3c3c3c" align="left" valign=middle sdnum="1033;0;0.00"><b><font color="#000000"><br></font></b></td>
+		<td style="border-right: 2px solid #3c3c3c" align="left" valign=middle><b><br></b></td>
+		<td align="left" valign=middle><b><br></b></td>
+		<td align="left"><b><font color="#333333"><br></font></b></td>
+	</tr>
+	<tr>
+		<td style="border-left: 2px solid #3c3c3c" height="20" align="center" valign=middle><b><font color="#000000"><br></font></b></td>
+		<td style="border-bottom: 2px solid #3c3c3c; border-left: 2px solid #3c3c3c; border-right: 2px solid #3c3c3c" align="center" valign=middle><b><font color="#000000"><br></font></b></td>
+		<td style="border-right: 2px solid #3c3c3c" align="left" valign=middle><b><font color="#000000">{{ product.order.city }}</font></b></td>
+		<td style="border-right: 1px solid #3c3c3c" align="left" valign=middle><b><font color="#000000"><br></font></b></td>
+		<td align="left" valign=middle><b><font color="#000000"><br></font></b></td>
+		<td align="left" valign=middle><b><font color="#000000"><br></font></b></td>
+		<td style="border-right: 2px solid #3c3c3c" align="left" valign=middle sdnum="1033;0;0.00"><b><font color="#000000"><br></font></b></td>
+		<td style="border-right: 2px solid #3c3c3c" align="left" valign=middle><b><br></b></td>
+		<td align="left" valign=middle><b><br></b></td>
+		<td align="left" valign=middle><b><br></b></td>
+	</tr>
+	<tr>
+		<td style="border-top: 2px solid #3c3c3c; border-bottom: 2px solid #3c3c3c; border-left: 2px solid #3c3c3c" height="42" align="center" valign=middle><b><font color="#000000">Marks &amp; Nos/</font></b></td>
+		<td style="border-bottom: 2px solid #3c3c3c; border-left: 2px solid #3c3c3c; border-right: 2px solid #3c3c3c" align="center" valign=middle><b><font color="#000000">No. &amp; Kind of Pkgs</font></b></td>
+		<td style="border-top: 2px solid #3c3c3c; border-bottom: 2px solid #3c3c3c; border-right: 2px solid #3c3c3c" colspan=2 align="center" valign=middle><b><font color="#000000">Description of Goods</font></b></td>
+		<td style="border-top: 2px solid #3c3c3c; border-bottom: 2px solid #3c3c3c; border-right: 1px solid #3c3c3c" align="center" valign=middle><b><font color="#000000">Quantity</font></b></td>
+		<td style="border-top: 2px solid #3c3c3c; border-bottom: 2px solid #3c3c3c; border-left: 1px solid #3c3c3c" align="center" valign=middle sdnum="1033;0;0.00"><b><font color="#000000">Rate</font></b></td>
+		<td style="border-top: 2px solid #3c3c3c; border-bottom: 2px solid #3c3c3c; border-left: 1px solid #3c3c3c; border-right: 2px solid #3c3c3c" align="center" valign=middle><b><font color="#000000">Total</font></b></td>
+		<td style="border-right: 2px solid #3c3c3c" align="center" valign=middle><b><br></b></td>
+		<td align="center" valign=middle><b><br></b></td>
+		<td align="center" valign=middle><b><br></b></td>
+	</tr>
+	<tr>
+		<td style="border-left: 2px solid #3c3c3c" height="21" align="center" valign=middle sdval="1" sdnum="1033;"><b><font color="#000000">1</font></b></td>
+		<td style="border-left: 1px solid #3c3c3c; border-right: 1px solid #3c3c3c" align="center" valign=middle sdval="8" sdnum="1033;"><b><font color="#000000">1</font></b></td>
+		<td style="border-left: 1px solid #3c3c3c" align="center" valign=middle><font color="#000000">{{ product.name }}</font></td>
+		<td style="border-right: 1px solid #3c3c3c" align="center" valign=middle><b><font color="#000000"><br></font></b></td>
+		<td style="border-right: 1px solid #3c3c3c" align="center" valign=middle sdval="3200" sdnum="1033;"><b><font color="#000000">{{ product.quantity }}</font></b></td>
+		<td style="border-left: 1px solid #3c3c3c" align="center" valign=middle sdval="10" sdnum="1033;0;0.00"><b><font color="#000000">{{ product.price|div:product.quantity }}</font></b></td>
+		<td style="border-left: 1px solid #3c3c3c; border-right: 2px solid #3c3c3c" align="center" valign=middle sdval="32000" sdnum="1033;"><b><font color="#000000">{{ product.price }}</font></b></td>
+		<td style="border-right: 2px solid #3c3c3c" align="left" valign=middle><b><br></b></td>
+		<td align="left" valign=middle><b><br></b></td>
+		<td align="left" valign=middle><b><br></b></td>
+	</tr>
+
+	<tr>
+		<td style="border-left: 2px solid #3c3c3c; border-right: 1px solid #3c3c3c" height="21" align="center" valign=middle><font color="#000000"><br></font></td>
+		<td style="border-left: 1px solid #3c3c3c; border-right: 1px solid #3c3c3c" align="center" valign=middle><font color="#000000"><br></font></td>
+		<td style="border-left: 1px solid #3c3c3c; border-right: 1px solid #3c3c3c" align="center" valign=middle><b><font color="#000000"><br></font></b></td>
+		<td style="border-right: 1px solid #3c3c3c" align="center" valign=middle><b><font color="#000000"><br></font></b></td>
+		<td style="border-right: 1px solid #3c3c3c" align="center" valign=middle><font color="#000000"><br></font></td>
+		<td style="border-left: 1px solid #3c3c3c" align="center" valign=middle sdnum="1033;0;0.00"><font color="#000000"><br></font></td>
+		<td style="border-left: 1px solid #3c3c3c; border-right: 2px solid #3c3c3c" align="center" valign=middle sdnum="1033;0;0.00"><font color="#000000"><br></font></td>
+		<td style="border-right: 2px solid #3c3c3c" align="left" valign=middle><b><br></b></td>
+		<td align="left" valign=middle><b><br></b></td>
+		<td align="left" valign=middle><b><br></b></td>
+	</tr>
+	<tr>
+		<td style="border-left: 2px solid #3c3c3c; border-right: 1px solid #3c3c3c" height="21" align="center" valign=middle><font color="#000000"><br></font></td>
+		<td style="border-left: 1px solid #3c3c3c; border-right: 1px solid #3c3c3c" align="center" valign=middle><font color="#000000"><br></font></td>
+		<td style="border-left: 1px solid #3c3c3c; border-right: 1px solid #3c3c3c" align="center" valign=middle><b><font color="#000000"><br></font></b></td>
+		<td style="border-right: 1px solid #3c3c3c" align="center" valign=middle><b><font color="#000000"><br></font></b></td>
+		<td style="border-right: 1px solid #3c3c3c" align="center" valign=middle><font color="#000000"><br></font></td>
+		<td style="border-left: 1px solid #3c3c3c" align="center" valign=middle sdnum="1033;0;0.00"><font color="#000000"><br></font></td>
+		<td style="border-left: 1px solid #3c3c3c; border-right: 2px solid #3c3c3c" align="center" valign=middle sdnum="1033;0;0.00"><font color="#000000"><br></font></td>
+		<td style="border-right: 2px solid #3c3c3c" align="left" valign=middle><b><br></b></td>
+		<td align="left" valign=middle><b><br></b></td>
+		<td align="left" valign=middle><b><br></b></td>
+	</tr>
+	<tr>
+		<td style="border-left: 2px solid #3c3c3c" height="19" align="center" valign=middle><font color="#000000"><br></font></td>
+		<td style="border-left: 1px solid #3c3c3c" align="center" valign=middle><font color="#000000"><br></font></td>
+		<td style="border-left: 1px solid #3c3c3c" align="center" valign=middle><b><font color="#000000"><br></font></b></td>
+		<td style="border-right: 1px solid #3c3c3c" align="left" valign=middle><font color="#000000"><br></font></td>
+		<td style="border-right: 1px solid #3c3c3c" align="center" valign=middle><font color="#000000"><br></font></td>
+		<td style="border-left: 1px solid #3c3c3c" align="center" valign=middle sdnum="1033;0;0.00"><font color="#000000"><br></font></td>
+		<td style="border-left: 1px solid #3c3c3c; border-right: 2px solid #3c3c3c" align="center" valign=middle sdnum="1033;0;0.00"><font color="#000000"><br></font></td>
+		<td style="border-right: 2px solid #3c3c3c" align="left" valign=middle><b><br></b></td>
+		<td align="left" valign=middle><b><br></b></td>
+		<td align="left" valign=middle><b><br></b></td>
+	</tr>
+	<tr>
+		<td style="border-left: 2px solid #3c3c3c" height="19" align="center" valign=middle><font color="#000000"><br></font></td>
+		<td style="border-left: 1px solid #3c3c3c" align="center" valign=middle><font color="#000000"><br></font></td>
+		<td style="border-left: 1px solid #3c3c3c" align="center" valign=middle><b><font color="#000000"><br></font></b></td>
+		<td style="border-right: 1px solid #3c3c3c" align="left" valign=middle><font color="#000000"><br></font></td>
+		<td style="border-right: 1px solid #3c3c3c" align="center" valign=middle><font color="#000000"><br></font></td>
+		<td style="border-left: 1px solid #3c3c3c" align="center" valign=middle sdnum="1033;0;0.00"><font color="#000000"><br></font></td>
+		<td style="border-left: 1px solid #3c3c3c; border-right: 2px solid #3c3c3c" align="center" valign=middle sdnum="1033;0;0.00"><font color="#000000"><br></font></td>
+		<td style="border-right: 2px solid #3c3c3c" align="left" valign=middle><b><br></b></td>
+		<td align="left" valign=middle><b><br></b></td>
+		<td align="left" valign=middle><b><br></b></td>
+	</tr>
+	<tr>
+		<td style="border-left: 2px solid #3c3c3c" height="19" align="center" valign=middle><font color="#000000"><br></font></td>
+		<td style="border-left: 1px solid #3c3c3c" align="center" valign=middle><font color="#000000"><br></font></td>
+		<td style="border-left: 1px solid #3c3c3c" align="center" valign=middle><b><font color="#000000"><br></font></b></td>
+		<td style="border-right: 1px solid #3c3c3c" align="left" valign=middle><font color="#000000"><br></font></td>
+		<td style="border-right: 1px solid #3c3c3c" align="center" valign=middle><font color="#000000"><br></font></td>
+		<td style="border-left: 1px solid #3c3c3c" align="center" valign=middle sdnum="1033;0;0.00"><font color="#000000"><br></font></td>
+		<td style="border-left: 1px solid #3c3c3c; border-right: 2px solid #3c3c3c" align="center" valign=middle sdnum="1033;0;0.00"><font color="#000000"><br></font></td>
+		<td style="border-right: 2px solid #3c3c3c" align="left" valign=middle><b><br></b></td>
+		<td align="left" valign=middle><b><br></b></td>
+		<td align="left" valign=middle><b><br></b></td>
+	</tr>
+	<tr>
+		<td style="border-left: 2px solid #3c3c3c" height="19" align="center" valign=middle><font color="#000000"><br></font></td>
+		<td style="border-left: 1px solid #3c3c3c" align="center" valign=middle><font color="#000000"><br></font></td>
+		<td style="border-left: 1px solid #3c3c3c" align="center" valign=middle><b><font color="#000000"><br></font></b></td>
+		<td style="border-right: 1px solid #3c3c3c" align="left" valign=middle><font color="#000000"><br></font></td>
+		<td style="border-right: 1px solid #3c3c3c" align="center" valign=middle><font color="#000000"><br></font></td>
+		<td style="border-left: 1px solid #3c3c3c" align="center" valign=middle sdnum="1033;0;0.00"><font color="#000000"><br></font></td>
+		<td style="border-left: 1px solid #3c3c3c; border-right: 2px solid #3c3c3c" align="center" valign=middle sdnum="1033;0;0.00"><font color="#000000"><br></font></td>
+		<td style="border-right: 2px solid #3c3c3c" align="left" valign=middle><b><br></b></td>
+		<td align="left" valign=middle><b><br></b></td>
+		<td align="left" valign=middle><b><br></b></td>
+	</tr>
+	<tr>
+		<td style="border-left: 2px solid #3c3c3c" height="19" align="center" valign=middle><font color="#000000"><br></font></td>
+		<td style="border-left: 1px solid #3c3c3c" align="center" valign=middle><font color="#000000"><br></font></td>
+		<td style="border-left: 1px solid #3c3c3c" align="center" valign=middle><b><font color="#000000"><br></font></b></td>
+		<td style="border-right: 1px solid #3c3c3c" align="left" valign=middle><font color="#000000"><br></font></td>
+		<td style="border-right: 1px solid #3c3c3c" align="center" valign=middle><font color="#000000"><br></font></td>
+		<td style="border-left: 1px solid #3c3c3c" align="center" valign=middle sdnum="1033;0;0.00"><font color="#000000"><br></font></td>
+		<td style="border-left: 1px solid #3c3c3c; border-right: 2px solid #3c3c3c" align="center" valign=middle sdnum="1033;0;0.00"><font color="#000000"><br></font></td>
+		<td style="border-right: 2px solid #3c3c3c" align="left" valign=middle><b><br></b></td>
+		<td align="left" valign=middle><b><br></b></td>
+		<td align="left" valign=middle><b><br></b></td>
+	</tr>
+	<tr>
+		<td style="border-left: 2px solid #3c3c3c" height="19" align="center" valign=middle><font color="#000000"><br></font></td>
+		<td style="border-left: 1px solid #3c3c3c" align="center" valign=middle><font color="#000000"><br></font></td>
+		<td style="border-left: 1px solid #3c3c3c" align="center" valign=middle><b><font color="#000000"><br></font></b></td>
+		<td style="border-right: 1px solid #3c3c3c" align="left" valign=middle><font color="#000000"><br></font></td>
+		<td style="border-right: 1px solid #3c3c3c" align="center" valign=middle><font color="#000000"><br></font></td>
+		<td style="border-left: 1px solid #3c3c3c" align="center" valign=middle sdnum="1033;0;0.00"><font color="#000000"><br></font></td>
+		<td style="border-left: 1px solid #3c3c3c; border-right: 2px solid #3c3c3c" align="center" valign=middle sdnum="1033;0;0.00"><font color="#000000"><br></font></td>
+		<td style="border-right: 2px solid #3c3c3c" align="left" valign=middle><b><br></b></td>
+		<td align="left" valign=middle><b><br></b></td>
+		<td align="left" valign=middle><b><br></b></td>
+	</tr>
+	<tr>
+		<td style="border-left: 2px solid #3c3c3c" height="19" align="center" valign=middle><font color="#000000"><br></font></td>
+		<td style="border-left: 1px solid #3c3c3c" align="center" valign=middle><font color="#000000"><br></font></td>
+		<td style="border-left: 1px solid #3c3c3c" align="center" valign=middle><b><font color="#000000"><br></font></b></td>
+		<td style="border-right: 1px solid #3c3c3c" align="left" valign=middle><font color="#000000"><br></font></td>
+		<td style="border-right: 1px solid #3c3c3c" align="center" valign=middle><font color="#000000"><br></font></td>
+		<td style="border-left: 1px solid #3c3c3c" align="center" valign=middle sdnum="1033;0;0.00"><font color="#000000"><br></font></td>
+		<td style="border-left: 1px solid #3c3c3c; border-right: 2px solid #3c3c3c" align="center" valign=middle sdnum="1033;0;0.00"><font color="#000000"><br></font></td>
+		<td style="border-right: 2px solid #3c3c3c" align="left" valign=middle><b><br></b></td>
+		<td align="left" valign=middle><b><br></b></td>
+		<td align="left" valign=middle><b><br></b></td>
+	</tr>
+	<tr>
+		<td style="border-left: 2px solid #3c3c3c" height="42" align="center" valign=middle><font color="#000000"><br></font></td>
+		<td style="border-top: 2px solid #3c3c3c; border-bottom: 2px solid #3c3c3c; border-left: 2px solid #3c3c3c; border-right: 2px solid #3c3c3c" colspan=2 align="center" valign=middle><b><u><font size=4 color="#000000"><br></font></u></b></td>
+		<td style="border-right: 1px solid #3c3c3c" align="left" valign=middle><font color="#000000"><br></font></td>
+		<td style="border-right: 1px solid #3c3c3c" align="center" valign=middle><font color="#000000"><br></font></td>
+		<td style="border-left: 1px solid #3c3c3c" align="right" valign=middle sdnum="1033;0;0.00"><font color="#000000"><br></font></td>
+		<td style="border-left: 1px solid #3c3c3c; border-right: 2px solid #3c3c3c" align="right" valign=middle sdnum="1033;0;0.00;[RED]0.00"><font color="#000000"><br></font></td>
+		<td style="border-right: 2px solid #3c3c3c" align="left" valign=middle><b><br></b></td>
+		<td align="left" valign=middle><b><br></b></td>
+		<td align="left" valign=middle><b><br></b></td>
+	</tr>
+	<tr>
+		<td style="border-left: 2px solid #3c3c3c" height="19" align="center" valign=middle><font color="#000000"><br></font></td>
+		<td style="border-left: 1px solid #3c3c3c" align="center" valign=middle><font color="#000000"><br></font></td>
+		<td style="border-left: 1px solid #3c3c3c" align="left" valign=middle><font color="#000000"><br></font></td>
+		<td style="border-right: 1px solid #3c3c3c" align="left" valign=middle><font color="#000000"><br></font></td>
+		<td style="border-right: 1px solid #3c3c3c" align="center" valign=middle><font color="#000000"><br></font></td>
+		<td style="border-left: 1px solid #3c3c3c" align="right" valign=middle sdnum="1033;0;0.00"><font color="#000000"><br></font></td>
+		<td style="border-left: 1px solid #3c3c3c; border-right: 2px solid #3c3c3c" align="right" valign=middle sdnum="1033;0;0.00;[RED]0.00"><font color="#000000"><br></font></td>
+		<td style="border-right: 2px solid #3c3c3c" align="left" valign=middle><b><br></b></td>
+		<td align="left" valign=middle><b><br></b></td>
+		<td align="left" valign=middle><b><br></b></td>
+	</tr>
+	<tr>
+		<td style="border-left: 2px solid #3c3c3c" height="19" align="center" valign=middle><font color="#000000"><br></font></td>
+		<td style="border-left: 1px solid #3c3c3c" align="center" valign=middle><font color="#000000"><br></font></td>
+		<td style="border-left: 1px solid #3c3c3c" align="left" valign=middle><font color="#000000"><br></font></td>
+		<td style="border-right: 1px solid #3c3c3c" align="left" valign=middle><font color="#000000"><br></font></td>
+		<td style="border-right: 1px solid #3c3c3c" align="center" valign=middle><font color="#000000"><br></font></td>
+		<td style="border-left: 1px solid #3c3c3c" align="right" valign=middle sdnum="1033;0;0.00"><font color="#000000"><br></font></td>
+		<td style="border-left: 1px solid #3c3c3c; border-right: 2px solid #3c3c3c" align="right" valign=middle sdnum="1033;0;0.00;[RED]0.00"><font color="#000000"><br></font></td>
+		<td style="border-right: 2px solid #3c3c3c" align="left" valign=middle><b><br></b></td>
+		<td align="left" valign=middle><b><br></b></td>
+		<td align="left" valign=middle><b><br></b></td>
+	</tr>
+	<tr>
+		<td style="border-bottom: 1px solid #3c3c3c; border-left: 2px solid #3c3c3c; border-right: 1px solid #3c3c3c" height="17" align="center" valign=middle><font color="#000000"><br></font></td>
+		<td style="border-bottom: 1px solid #3c3c3c; border-left: 1px solid #3c3c3c" align="left" valign=middle><font color="#000000"><br></font></td>
+		<td style="border-bottom: 1px solid #3c3c3c; border-left: 1px solid #3c3c3c" align="left" valign=middle><font color="#000000"><br></font></td>
+		<td style="border-bottom: 1px solid #3c3c3c; border-right: 1px solid #3c3c3c" align="left" valign=middle><font color="#000000"><br></font></td>
+		<td style="border-bottom: 1px solid #3c3c3c; border-right: 1px solid #3c3c3c" align="center" valign=middle><font color="#000000"><br></font></td>
+		<td style="border-bottom: 1px solid #3c3c3c; border-left: 1px solid #3c3c3c" align="right" valign=middle sdnum="1033;0;0.00"><font color="#000000"><br></font></td>
+		<td style="border-bottom: 1px solid #3c3c3c; border-left: 1px solid #3c3c3c; border-right: 2px solid #3c3c3c" align="right" valign=middle sdnum="1033;0;0.00;[RED]0.00"><font color="#000000"><br></font></td>
+		<td style="border-right: 2px solid #3c3c3c" align="left" valign=middle><b><br></b></td>
+		<td align="left" valign=middle><b><br></b></td>
+		<td align="left" valign=middle><b><br></b></td>
+	</tr>
+	<tr>
+		<td style="border-bottom: 1px solid #3c3c3c; border-left: 2px solid #3c3c3c; border-right: 1px solid #3c3c3c" height="33" align="left" valign=middle><b><font color="#000000">Amount in words-</font></b></td>
+		<td style="border-bottom: 1px solid #3c3c3c; border-left: 1px solid #3c3c3c" align="left" valign=middle><b><font color="#000000">{{ total_word }}</font></b></td>
+		<td align="left" valign=middle><b><br></b></td>
+		<td style="border-bottom: 1px solid #3c3c3c; border-right: 1px solid #3c3c3c" align="left" valign=middle><b><font color="#000000"><br></font></b></td>
+		<td style="border-bottom: 1px solid #3c3c3c; border-right: 1px solid #3c3c3c" align="left" valign=middle sdval="0" sdnum="1033;"><b><font color="#000000">{{ total_quantity }}</font></b></td>
+		<td style="border-bottom: 1px solid #3c3c3c; border-left: 1px solid #3c3c3c; border-right: 1px solid #3c3c3c" align="center" valign=middle><b><font color="#000000"><br></font></b></td>
+		<td style="border-bottom: 1px solid #3c3c3c; border-left: 1px solid #3c3c3c; border-right: 2px solid #3c3c3c" align="center" valign=middle sdval="32000" sdnum="1033;0;_(* #,##0.00_);_(* \(#,##0.00\);_(* -??_);_(@_)"><b><font color="#000000"> {{ total }} </font></b></td>
+		<td style="border-right: 2px solid #3c3c3c" align="left" valign=middle><b><br></b></td>
+		<td align="left" valign=middle><b><br></b></td>
+		<td align="left" valign=middle><b><br></b></td>
+	</tr>
+	<tr>
+		<td style="border-top: 1px solid #3c3c3c; border-bottom: 1px solid #3c3c3c; border-left: 2px solid #3c3c3c; border-right: 2px solid #3c3c3c" colspan=7 rowspan=2 height="66" align="right" valign=middle><b><font color="#000000"><br>Signature / Date</font></b></td>
+		<td style="border-right: 2px solid #3c3c3c" align="left" valign=middle><b><br></b></td>
+		<td align="left" valign=middle><b><br></b></td>
+		<td align="left" valign=middle><b><br></b></td>
+	</tr>
+	<tr>
+		<td style="border-right: 2px solid #3c3c3c" align="left" valign=middle><b><br></b></td>
+		<td align="left" valign=middle><b><br></b></td>
+		<td align="left" valign=middle><b><br></b></td>
+	</tr>
+	<tr>
+		<td style="border-top: 1px solid #3c3c3c; border-left: 2px solid #3c3c3c; border-right: 2px solid #3c3c3c" colspan=7 height="25" align="left" valign=middle><font size=1 color="#000000">THIS IS TO CERTIFY THAT THE ABOVE GOODS ARE GOING FOR PERSONAL USE</font></td>
+		<td style="border-right: 2px solid #3c3c3c" align="left" valign=middle><b><br></b></td>
+		<td align="left" valign=middle><b><br></b></td>
+		<td align="left" valign=middle><b><br></b></td>
+	</tr>
+	<tr>
+		<td style="border-left: 2px solid #3c3c3c; border-right: 2px solid #3c3c3c" colspan=7 rowspan=2 height="34" align="left" valign=middle><font size=1 color="#000000">THIS IS TO DECLARE THAT THIS INVOICE SHOWS THE ACTUAL PRICE OF THE GOODS DESCRIBED AND THAT ALL PARTICULARS ARE TRUE AND CORRECT.</font></td>
+		<td style="border-right: 2px solid #3c3c3c" align="left" valign=middle><b><br></b></td>
+		<td align="left" valign=middle><b><br></b></td>
+		<td align="left" valign=middle><b><br></b></td>
+	</tr>
+	<tr>
+		<td style="border-right: 2px solid #3c3c3c" align="left" valign=middle><b><br></b></td>
+		<td align="left" valign=middle><b><br></b></td>
+		<td align="left" valign=middle><b><br></b></td>
+	</tr>
+	<tr>
+		<td style="border-bottom: 2px solid #3c3c3c; border-left: 2px solid #3c3c3c" height="6" align="left" valign=middle><font size=1 color="#000000"><br></font></td>
+		<td style="border-bottom: 2px solid #3c3c3c" align="left" valign=middle><font size=1 color="#000000"><br></font></td>
+		<td style="border-bottom: 2px solid #3c3c3c" align="left" valign=middle><font size=1 color="#000000"><br></font></td>
+		<td style="border-bottom: 2px solid #3c3c3c" align="left" valign=middle><font size=1 color="#000000"><br></font></td>
+		<td style="border-bottom: 2px solid #3c3c3c" align="left" valign=middle><font size=1 color="#000000"><br></font></td>
+		<td style="border-bottom: 2px solid #3c3c3c" align="left" valign=middle><font color="#000000"><br></font></td>
+		<td style="border-bottom: 2px solid #3c3c3c; border-right: 2px solid #3c3c3c" align="left" valign=middle><font color="#000000"><br></font></td>
+		<td style="border-bottom: 2px solid #3c3c3c; border-right: 2px solid #3c3c3c" align="left" valign=middle><b><br></b></td>
+		<td align="left" valign=middle><b><br></b></td>
+		<td align="left" valign=middle><b><br></b></td>
+	</tr>
+</table>
+<!-- ************************************************************************** -->
+</body>
+    <script>
+        window.onload = function(){
+             window.print();
+        };
+
+    </script>
+</html>

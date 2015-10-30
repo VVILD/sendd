@@ -113,6 +113,14 @@ class Business(models.Model):
     cod_sum=models.FloatField(default=40.0)
     cod_percentage=models.FloatField(default=1.5)
     discount_percentage=models.FloatField(default=0.0)
+    billed_to=models.CharField(max_length=100,blank=True,null=True)
+    account_name=models.CharField(max_length=100,blank=True,null=True)
+    account_type=models.CharField(max_length=1,
+                              choices=(('S', 'savings'), ('C', 'current'),),
+                              null=True, blank=True)
+    bank_name=models.CharField(max_length=100,blank=True,null=True)
+    branch=models.CharField(max_length=100,blank=True,null=True)
+    ifsc_code=models.CharField(max_length=100,blank=True,null=True)
 
     class Meta:
         ordering = ['business_name', ]
@@ -198,6 +206,16 @@ class CodBusinessPanel(Business):
     class Meta:
         proxy = True
         verbose_name_plural = "CodBusinessPanel"
+
+class InitiatedBusinessRemittance(Business):
+    class Meta:
+        proxy = True
+        verbose_name_plural = "InitiatedBusinessRemittance"
+
+class PendingBusinessRemittance(Business):
+    class Meta:
+        proxy = True
+        verbose_name_plural = "PendingBusinessRemittance"
 
 
 class LoginSession(models.Model):
@@ -321,7 +339,7 @@ class Product(models.Model):
     date = models.DateTimeField(null=True, blank=True)
     remittance = models.BooleanField(default=False)
     remittance_status=models.CharField(max_length=1,
-                              choices=(('P', 'pending'), ('C', 'complete'), ('I', 'pickedup')),
+                              choices=(('P', 'pending'), ('C', 'complete'), ('I', 'initiated')),
                               default='P')
     fedex_cod_return_label = models.FileField(upload_to='shipment/', blank=True, null=True)
     fedex_outbound_label = models.FileField(upload_to='shipment/', blank=True, null=True)
@@ -370,9 +388,15 @@ class Product(models.Model):
         ind_time = datetime.now(z)
         time = ind_time
 
+
         if self.mapped_tracking_no:
             if " " in self.mapped_tracking_no:
                 self.mapped_tracking_no=self.mapped_tracking_no.replace(" ","")
+            if not self.applied_weight:
+                raise ValidationError("please enter applied weight as well after entering mapped tracking no on order"+str(self.order.pk))
+            if not self.company:
+                raise ValidationError("please enter company as well after entering mapped tracking no on order"+str(self.order.pk))
+
 
         if self.mapped_tracking_no and (self.status == 'PU' or self.status == 'D' or self.status == 'P'):
             self.status = 'DI'
@@ -443,6 +467,9 @@ class RemittanceProductPending(Product):
     class Meta:
         proxy = True
 
+class RemittanceProductInitiated(Product):
+    class Meta:
+        proxy = True
 
 
 class ExportOrder(Product):

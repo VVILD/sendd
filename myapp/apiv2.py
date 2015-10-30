@@ -2187,7 +2187,7 @@ class PriceappResource2(CORSModelResource):
         elif (w >= 6):
             economyprice = economy[zone][0] + math.ceil(w - 6) * economy[zone][1]
         else:
-            economyprice = '-'
+            economyprice = economy[zone][0]
 
         bundle.data['premium'] = premiumprice
         bundle.data['standard'] = standardprice
