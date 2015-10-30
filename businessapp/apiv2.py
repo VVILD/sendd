@@ -341,14 +341,14 @@ class TrackingResource(CORSResource):
                 message="No tracking_id found. Please supply tracking_id as a GET URL parameter")
         elif str(tracking_id).lower().startswith('m'):
             products = Product.objects.filter(order__master_tracking_number=tracking_id).values("real_tracking_no",
-                                                                                                "tracking_data")
+                                                                                                "tracking_data", "company")
             master = True
         elif str(tracking_id).lower().startswith('se'):
-            products = Product.objects.filter(barcode=tracking_id).values("real_tracking_no", "tracking_data", "actual_delivery_timestamp", "estimated_delivery_timestamp")
+            products = Product.objects.filter(barcode=tracking_id).values("real_tracking_no", "tracking_data", "actual_delivery_timestamp", "estimated_delivery_timestamp", "company")
         elif str(tracking_id).lower().startswith('b'):
-            products = Product.objects.filter(real_tracking_no=tracking_id).values("real_tracking_no", "tracking_data", "actual_delivery_timestamp", "estimated_delivery_timestamp")
+            products = Product.objects.filter(real_tracking_no=tracking_id).values("real_tracking_no", "tracking_data", "actual_delivery_timestamp", "estimated_delivery_timestamp", "company")
         else:
-            products = Shipment.objects.filter(real_tracking_no=tracking_id).values("real_tracking_no", "tracking_data", "actual_delivery_timestamp", "estimated_delivery_timestamp")
+            products = Shipment.objects.filter(real_tracking_no=tracking_id).values("real_tracking_no", "tracking_data", "actual_delivery_timestamp", "estimated_delivery_timestamp", "company")
 
         for product in products:
             product['tracking_data'] = json.loads(product['tracking_data'])
