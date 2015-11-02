@@ -44,7 +44,7 @@ class Command(BaseCommand):
 									 account_number='677853204',
 									 meter_number='108284345',
 									 use_test_server=False)
-	logging.basicConfig(level=logging.DEBUG)
+	logging.basicConfig(level=logging.INFO)
 
 	@staticmethod
 	def remove_non_ascii_1(raw_text):
@@ -476,7 +476,7 @@ class Command(BaseCommand):
 						time = date + row_td[2].text
 						tracking_data.append({'status':status,'location':location,'date':time})
 
-				print json.dumps(tracking_data)
+				# print json.dumps(tracking_data)
 
 				# for row in new_tracking:
 				#     tracking_data.append(row)

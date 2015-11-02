@@ -299,7 +299,7 @@ class Shipment(models.Model):
 
 
         if not self.pk:
-            print self.pk
+            # print self.pk
             z = timezone('Asia/Kolkata')
             fmt = '%Y-%m-%d %H:%M:%S'
             ind_time = datetime.now(z)
@@ -307,16 +307,16 @@ class Shipment(models.Model):
             self.update_time = ind_time
             time = str(time.replace(second=0, microsecond=0,tzinfo=None))
             self.tracking_data = "[{\"status\": \"Booking Received\", \"date\"	: \"" + time + " \", \"location\": \"Mumbai (Maharashtra)\"}]"
-            print self.tracking_data
-            print self.status
+            # print self.tracking_data
+            # print self.status
             super(Shipment, self).save(*args, **kwargs)
-            print self.pk
+            # print self.pk
             alphabet = random.choice('BDQP')
             no1 = random.choice('1234567890')
             no2 = random.choice('1234567890')
             no = int(self.pk) + 134528
             trackingno = 'S' + str(no) + str(alphabet) + str(no1) + str(no2)
-            print trackingno
+            # print trackingno
             self.real_tracking_no = trackingno
 
             kwargs['force_update'] = True
@@ -444,8 +444,8 @@ def send_update(sender, instance, created, **kwargs):
     count=0
     if ((instance.status == 'PU') or (instance.status == 'CA')) and (instance.order.order_status=='A'):
         pickedup = True
-        print "count of shipments"
-        print products_in_order.count()
+        # print "count of shipments"
+        # print products_in_order.count()
         for product in products_in_order:
             if (product.status!='PU') & (product.status!='CA'):
                 pickedup=False
@@ -454,10 +454,10 @@ def send_update(sender, instance, created, **kwargs):
             instance.order.order_status = 'P'
 
             instance.order.save()
-            print "i was here"
-            print count
+            # print "i was here"
+            # print count
             rturn=send_invoice_custom(instance.order)
-            print rturn
+            # print rturn
 
     if (instance.status == 'DI') or (instance.status == 'CA'):
         Dispatched = True
@@ -556,10 +556,10 @@ def send_invoice_custom(obj):
         for s in shipments:
             try:
 
-                print s.real_tracking_no
-                print s.drop_address.pincode
-                print s.weight
-                print 'check'
+                # print s.real_tracking_no
+                # print s.drop_address.pincode
+                # print s.weight
+                # print 'check'
 
                 if s.weight is None or s.weight.strip() == '':
                     e_string = e_string + str(s.real_tracking_no) + ' weight not set <br>'
@@ -579,11 +579,12 @@ def send_invoice_custom(obj):
                     invoice_dict['quantity' + str(count)] = '1'
                     total = total + int(s.price)
                 except Exception, e:
-                    print str(e)
+                    # print str(e)
+                    pass
 
                 count = count + 1
             except Exception, e:
-                print str(e)
+                # print str(e)
                 e_string = e_string + 'error in fetching shipments <br>'
                 valid = 0
 
@@ -604,7 +605,7 @@ def send_invoice_custom(obj):
     if (valid):
 
         query='http://128.199.210.166/payment_invoice.php?'+urllib.urlencode(invoice_dict)
-        print query
+        # print query
         return requests.get(query)
 
         # return '%s <br> <a target="_blank" href="http://128.199.210.166/payment_invoice.php?%s">generate  and send invoice to %s</a>' % (

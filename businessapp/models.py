@@ -144,7 +144,7 @@ class Business(models.Model):
                 name) + "%2C+Address%3A" + str(address) + "%2C+Mobile+No%3A" + str(
                 user_phone) + "&msg_type=TEXT&userid=2000142364&auth_scheme=plain&password=h0s6jgB4N&format=text"
             query = ''.join([msg0, msga, msg1])
-            print query
+            # print query
             req = requests.get(query)
 
         if not self.apikey:
@@ -520,7 +520,7 @@ def send_update(sender, instance, created, **kwargs):
             cod_price = 0
 
         pincode = instance.order.pincode
-        print pincode
+        # print pincode
 
         two_digits = pincode[:2]
         three_digits = pincode[:3]
@@ -715,14 +715,14 @@ def send_update_order(sender, instance, created, **kwargs):
                 cod_price = 0
 
             pincode = instance.pincode
-            print pincode
+            # print pincode
 
             two_digits = pincode[:2]
             three_digits = pincode[:3]
 
             pricing = Pricing.objects.get(pk=instance.business.pk)
-            print "methhhhhhhoooooooooooood"
-            print method
+            # print "methhhhhhhoooooooooooood"
+            # print method
             if (method == 'N'):
                 if (three_digits == '400'):
                     price1 = pricing.normal_zone_a_0
