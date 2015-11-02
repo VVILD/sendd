@@ -7,10 +7,12 @@ from django.contrib.contenttypes.models import ContentType
 from random import randint
 
 import datetime
+from django.utils.timezone import localtime
+
 
 from django.contrib import admin
 from .models import *
-from businessapp.forms import NewQcCommentForm,NewTrackingStatus,NewReturnForm,Approveconfirmform,AddressForm,Completeconfirmform
+from businessapp.forms import NewQcCommentForm,NewTrackingStatus,OrderForm,NewReturnForm,Approveconfirmform,AddressForm,Completeconfirmform,ReverseTimeForm
 from datetime import date,timedelta
 import reversion
 
@@ -1178,6 +1180,49 @@ reference_id=models.CharField(max_length=100)
 
 admin.site.register(Order, OrderAdmin)
 
+class ReverseOrderAdmin(OrderAdmin):
+	list_display = OrderAdmin.list_display + ('reverse_actions',)
+	inlines = ()
+	readonly_fields = ()
+
+	def response_change(self, request, obj):
+		settime = request.GET.get('settime',None)
+
+
+		if settime:
+			return HttpResponse('''
+   <script type="text/javascript">
+	  opener.dismissAddAnotherPopup(window);
+   </script>''')
+		else:
+			return super(ReverseOrderAdmin, self).response_change( request, obj)
+
+	def get_form(self, request, obj=None, **kwargs):
+		#tracking=request.GET.get["tracking",None]
+		settime = request.GET.get('settime',None)
+
+		if settime:
+			self.form=ReverseTimeForm
+
+		else:
+			self.form = OrderForm
+
+		return super(ReverseOrderAdmin, self).get_form(request, obj, **kwargs)
+
+	def get_queryset(self, request):
+		return self.model.objects.filter(is_reverse=True)
+
+	def reverse_actions(self, obj):
+		if not obj.reverse_pickup_timedate or not obj.reverse_latest_available_time:
+			return "reverse pickup time not selected. " + '<a href="/admin/businessapp/reverseorder/%s/?settime=True" onclick="return showAddAnotherPopup(this);"> Choose pickup time </a><br>' % (obj.pk)
+		elif not obj.reverse_confirmation_id:
+			var= str((localtime(obj.reverse_pickup_timedate)).replace(tzinfo=None).isoformat())
+			return str(localtime(obj.reverse_pickup_timedate).replace(tzinfo=None)) + '<br> <a href="/fedex_pickup_scheduler/?order_no={}&ready_timestamp={}&business_closetime={}" target="_blank"> Book on fedex</a><br>'.format(obj.pk,var,str(obj.reverse_latest_available_time))
+		else:
+			return 'Pickup confirmation id is %s' % ( obj.reverse_confirmation_id)
+	reverse_actions.allow_tags = True
+
+admin.site.register(ReverseOrder, ReverseOrderAdmin)
 
 class ProxyProductAdmin(BaseBusinessAdmin):
 

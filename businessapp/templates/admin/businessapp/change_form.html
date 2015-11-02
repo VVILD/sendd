@@ -6,6 +6,20 @@
     {{ block.super }}
 
     <script type="text/javascript">
+
+    $(window).load(function() {
+  $('.timelist').each(function(num, el) {
+    time_format = get_format('TIME_INPUT_FORMATS')[0];
+    $(el).html('');
+    for (i=8; i<20; i++) {
+      var time = new Date(1970,1,1,i,0,0);
+      lnk = "javascript:DateTimeShortcuts.handleClockQuicklink(" + num +
+                  ", '" + time.strftime(time_format) + "');"
+      $(el).append('<li><a href="'lnk'">' + time.strftime('%H:%M') + '</a></li>');
+    }
+  });
+});
+
 function dismissAddAnotherPopup(win) {
     win.close();
     location.reload(true);

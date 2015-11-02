@@ -455,6 +455,8 @@ def schedule_reverse_pickup(request):
     ready_timestamp = request.GET.get('ready_timestamp', None)
     business_closetime = request.GET.get('business_closetime', None)
 
+    print ready_timestamp
+
     if not (order_no and ready_timestamp and business_closetime):
         return HttpResponseBadRequest("Please provide all three parameters")
 
@@ -464,4 +466,11 @@ def schedule_reverse_pickup(request):
         return HttpResponseNotFound("Order not found. Please check the order no")
 
     result = json.dumps(fedex.pickup_scheduler(order, ready_timestamp, business_closetime))
+
+    conf_id=json.loads(result)
+    conf_id=conf_id["pickup_confirmation_number"]
+    print conf_id
+    order.reverse_confirmation_id=conf_id
+    order.save()
+
     return HttpResponse(result, content_type='application/json')

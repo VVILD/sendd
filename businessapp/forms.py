@@ -5,9 +5,13 @@ from myapp.models import Shipment, Order, User, Namemail, Address
 from suit.widgets import AutosizedTextarea
 from django.core.mail import send_mail
 from django.core.validators import RegexValidator
-from businessapp.models import Product,AddressDetails
+from businessapp.models import Product,AddressDetails,Order
 import json
 from django.contrib.admin import widgets
+from datetime import timedelta,date
+import datetime
+from django.forms import extras
+from django.utils.timezone import localtime
 
 class NewQcCommentForm(ModelForm):
 	new_comment=forms.CharField(max_length=100,required=False)
@@ -33,6 +37,33 @@ class NewReturnForm(ModelForm):
             if self.cleaned_data['return_action']:
                 if self.cleaned_data['status']!='R':
                     raise forms.ValidationError("You cannot add a return_action unless status is return")
+
+
+class ReverseTimeForm(ModelForm):
+	class Meta:
+		model = Order
+		fields = ['reverse_pickup_timedate','reverse_latest_available_time',]
+
+        def clean(self):
+            if self.cleaned_data['reverse_pickup_timedate']:
+
+				today=date.today()
+				if self.cleaned_data['reverse_pickup_timedate'].date() - today >= datetime.timedelta(2):
+					raise forms.ValidationError("Choose only today or tommorow")
+				if self.cleaned_data['reverse_pickup_timedate'].weekday() == 6:
+					raise forms.ValidationError("no pickup on Sunday")
+				if self.cleaned_data['reverse_pickup_timedate'].date() == today:
+					if self.cleaned_data['reverse_pickup_timedate'].time()<(datetime.datetime.now() + datetime.timedelta(minutes=30)).time():
+						raise forms.ValidationError("ready time should be greater than 30 minutes from current time")
+				if self.cleaned_data['reverse_latest_available_time']<(datetime.datetime.now() + datetime.timedelta(hours=3)).time():
+					raise forms.ValidationError("latest_available time should be 3 hours ahead of ready time")
+
+				var= str((localtime(self.cleaned_data['reverse_pickup_timedate'])).replace(tzinfo=None).isoformat())
+				url= "/fedex_pickup_scheduler/?order_no={}&ready_timestamp={}&business_closetime={}".format(obj.pk,var,str(obj.reverse_latest_available_time))
+
+
+                # if self.cleaned_data['status']!='R':
+                #     raise forms.ValidationError("You cannot add a return_action unless status is return")
 
 
 
@@ -62,6 +93,10 @@ class NewTrackingStatus(ModelForm):
 class AddressForm(ModelForm):
 	class Meta:
 		model = AddressDetails
+
+class OrderForm(ModelForm):
+	class Meta:
+		model = Order
 
 class Approveconfirmform(ModelForm):
 	sure=forms.BooleanField(initial=True)
