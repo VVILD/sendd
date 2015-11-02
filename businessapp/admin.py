@@ -271,7 +271,7 @@ class BaseBusinessAdmin(reversion.VersionAdmin):
 
 
 # Register your models here.
-class BusinessAdmin(BaseBusinessAdmin):
+class BusinessAdmin(BaseBusinessAdmin,ImportExportActionModelAdmin):
 	# search_fields=['name']
 	search_fields=['username','business_name']
 	list_display = ('username','business_name', 'pickup_time', 'warehouse', 'pb', 'assigned_pickup_time','status', 'pending_orders_total', 'pending_orders','pickedup_orders','dispatched_orders','daily','cs_comment','ff_comment')
@@ -282,7 +282,26 @@ class BusinessAdmin(BaseBusinessAdmin):
 	#actions = [export_as_csv_action("CSV Export", fields=['username','business_name','apikey','name','email','contact_mob','contact_office','address','city','state','pincode'])]
 	actions_on_bottom = False
 	actions_on_top = True
-	
+
+
+	resource_class=export_xl.BusinessResource
+
+	def get_actions(self, request):
+		actions = super(BusinessAdmin, self).get_actions(request)
+		print actions
+		if not request.user.is_superuser:
+			del actions['delete_selected']
+			del actions['export_admin_action']
+		return actions
+
+        #
+		# plist=Product.objects.filter(status='C',order__payment_method='C',remittance_status='I')
+		# c=Business.objects.filter(order__product__in=plist).distinct().count()
+		# if c>0:
+		# 	del actions['make_remittance_initiated']
+
+
+
 
 	def get_queryset(self, request):
 #total_order
