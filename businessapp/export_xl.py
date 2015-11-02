@@ -12,6 +12,12 @@ class ProductResource(resources.ModelResource):
 		fields = ('order','order__book_time','order__reference_id','order__payment_method','order__name','order__city','order__pincode', 'real_tracking_no', 'mapped_tracking_no', 'company','status','last_tracking_status','weight','applied_weight','barcode','order__method','name','price','remittance','remittance_date')
 
 
+class BusinessResource(resources.ModelResource):
+
+	class Meta:
+		model = Business
+		fields = ('username','business_name','email','warehouse__name','address','pincode','name')
+
 
 class CodBusinessResource(resources.ModelResource):
 	amount = fields.Field()
