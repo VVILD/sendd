@@ -270,6 +270,10 @@ class BaseBusinessAdmin(reversion.VersionAdmin):
 		return super(BaseBusinessAdmin, self).changelist_view(request, extra_context=context)
 
 
+
+
+
+
 # Register your models here.
 class BusinessAdmin(BaseBusinessAdmin,ImportExportActionModelAdmin):
 	# search_fields=['name']
@@ -288,7 +292,6 @@ class BusinessAdmin(BaseBusinessAdmin,ImportExportActionModelAdmin):
 
 	def get_actions(self, request):
 		actions = super(BusinessAdmin, self).get_actions(request)
-		print actions
 		if not request.user.is_superuser:
 			del actions['delete_selected']
 			del actions['export_admin_action']
@@ -2600,3 +2603,23 @@ admin.site.register(Bdheadpanel,BdheadAdmin)
 
 
 
+
+class ProxyProduct2Admin(reversion.VersionAdmin):
+	list_display = ('pk','order_id','get_business','sent_to','barcode',)
+	list_editable = ('barcode',)
+	search_fields=['order__name','order__pk','id']
+	fieldsets=(
+		('Basic Information', {'fields':['barcode',]}),)
+	def get_queryset(self, request):
+		return self.model.objects.filter(Q(order__business='souled_store')|Q(order__business='snoogg'))
+	def sent_to(self,obj):
+		return obj.order.name
+	def get_business(self, obj):
+		return obj.order.business
+	get_business.short_description = 'business'
+	get_business.admin_order_field = 'order__business'
+
+	def order_id(self, obj):
+		return obj.order.pk
+
+admin.site.register(ProxyProduct2, ProxyProduct2Admin)
