@@ -6,7 +6,11 @@ from tastypie import fields
 from tastypie.authentication import Authentication
 from tastypie.authorization import Authorization
 from tastypie.resources import ModelResource
-from myapp.models import Order, Shipment, Namemail, User, Address
+
+from core.models import Offline
+from myapp.models import Order, Shipment, Namemail, User, Address, Promocode
+from pickupboyapp.exceptions import CustomBadRequest
+from dateutil.parser import parse
 
 
 class MultipartResource(object):
@@ -57,6 +61,44 @@ class OrderResource3(ModelResource):
         authentication = Authentication()
         allowed_methods = ['get','post', 'patch', 'put']
         always_return_data = True
+
+    def hydrate(self, bundle):
+
+        offline = None
+        try:
+            check_time = datetime.datetime.combine(parse(str(bundle.data['date'])).date(), datetime.datetime.strptime(bundle.data['time'], "%I:%M %p").time())
+            offline = Offline.objects.filter(start__lte=check_time, end__gte=check_time, active=True).values("message")
+            if len(offline) > 0:
+                raise CustomBadRequest(
+                    code="offline",
+                    message=offline[0]['message']
+                )
+        except:
+            if offline is not None:
+                if len(offline) > 0:
+                    raise CustomBadRequest(
+                        code="offline",
+                        message=offline[0]['message']
+                    )
+            pass
+
+        try:
+            promocode = Promocode.objects.get(pk=bundle.data['code'])
+
+            if (promocode.only_for_first == 'Y'):
+
+                shipment = Shipment.objects.filter(order__user=bundle.data['user'], order__way='A')  # pk is the number
+
+                if (shipment.count() == 0):
+                    # everything good
+                    bundle.data['promocode'] = "/api/v2/promocode/" + str(promocode.pk) + "/"
+                    bundle.data['valid'] = 'Y'
+                else:
+                    bundle.data['promomsg'] = "You are not a first time user"
+            else:
+                bundle.data['promocode'] = "/api/v2/promocode/" + str(promocode.pk) + "/"
+        except:
+            bundle.data['promomsg'] = "Wrong promo code"
 
 
 
