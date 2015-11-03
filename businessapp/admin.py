@@ -1206,7 +1206,7 @@ admin.site.register(Order, OrderAdmin)
 
 
 class ProxyProductAdmin(BaseBusinessAdmin,ImportExportActionModelAdmin):
-	list_per_page=500
+	list_per_page=100
 
 	change_list_template='businessapp/templates/admin/businessapp/change_list.html'
 	list_display = ('order_no','get_business','sent_to','city','pincode','time',"applied_weight","mapped_tracking_no","company")
@@ -1220,7 +1220,7 @@ class ProxyProductAdmin(BaseBusinessAdmin,ImportExportActionModelAdmin):
 	order_no.admin_order_field = 'order'
 
 	def get_queryset(self, request):
-		return self.model.objects.filter(Q(order__book_time__gt=datetime.date(2015, 9, 1)) & (Q(order__status__in=['PU','D'])) &(Q(mapped_tracking_no__isnull=True) | Q(mapped_tracking_no__exact="")) )
+		return self.model.objects.filter(Q(order__book_time__gt=datetime.date(2015, 9, 1)) & (Q(order__status__in=['PU','D'])) &(Q(mapped_tracking_no__isnull=True) | Q(mapped_tracking_no__exact=""))).select_related('order','order__business')
 
 	def get_readonly_fields(self, request, obj=None):
 		return [f.name for f in self.model._meta.fields]
