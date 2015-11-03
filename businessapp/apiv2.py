@@ -506,10 +506,10 @@ class SearchResource(CORSResource):
             tracking_id_int = int(tracking_id)
         except:
             tracking_id_int = 000
-        orders = Order.objects.filter(Q(product__real_tracking_no=tracking_id) | Q(product__barcode=tracking_id) |
+        orders = Order.objects.filter((Q(product__real_tracking_no=tracking_id) | Q(product__barcode=tracking_id) |
                                       Q(product__sku=tracking_id) | Q(reference_id=tracking_id) |
                                       Q(third_party_id=tracking_id) | Q(pk=tracking_id_int) |
-                                      Q(master_tracking_number=tracking_id)).distinct().select_related('product_set')
+                                      Q(master_tracking_number=tracking_id)) & ~Q(status='N')).distinct().select_related('product_set')
 
         result = []
         for order in orders:
