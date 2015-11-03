@@ -501,16 +501,25 @@ class SearchResource(CORSResource):
             raise CustomBadRequest(
                 code="request_invalid",
                 message="No tracking_id found. Please supply tracking_id as a GET parameter")
-        elif str(tracking_id).startswith('SE') or str(tracking_id).startswith('se'):
-            product = Product.objects.get(barcode=tracking_id)
-        elif str(tracking_id).startswith('B'):
-            product = Product.objects.get(real_tracking_no=tracking_id)
-        else:
-            product = Shipment.objects.get(real_tracking_no=tracking_id)
 
-        bundle = {"order": product.order.__dict__}
-        bundle['order']['products'] = [product.__dict__]
+        try:
+            tracking_id_int = int(tracking_id)
+        except:
+            tracking_id_int = 000
+        orders = Order.objects.filter(Q(product__real_tracking_no=tracking_id) | Q(product__barcode=tracking_id) |
+                                      Q(product__sku=tracking_id) | Q(reference_id=tracking_id) |
+                                      Q(third_party_id=tracking_id) | Q(pk=tracking_id_int) |
+                                      Q(master_tracking_number=tracking_id)).distinct().select_related('product_set')
 
+        result = []
+        for order in orders:
+            products = list(order.product_set.all().values())
+            # for product in products:
+            #     product['tracking_data'] = json.loads(product['tracking_data'])
+            order = order.__dict__
+            order['products'] =products
+            result.append(order)
+        bundle = result
         self.log_throttled_access(request)
         return self.create_response(request, bundle)
 
