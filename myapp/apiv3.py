@@ -8,6 +8,7 @@ from tastypie.authorization import Authorization
 from tastypie.resources import ModelResource
 
 from core.models import Offline
+from myapp.apiv2 import PromocodeResource2
 from myapp.models import Order, Shipment, Namemail, User, Address, Promocode
 from pickupboyapp.exceptions import CustomBadRequest
 from dateutil.parser import parse
@@ -53,6 +54,7 @@ class OrderResource3(ModelResource):
     namemail = fields.ForeignKey('myapp.apiv3.NamemailResource3', 'namemail', null=True,full=True)
     shipments = fields.ToManyField("myapp.apiv3.ShipmentResource3", 'shipment_set', related_name='shipment',full=True)
     user = fields.ForeignKey(UserResource3, 'user',full=True)
+    promocode = fields.ForeignKey(PromocodeResource2, 'promocode', null=True, blank=True)
 
     class Meta:
         queryset = Order.objects.all()
