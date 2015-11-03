@@ -395,7 +395,7 @@ class Order(models.Model):
     __status = None
     ff_comment=models.TextField(null=True, blank=True)
     refund = models.FloatField(default=0.0)
-    pickup_address = models.ForeignKey(AddressDetails, null=True, blank=True, related_name='orders')
+    pickup_address = models.ForeignKey(AddressDetails, null=True, blank=True)
     is_reverse = models.BooleanField(default=False)
     reversed = models.BooleanField(default=False)
     reverse_pickup_timedate=models.DateTimeField(null=True,blank=True)
