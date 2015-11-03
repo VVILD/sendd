@@ -398,6 +398,9 @@ class Order(models.Model):
     pickup_address = models.ForeignKey(AddressDetails, null=True, blank=True, related_name='orders')
     is_reverse = models.BooleanField(default=False)
     reversed = models.BooleanField(default=False)
+    reverse_pickup_timedate=models.DateTimeField(null=True,blank=True)
+    reverse_latest_available_time=models.TimeField(null=True,blank=True)
+    reverse_confirmation_id=models.CharField(max_length=100,null=True,blank=True)
 
 
     def __unicode__(self):
@@ -441,6 +444,10 @@ class PendingOrder(Order):
         proxy = True
 
 class DispatchedOrder(Order):
+    class Meta:
+        proxy = True
+
+class ReverseOrder(Order):
     class Meta:
         proxy = True
 
