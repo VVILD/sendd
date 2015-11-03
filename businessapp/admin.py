@@ -1886,7 +1886,7 @@ class QcProductAdmin(reversion.VersionAdmin,ImportExportActionModelAdmin):
 	change_list_template='businessapp/templates/admin/businessapp/qcproduct/change_list.html'
 
 	def get_queryset(self, request):
-		return self.model.objects.filter(Q(order__book_time__gt=datetime.date(2015, 9, 1))&(Q(order__status='DI')| Q(order__status='R'))).exclude(Q(status='C')).exclude(order__business='ecell').exclude(order__business='ghasitaram').exclude(order__business='holachef')
+		return self.model.objects.filter(Q(order__book_time__gt=datetime.date(2015, 9, 1))&(Q(order__status='DI')| Q(order__status='R'))).select_related('order','order__business').exclude(Q(status='C')).exclude(order__business='ecell').exclude(order__business='ghasitaram').exclude(order__business='holachef')
 	list_display = (
 		'order_no','tracking_no','company','book_date','dispatch_time','get_business','sent_to','last_location' ,'expected_delivery_date','last_updated','last_tracking_status','history','follow_up','ff_comment')
 	list_filter = ['order__method','order__business','warning','company',StatusFilter,'status','warning_type',StartNullFilterSpec]
