@@ -496,20 +496,26 @@ class SearchResource(CORSResource):
         self.throttle_check(request)
 
         tracking_id = request.GET.get('tracking_id', False)
+        username = request.GET.get('username', False)
 
         if not tracking_id:
             raise CustomBadRequest(
                 code="request_invalid",
                 message="No tracking_id found. Please supply tracking_id as a GET parameter")
+        if not username:
+            raise CustomBadRequest(
+                code="request_invalid",
+                message="No username found. Please supply username as a GET parameter")
 
         try:
             tracking_id_int = int(tracking_id)
         except:
             tracking_id_int = 000
+        business = Business.objects.get(username=username)
         orders = Order.objects.filter((Q(product__real_tracking_no=tracking_id) | Q(product__barcode=tracking_id) |
                                       Q(product__sku=tracking_id) | Q(reference_id=tracking_id) |
                                       Q(third_party_id=tracking_id) | Q(pk=tracking_id_int) |
-                                      Q(master_tracking_number=tracking_id)) & ~Q(status='N')).distinct().select_related('product_set')
+                                      Q(master_tracking_number=tracking_id)) & ~Q(status='N') & Q(business=business)).distinct().select_related('product_set')
 
         result = []
         for order in orders:
