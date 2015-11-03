@@ -355,6 +355,7 @@ class Product(models.Model):
     remittance_date = models.DateTimeField(null=True, blank=True)
 
     qc_comment = models.TextField(null=True, blank=True)
+    ff_comment = models.TextField(null=True, blank=True)
     tracking_history = models.TextField(null=True, blank=True)
     warning = models.BooleanField(default=False)
 
@@ -790,6 +791,7 @@ def send_update_order(sender, instance, created, **kwargs):
 post_save.connect(send_update_order, sender=Order)
 
 
+
 class Billing(models.Model):
     id = models.AutoField(primary_key=True)
     start_date = models.DateField(blank=True, null=True)
@@ -954,6 +956,52 @@ class Barcode(models.Model):
             raise ValidationError("Barcode length should be 10")
 
         super(Barcode, self).save(*args, **kwargs)
+
+
+#
+# def update_status(order):
+#     print "the order is ",order.pk
+#
+#
+#
+#
+# #return zone objects and takes only pincode as parameter
+# def get_zone(pincode):
+#     two_digits = pincode[:2]
+#     three_digits = pincode[:3]
+#     if (three_digits == '400'):
+#         return Zone.objects.get(zone='a')
+#     elif (two_digits == '41' or two_digits == '42' or two_digits == '43' or two_digits == '44' or three_digits == '403' or two_digits == '36' or two_digits == '37' or two_digits == '38' or two_digits == '39'):
+#         return Zone.objects.get(zone='b')
+#     elif (two_digits == '56' or two_digits == '11' or three_digits == '600' or three_digits == '700'):
+#         return Zone.objects.get(zone='c')
+#     elif (two_digits == '78' or two_digits == '79' or two_digits == '18' or two_digits == '19'):
+#         return Zone.objects.get(zone='e')
+#     else:
+#         return Zone.objects.get(zone='d')
+#
+#
+#
+# def update_price_product(product):
+#     pass
+#
+#
+# def update_price(order):
+#     products=Product.objects.filter(order=order)
+#
+#
+#
+#
+# def send_update_test(sender, instance, created, **kwargs):
+#     signals.post_save.disconnect(send_update, sender=Product)
+#     update_status(instance)
+#     signals.post_save.connect(send_update, sender=Product)
+#
+#
+#
+# post_save.connect(send_update_test, sender=Order)
+
+
 
 
 def add_pricing(sender, instance, created, **kwargs):

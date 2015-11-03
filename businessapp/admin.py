@@ -1025,7 +1025,7 @@ class OrderAdmin(FilterUserAdmin,ImportExportActionModelAdmin):
 
 	resource_class=export_xl.FFOrderResource
 	inlines = (ProductInline,)
-	search_fields = ['order_no','business__business_name', 'name', 'product__real_tracking_no', 'product__barcode','city','state','product__mapped_tracking_no']
+	search_fields = ['order_no','business__business_name', 'name', 'product__real_tracking_no', 'product__kartrocket_order', 'product__barcode','city','state','product__mapped_tracking_no']
 	list_display = (
 		'order_no', 'book_time', 'business_details', 'name', 'status','mapped_ok', 'no_of_products', 'total_shipping_cost',
 		'total_cod_cost', 'method', 'fedex','print_links','ff_comment')
@@ -1888,9 +1888,9 @@ class QcProductAdmin(reversion.VersionAdmin,ImportExportActionModelAdmin):
 	def get_queryset(self, request):
 		return self.model.objects.filter(Q(order__book_time__gt=datetime.date(2015, 9, 1))&(Q(order__status='DI')| Q(order__status='R'))).exclude(Q(status='C')).exclude(order__business='ecell').exclude(order__business='ghasitaram').exclude(order__business='holachef')
 	list_display = (
-		'order_no','tracking_no','company','book_date','dispatch_time','get_business','sent_to','last_location' ,'expected_delivery_date','last_updated','last_tracking_status','history','follow_up')
+		'order_no','tracking_no','company','book_date','dispatch_time','get_business','sent_to','last_location' ,'expected_delivery_date','last_updated','last_tracking_status','history','follow_up','ff_comment')
 	list_filter = ['order__method','order__business','warning','company',StatusFilter,'status','warning_type',StartNullFilterSpec]
-	list_editable = ('follow_up',)
+	list_editable = ('follow_up','ff_comment')
 	readonly_fields = ('previous_comment','p_tracking')
 	search_fields = ['order__order_no', 'real_tracking_no', 'mapped_tracking_no','tracking_data','order__name']
 	
@@ -1962,7 +1962,10 @@ class QcProductAdmin(reversion.VersionAdmin,ImportExportActionModelAdmin):
 	p_tracking.allow_tags=True
 
 	def history(self,obj):
-		return str(obj.qc_comment) + '<br><br>' + '<a href="/admin/businessapp/qcproduct/%s/?comment=T" onclick="return showAddAnotherPopup(this);">Add new comment </a><br><a href="/admin/businessapp/qcproduct/%s/?tracking=T" onclick="return showAddAnotherPopup(this);">Add tracking row</a><br> <a href="/admin/businessapp/qcproduct/%s/?status=T" onclick="return showAddAnotherPopup(this);">Return action</a>' % (obj.pk, obj.pk,obj.pk)
+		if not obj.return_action:
+			return str(obj.qc_comment) + '<br><br>' + '<a href="/admin/businessapp/qcproduct/%s/?comment=T" onclick="return showAddAnotherPopup(this);">Add new comment </a><br><a href="/admin/businessapp/qcproduct/%s/?tracking=T" onclick="return showAddAnotherPopup(this);">Add tracking row</a><br> <a href="/admin/businessapp/qcproduct/%s/?status=T" onclick="return showAddAnotherPopup(this);">Return action</a>' % (obj.pk, obj.pk,obj.pk)
+		else:
+			return str(obj.qc_comment) + '<br><br>' + '<a href="/admin/businessapp/qcproduct/%s/?comment=T" onclick="return showAddAnotherPopup(this);">Add new comment </a><br><a href="/admin/businessapp/qcproduct/%s/?tracking=T" onclick="return showAddAnotherPopup(this);">Add tracking row</a><br> %s ' % (obj.pk, obj.pk,obj.get_return_action_display())
 	history.allow_tags=True
 
 	def order_no(self, obj):
