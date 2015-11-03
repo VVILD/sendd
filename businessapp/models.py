@@ -958,7 +958,7 @@ class Barcode(models.Model):
         super(Barcode, self).save(*args, **kwargs)
 
 
-#
+
 # def update_status(order):
 #     print "the order is ",order.pk
 #
@@ -982,7 +982,8 @@ class Barcode(models.Model):
 #
 #
 #
-# def update_price_product(product):
+#
+# def update_price_product(product,business):
 #     pass
 #
 #
