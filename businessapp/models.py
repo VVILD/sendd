@@ -461,7 +461,9 @@ class ProxyProduct(Product):
     class Meta:
         proxy = True
 
-
+class ProxyProduct2(Product):
+    class Meta:
+        proxy = True
 
 class RemittanceProductPending(Product):
     class Meta:
