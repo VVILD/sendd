@@ -8,7 +8,7 @@ from django.contrib.contenttypes.models import ContentType
 from random import randint
 
 import datetime
-
+from daterange_filter.filter import DateRangeFilter
 from django.contrib import admin
 from .models import *
 from businessapp.forms import NewQcCommentForm,NewTrackingStatus,NewReturnForm
@@ -1212,7 +1212,7 @@ class ProxyProductAdmin(BaseBusinessAdmin,ImportExportActionModelAdmin):
 	list_display = ('order_no','get_business','sent_to','city','pincode','time',"applied_weight","mapped_tracking_no","company")
 	list_editable = ("mapped_tracking_no","company")
 	search_fields = ['order__order_no', 'real_tracking_no', 'mapped_tracking_no','tracking_data','order__name','order__city','order__pincode']
-	list_filter = ['order__business']
+	list_filter = ['order__business',('order__book_time', DateRangeFilter),]
 	resource_class=export_xl.ProductResource
 	def order_no(self, obj):
 		return '<a href="/admin/businessapp/order/%s/">%s</a>' % (obj.order.pk, obj.order.pk)
@@ -1273,7 +1273,7 @@ class ShipmentAdmin(reversion.VersionAdmin):
 	suit_form_tabs = (('general', 'General'), ('tracking', 'Tracking'))
 
 '''
-from daterange_filter.filter import DateRangeFilter
+
 
 
 class CodBusinessPanelAdmin(admin.ModelAdmin):
