@@ -139,7 +139,7 @@ class PickupboyResource(Resource):
         for business in alloted_businesses:
             order_transformed = {
                 "b_business_name": business.company_name,
-                "b_username": business.company_name,
+                "b_username": business.business.username,
                 "b_address": business.address,
                 "b_contact_mob": business.phone_mobile,
                 "b_contact_office": business.phone_office,
