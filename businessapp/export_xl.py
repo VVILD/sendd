@@ -66,8 +66,8 @@ class FFOrderResource(resources.ModelResource):
 
 	class Meta:
 		model = Order
-		fields = ('order_no','book_time','business__business_name','city','pincode','mapped_ok','no_of_products','company','ff_comment')
-		export_order = ('order_no','book_time','business__business_name','city','pincode','mapped_ok','no_of_products','company','ff_comment')
+		fields = ('order_no','book_time','business__business_name','city','pincode','name','mapped_ok','no_of_products','company','ff_comment')
+		export_order = ('order_no','book_time','business__business_name','city','pincode','name','mapped_ok','no_of_products','company','ff_comment')
 
 	def dehydrate_mapped_ok(self,order):
 		products=Product.objects.filter(order=order)
@@ -83,7 +83,7 @@ class FFOrderResource(resources.ModelResource):
 
 	def dehydrate_company(self, order):
 		try:
-			return order.product_set.first().company
+			return order.product_set.first().get_company_display()
 		except:
 			return "no product"
 
