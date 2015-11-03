@@ -235,6 +235,7 @@ class AddressDetails(models.Model):
     default = models.BooleanField(default=False)
     warehouse = models.ForeignKey(Warehouse, null=True, blank=True)
     daily = models.BooleanField(default=False)
+    is_completed = models.BooleanField(default=False)
 
     def get_full_address(self):
         return "\n".join([self.company_name,self.address, self.city,self.contact_person,"(",self.phone_office,",",self.phone_mobile,")"])

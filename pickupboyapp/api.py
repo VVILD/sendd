@@ -14,7 +14,7 @@ from tastypie.utils import trailing_slash
 from pickupboyapp.exceptions import CustomBadRequest
 from myapp.models import Shipment, Namemail, Address
 from myapp.models import Order as CustomerOrder
-from businessapp.models import Order as BusinessOrder
+from businessapp.models import Order as BusinessOrder, AddressDetails
 from businessapp.models import Product, Business
 from .models import PBLocations, PBUser
 
@@ -90,9 +90,9 @@ class PickupboyResource(Resource):
         result = []
         customer_pending_orders = CustomerOrder.objects.filter(pb__phone=pb_ph, order_status='A',
                                                                date=datetime.date.today()).order_by("time")
-        business_pending_orders = BusinessOrder.objects.filter(business__pb__phone=pb_ph, status='P',
-                                                               business__is_completed=False)
-        alloted_businesses = Business.objects.filter(pb__phone=pb_ph, is_completed=False).exclude(order__status='P')
+        business_pending_orders = BusinessOrder.objects.filter(pickup_address__pb__phone=pb_ph, status='P',
+                                                               pickup_address__is_completed=False)
+        alloted_businesses = AddressDetails.objects.filter(pb__phone=pb_ph, is_completed=False).exclude(order__status='P')
 
         for order in business_pending_orders:
             business = Business.objects.get(pk=order.business.pk)
@@ -110,16 +110,16 @@ class PickupboyResource(Resource):
                     "barcode": product.barcode
                 })
             order_transformed = {
-                "b_business_name": business.business_name,
-                "b_username": business.username,
-                "b_address": business.address,
-                "b_contact_mob": business.contact_mob,
-                "b_contact_office": business.contact_office,
-                "b_name": business.name,
-                "pickup_time": business.assigned_pickup_time,
-                "b_pincode": business.pincode,
-                "b_city": business.city,
-                "b_state": business.state,
+                "b_business_name": order.pickup_address.company_name,
+                "b_username": order.business.username,
+                "b_address": order.pickup_address.address,
+                "b_contact_mob": order.pickup_address.phone_mobile,
+                "b_contact_office": order.pickup_address.phone_office,
+                "b_name": order.pickup_address.company_name,
+                "pickup_time": order.pickup_address.default_pickup_time,
+                "b_pincode": order.pickup_address.pincode,
+                "b_city": order.pickup_address.city,
+                "b_state": order.pickup_address.state,
                 "address1": order.address1,
                 "address2": order.address2,
                 "name": order.name,
@@ -138,13 +138,13 @@ class PickupboyResource(Resource):
 
         for business in alloted_businesses:
             order_transformed = {
-                "b_business_name": business.business_name,
-                "b_username": business.username,
+                "b_business_name": business.company_name,
+                "b_username": order.business.username,
                 "b_address": business.address,
-                "b_contact_mob": business.contact_mob,
-                "b_contact_office": business.contact_office,
-                "b_name": business.name,
-                "pickup_time": business.assigned_pickup_time,
+                "b_contact_mob": business.phone_mobile,
+                "b_contact_office": business.phone_office,
+                "b_name": business.company_name,
+                "pickup_time": business.default_pickup_time,
                 "b_pincode": business.pincode,
                 "b_city": business.city,
                 "b_state": business.state,
