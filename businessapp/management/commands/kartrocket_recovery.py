@@ -64,7 +64,7 @@ class Command(BaseCommand):
                         name=row['product_name'],
                         price=float(row['product_price']),
                         quantity=int(row["product_quantity"]),
-                        applied_weight=float(row["weight"]),
+                        applied_weight=float(str(row["weight"]).replace("kg", "")),
                         mapped_tracking_no=row["awb_code"],
                         company=company,
                         # barcode=row['Barcode Number'],
