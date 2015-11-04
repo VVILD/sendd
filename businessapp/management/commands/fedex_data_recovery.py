@@ -21,9 +21,21 @@ class Command(BaseCommand):
         ),
     )
 
+    option_list = option_list + (
+        make_option(
+            "-u",
+            "--username",
+            dest="username",
+            help="business username",
+            metavar="usr"
+        ),
+    )
+
     def handle(self, *args, **options):
         if options['path'] is None:
             raise CommandError("Please provide the csv file path")
+        if options['username'] is None:
+            raise CommandError("Please provide business username")
         file_path = options['path']
         file_exists = os.path.exists(file_path)
         if not file_exists:
@@ -33,7 +45,7 @@ class Command(BaseCommand):
             reader = csv.DictReader(csvfile)
 
             for row in reader:
-                business = Business.objects.get(pk="apple")
+                business = Business.objects.get(pk=options['username'])
                 awb = int(row['AWB']) if row['AWB'] != "#N/A" else None
                 company = None
                 if row['Shipping Company'] == 'ECOMEXP':
