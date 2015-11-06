@@ -738,7 +738,7 @@ class ProductInline(admin.TabularInline):
 	exclude = ['sku', 'weight', 'real_tracking_no', 'tracking_data']
 	readonly_fields = ('product_info', 'weight', 'shipping_cost', 'generate_order', 'fedex','dimensions')
 	fields = (
-		'product_info', 'name', 'quantity', 'price', 'weight', 'applied_weight', 'is_document','dimensions' ,'generate_order', 'fedex')
+		'product_info', 'name', 'quantity', 'price', 'weight', 'applied_weight', 'is_document','dimensions' ,'generate_order', 'fedex','status')
 	extra = 0
 
 	def dimensions(self,obj):
@@ -2353,7 +2353,7 @@ class BusinessPricingAdmin(reversion.VersionAdmin):
 		('Ba10','Bb10','Bc10','Bd10','Be10'),
 		('Ba11','Bb11','Bc11','Bd11','Be11'),
 			]}),
-		('Cod Pricing', {'fields': [('cod_sum','cod_percentage'),'discount_percentage']}),
+		('Cod Pricing', {'fields': [('cod_sum','cod_percentage'),'discount_percentage','fuel_surcharge']}),
 		# ('Bulk Pricing',
 		#  {'fields': [('name', 'weight', 'cost_of_courier'), ], 'classes': ('suit-tab', 'suit-tab-general')}),
 	)
