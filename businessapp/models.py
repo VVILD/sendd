@@ -112,6 +112,7 @@ class Business(models.Model):
     warehouse = models.ForeignKey(Warehouse, null=True, blank=True)
     cod_sum=models.FloatField(default=40.0)
     cod_percentage=models.FloatField(default=1.5)
+    fuel_surcharge=models.FloatField(default=20.0)
     discount_percentage=models.FloatField(default=0.0)
     billed_to=models.CharField(max_length=100,blank=True,null=True)
     account_name=models.CharField(max_length=100,blank=True,null=True)
@@ -959,48 +960,84 @@ class Barcode(models.Model):
 
 
 
-# def update_status(order):
-#     print "the order is ",order.pk
-#
-#
-#
-#
-# #return zone objects and takes only pincode as parameter
-# def get_zone(pincode):
-#     two_digits = pincode[:2]
-#     three_digits = pincode[:3]
-#     if (three_digits == '400'):
-#         return Zone.objects.get(zone='a')
-#     elif (two_digits == '41' or two_digits == '42' or two_digits == '43' or two_digits == '44' or three_digits == '403' or two_digits == '36' or two_digits == '37' or two_digits == '38' or two_digits == '39'):
-#         return Zone.objects.get(zone='b')
-#     elif (two_digits == '56' or two_digits == '11' or three_digits == '600' or three_digits == '700'):
-#         return Zone.objects.get(zone='c')
-#     elif (two_digits == '78' or two_digits == '79' or two_digits == '18' or two_digits == '19'):
-#         return Zone.objects.get(zone='e')
-#     else:
-#         return Zone.objects.get(zone='d')
-#
-#
-#
-#
-# def update_price_product(product,business):
-#     pass
-#
-#
-# def update_price(order):
-#     products=Product.objects.filter(order=order)
-#
-#
-#
-#
-# def send_update_test(sender, instance, created, **kwargs):
-#     signals.post_save.disconnect(send_update, sender=Product)
-#     update_status(instance)
-#     signals.post_save.connect(send_update, sender=Product)
-#
-#
-#
-# post_save.connect(send_update_test, sender=Order)
+def update_status(order):
+    pass
+
+
+
+
+#return zone objects and takes only pincode as parameter
+def get_zone(pincode):
+    two_digits = pincode[:2]
+    three_digits = pincode[:3]
+    if (three_digits == '400'):
+        return Zone.objects.get(zone='a')
+    elif (two_digits == '41' or two_digits == '42' or two_digits == '43' or two_digits == '44' or three_digits == '403' or two_digits == '36' or two_digits == '37' or two_digits == '38' or two_digits == '39'):
+        return Zone.objects.get(zone='b')
+    elif (two_digits == '56' or two_digits == '11' or three_digits == '600' or three_digits == '700'):
+        return Zone.objects.get(zone='c')
+    elif (two_digits == '78' or two_digits == '79' or two_digits == '18' or two_digits == '19'):
+        return Zone.objects.get(zone='e')
+    else:
+        return Zone.objects.get(zone='d')
+
+
+def nround(number):
+    return round(number * 2) / 2
+
+#return weight objects and takes only weight and type
+def get_weight(weight,type):
+    if type == 'N':
+        if (weight<=0.25):
+            return Weight.objects.get(weight=0.25)
+        elif (weight<=0.5):
+            return Weight.objects.get(weight=0.5)
+        elif (weight>10):
+            return Weight.objects.get(weight=11)
+        else:
+            return Weight.objects.get(weight=nround(weight))
+    if type == 'B':
+        if (weight>10):
+            return Weight.objects.get(weight=11)
+        else:
+            return Weight.objects.get(weight=round(weight))
+
+def update_price(order):
+    products=Product.objects.filter(order=order)
+    business=order.business
+    for product in products:
+        if product.applied_weight:
+            zone=get_zone(order.pincode)
+            if (product.l and product.b and product.h):
+                vol_weight= (product.l *product.b *product.h)/5000
+            else:
+                vol_weight=None
+
+            best_weight=max(product.applied_weight,vol_weight)
+
+            weight=get_weight(best_weight,order.method)
+            ppkg=Pricing2.objects.get(business=order.business,weight=weight,zone=zone,type=order.method).ppkg
+            shipping_cost=ppkg*weight.weight
+            if order.payment_method=='C':
+                percentage=business.cod_percentage*product.price/100
+                if percentage > business.cod_sum:
+                    cod_cost=percentage
+                else:
+                    cod_cost=business.cod_sum
+            else:
+                cod_cost=0
+            shipping_cost=shipping_cost+business.fuel_surcharge*shipping_cost
+            product.update(shipping_cost=shipping_cost,cod_cost=cod_cost)
+
+
+def send_update_test(sender, instance, created, **kwargs):
+    signals.post_save.disconnect(send_update, sender=Product)
+    update_status(instance)
+    signals.post_save.connect(send_update, sender=Product)
+
+
+
+post_save.connect(send_update_test, sender=Order)
 
 
 
