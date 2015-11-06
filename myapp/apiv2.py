@@ -1851,7 +1851,6 @@ class OrderResource2(MultipartResource, ModelResource):
                 if (shipment.count() == 0):
                     # everything good
                     bundle.data['promocode'] = "/api/v2/promocode/" + str(promocode.pk) + "/"
-                    print str(bundle.data['code'])
                     bundle.data['valid'] = 'Y'
                 else:
                     bundle.data['promomsg'] = "You are not a first time user"
