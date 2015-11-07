@@ -39,6 +39,11 @@ from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
 
 
+from django.contrib import messages
+
+# Then, when you need to error the user:
+
+
 action_names = {
 	ADDITION: 'Addition',
 	CHANGE:   'Change',
@@ -738,7 +743,7 @@ class ProductInline(admin.TabularInline):
 	exclude = ['sku', 'weight', 'real_tracking_no', 'tracking_data']
 	readonly_fields = ('product_info', 'weight', 'shipping_cost', 'generate_order', 'fedex','dimensions')
 	fields = (
-		'product_info', 'name', 'quantity', 'price', 'weight', 'applied_weight', 'is_document','dimensions' ,'generate_order', 'fedex','status')
+		'product_info', 'name', 'quantity', 'price', 'weight', 'applied_weight', 'is_document','dimensions' ,'generate_order', 'fedex')
 	extra = 0
 
 	def dimensions(self,obj):
@@ -1417,7 +1422,9 @@ class InitiatedBusinessRemittanceAdmin(reversion.VersionAdmin,ImportExportAction
 		sum_complete = query_complete.aggregate(total=Sum('price'))['total']
 		count_complete = query_complete.count()
 
-		return "Rs. "+ str(sum_complete) + "| Count= " + str(count_complete)
+		return "Rs. "+ str(sum_complete) + "| Count= " + str(count_complete) + '<a href="/admin/businessapp/remittanceproductinitiated/?order__business__username__exact=%s" target="_blank">  see products</a>' % (obj.pk)
+	remittance_initiated.allow_tags = True
+
 
 
 admin.site.register(InitiatedBusinessRemittance, InitiatedBusinessRemittanceAdmin)
@@ -1444,19 +1451,27 @@ class PendingBusinessRemittanceAdmin(admin.ModelAdmin):
 	list_display=['username','business_name','remittance_pending']
 
 	def make_remittance_initiated(modeladmin, request, queryset):
-		ct = ContentType.objects.get_for_model(queryset.model)
-		for obj in queryset:
-			LogEntry.objects.log_action(
-				user_id=request.user.id,
-				content_type_id=ct.pk,
-				object_id=obj.pk,
-				object_repr=str(obj.pk),
-				action_flag=CHANGE,
-				change_message="action button : remittance initiated of these products")
+#checking if valid
+		plist=Product.objects.filter(status='C',order__payment_method='C',remittance_status='I')
+		c=Business.objects.filter(order__product__in=plist).distinct()
+		intersection=c and queryset
+		if intersection.count() > 0:
+			messages.error(request, "Error for "+ str(intersection.first().business_name))
+		else:
+			ct = ContentType.objects.get_for_model(queryset.model)
+
+			for obj in queryset:
+				LogEntry.objects.log_action(
+					user_id=request.user.id,
+					content_type_id=ct.pk,
+					object_id=obj.pk,
+					object_repr=str(obj.pk),
+					action_flag=CHANGE,
+					change_message="action button : remittance initiated of these products")
 
 
-		product_queryset=Product.objects.filter(order__business__in=queryset,order__payment_method='C',status='C',remittance_status='P')
-		product_queryset.update(remittance_status='I')
+			product_queryset=Product.objects.filter(order__business__in=queryset,order__payment_method='C',status='C',remittance_status='P')
+			product_queryset.update(remittance_status='I')
 
 
 	make_remittance_initiated.short_description = "make remittance initiated of selected businesses"
@@ -1464,11 +1479,6 @@ class PendingBusinessRemittanceAdmin(admin.ModelAdmin):
 
 	def get_actions(self, request):
 		actions = super(PendingBusinessRemittanceAdmin, self).get_actions(request)
-
-		plist=Product.objects.filter(status='C',order__payment_method='C',remittance_status='I')
-		c=Business.objects.filter(order__product__in=plist).distinct().count()
-		if c>0:
-			del actions['make_remittance_initiated']
 		return actions
 
 
