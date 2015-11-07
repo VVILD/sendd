@@ -1520,19 +1520,19 @@ class RemittanceProductPendingAdmin(reversion.VersionAdmin,ImportExportActionMod
 
 			today_orders_b2b = Order.objects.filter(business=business,payment_method='C',book_time__range=(start_min, end_max))
 
-			query_complete=Product.objects.filter(order=today_orders_b2b,status='C',remittance=False)
+			query_complete=Product.objects.filter(order=today_orders_b2b,status='C',remittance_status='P')
 			sum_complete = query_complete.aggregate(total=Sum('price'))['total']
 			count_complete = query_complete.count()
 
-			query_return=Product.objects.filter(order=today_orders_b2b,status='R',remittance=False)
+			query_return=Product.objects.filter(order=today_orders_b2b,status='R',remittance_status='P')
 			sum_return = query_return.aggregate(total=Sum('price'))['total']
 			count_return = query_return.count()
 
-			query_dispatched=Product.objects.filter(order=today_orders_b2b,status='DI',remittance=False)
+			query_dispatched=Product.objects.filter(order=today_orders_b2b,status='DI',remittance_status='P')
 			sum_dispatched = query_dispatched.aggregate(total=Sum('price'))['total']
 			count_dispatched = query_dispatched.count()
 
-			query_pending=Product.objects.filter(order=today_orders_b2b,status='P',remittance=False)
+			query_pending=Product.objects.filter(order=today_orders_b2b,status='P',remittance_status='P')
 			sum_pending = query_pending.aggregate(total=Sum('price'))['total']
 			count_pending = query_pending.count()
 
@@ -1561,11 +1561,10 @@ class RemittanceProductPendingAdmin(reversion.VersionAdmin,ImportExportActionMod
 	list_filter=['order__business',('date', DateRangeFilter),]
 	list_display = (
 		'get_order_no','order_link', 'date', 'get_business', 'name', 'cod_cost', 'shipping_cost', 'status',
-		'price','remittance','remittance_status')
+		'price','remittance_status')
 	readonly_fields = (
 		'name', 'quantity', 'sku', 'price', 'weight', 'applied_weight', 'real_tracking_no', 'order', 'tracking_data',
 		'kartrocket_order', 'shipping_cost', 'cod_cost', 'date','barcode',)
-	list_editable = ('remittance_status',)
 
 	def make_remittance_complete(modeladmin, request, queryset):
 		ct = ContentType.objects.get_for_model(queryset.model)
@@ -1577,11 +1576,11 @@ class RemittanceProductPendingAdmin(reversion.VersionAdmin,ImportExportActionMod
 				object_repr=str(obj.pk),
 				action_flag=CHANGE,
 				change_message="action button : remittance completed of these products")
-		queryset.update(remittance=True,remittance_date=datetime.datetime.now())
+		queryset.update(remittance_status='C',remittance_date=datetime.datetime.now())
 
 
 	make_remittance_complete.short_description = "make remittance complete of selected products"
-	actions = [make_remittance_complete]
+	#actions = [make_remittance_complete]
 
 
 	def get_order_no(self, obj):
@@ -1673,11 +1672,10 @@ class RemittanceProductInitiatedAdmin(reversion.VersionAdmin,ImportExportActionM
 	list_filter=['order__business',('date', DateRangeFilter),]
 	list_display = (
 		'get_order_no','order_link', 'date', 'get_business', 'name', 'cod_cost', 'shipping_cost', 'status',
-		'price','remittance','remittance_status')
+		'price','remittance_status')
 	readonly_fields = (
 		'name', 'quantity', 'sku', 'price', 'weight', 'applied_weight', 'real_tracking_no', 'order', 'tracking_data',
 		'kartrocket_order', 'shipping_cost', 'cod_cost', 'date','barcode',)
-	list_editable = ('remittance_status',)
 
 	def make_remittance_pending(modeladmin, request, queryset):
 		ct = ContentType.objects.get_for_model(queryset.model)
@@ -1725,14 +1723,12 @@ class RemittanceProductCompleteAdmin(reversion.VersionAdmin,ImportExportActionMo
 	resource_class=export_xl.ProductResource
 
 	list_filter=['order__business',('date', DateRangeFilter),]
-	list_editable=['remittance',]
 	list_display = (
 		'get_order_no', 'order_link','date', 'get_business', 'name', 'cod_cost', 'shipping_cost', 'status',
-		'price','remittance_date','remittance','remittance_status')
+		'price','remittance_date','remittance_status')
 	readonly_fields = (
 		'name', 'quantity', 'sku', 'price', 'weight', 'applied_weight', 'real_tracking_no', 'order', 'tracking_data',
 		'kartrocket_order', 'shipping_cost', 'cod_cost', 'date','barcode',)
-	list_editable = ('remittance_status',)
 
 	def get_order_no(self, obj):
 		return obj.order.order_no
