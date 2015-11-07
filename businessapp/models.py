@@ -674,7 +674,10 @@ def update_status(order):
     for product in products:
         status_list.append(status_map[product.status])
         true_status_list.append(product.status)
-    status=min(status_list)
+    try:
+        status=min(status_list)
+    except:
+        status=4
     if status !=8:
         order_status=reverse_map[status]
     else:
@@ -771,7 +774,7 @@ def send_update_order(sender, instance, created, **kwargs):
     update_status(instance)
 
 
-post_save.connect(send_update_order, sender=Order)
+#post_save.connect(send_update_order, sender=Order)
 
 
 def send_update_product(sender, instance, created, **kwargs):
@@ -779,7 +782,7 @@ def send_update_product(sender, instance, created, **kwargs):
     update_status(instance.order)
 
 
-post_save.connect(send_update_product, sender=Product)
+#post_save.connect(send_update_product, sender=Product)
 
 
 
