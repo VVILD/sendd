@@ -603,7 +603,7 @@ class InvoiceResource(CORSResource):
                     "cod_cost": product.cod_cost,
                     "return_cost": product.return_cost,
                     "price": product.price,
-                    "remittance": product.remittance,
+                    "remittance": True if product.remittance_status == 'C' else False,
                     "tracking_id": product.real_tracking_no,
                     "quantity": product.quantity
                 })
@@ -611,7 +611,7 @@ class InvoiceResource(CORSResource):
                     product.cod_cost)
                 if product.order.payment_method == 'C' and product.status != 'R':
                     orders[p_order]["total_cod_remittance"] += int(product.price)
-                    if not product.remittance:
+                    if product.remittance_status != 'C':
                         orders[p_order]["total_remittance_pending"] += int(product.price)
             else:
                 orders[p_order] = {
@@ -635,13 +635,13 @@ class InvoiceResource(CORSResource):
                                                    "cod_cost": product.cod_cost,
                                                    "return_cost": product.return_cost,
                                                    "price": product.price,
-                                                   "remittance": product.remittance,
+                                                   "remittance": True if product.remittance_status == 'C' else False,
                                                    "tracking_id": product.real_tracking_no,
                                                    "quantity": product.quantity
                                                }]
                 if product.order.payment_method == 'C' and product.status != 'R':
                     orders[p_order]["total_cod_remittance"] += int(product.price)
-                    if not product.remittance:
+                    if product.remittance_status != 'C':
                         orders[p_order]["total_remittance_pending"] += int(product.price)
 
         bundle = []
