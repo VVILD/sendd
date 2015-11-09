@@ -37,6 +37,13 @@ class NewReturnForm(ModelForm):
 
 
 class NewTrackingStatus(ModelForm):
+
+	STATUS_CHOICES = (
+    ('in transit', ("in transit")),
+    ('out for delivery', ("out for delivery")),
+    ('Delivered', ("Delivered"))
+)
+	nstatus=forms.ChoiceField(choices = STATUS_CHOICES, label="", initial='', widget=forms.Select(), required=True)
 	tstatus=forms.CharField(max_length=100,required=False)
 	location=forms.CharField(max_length=100,required=False)
 	ttime=forms.DateTimeField()
@@ -49,14 +56,18 @@ class NewTrackingStatus(ModelForm):
 
 	def clean(self):
 		tstatus=self.cleaned_data['tstatus']
+		nstatus=self.cleaned_data['nstatus']
 		location=self.cleaned_data['location']
 		ttime=self.cleaned_data['ttime']
 
 
 		tracking_data=self.cleaned_data['tracking_data']
 		tracking_list=list(json.loads(tracking_data))
-		tracking_list.append({"status": tstatus , "date": str(ttime.strftime("%Y-%m-%d %H:%M:%S")), "location": location })
+		tracking_list.append({"status": nstatus , "date": str(ttime.strftime("%Y-%m-%d %H:%M:%S")), "location": location })
 		self.cleaned_data['tracking_data']= json.dumps(tracking_list)
+		if nstatus == 'Delivered':
+			self.cleaned_data['status']= 'C'
+
 
 
 	

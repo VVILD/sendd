@@ -166,19 +166,16 @@ class Command(BaseCommand):
 
 						if client_type == 'customer':
 							specific_products = Shipment.objects.filter(order=order)
-						else:
-							specific_products = Product.objects.filter(order=order)
-						order_complete = True
-						for specific_product in specific_products:
-							if specific_product.status == 'P':
-								order_complete = False
+							order_complete = True
+							for specific_product in specific_products:
+								if specific_product.status == 'P':
+									order_complete = False
 
-						if order_complete:
-							if client_type == 'customer':
-								order.order_status = 'D'
-							else:
-								order.status = 'C'
+							if order_complete:
+								if client_type == 'customer':
+									order.order_status = 'D'
 							order.save()
+
 					if original_length > 0:
 						if tracking_data[-1]['date'] != (event.Timestamp).strftime('%Y-%m-%d %H:%M:%S'):
 							if match.StatusCode == "DE":
@@ -303,19 +300,15 @@ class Command(BaseCommand):
 
 				if client_type == 'customer':
 					specific_products = Shipment.objects.filter(order=order)
-				else:
-					specific_products = Product.objects.filter(order=order)
-				order_complete = True
-				for specific_product in specific_products:
-					if specific_product.status == 'P':
-						order_complete = False
+					order_complete = True
+					for specific_product in specific_products:
+						if specific_product.status == 'P':
+							order_complete = False
 
-				if order_complete:
-					if client_type == 'customer':
-						order.order_status = 'D'
-					else:
-						order.status = 'C'
-					order.save()
+					if order_complete:
+						if client_type == 'customer':
+							order.order_status = 'D'
+						order.save()
 
 				break
 
@@ -402,18 +395,6 @@ class Command(BaseCommand):
 		if (returned):
 			product.status = 'R'
 			product.save()
-			order = product.order
-			# getting all products of that order
-
-			specific_products = Product.objects.filter(order=order)
-			order_return = True
-			for specific_product in specific_products:
-				if specific_product.status != 'R':
-					order_return = False
-
-			if order_return:
-				order.status = 'R'
-				order.save()
 
 		if (completed):
 			product.status = 'C'
@@ -423,19 +404,17 @@ class Command(BaseCommand):
 
 			if client_type == 'customer':
 				specific_products = Shipment.objects.filter(order=order)
-			else:
-				specific_products = Product.objects.filter(order=order)
-			order_complete = True
-			for specific_product in specific_products:
-				if specific_product.status == 'P':
-					order_complete = False
+				order_complete = True
+				for specific_product in specific_products:
+					if specific_product.status == 'P':
+						order_complete = False
 
-			if order_complete:
-				if client_type == 'customer':
-					order.order_status = 'D'
-				else:
-					order.status = 'C'
-				order.save()
+				if order_complete:
+					if client_type == 'customer':
+						order.order_status = 'D'
+					else:
+						order.status = 'C'
+					order.save()
 
 
 		return result
@@ -514,19 +493,17 @@ class Command(BaseCommand):
 
 			if client_type == 'customer':
 				specific_products = Shipment.objects.filter(order=order)
-			else:
-				specific_products = Product.objects.filter(order=order)
-			order_complete = True
-			for specific_product in specific_products:
-				if specific_product.status == 'P':
-					order_complete = False
+				order_complete = True
+				for specific_product in specific_products:
+					if specific_product.status == 'P':
+						order_complete = False
 
-			if order_complete:
-				if client_type == 'customer':
-					order.order_status = 'D'
-				else:
-					order.status = 'C'
-				order.save()
+				if order_complete:
+					if client_type == 'customer':
+						order.order_status = 'D'
+					else:
+						order.status = 'C'
+					order.save()
 
 		return result
 
