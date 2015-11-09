@@ -741,9 +741,9 @@ class ProductInline(admin.TabularInline):
 	model = Product
 	form = ProductForm
 	exclude = ['sku', 'weight', 'real_tracking_no', 'tracking_data']
-	readonly_fields = ('product_info', 'weight', 'shipping_cost', 'generate_order', 'ecom','dimensions')
+	readonly_fields = ('product_info', 'weight', 'shipping_cost', 'generate_order', 'dimensions')
 	fields = (
-		'product_info', 'name', 'quantity', 'price', 'weight', 'applied_weight', 'is_document','dimensions' ,'generate_order', 'ecom','status')
+		'product_info', 'name', 'quantity', 'price', 'weight', 'applied_weight', 'is_document','dimensions' ,'generate_order',)
 	extra = 0
 
 	def dimensions(self,obj):
