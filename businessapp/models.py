@@ -7,7 +7,7 @@ from datetime import datetime
 from geopy.distance import vincenty
 from geopy.geocoders import googlev3
 from pytz import timezone
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, pre_save
 import hashlib
 import random
 # Create your models here.
@@ -458,6 +458,8 @@ class Product(models.Model):
             raise ValidationError("Barcode length should be 10")
 
         super(Product, self).save(*args, **kwargs)
+        if self.order:
+            self.order.save()
         self.__original_tracking_data = self.tracking_data
 
 class ProxyProduct(Product):
