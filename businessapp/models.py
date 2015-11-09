@@ -774,7 +774,7 @@ def send_update_order(sender, instance, created, **kwargs):
     update_status(instance)
 
 
-#post_save.connect(send_update_order, sender=Order)
+post_save.connect(send_update_order, sender=Order)
 
 
 def send_update_product(sender, instance, created, **kwargs):
@@ -782,7 +782,7 @@ def send_update_product(sender, instance, created, **kwargs):
     update_status(instance.order)
 
 
-#post_save.connect(send_update_product, sender=Product)
+post_save.connect(send_update_product, sender=Product)
 
 
 

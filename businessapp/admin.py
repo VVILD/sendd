@@ -743,7 +743,7 @@ class ProductInline(admin.TabularInline):
 	exclude = ['sku', 'weight', 'real_tracking_no', 'tracking_data']
 	readonly_fields = ('product_info', 'weight', 'shipping_cost', 'generate_order', 'ecom','dimensions')
 	fields = (
-		'product_info', 'name', 'quantity', 'price', 'weight', 'applied_weight', 'is_document','dimensions' ,'generate_order', 'ecom')
+		'product_info', 'name', 'quantity', 'price', 'weight', 'applied_weight', 'is_document','dimensions' ,'generate_order', 'ecom','status')
 	extra = 0
 
 	def dimensions(self,obj):
@@ -1490,7 +1490,8 @@ class PendingBusinessRemittanceAdmin(admin.ModelAdmin):
 	def make_remittance_initiated(modeladmin, request, queryset):
 #checking if valid
 		plist=Product.objects.filter(status='C',order__payment_method='C',remittance_status='I')
-		c=Business.objects.filter(order__product__in=plist).distinct()
+		c=PendingBusinessRemittance.objects.filter(order__product__in=plist).distinct()
+		print queryset
 		intersection=c & queryset.distinct()
 		if intersection.count() > 0:
 			messages.error(request, "Error for "+ str(intersection.first().business_name))
