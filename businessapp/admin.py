@@ -741,9 +741,9 @@ class ProductInline(admin.TabularInline):
 	model = Product
 	form = ProductForm
 	exclude = ['sku', 'weight', 'real_tracking_no', 'tracking_data']
-	readonly_fields = ('product_info', 'weight', 'shipping_cost', 'generate_order', 'fedex','dimensions')
+	readonly_fields = ('product_info', 'weight', 'shipping_cost', 'generate_order', 'ecom','dimensions')
 	fields = (
-		'product_info', 'name', 'quantity', 'price', 'weight', 'applied_weight', 'is_document','dimensions' ,'generate_order', 'fedex')
+		'product_info', 'name', 'quantity', 'price', 'weight', 'applied_weight', 'is_document','dimensions' ,'generate_order', 'ecom')
 	extra = 0
 
 	def dimensions(self,obj):
@@ -902,6 +902,43 @@ class ProductInline(admin.TabularInline):
 			return '<div style="color:red">' + error_string + '</div>'
 
 	generate_order.allow_tags = True
+
+	def ecom(self, obj):
+
+		if not obj.order.state:
+			return "Enter state"
+
+		if not state_matcher.is_state(obj.order.state):
+			return '<h2 style="color:red">Enter a valid state</h2>'
+
+		if not obj.order.pincode:
+			return "Enter pincode"
+
+		db_pincode = Pincode.objects.filter(pincode=obj.order.pincode)
+
+		if db_pincode:
+			if not db_pincode[0].ecom_servicable:
+				return '<h2 style="color:red">Not Servicable</h2>'
+		else:
+			return '<h2 style="color:red">Enter a valid pincode</h2>'
+
+		if not obj.applied_weight:
+			return "Enter applied weight"
+
+		if not obj.price:
+			return "Enter item value"
+
+		if obj.mapped_tracking_no and obj.company == "E":
+			params = urllib.urlencode({'shipment_pk': obj.pk, 'client_type': "business"})
+			return '<a href="/create_ecom_shipment/?%s&type=invoice" target="_blank">%s</a>' % (params, "Print Invoice") + ' <br><br> <a href="/create_ecom_shipment/?%s&type=label" target="_blank">%s</a>' % (params, "Print Label")
+
+		params = urllib.urlencode({'shipment_pk': obj.pk, 'client_type': "business", 'type': 'create'})
+
+		return '<a href="/create_ecom_shipment/?%s">%s</a>' % (params, "Create Order")
+
+
+
+	ecom.allow_tags = True
 
 	def fedex(self, obj):
 		params = urllib.urlencode({'shipment_pk': obj.pk, 'client_type': "business"})

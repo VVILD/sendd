@@ -266,7 +266,7 @@ class OrderResource(CORSModelResource):
     products = ListField(attribute='products', null=True)
 
     class Meta:
-        queryset = Order.objects.all()
+        queryset = Order.objects.filter(confirmed=True)
         resourcese_name = 'order'
         authorization = OnlyAuthorization()
         # authentication=Authentication()
