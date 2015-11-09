@@ -41,7 +41,10 @@ class NewTrackingStatus(ModelForm):
 	STATUS_CHOICES = (
     ('in transit', ("in transit")),
     ('out for delivery', ("out for delivery")),
-    ('Delivered', ("Delivered"))
+    ('Delivered', ("Delivered")),
+    ('return in transit', ("return in transit")),
+    ('Return', ("Return"))
+
 )
 	nstatus=forms.ChoiceField(choices = STATUS_CHOICES, label="", initial='', widget=forms.Select(), required=True)
 	tstatus=forms.CharField(max_length=100,required=False)
@@ -67,6 +70,8 @@ class NewTrackingStatus(ModelForm):
 		self.cleaned_data['tracking_data']= json.dumps(tracking_list)
 		if nstatus == 'Delivered':
 			self.cleaned_data['status']= 'C'
+		if nstatus == 'Return':
+			self.cleaned_data['status']= 'R'
 
 
 
