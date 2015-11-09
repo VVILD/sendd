@@ -658,39 +658,42 @@ class Barcode(models.Model):
 
 
 def update_status(order):
-    products=Product.objects.filter(order=order)
-    status_map = {
-		'CA': 10,
-		'P': 4,
-		'PU': 5,
-		'D': 6,
-		'DI': 7,
-		'R': 8,
-		'C': 8,
-	}
-    reverse_map={4: 'P', 5: 'PU', 6: 'D', 7: 'DI', 10: 'CA'}
-    status_list=[]
-    true_status_list=[]
-    for product in products:
-        status_list.append(status_map[product.status])
-        true_status_list.append(product.status)
-    try:
-        status=min(status_list)
-    except:
-        status=4
-    if status !=8:
-        order_status=reverse_map[status]
-    else:
-        if 'R' in true_status_list and 'C' in true_status_list:
-            order_status='RC'
-        elif 'C' in true_status_list:
-            order_status='C'
-        elif 'R' in true_status_list:
-            order_status='R'
-    order.status=order_status
-    signals.post_save.disconnect(send_update_order, sender=Order)
-    order.save()
-    signals.post_save.connect(send_update_order, sender=Order)
+    if order is not None:
+        products=Product.objects.filter(order=order)
+        status_map = {
+            'CA': 10,
+            'P': 4,
+            'PU': 5,
+            'D': 6,
+            'DI': 7,
+            'R': 8,
+            'C': 8,
+        }
+        reverse_map={4: 'P', 5: 'PU', 6: 'D', 7: 'DI', 10: 'CA'}
+        status_list=[]
+        true_status_list=[]
+        for product in products:
+            status_list.append(status_map[product.status])
+            true_status_list.append(product.status)
+        try:
+            status=min(status_list)
+        except:
+            status=4
+        if status !=8:
+            order_status=reverse_map[status]
+        else:
+            if 'R' in true_status_list and 'C' in true_status_list:
+                order_status='RC'
+            elif 'C' in true_status_list:
+                order_status='C'
+            elif 'R' in true_status_list:
+                order_status='R'
+        order.status=order_status
+        signals.post_save.disconnect(send_update_order, sender=Order)
+        signals.post_save.disconnect(send_update_product, sender=Product)
+        order.save()
+        signals.post_save.connect(send_update_order, sender=Order)
+        signals.post_save.connect(send_update_product, sender=Product)
 
 
 
@@ -736,37 +739,40 @@ def get_weight(weight,type):
             return Weight.objects.get(weight=math.ceil(weight))
 
 def update_price(order):
-    products=Product.objects.filter(order=order)
-    business=order.business
-    for product in products:
-        if product.applied_weight:
-            print "pk=",product.pk
-            zone=get_zone(order.pincode)
-            if (product.l and product.b and product.h):
-                vol_weight= (product.l *product.b *product.h)/5000
-            else:
-                vol_weight=None
-
-            best_weight=max(product.applied_weight,vol_weight)
-            print "weight=",best_weight
-            weight=get_weight(best_weight,order.method)
-            ppkg=Pricing2.objects.get(business=order.business,weight=weight,zone=zone,type=order.method).ppkg
-            print "ppkg=",ppkg
-            shipping_cost=ppkg*weight.weight
-            if order.payment_method=='C':
-                percentage=business.cod_percentage*product.price/100
-                if percentage > business.cod_sum:
-                    cod_cost=percentage
+    if order is not None:
+        products=Product.objects.filter(order=order)
+        business=order.business
+        for product in products:
+            if product.applied_weight:
+                print "pk=",product.pk
+                zone=get_zone(order.pincode)
+                if (product.l and product.b and product.h):
+                    vol_weight= (product.l *product.b *product.h)/5000
                 else:
-                    cod_cost=business.cod_sum
-            else:
-                cod_cost=0
-            shipping_cost=shipping_cost+business.fuel_surcharge*shipping_cost/100
-            product.shipping_cost=shipping_cost
-            product.cod_cost=cod_cost
-            signals.post_save.disconnect(send_update_product, sender=Product)
-            product.save()
-            signals.post_save.connect(send_update_product, sender=Product)
+                    vol_weight=None
+
+                best_weight=max(product.applied_weight,vol_weight)
+                print "weight=",best_weight
+                weight=get_weight(best_weight,order.method)
+                ppkg=Pricing2.objects.get(business=order.business,weight=weight,zone=zone,type=order.method).ppkg
+                print "ppkg=",ppkg
+                shipping_cost=ppkg*weight.weight
+                if order.payment_method=='C':
+                    percentage=business.cod_percentage*product.price/100
+                    if percentage > business.cod_sum:
+                        cod_cost=percentage
+                    else:
+                        cod_cost=business.cod_sum
+                else:
+                    cod_cost=0
+                shipping_cost=shipping_cost+business.fuel_surcharge*shipping_cost/100
+                product.shipping_cost=shipping_cost
+                product.cod_cost=cod_cost
+                signals.post_save.disconnect(send_update_product, sender=Product)
+                signals.post_save.disconnect(send_update_order, sender=Order)
+                product.save()
+                signals.post_save.connect(send_update_product, sender=Product)
+                signals.post_save.connect(send_update_order, sender=Order)
 
 
 def send_update_order(sender, instance, created, **kwargs):
