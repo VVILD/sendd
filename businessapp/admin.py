@@ -1491,7 +1491,7 @@ class PendingBusinessRemittanceAdmin(admin.ModelAdmin):
 #checking if valid
 		plist=Product.objects.filter(status='C',order__payment_method='C',remittance_status='I')
 		c=PendingBusinessRemittance.objects.filter(order__product__in=plist).distinct()
-		print queryset
+		#print queryset
 		intersection=c & queryset.distinct()
 		if intersection.count() > 0:
 			messages.error(request, "Error for "+ str(intersection.first().business_name))
