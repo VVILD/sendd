@@ -39,7 +39,7 @@ class Command(BaseCommand):
                         product.company = 'NA'
                         product.save()
                     mapped_orders.append(order)
-                    print("awb {} mapped for order no {}".format(row["AWB NO"], order.order_no))
+                    print("awb {} mapped for order no {} of business {}".format(row["AWB NO"], order.order_no, order.business.business_name))
                 except Exception as e:
                     print(str(e))
                     print("Reverting all previous orders...")
