@@ -1972,7 +1972,7 @@ class QcProductAdmin(reversion.VersionAdmin,ImportExportActionModelAdmin):
 			self.form = NewTrackingStatus
 			self.fieldsets = (
 				('Add new',
-				 {'fields': [('nstatus', 'ttime', 'location'), ], 'classes': ('suit-tab', 'suit-tab-general')}),
+				 {'fields': ['nstatus', 'ttime', 'location', ], 'classes': ('suit-tab', 'suit-tab-general')}),
 				('Previous tracking', {'fields': ['p_tracking', ],
 									   'classes': ('suit-tab', 'suit-tab-general')}),
 				('Do not edit this', {'fields': ['tracking_data','status' ], 'classes': ('suit-tab', 'suit-tab-tracking')}),
