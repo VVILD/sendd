@@ -215,3 +215,12 @@ class Offline(models.Model):
 
     def __str__(self):
         return self.message
+
+
+class EcomAWB(models.Model):
+    awb = models.CharField(max_length=10, unique=True)
+    label_type = models.CharField(max_length=1, choices=(('P', 'Prepaid'), ('C', 'COD')))
+    used = models.BooleanField(default=False)
+
+    def is_used(self):
+        return self.used
