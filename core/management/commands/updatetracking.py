@@ -144,7 +144,7 @@ class Command(BaseCommand):
 		# NOTE: TRACKING IS VERY ERRATIC ON THE TEST SERVERS. YOU MAY NEED TO USE
 		# PRODUCTION KEYS/PASSWORDS/ACCOUNT #.
 		# We're using the FedexConfig object from example_config.py in this dir.
-		track = FedexTrackRequest(self.FEDEX_CONFIG_INDIA)
+		track = FedexTrackRequest(random.choice(self.FEDEX_CONFIGS))
 		if product.tracking_data:
 			tracking_data = ast.literal_eval(product.tracking_data)
 		else:

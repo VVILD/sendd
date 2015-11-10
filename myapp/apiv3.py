@@ -102,6 +102,8 @@ class OrderResource3(ModelResource):
         except:
             bundle.data['promomsg'] = "Wrong promo code"
 
+        return bundle
+
 
 
 class AddressResource3( ModelResource):
