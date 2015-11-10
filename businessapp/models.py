@@ -750,7 +750,7 @@ def update_price(order):
         business=order.business
         for product in products:
             if product.applied_weight:
-                print "pk=",product.pk
+                # print "pk=",product.pk
                 zone=get_zone(order.pincode)
                 if (product.l and product.b and product.h):
                     vol_weight= (product.l *product.b *product.h)/5000
@@ -758,10 +758,10 @@ def update_price(order):
                     vol_weight=None
 
                 best_weight=max(product.applied_weight,vol_weight)
-                print "weight=",best_weight
+                # print "weight=",best_weight
                 weight=get_weight(best_weight,order.method)
                 ppkg=Pricing2.objects.get(business=order.business,weight=weight,zone=zone,type=order.method).ppkg
-                print "ppkg=",ppkg
+                # print "ppkg=",ppkg
                 shipping_cost=ppkg*weight.weight
                 if order.payment_method=='C':
                     percentage=business.cod_percentage*product.price/100
@@ -800,8 +800,8 @@ post_save.connect(send_update_product, sender=Product)
 
 
 def add_pricing(sender, instance, created, **kwargs):
-    print "assadfasd"
-    print instance.pricing2s.count()
+    # print "assadfasd"
+    # print instance.pricing2s.count()
     if instance.pricing2s.count()==0:
         ndict = {'a': [(0.25,15), (0.5,15), (1,28), (1.5,41),(2,54), (2.5,67), (3,80), (3.5,93), (4,106), (4.5,119), (5,132), (5.5,145),(6,158), (6.5,171), (7,184),(7.5,197), (8,210), (8.5,223), (9,236),(9.5,249), (10,262), (11,286)],
                  'b': [(0.25,20), (0.5,30), (1,56), (1.5,82),(2,108), (2.5,134), (3,160), (3.5,186),(4,212),(4.5,238), (5,264), (5.5,290),(6,316), (6.5,342),(7,368),(7.5,394), (8,420), (8.5,446),(9,472),(9.5,498), (10,524), (11,572)],

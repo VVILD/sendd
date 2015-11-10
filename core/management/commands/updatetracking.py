@@ -1,5 +1,6 @@
 import ast
 import logging
+import random
 from optparse import make_option
 import re
 from django.core.management.base import BaseCommand
@@ -29,6 +30,7 @@ class Command(BaseCommand):
 			metavar="WRKS"
 		),
 	)
+	option_list = option_list + (make_option("-f", action="store_true", dest="fedex"),)
 
 	company_map = {
 		'B': 'bluedart',
@@ -44,6 +46,14 @@ class Command(BaseCommand):
 									 account_number='677853204',
 									 meter_number='108284345',
 									 use_test_server=False)
+	FEDEX_CONFIG_INTRA_MUMBAI = FedexConfig(key='FRmcajHEPfMUjNmC',
+                                        password='fY5ZwylNGYFXAgNoChYYYSojG',
+                                        account_number='678650382',
+                                        meter_number='108284351',
+                                        use_test_server=False)
+
+	FEDEX_CONFIGS = [FEDEX_CONFIG_INDIA, FEDEX_CONFIG_INTRA_MUMBAI]
+
 	logging.basicConfig(level=logging.INFO)
 
 	@staticmethod
@@ -134,7 +144,7 @@ class Command(BaseCommand):
 		# NOTE: TRACKING IS VERY ERRATIC ON THE TEST SERVERS. YOU MAY NEED TO USE
 		# PRODUCTION KEYS/PASSWORDS/ACCOUNT #.
 		# We're using the FedexConfig object from example_config.py in this dir.
-		track = FedexTrackRequest(self.FEDEX_CONFIG_INDIA)
+		track = FedexTrackRequest(random.choice(self.FEDEX_CONFIGS))
 		if product.tracking_data:
 			tracking_data = ast.literal_eval(product.tracking_data)
 		else:
@@ -149,21 +159,15 @@ class Command(BaseCommand):
 
 			for match in track.response.TrackDetails:
 				if hasattr(match, 'ActualDeliveryTimestamp'):
-					product.actual_delivery_timestamp = match.ActualDeliveryTimestamp
-					product.estimated_delivery_timestamp = None
+					Product.objects.filter(pk=product.pk).update(status='C', actual_delivery_timestamp=match.ActualDeliveryTimestamp, estimated_delivery_timestamp=None)
 				elif hasattr(match, 'EstimatedDeliveryTimestamp'):
-					product.estimated_delivery_timestamp = match.EstimatedDeliveryTimestamp
-					product.actual_delivery_timestamp = None
+					Product.objects.filter(pk=product.pk).update(actual_delivery_timestamp=None, estimated_delivery_timestamp=match.EstimatedDeliveryTimestamp)
 				for event in match.Events:
 					if event.EventType == 'RS':
-						product.status = 'R'
-						product.return_cost = product.shipping_cost
-						product.save()
+						Product.objects.filter(pk=product.pk).update(status='R', return_cost=product.shipping_cost)
 					if event.EventType == 'DL':
-						product.status = 'C'
-						product.save()
 						order = product.order
-
+						Product.objects.filter(pk=product.pk).update(status='C')
 						if client_type == 'customer':
 							specific_products = Shipment.objects.filter(order=order)
 							order_complete = True
@@ -193,9 +197,9 @@ class Command(BaseCommand):
 								"date": (event.Timestamp).strftime('%Y-%m-%d %H:%M:%S'),
 								"location": location
 							})
-							product.tracking_data = json.dumps(tracking_data)
-							product.save()
+							Product.objects.filter(pk=product.pk).update(tracking_data=json.dumps(tracking_data))
 							result = {
+								"real_tracking_no": product.real_tracking_no,
 								"company": 'fedex',
 								"tracking_no": product.mapped_tracking_no,
 								"updated": True,
@@ -205,18 +209,14 @@ class Command(BaseCommand):
 							hours=self.hours_gone(tracking_data[-1]['date'])
 							if "Shipment information sent" in tracking_data[-1]['status']:
 								if (hours>12):
-									product.warning=True
-									product.warning_type='FSI'
-									product.save()
-							else:
+									Product.objects.filter(pk=product.pk).update(warning=True, warning_type='FSI')
 								if (hours>24):
-									product.warning=True
-									product.warning_type='F24'
-									product.save()
+									Product.objects.filter(pk=product.pk).update(warning=True, warning_type='F24')
 
 
 
 							result = {
+								"real_tracking_no": product.real_tracking_no,
 								"company": 'fedex',
 								"tracking_no": product.mapped_tracking_no,
 								"updated": False,
@@ -238,9 +238,9 @@ class Command(BaseCommand):
 							"date": (event.Timestamp).strftime('%Y-%m-%d %H:%M:%S'),
 							"location": location
 						})
-						product.tracking_data = json.dumps(tracking_data)
-						product.save()
+						Product.objects.filter(pk=product.pk).update(tracking_data=json.dumps(tracking_data))
 						result = {
+							"real_tracking_no": product.real_tracking_no,
 							"company": 'fedex',
 							"tracking_no": product.mapped_tracking_no,
 							"updated": True,
@@ -248,6 +248,7 @@ class Command(BaseCommand):
 						}
 		except Exception,e:
 			result = {
+				"real_tracking_no": product.real_tracking_no,
 				"company": 'fedex',
 				"tracking_no": product.mapped_tracking_no,
 				"updated": False,
@@ -580,39 +581,61 @@ class Command(BaseCommand):
 		else:
 			workers = int(options['workers'])
 
-		if len(aftership_track_queue) > 0:
-			with futures.ThreadPoolExecutor(max_workers=workers) as executor:
-				futures_track = (executor.submit(self.aftership_track, item) for item in aftership_track_queue)
-				for result in futures.as_completed(futures_track):
-					if result.exception() is not None:
-						print('%s' % result.exception())
-					else:
-						print(result.result())
+		if options['fedex']:
+			if len(fedex_track_queue) > 0:
+				with futures.ThreadPoolExecutor(max_workers=workers) as executor:
+					futures_track = (executor.submit(self.fedex_track, item) for item in fedex_track_queue)
+					for result in futures.as_completed(futures_track):
+						if result.exception() is not None:
+							print('%s' % result.exception())
+						else:
+							print(result.result())
+				print("Starting fedex order save..")
+				for fedex_product in fedex_business_shipments:
+					fedex_product.order.save()
+					print("Fedex saving order {}".format(fedex_product.order.order_no))
+				print("Fedex order save complete")
+		else:
 
-		if len(fedex_track_queue) > 0:
-			with futures.ThreadPoolExecutor(max_workers=workers) as executor:
-				futures_track = (executor.submit(self.fedex_track, item) for item in fedex_track_queue)
-				for result in futures.as_completed(futures_track):
-					if result.exception() is not None:
-						print('%s' % result.exception())
-					else:
-						print(result.result())
+			if len(aftership_track_queue) > 0:
+				with futures.ThreadPoolExecutor(max_workers=workers) as executor:
+					futures_track = (executor.submit(self.aftership_track, item) for item in aftership_track_queue)
+					for result in futures.as_completed(futures_track):
+						if result.exception() is not None:
+							print('%s' % result.exception())
+						else:
+							print(result.result())
 
-		if len(ecom_track_queue) > 0:
-			with futures.ThreadPoolExecutor(max_workers=workers) as executor:
-				futures_track = (executor.submit(self.ecom_track, item) for item in ecom_track_queue)
-				for result in futures.as_completed(futures_track):
-					if result.exception() is not None:
-						print('%s' % result.exception())
-					else:
-						print(result.result())
+			if len(fedex_track_queue) > 0:
+				with futures.ThreadPoolExecutor(max_workers=workers) as executor:
+					futures_track = (executor.submit(self.fedex_track, item) for item in fedex_track_queue)
+					for result in futures.as_completed(futures_track):
+						if result.exception() is not None:
+							print('%s' % result.exception())
+						else:
+							print(result.result())
+
+				print("Starting fedex order save..")
+				for fedex_product in fedex_business_shipments:
+					fedex_product.order.save()
+					print("Fedex saving order {}".format(fedex_product.order.order_no))
+				print("Fedex order save complete")
+
+			if len(ecom_track_queue) > 0:
+				with futures.ThreadPoolExecutor(max_workers=workers) as executor:
+					futures_track = (executor.submit(self.ecom_track, item) for item in ecom_track_queue)
+					for result in futures.as_completed(futures_track):
+						if result.exception() is not None:
+							print('%s' % result.exception())
+						else:
+							print(result.result())
 
 
-		if len(dtdc_track_queue) > 0:
-			with futures.ThreadPoolExecutor(max_workers=workers) as executor:
-				futures_track = (executor.submit(self.dtdc_track, item) for item in dtdc_track_queue)
-				for result in futures.as_completed(futures_track):
-					if result.exception() is not None:
-						print('%s' % result.exception())
-					else:
-						print(result.result())
+			if len(dtdc_track_queue) > 0:
+				with futures.ThreadPoolExecutor(max_workers=workers) as executor:
+					futures_track = (executor.submit(self.dtdc_track, item) for item in dtdc_track_queue)
+					for result in futures.as_completed(futures_track):
+						if result.exception() is not None:
+							print('%s' % result.exception())
+						else:
+							print(result.result())
