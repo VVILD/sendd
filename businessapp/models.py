@@ -683,6 +683,7 @@ def update_status(order):
             status=4
         if status !=8:
             order_status=reverse_map[status]
+
         else:
             if 'R' in true_status_list and 'C' in true_status_list:
                 order_status='RC'
@@ -690,6 +691,9 @@ def update_status(order):
                 order_status='C'
             elif 'R' in true_status_list:
                 order_status='R'
+        if order_status=='CA':
+            order_status='N'
+
         order.status=order_status
         signals.post_save.disconnect(send_update_order, sender=Order)
         signals.post_save.disconnect(send_update_product, sender=Product)

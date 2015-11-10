@@ -1133,6 +1133,8 @@ class OrderAdmin(FilterUserAdmin,ImportExportActionModelAdmin):
 	actions = [make_cancelled,make_pickedup]
 
 
+
+
 	def print_links(self,obj):
 		return '<a class="btn btn-info" href="/print_address/?order_no=%s" target="_blank" class="historylink" style="color:black">Print Address</a><br><a class="btn btn-info" href="/print_invoice/?order_no=%s" target="_blank" class="historylink" style="color:black">invoice for order</a>'  % (obj.pk,obj.pk)
 	print_links.allow_tags=True
