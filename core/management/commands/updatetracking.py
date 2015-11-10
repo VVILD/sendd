@@ -159,15 +159,15 @@ class Command(BaseCommand):
 
 			for match in track.response.TrackDetails:
 				if hasattr(match, 'ActualDeliveryTimestamp'):
-					Product.objects.get(pk=product.pk).update(status='C', actual_delivery_timestamp=match.ActualDeliveryTimestamp, estimated_delivery_timestamp=None)
+					Product.objects.filter(pk=product.pk).update(status='C', actual_delivery_timestamp=match.ActualDeliveryTimestamp, estimated_delivery_timestamp=None)
 				elif hasattr(match, 'EstimatedDeliveryTimestamp'):
-					Product.objects.get(pk=product.pk).update(actual_delivery_timestamp=None, estimated_delivery_timestamp=match.EstimatedDeliveryTimestamp)
+					Product.objects.filter(pk=product.pk).update(actual_delivery_timestamp=None, estimated_delivery_timestamp=match.EstimatedDeliveryTimestamp)
 				for event in match.Events:
 					if event.EventType == 'RS':
-						Product.objects.get(pk=product.pk).update(status='R', return_cost=product.shipping_cost)
+						Product.objects.filter(pk=product.pk).update(status='R', return_cost=product.shipping_cost)
 					if event.EventType == 'DL':
 						order = product.order
-						Product.objects.get(pk=product.pk).update(status='C')
+						Product.objects.filter(pk=product.pk).update(status='C')
 						if client_type == 'customer':
 							specific_products = Shipment.objects.filter(order=order)
 							order_complete = True
@@ -197,7 +197,7 @@ class Command(BaseCommand):
 								"date": (event.Timestamp).strftime('%Y-%m-%d %H:%M:%S'),
 								"location": location
 							})
-							Product.objects.get(pk=product.pk).update(tracking_data=json.dumps(tracking_data))
+							Product.objects.filter(pk=product.pk).update(tracking_data=json.dumps(tracking_data))
 							result = {
 								"real_tracking_no": product.real_tracking_no,
 								"company": 'fedex',
@@ -209,9 +209,9 @@ class Command(BaseCommand):
 							hours=self.hours_gone(tracking_data[-1]['date'])
 							if "Shipment information sent" in tracking_data[-1]['status']:
 								if (hours>12):
-									Product.objects.get(pk=product.pk).update(warning=True, warning_type='FSI')
+									Product.objects.filter(pk=product.pk).update(warning=True, warning_type='FSI')
 								if (hours>24):
-									Product.objects.get(pk=product.pk).update(warning=True, warning_type='F24')
+									Product.objects.filter(pk=product.pk).update(warning=True, warning_type='F24')
 
 
 
@@ -238,7 +238,7 @@ class Command(BaseCommand):
 							"date": (event.Timestamp).strftime('%Y-%m-%d %H:%M:%S'),
 							"location": location
 						})
-						Product.objects.get(pk=product.pk).update(tracking_data=json.dumps(tracking_data))
+						Product.objects.filter(pk=product.pk).update(tracking_data=json.dumps(tracking_data))
 						result = {
 							"real_tracking_no": product.real_tracking_no,
 							"company": 'fedex',
