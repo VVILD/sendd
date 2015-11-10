@@ -1133,6 +1133,8 @@ class OrderAdmin(FilterUserAdmin,ImportExportActionModelAdmin):
 	actions = [make_cancelled,make_pickedup]
 
 
+
+
 	def print_links(self,obj):
 		return '<a class="btn btn-info" href="/print_address/?order_no=%s" target="_blank" class="historylink" style="color:black">Print Address</a><br><a class="btn btn-info" href="/print_invoice/?order_no=%s" target="_blank" class="historylink" style="color:black">invoice for order</a>'  % (obj.pk,obj.pk)
 	print_links.allow_tags=True
@@ -1307,7 +1309,7 @@ class ProxyProductAdmin(BaseBusinessAdmin,ImportExportActionModelAdmin):
 	list_per_page=100
 
 	change_list_template='businessapp/templates/admin/businessapp/change_list.html'
-	list_display = ('order_no','get_business','sent_to','city','pincode','time',"applied_weight","mapped_tracking_no","company")
+	list_display = ('order_no','get_business','sent_to','city','pincode','time',"applied_weight","mapped_tracking_no","company","ff")
 	list_editable = ("mapped_tracking_no","company")
 	search_fields = ['order__order_no', 'real_tracking_no', 'mapped_tracking_no','tracking_data','order__name','order__city','order__pincode']
 	list_filter = ['order__business',('order__book_time', DateRangeFilter),]
@@ -1335,7 +1337,11 @@ class ProxyProductAdmin(BaseBusinessAdmin,ImportExportActionModelAdmin):
 	def time(self,obj):
 		return obj.order.book_time
 
-
+	def ff(self, obj):
+		try:
+			return obj.order.ff_comment
+		except:
+			return "None"
 
 	def get_business(self, obj):
 		return obj.order.business
@@ -2469,12 +2475,18 @@ class ExportOrderAdmin(ImportExportActionModelAdmin):
 	list_max_show_all = 2000000
 	list_filter=('order__business__business_name','order__business__username','order__book_time','last_tracking_status','company','status','remittance','order__payment_method','order__status',('date', DateRangeFilter),)
 	search_fields = ['name', 'real_tracking_no','order__business__business_name','order__business__username','order__order_no']
-	list_display = ('order_no','get_business', 'status', 'applied_weight', 'real_tracking_no', 'barcode','date','last_tracking_status','mapped_tracking_no' ,'company','payment_method','remittance')
+	list_display = ('order_no','get_business', 'status', 'applied_weight', 'real_tracking_no', 'barcode','date','last_tracking_status','mapped_tracking_no' ,'company','payment_method','remittance','ff')
 
 
 	def payment_method(self, obj):
 		try:
 			return obj.order.payment_method
+		except:
+			return "None"
+
+	def ff(self, obj):
+		try:
+			return obj.order.ff_comment
 		except:
 			return "None"
 
