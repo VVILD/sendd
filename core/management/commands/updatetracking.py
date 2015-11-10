@@ -144,7 +144,7 @@ class Command(BaseCommand):
 		# NOTE: TRACKING IS VERY ERRATIC ON THE TEST SERVERS. YOU MAY NEED TO USE
 		# PRODUCTION KEYS/PASSWORDS/ACCOUNT #.
 		# We're using the FedexConfig object from example_config.py in this dir.
-		track = FedexTrackRequest(random.choice(self.FEDEX_CONFIGS))
+		track = FedexTrackRequest(self.FEDEX_CONFIG_INDIA)
 		if product.tracking_data:
 			tracking_data = ast.literal_eval(product.tracking_data)
 		else:
@@ -161,9 +161,12 @@ class Command(BaseCommand):
 				if hasattr(match, 'ActualDeliveryTimestamp'):
 					product.actual_delivery_timestamp = match.ActualDeliveryTimestamp
 					product.estimated_delivery_timestamp = None
+					product.status = 'C'
+					product.save()
 				elif hasattr(match, 'EstimatedDeliveryTimestamp'):
 					product.estimated_delivery_timestamp = match.EstimatedDeliveryTimestamp
 					product.actual_delivery_timestamp = None
+					product.save()
 				for event in match.Events:
 					if event.EventType == 'RS':
 						product.status = 'R'
