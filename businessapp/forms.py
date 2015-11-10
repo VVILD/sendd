@@ -74,5 +74,3 @@ class NewTrackingStatus(ModelForm):
 			self.cleaned_data['status']= 'R'
 
 
-
-	

@@ -813,7 +813,7 @@ def add_pricing(sender, instance, created, **kwargs):
                  'e': [(1,150),(2,150), (3,150), (4,150), (5,150), (6,150), (7,150), (8,150), (9,150), (10,150), (11,165)]}
 
         for key in ndict:
-            for w in     ndict[key]:
+            for w in ndict[key]:
                 zone = Zone.objects.get(zone=key)
                 weight = Weight.objects.get(weight=w[0])
                 p=Pricing2(business=instance,zone=zone,weight=weight,price=w[1],type='N')

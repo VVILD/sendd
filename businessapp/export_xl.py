@@ -9,8 +9,11 @@ class ProductResource(resources.ModelResource):
 	class Meta:
 		model = Product
 		import_id_fields = ('order_id',)
-		fields = ('order','order__book_time','order__reference_id','order__payment_method','order__name','order__city','order__pincode', 'real_tracking_no', 'mapped_tracking_no', 'company','status','last_tracking_status','weight','applied_weight','barcode','order__method','name','price','remittance','remittance_date')
+		fields = ('order','order__book_time','order__reference_id','order__payment_method','order__name','order__city','order__pincode', 'real_tracking_no', 'mapped_tracking_no', 'company','status','last_tracking_status','weight','applied_weight','barcode','order__method','name','price','remittance','remittance_date','ff_comment')
 
+
+	def dehydrate_ff_comment(self, product):
+		return product.order.ff_comment
 
 class BusinessResource(resources.ModelResource):
 

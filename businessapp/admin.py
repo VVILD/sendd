@@ -1071,10 +1071,66 @@ class OrderAdmin(FilterUserAdmin,ImportExportActionModelAdmin):
 	list_display = (
 		'order_no', 'book_time', 'business_details', 'name', 'status','mapped_ok', 'no_of_products', 'total_shipping_cost',
 		'total_cod_cost', 'method', 'fedex','print_links','ff_comment')
-	list_editable = ('status','ff_comment',)
+	list_editable = ('ff_comment','status')
 	list_filter = ['business', 'status', 'book_time','product__company','product__return_action','product__dispatch_time']
 
 	readonly_fields=('master_tracking_number', 'mapped_master_tracking_number', 'fedex')
+
+
+
+
+	def make_pickedup(modeladmin, request, queryset):
+#checking if valid
+		ct = ContentType.objects.get_for_model(queryset.model)
+
+		for obj in queryset:
+			LogEntry.objects.log_action(
+				user_id=request.user.id,
+				content_type_id=ct.pk,
+				object_id=obj.pk,
+				object_repr=str(obj.pk),
+				action_flag=CHANGE,
+				change_message="action button : picked up of these order")
+
+
+		product_queryset=Product.objects.filter(order__in=queryset)
+
+
+
+		#messages.error(request, "Error for "+ str(intersection.first().business_name))
+		for product in product_queryset:
+			product.status='PU'
+			product.save()
+
+	make_pickedup.short_description = "make pickedup of selected orders"
+
+	def make_cancelled(modeladmin, request, queryset):
+#checking if valid
+		ct = ContentType.objects.get_for_model(queryset.model)
+
+		for obj in queryset:
+			LogEntry.objects.log_action(
+				user_id=request.user.id,
+				content_type_id=ct.pk,
+				object_id=obj.pk,
+				object_repr=str(obj.pk),
+				action_flag=CHANGE,
+				change_message="action button : cancelled of these order")
+
+
+		product_queryset=Product.objects.filter(order__in=queryset)
+
+
+
+		#messages.error(request, "Error for "+ str(intersection.first().business_name))
+		for product in product_queryset:
+			product.status='CA'
+			product.save()
+
+	make_cancelled.short_description = "make cancelled of selected orders"
+
+
+	actions = [make_cancelled,make_pickedup]
 
 
 	def print_links(self,obj):
