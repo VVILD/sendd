@@ -1,5 +1,6 @@
 import ast
 import logging
+import random
 from optparse import make_option
 import re
 from django.core.management.base import BaseCommand
@@ -29,6 +30,7 @@ class Command(BaseCommand):
 			metavar="WRKS"
 		),
 	)
+	option_list = option_list + (make_option("-f", action="store_true", dest="fedex"),)
 
 	company_map = {
 		'B': 'bluedart',
@@ -44,6 +46,14 @@ class Command(BaseCommand):
 									 account_number='677853204',
 									 meter_number='108284345',
 									 use_test_server=False)
+	FEDEX_CONFIG_INTRA_MUMBAI = FedexConfig(key='FRmcajHEPfMUjNmC',
+                                        password='fY5ZwylNGYFXAgNoChYYYSojG',
+                                        account_number='678650382',
+                                        meter_number='108284351',
+                                        use_test_server=False)
+
+	FEDEX_CONFIGS = [FEDEX_CONFIG_INDIA, FEDEX_CONFIG_INTRA_MUMBAI]
+
 	logging.basicConfig(level=logging.INFO)
 
 	@staticmethod
@@ -134,7 +144,7 @@ class Command(BaseCommand):
 		# NOTE: TRACKING IS VERY ERRATIC ON THE TEST SERVERS. YOU MAY NEED TO USE
 		# PRODUCTION KEYS/PASSWORDS/ACCOUNT #.
 		# We're using the FedexConfig object from example_config.py in this dir.
-		track = FedexTrackRequest(self.FEDEX_CONFIG_INDIA)
+		track = FedexTrackRequest(random.choice(self.FEDEX_CONFIGS))
 		if product.tracking_data:
 			tracking_data = ast.literal_eval(product.tracking_data)
 		else:
@@ -580,39 +590,50 @@ class Command(BaseCommand):
 		else:
 			workers = int(options['workers'])
 
-		if len(aftership_track_queue) > 0:
-			with futures.ThreadPoolExecutor(max_workers=workers) as executor:
-				futures_track = (executor.submit(self.aftership_track, item) for item in aftership_track_queue)
-				for result in futures.as_completed(futures_track):
-					if result.exception() is not None:
-						print('%s' % result.exception())
-					else:
-						print(result.result())
+		if options['fedex']:
+			if len(fedex_track_queue) > 0:
+				with futures.ThreadPoolExecutor(max_workers=workers) as executor:
+					futures_track = (executor.submit(self.fedex_track, item) for item in fedex_track_queue)
+					for result in futures.as_completed(futures_track):
+						if result.exception() is not None:
+							print('%s' % result.exception())
+						else:
+							print(result.result())
+		else:
 
-		if len(fedex_track_queue) > 0:
-			with futures.ThreadPoolExecutor(max_workers=workers) as executor:
-				futures_track = (executor.submit(self.fedex_track, item) for item in fedex_track_queue)
-				for result in futures.as_completed(futures_track):
-					if result.exception() is not None:
-						print('%s' % result.exception())
-					else:
-						print(result.result())
+			if len(aftership_track_queue) > 0:
+				with futures.ThreadPoolExecutor(max_workers=workers) as executor:
+					futures_track = (executor.submit(self.aftership_track, item) for item in aftership_track_queue)
+					for result in futures.as_completed(futures_track):
+						if result.exception() is not None:
+							print('%s' % result.exception())
+						else:
+							print(result.result())
 
-		if len(ecom_track_queue) > 0:
-			with futures.ThreadPoolExecutor(max_workers=workers) as executor:
-				futures_track = (executor.submit(self.ecom_track, item) for item in ecom_track_queue)
-				for result in futures.as_completed(futures_track):
-					if result.exception() is not None:
-						print('%s' % result.exception())
-					else:
-						print(result.result())
+			if len(fedex_track_queue) > 0:
+				with futures.ThreadPoolExecutor(max_workers=workers) as executor:
+					futures_track = (executor.submit(self.fedex_track, item) for item in fedex_track_queue)
+					for result in futures.as_completed(futures_track):
+						if result.exception() is not None:
+							print('%s' % result.exception())
+						else:
+							print(result.result())
+
+			if len(ecom_track_queue) > 0:
+				with futures.ThreadPoolExecutor(max_workers=workers) as executor:
+					futures_track = (executor.submit(self.ecom_track, item) for item in ecom_track_queue)
+					for result in futures.as_completed(futures_track):
+						if result.exception() is not None:
+							print('%s' % result.exception())
+						else:
+							print(result.result())
 
 
-		if len(dtdc_track_queue) > 0:
-			with futures.ThreadPoolExecutor(max_workers=workers) as executor:
-				futures_track = (executor.submit(self.dtdc_track, item) for item in dtdc_track_queue)
-				for result in futures.as_completed(futures_track):
-					if result.exception() is not None:
-						print('%s' % result.exception())
-					else:
-						print(result.result())
+			if len(dtdc_track_queue) > 0:
+				with futures.ThreadPoolExecutor(max_workers=workers) as executor:
+					futures_track = (executor.submit(self.dtdc_track, item) for item in dtdc_track_queue)
+					for result in futures.as_completed(futures_track):
+						if result.exception() is not None:
+							print('%s' % result.exception())
+						else:
+							print(result.result())
