@@ -1309,7 +1309,7 @@ class ProxyProductAdmin(BaseBusinessAdmin,ImportExportActionModelAdmin):
 	list_per_page=100
 
 	change_list_template='businessapp/templates/admin/businessapp/change_list.html'
-	list_display = ('order_no','get_business','sent_to','city','pincode','time',"applied_weight","mapped_tracking_no","company")
+	list_display = ('order_no','get_business','sent_to','city','pincode','time',"applied_weight","mapped_tracking_no","company","ff")
 	list_editable = ("mapped_tracking_no","company")
 	search_fields = ['order__order_no', 'real_tracking_no', 'mapped_tracking_no','tracking_data','order__name','order__city','order__pincode']
 	list_filter = ['order__business',('order__book_time', DateRangeFilter),]
@@ -1337,7 +1337,11 @@ class ProxyProductAdmin(BaseBusinessAdmin,ImportExportActionModelAdmin):
 	def time(self,obj):
 		return obj.order.book_time
 
-
+	def ff(self, obj):
+		try:
+			return obj.order.ff_comment
+		except:
+			return "None"
 
 	def get_business(self, obj):
 		return obj.order.business
