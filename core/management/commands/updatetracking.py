@@ -377,12 +377,12 @@ class Command(BaseCommand):
 				"error": False
 			}
 
-		except:
+		except Exception as e:
 			result = {
 				"company": company,
 				"tracking_no": product.mapped_tracking_no,
 				"updated": False,
-				"error": True
+				"error": str(e)
 			}
 
 		if json.dumps(tracking_data) != '[]':
@@ -463,12 +463,12 @@ class Command(BaseCommand):
 					"error": False
 				}
 
-		except:
+		except Exception as e:
 			result = {
 				"company": company,
 				"tracking_no": product.mapped_tracking_no,
 				"updated": False,
-				"error": True
+				"error": str(e)
 			}
 
 		if json.dumps(tracking_data) != '[]':
