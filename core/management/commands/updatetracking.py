@@ -31,6 +31,9 @@ class Command(BaseCommand):
 		),
 	)
 	option_list = option_list + (make_option("-f", action="store_true", dest="fedex"),)
+	option_list = option_list + (make_option("-a", action="store_true", dest="afteship"),)
+	option_list = option_list + (make_option("-e", action="store_true", dest="ecom"),)
+	option_list = option_list + (make_option("-d", action="store_true", dest="dtdc"),)
 
 	company_map = {
 		'B': 'bluedart',
@@ -590,6 +593,60 @@ class Command(BaseCommand):
 						print(str(e))
 						print("Error in {}".format(fedex_product.real_tracking_no))
 				print("Fedex order save complete")
+		elif options['aftership']:
+			if len(aftership_track_queue) > 0:
+				with futures.ThreadPoolExecutor(max_workers=workers) as executor:
+					futures_track = (executor.submit(self.aftership_track, item) for item in aftership_track_queue)
+					for result in futures.as_completed(futures_track):
+						if result.exception() is not None:
+							print('%s' % result.exception())
+						else:
+							print(result.result())
+				print("Starting aftership order save..")
+				for aftership_product in aftership_business_shipments:
+					try:
+						aftership_product.order.save()
+						print("Afteship saving order {}".format(aftership_product.order.order_no))
+					except Exception as e:
+						print(str(e))
+						print("Error in {}".format(aftership_product.real_tracking_no))
+				print("Aftership order save complete")
+		elif options['ecom']:
+			if len(ecom_track_queue) > 0:
+				with futures.ThreadPoolExecutor(max_workers=workers) as executor:
+					futures_track = (executor.submit(self.ecom_track, item) for item in ecom_track_queue)
+					for result in futures.as_completed(futures_track):
+						if result.exception() is not None:
+							print('%s' % result.exception())
+						else:
+							print(result.result())
+				print("Starting ecom order save..")
+				for ecom_product in ecom_business_shipments:
+					try:
+						ecom_product.order.save()
+						print("Ecom saving order {}".format(ecom_product.order.order_no))
+					except Exception as e:
+						print(str(e))
+						print("Error in {}".format(ecom_product.real_tracking_no))
+				print("Ecom order save complete")
+		elif options['dtdc']:
+			if len(dtdc_track_queue) > 0:
+				with futures.ThreadPoolExecutor(max_workers=workers) as executor:
+					futures_track = (executor.submit(self.dtdc_track, item) for item in dtdc_track_queue)
+					for result in futures.as_completed(futures_track):
+						if result.exception() is not None:
+							print('%s' % result.exception())
+						else:
+							print(result.result())
+				print("Starting dtdc order save..")
+				for dtdc_product in dtdc_business_shipments:
+					try:
+						dtdc_product.order.save()
+						print("DTDC saving order {}".format(dtdc_product.order.order_no))
+					except Exception as e:
+						print(str(e))
+						print("Error in {}".format(dtdc_product.real_tracking_no))
+				print("DTDC order save complete")
 		else:
 
 			if len(aftership_track_queue) > 0:
