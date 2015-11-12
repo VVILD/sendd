@@ -31,7 +31,7 @@ class Command(BaseCommand):
 		),
 	)
 	option_list = option_list + (make_option("-f", action="store_true", dest="fedex"),)
-	option_list = option_list + (make_option("-a", action="store_true", dest="afteship"),)
+	option_list = option_list + (make_option("-a", action="store_true", dest="aftership"),)
 	option_list = option_list + (make_option("-e", action="store_true", dest="ecom"),)
 	option_list = option_list + (make_option("-d", action="store_true", dest="dtdc"),)
 
