@@ -583,8 +583,12 @@ class Command(BaseCommand):
 							print(result.result())
 				print("Starting fedex order save..")
 				for fedex_product in fedex_business_shipments:
-					fedex_product.order.save()
-					print("Fedex saving order {}".format(fedex_product.order.order_no))
+					try:
+						fedex_product.order.save()
+						print("Fedex saving order {}".format(fedex_product.order.order_no))
+					except Exception as e:
+						print(str(e))
+						print("Error in {}".format(fedex_product.real_tracking_no))
 				print("Fedex order save complete")
 		else:
 
@@ -598,8 +602,12 @@ class Command(BaseCommand):
 							print(result.result())
 				print("Starting aftership order save..")
 				for aftership_product in aftership_business_shipments:
-					aftership_product.order.save()
-					print("Afteship saving order {}".format(aftership_product.order.order_no))
+					try:
+						aftership_product.order.save()
+						print("Afteship saving order {}".format(aftership_product.order.order_no))
+					except Exception as e:
+						print(str(e))
+						print("Error in {}".format(aftership_product.real_tracking_no))
 				print("Aftership order save complete")
 
 			if len(fedex_track_queue) > 0:
@@ -613,8 +621,12 @@ class Command(BaseCommand):
 
 				print("Starting fedex order save..")
 				for fedex_product in fedex_business_shipments:
-					fedex_product.order.save()
-					print("Fedex saving order {}".format(fedex_product.order.order_no))
+					try:
+						fedex_product.order.save()
+						print("Fedex saving order {}".format(fedex_product.order.order_no))
+					except Exception as e:
+						print(str(e))
+						print("Error in {}".format(fedex_product.real_tracking_no))
 				print("Fedex order save complete")
 
 			if len(ecom_track_queue) > 0:
@@ -627,8 +639,12 @@ class Command(BaseCommand):
 							print(result.result())
 				print("Starting ecom order save..")
 				for ecom_product in ecom_business_shipments:
-					ecom_product.order.save()
-					print("Ecom saving order {}".format(ecom_product.order.order_no))
+					try:
+						ecom_product.order.save()
+						print("Ecom saving order {}".format(ecom_product.order.order_no))
+					except Exception as e:
+						print(str(e))
+						print("Error in {}".format(ecom_product.real_tracking_no))
 				print("Ecom order save complete")
 
 
@@ -642,6 +658,10 @@ class Command(BaseCommand):
 							print(result.result())
 				print("Starting dtdc order save..")
 				for dtdc_product in dtdc_business_shipments:
-					dtdc_product.order.save()
-					print("DTDC saving order {}".format(dtdc_product.order.order_no))
+					try:
+						dtdc_product.order.save()
+						print("DTDC saving order {}".format(dtdc_product.order.order_no))
+					except Exception as e:
+						print(str(e))
+						print("Error in {}".format(dtdc_product.real_tracking_no))
 				print("DTDC order save complete")
