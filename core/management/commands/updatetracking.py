@@ -289,13 +289,10 @@ class Command(BaseCommand):
 			tracking_data.append({"status": str(str0), "date": str(str1), "location": str(str3)})
 
 			if 'shipment returned back to shipper'.lower() in str0.lower():
-				product.status = 'R'
-				product.return_cost = product.shipping_cost
-				product.save()
+				Product.objects.filter(pk=product.pk).update(status='R', return_cost=product.shipping_cost)
 
 			if 'delivered' in str0.lower():
-				product.status = 'C'
-				product.save()
+				Product.objects.filter(pk=product.pk).update(status='C')
 				order = product.order
 				# getting all products of that order
 
@@ -314,8 +311,7 @@ class Command(BaseCommand):
 				break
 
 		if json.dumps(tracking_data) != '[]':
-			product.tracking_data = json.dumps(tracking_data)
-			product.save()
+			Product.objects.filter(pk=product.pk).update(tracking_data=json.dumps(tracking_data))
 		return result
 
 
@@ -390,16 +386,13 @@ class Command(BaseCommand):
 			}
 
 		if json.dumps(tracking_data) != '[]':
-			product.tracking_data = json.dumps(tracking_data)
-			product.save()
+			Product.objects.filter(pk=product.pk).update(tracking_data=json.dumps(tracking_data))
 
 		if (returned):
-			product.status = 'R'
-			product.save()
+			Product.objects.filter(pk=product.pk).update(status='R', return_cost=product.shipping_cost)
 
 		if (completed):
-			product.status = 'C'
-			product.save()
+			Product.objects.filter(pk=product.pk).update(status='C')
 			order = product.order
 			# getting all products of that order
 
@@ -479,16 +472,14 @@ class Command(BaseCommand):
 			}
 
 		if json.dumps(tracking_data) != '[]':
-			product.tracking_data = json.dumps(tracking_data)
-			product.save()
+			Product.objects.filter(pk=product.pk).update(tracking_data=json.dumps(tracking_data))
 			try:
 				completed=self.is_dtdc_complete(product.mapped_tracking_no)
 			except:
 				pass
 
 		if (completed):
-			product.status = 'C'
-			product.save()
+			Product.objects.filter(pk=product.pk).update(status='C')
 			order = product.order
 			# getting all products of that order
 
@@ -516,53 +507,53 @@ class Command(BaseCommand):
 
 		dtdc_track_queue = []
 		# Track Bluedart shipments for businesses and customers
-		business_shipments = Product.objects.filter(
+		dtdc_business_shipments = Product.objects.filter(
 			(Q(company='DT')) & (
 				Q(status='P') | Q(status='DI'))).exclude(Q(order__status='C')| Q(order__status='N'))
 
-		for business_shipment in business_shipments:
-			dtdc_track_queue.append((business_shipment, 'business'))
+		for dtdc_business_shipment in dtdc_business_shipments:
+			dtdc_track_queue.append((dtdc_business_shipment, 'business'))
 
-		customer_shipments = Shipment.objects.filter(
+		dtdc_customer_shipments = Shipment.objects.filter(
 			( Q(company='DT')) & (
 				Q(status='P') | Q(status='DI'))).exclude( Q(order__order_status='N')| Q(order__order_status='D'))
 
-		for customer_shipment in customer_shipments:
-			dtdc_track_queue.append((customer_shipment, 'customer'))
+		for dtdc_customer_shipment in dtdc_customer_shipments:
+			dtdc_track_queue.append((dtdc_customer_shipment, 'customer'))
 
 
 		ecom_track_queue = []
 		# Track Bluedart shipments for businesses and customers
-		business_shipments = Product.objects.filter(
+		ecom_business_shipments = Product.objects.filter(
 			(Q(company='E')) & (
 				Q(status='P') | Q(status='DI'))).exclude(Q(order__status='C')| Q(order__status='N'))
 
-		for business_shipment in business_shipments:
-			ecom_track_queue.append((business_shipment, 'business'))
+		for ecom_business_shipment in ecom_business_shipments:
+			ecom_track_queue.append((ecom_business_shipment, 'business'))
 
-		customer_shipments = Shipment.objects.filter(
+		ecom_customer_shipments = Shipment.objects.filter(
 			( Q(company='E')) & (
 				Q(status='P') | Q(status='DI'))).exclude( Q(order__order_status='N')| Q(order__order_status='D'))
 
-		for customer_shipment in customer_shipments:
-			ecom_track_queue.append((customer_shipment, 'customer'))
+		for ecom_customer_shipment in ecom_customer_shipments:
+			ecom_track_queue.append((ecom_customer_shipment, 'customer'))
 
 
 		aftership_track_queue = []
 		# Track Bluedart shipments for businesses and customers
-		business_shipments = Product.objects.filter(
+		aftership_business_shipments = Product.objects.filter(
 			(Q(company='B') | Q(company='A') | Q(company='I')) & (
 				Q(status='P') | Q(status='DI'))).exclude(Q(order__status='C')| Q(order__status='N'))
 
-		for business_shipment in business_shipments:
-			aftership_track_queue.append((business_shipment, 'business'))
+		for aftership_business_shipment in aftership_business_shipments:
+			aftership_track_queue.append((aftership_business_shipment, 'business'))
 
-		customer_shipments = Shipment.objects.filter(
+		aftership_customer_shipments = Shipment.objects.filter(
 			(Q(company='B') | Q(company='A') |  Q(company='I')) & (
 				Q(status='P') | Q(status='DI'))).exclude( Q(order__order_status='N')| Q(order__order_status='D'))
 
-		for customer_shipment in customer_shipments:
-			aftership_track_queue.append((customer_shipment, 'customer'))
+		for aftership_customer_shipment in aftership_customer_shipments:
+			aftership_track_queue.append((aftership_customer_shipment, 'customer'))
 
 
 		fedex_track_queue = []
@@ -605,6 +596,11 @@ class Command(BaseCommand):
 							print('%s' % result.exception())
 						else:
 							print(result.result())
+				print("Starting aftership order save..")
+				for aftership_product in aftership_business_shipments:
+					aftership_product.order.save()
+					print("Afteship saving order {}".format(aftership_product.order.order_no))
+				print("Aftership order save complete")
 
 			if len(fedex_track_queue) > 0:
 				with futures.ThreadPoolExecutor(max_workers=workers) as executor:
@@ -629,6 +625,11 @@ class Command(BaseCommand):
 							print('%s' % result.exception())
 						else:
 							print(result.result())
+				print("Starting ecom order save..")
+				for ecom_product in ecom_business_shipments:
+					ecom_product.order.save()
+					print("Ecom saving order {}".format(ecom_product.order.order_no))
+				print("Ecom order save complete")
 
 
 			if len(dtdc_track_queue) > 0:
@@ -639,3 +640,8 @@ class Command(BaseCommand):
 							print('%s' % result.exception())
 						else:
 							print(result.result())
+				print("Starting dtdc order save..")
+				for dtdc_product in dtdc_business_shipments:
+					dtdc_product.order.save()
+					print("DTDC saving order {}".format(dtdc_product.order.order_no))
+				print("DTDC order save complete")
