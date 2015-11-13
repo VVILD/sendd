@@ -12,6 +12,7 @@ import aftership
 from django.db.models import Q
 from concurrent import futures
 import datetime
+import time
 from bs4 import BeautifulSoup
 import requests
 import unicodedata
@@ -260,6 +261,9 @@ class Command(BaseCommand):
 		return result
 
 	def aftership_track(self, tp):
+		coin_flip = random.choice([True, False])
+		if coin_flip:
+			time.sleep(1)
 		product, client_type = tp[0], tp[1]
 		tracking_data = []
 		company = self.company_map[product.company]
@@ -595,7 +599,7 @@ class Command(BaseCommand):
 				print("Fedex order save complete")
 		elif options['aftership']:
 			if len(aftership_track_queue) > 0:
-				with futures.ThreadPoolExecutor(max_workers=workers) as executor:
+				with futures.ThreadPoolExecutor(max_workers=5) as executor:
 					futures_track = (executor.submit(self.aftership_track, item) for item in aftership_track_queue)
 					for result in futures.as_completed(futures_track):
 						if result.exception() is not None:
@@ -650,7 +654,7 @@ class Command(BaseCommand):
 		else:
 
 			if len(aftership_track_queue) > 0:
-				with futures.ThreadPoolExecutor(max_workers=workers) as executor:
+				with futures.ThreadPoolExecutor(max_workers=5) as executor:
 					futures_track = (executor.submit(self.aftership_track, item) for item in aftership_track_queue)
 					for result in futures.as_completed(futures_track):
 						if result.exception() is not None:
