@@ -37,7 +37,7 @@ class Command(BaseCommand):
                     for product in order.product_set.all():
                         product.mapped_tracking_no = row["AWB NO"]
                         product.company = 'NA'
-                        if hasattr(row, 'STATUS'):
+                        if 'STATUS' in row:
                             if row['STATUS'] == 'DELIVERED':
                                 product.status = 'C'
                         product.save()
