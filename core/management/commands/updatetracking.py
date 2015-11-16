@@ -18,6 +18,8 @@ import requests
 import unicodedata
 import urllib2
 import json
+import subprocess as sub
+
 
 class Command(BaseCommand):
 	help = 'Updates tracking info for all the services'
@@ -67,37 +69,21 @@ class Command(BaseCommand):
 
 	@staticmethod
 	def is_dtdc_complete(awbno):
-		url = "http://dtdc.com/tracking/tracking_results.asp"
+		command = "curl 'http://dtdc.in/tracking/tracking_results.asp' -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.80 Safari/537.36' --data 'Ttype=awb_no&strCnno=" + str(awbno) + "'"
 
-		headers = {
-			'Origin': 'http://dtdc.com',
-			'Accept-Encoding': 'gzip, deflate',
-			'Upgrade-Insecure-Requests': 1,
-			'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/45.0.2454.101 Safari/537.36',
-			'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-			'Cache-Control': 'max-age=0',
-			'Referer': 'http://dtdc.com/tracking/tracking_results.asp',
-			'Connection': 'keep-alive',
-			'Content-Type':'application/x-www-form-urlencoded'
-		}
-		data = {
-			'action':'track',
-			'sec':'tr',
-			'ctlActiveVal':'1',
-			'Ttype':'awb_no',
-			'GES':'N',
-			'strCnno2': awbno,
-			'strCnno': awbno
-		}
-		r = requests.post(url,data=data,headers=headers)
-		if(r.status_code ==200):
-			html2=r.text
+
+		import subprocess as sub
+
+		p = sub.Popen(command,stdout=sub.PIPE,stderr=sub.PIPE,shell=True)
+		output, errors = p.communicate()
+		try:
+			html2=output
 			soup2 = BeautifulSoup(html2,'html.parser')
 			try:
 				return 'DELIVERED' in soup2.find("input", {"name":"cn_status"})['value']
 			except:
 				return False
-		else:
+		except:
 	#		print "Unable to get the tracking webpage\n"
 			#print "Status: "+r.status_code
 			return False
@@ -105,32 +91,10 @@ class Command(BaseCommand):
 
 	@staticmethod
 	def make_request(awbno):
-		url = "http://dtdc.com/tracking/tracking_results_detail.asp"
-
-		headers = {
-			'Origin': 'http://dtdc.com',
-			'Accept-Encoding': 'gzip, deflate',
-			'Upgrade-Insecure-Requests': 1,
-			'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/45.0.2454.101 Safari/537.36',
-			'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-			'Cache-Control': 'max-age=0',
-			'Referer': 'http://dtdc.com/tracking/tracking_results.asp',
-			'Connection': 'keep-alive',
-			'Content-Type':'application/x-www-form-urlencoded'
-		}
-		data = {
-			'tracktype':'D',
-			'shiptype':'awb_no',
-			'textno': awbno,
-			'shipno': awbno
-		}
-		r = requests.post(url,data=data,headers=headers)
-		if(r.status_code ==200):
-			return r.text
-		else:
-			#print "Unable to get the tracking webpage\n"
-			#print "Status: "+r.status_code
-			return "error"
+		command = "curl 'http://dtdc.in/tracking/tracking_results_detail.asp' --data 'tracktype=D&shipno=" + str(awbno) + "'"
+		p = sub.Popen(command,stdout=sub.PIPE,stderr=sub.PIPE,shell=True)
+		output, errors = p.communicate()
+		return output
 
 	#takes string object as param
 	# return numbe of hours away from today
@@ -436,7 +400,6 @@ class Command(BaseCommand):
 
 				all_the_tables = soup.find_all(id="box-table-a")
 				tracking_table = all_the_tables[2]
-
 				#print all_the_tables[1]
 
 
