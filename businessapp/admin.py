@@ -746,6 +746,12 @@ class ProductInline(admin.TabularInline):
 		'product_info', 'name', 'quantity', 'price', 'weight', 'applied_weight', 'is_document','dimensions' ,'generate_order',)
 	extra = 0
 
+	def get_formset(self, request, obj=None, **kwargs):
+		if request.user.is_superuser:
+			self.fields += ('ecom',)
+			self.readonly_fields += ('ecom',)
+		return super(ProductInline, self).get_formset(request, obj, **kwargs)
+
 	def dimensions(self,obj):
 
 		return "l = " + str(obj.l) + "<br> b=  " + str(obj.b)+ "<br> h=  " + str(obj.h)  + "<br> Weight ="+ str(obj.l*obj.b*obj.h/5000)  + '<br><a href="/admin/businessapp/product/%s/?volume=T" onclick="return showAddAnotherPopup(this);">change</a>' % (obj.pk)
