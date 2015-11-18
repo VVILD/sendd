@@ -1,6 +1,6 @@
 from django.core.exceptions import ValidationError
 from django.shortcuts import render
-from businessapp.models import Order,Product
+from businessapp.models import Order,Product,Business
 from PyPDF2 import PdfFileWriter, PdfFileReader
 import cStringIO
 from django.http import HttpResponse
@@ -8,6 +8,7 @@ from django.contrib.auth.decorators import login_required
 from datetime import date,timedelta
 import datetime
 from django.db.models import Avg, Count, F, Max, Min, Sum, Q, Prefetch
+import inflect
 
 @login_required
 def print_address_view(request):
@@ -19,14 +20,66 @@ def print_address_view(request):
 
 
 @login_required
+def print_invoice_order_view(request):
+    order_no = request.GET.get("order_no", None)
+
+    if order_no is None:
+        raise ValidationError("Please provide an order_no")
+    order = Order.objects.get(pk=order_no)
+    product_set=order.product_set.all()
+    total=0
+    total_quantity=0
+    for product in product_set:
+        total=total+ int(product.price)
+        total_quantity=total_quantity+ int(product.quantity)
+    p = inflect.engine()
+    total_word=p.number_to_words(int(total))
+    total_word=total_word + " Only"
+
+    return render(request, 'invoice.html', {"order": order,"total":total,"total_word":total_word,"total_quantity":total_quantity})
+
+
+@login_required
+def print_invoice_product_view(request):
+    order_no = request.GET.get("order_no", None)
+    price = request.GET.get("price", None)
+    if order_no is None:
+        raise ValidationError("Please provide an order_no")
+    product = Product.objects.get(pk=order_no)
+    total=product.price
+    total_quantity=product.quantity
+    p = inflect.engine()
+    total_word=p.number_to_words(int(total))
+    total_word=total_word + " Only"
+    if price:
+        product.price=price
+        total=product.price
+        total_quantity=product.quantity
+        p = inflect.engine()
+        total_word=p.number_to_words(int(total))
+        total_word=total_word + " Only"
+
+    return render(request, 'invoice2.html', {"product": product,"total":total,"total_word":total_word,"total_quantity":total_quantity})
+
+
+@login_required
 def barcode_stats_view(request):
 
     todays_date = date.today()
     week_before = date.today() - datetime.timedelta(days=10)
+    yesterdays_date=date.today() - datetime.timedelta(days=1)
     y=Order.objects.filter(Q(book_time__gt=week_before) & ( ~Q(status='P') & ~Q(status='CA')   ) ).extra({'date_created' : "date(book_time)"}).values('date_created').annotate(barcode_count=Count('product__barcode'),created_count=Count('product'))
 
     data = {'date': [], 'wbarcode': [], 'wobarcode': []}
 
+    #data= Business.objects.filter(order__book_time__gt=todays_date).annotate(product_total=Count('order__product')).annotate(barcode_total=Count('product__barcode')).annotate(pickupboy='pb')
+
+    data2=Product.objects.filter(Q(order__book_time__gt=todays_date) & ( ~Q(status='P') & ~Q(status='CA')   )).values('order__business','order__business__pb__name','order__business__warehouse__name').annotate(product_total=Count('pk')).annotate(barcode_total=Count('barcode'))
+
+    data3=Product.objects.filter(Q(order__book_time__lt=todays_date) & Q(order__book_time__gt=yesterdays_date) & ( ~Q(status='P') & ~Q(status='CA')   )).values('order__business','order__business__pb__name','order__business__warehouse__name').annotate(product_total=Count('pk')).annotate(barcode_total=Count('barcode'))
+
+    for x in data2:
+        x['without']=x['product_total']-x['barcode_total']
 
     for x in y:
         data['date'].append(str(x["date_created"]))
@@ -42,7 +95,7 @@ def barcode_stats_view(request):
             "name": 'with barcode',
             "data": data['wbarcode']
         }]
-    return render(request, 'barcode_chart.html', {"series": series,"categories": categories})
+    return render(request, 'barcode_chart.html', {"series": series,"categories": categories,"data2":data2,"data3":data3})
 
 
 import os

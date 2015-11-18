@@ -35,6 +35,16 @@ function dismissAddAnotherPopup(win) {
     <li>
         <a class="btn btn-info" href="/print_address/?order_no={{x}}" class="historylink" style="color:black">Print Address</a>
     </li>
+        <li>
+        <a class="btn btn-info" href="/print_invoice/?order_no={{x}}" class="historylink" style="color:black">invoice for order</a>
+    </li>
+    {% for p in product_list %}
+    <li>
+        <a class="btn btn-info" href="/print_invoice2/?order_no={{p.pk}}&price=" class="historylink" style="color:black">invoice for {{ p.name }}</a>
+    </li>
+
+    {% endfor %}
+
     {% if has_absolute_url %}
         <li>
             <a href="{% url 'admin:view_on_site' content_type_id original.pk %}" class="viewsitelink">{% trans "View on site" %}</a>

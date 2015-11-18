@@ -1,0 +1,772 @@
+[33md76c571[m HEAD@{0}: commit (merge): Merge branch 'doublekill'
+[33m8772c68[m HEAD@{1}: commit: improved signals
+[33mbf3f129[m HEAD@{2}: pull: Merge made by the 'recursive' strategy.
+[33m0bda0bd[m HEAD@{3}: commit: added name in order export
+[33mf9ee53f[m HEAD@{4}: merge origin/master: Merge made by the 'recursive' strategy.
+[33m0197452[m HEAD@{5}: commit: added name in order export
+[33mab01598[m HEAD@{6}: merge origin/master: Merge made by the 'recursive' strategy.
+[33m83b52a1[m HEAD@{7}: commit: unmapped book_time
+[33m7b8badf[m HEAD@{8}: commit: select related unmapped
+[33m7471c6c[m HEAD@{9}: commit: select related qc
+[33madb2d82[m HEAD@{10}: merge origin/master: Merge made by the 'recursive' strategy.
+[33meece21f[m HEAD@{11}: commit: ff comment _ qc product
+[33mee999a7[m HEAD@{12}: merge origin/master: Merge made by the 'recursive' strategy.
+[33m4d22539[m HEAD@{13}: commit: proxyproduct2
+[33m2650131[m HEAD@{14}: commit: added export in business for superuser
+[33m4d824bb[m HEAD@{15}: pull: Fast-forward
+[33m9914319[m HEAD@{16}: checkout: moving from doublekill to master
+[33m9b730dd[m HEAD@{17}: commit: reverse pickup timings admin
+[33m9943de4[m HEAD@{18}: checkout: moving from master to doublekill
+[33m9914319[m HEAD@{19}: commit: dispatch time added in list filter and print invoice corrected
+[33m40632cd[m HEAD@{20}: commit: dispatch time added in list filter and print invoice corrected
+[33m8c59c86[m HEAD@{21}: checkout: moving from doublekill to master
+[33m9943de4[m HEAD@{22}: commit: print links in order admin
+[33m311590d[m HEAD@{23}: pull: Fast-forward
+[33mf0266e5[m HEAD@{24}: checkout: moving from master to doublekill
+[33m8c59c86[m HEAD@{25}: commit: print links in order admin
+[33m4d3f757[m HEAD@{26}: commit: validations and barcode chart
+[33m8823355[m HEAD@{27}: commit: validations and barcode chart
+[33mbc320f6[m HEAD@{28}: commit: validations and barcode chart
+[33m5a2f8c3[m HEAD@{29}: commit: invoice
+[33m0b6000f[m HEAD@{30}: commit: cod fields
+[33m262f6ce[m HEAD@{31}: commit: cod fields
+[33mabd15b3[m HEAD@{32}: commit: print address order no
+[33mf156b4f[m HEAD@{33}: commit: print address order no
+[33mb718a84[m HEAD@{34}: merge origin/master: Merge made by the 'recursive' strategy.
+[33m8d3c44d[m HEAD@{35}: commit: print address order no
+[33maa3817b[m HEAD@{36}: commit: ecom tracking
+[33m786cf27[m HEAD@{37}: commit: ecom tracking
+[33m9b826cb[m HEAD@{38}: commit: ecom
+[33m77320a7[m HEAD@{39}: commit: ecom tracking
+[33m28c8f8b[m HEAD@{40}: commit: pb admin
+[33mc5472e6[m HEAD@{41}: commit: address unicode
+[33m55aad61[m HEAD@{42}: commit: address unicode
+[33m75cbe83[m HEAD@{43}: commit: barcode stats
+[33m41238b3[m HEAD@{44}: commit: barcode stats
+[33m68de7e3[m HEAD@{45}: commit: barcode stats
+[33meee3a82[m HEAD@{46}: commit: barcode stats
+[33m7729629[m HEAD@{47}: commit: barcode stats
+[33m257e6e4[m HEAD@{48}: commit: barcode stats
+[33m01921c5[m HEAD@{49}: commit: bugfix
+[33md9debc0[m HEAD@{50}: commit: added date in queryset of qcproduct and proxy product
+[33m57f95a0[m HEAD@{51}: commit: added date in queryset of qcproduct and proxy product
+[33m4f42e81[m HEAD@{52}: commit: added date in queryset of qcproduct and proxy product
+[33m8c29ab6[m HEAD@{53}: commit: added date in queryset of qcproduct and proxy product
+[33m50de0f5[m HEAD@{54}: commit: stats and unresolved
+[33m49de586[m HEAD@{55}: commit: stats and unresolved
+[33meebfc3d[m HEAD@{56}: commit: stats and unresolved
+[33m66c65d2[m HEAD@{57}: commit: stats and unresolved
+[33mf790e77[m HEAD@{58}: commit: stats and unresolved
+[33m5689518[m HEAD@{59}: commit: stats and unresolved
+[33mb3421c7[m HEAD@{60}: commit: stats and unresolved
+[33me0d9fc9[m HEAD@{61}: commit: stats and unresolved
+[33m2351372[m HEAD@{62}: commit: stats and unresolved
+[33m05a2565[m HEAD@{63}: commit: stats and unresolved
+[33mc2b72fb[m HEAD@{64}: commit: stats
+[33m8058df1[m HEAD@{65}: checkout: moving from doublekill to master
+[33mf0266e5[m HEAD@{66}: commit: bugfix
+[33mbcb0487[m HEAD@{67}: commit: admin changed
+[33m4068c66[m HEAD@{68}: commit: admin changed
+[33m75207de[m HEAD@{69}: checkout: moving from master to doublekill
+[33m8058df1[m HEAD@{70}: commit: dtdc tracking
+[33m670a84d[m HEAD@{71}: commit: status
+[33m1061104[m HEAD@{72}: commit: status
+[33mea3ef8f[m HEAD@{73}: commit: status
+[33m463871f[m HEAD@{74}: commit: comment in export
+[33m6a42069[m HEAD@{75}: commit: comment in export
+[33m9e69efa[m HEAD@{76}: commit: restricted states after creation
+[33m1092308[m HEAD@{77}: commit: restricted states after creation
+[33mc50bada[m HEAD@{78}: commit: restricted states after creation
+[33m4415749[m HEAD@{79}: commit: restricted states after creation
+[33m59a1b05[m HEAD@{80}: commit: restricted states after creation
+[33mbdd8de8[m HEAD@{81}: commit: restricted states after creation
+[33m2aa4a01[m HEAD@{82}: commit: restricted states after creation
+[33m77466db[m HEAD@{83}: commit: abhilash shahbaz refund
+[33mfc78613[m HEAD@{84}: commit: abhilash shahbaz refund
+[33m242195b[m HEAD@{85}: pull: Fast-forward
+[33m04edcbc[m HEAD@{86}: checkout: moving from doublekill to master
+[33m75207de[m HEAD@{87}: checkout: moving from master to doublekill
+[33m04edcbc[m HEAD@{88}: commit: form tabs fixed
+[33macbe936[m HEAD@{89}: commit: weight calculations from volumetric weight
+[33m3360dfb[m HEAD@{90}: checkout: moving from doublekill to master
+[33m75207de[m HEAD@{91}: checkout: moving from master to doublekill
+[33m3360dfb[m HEAD@{92}: commit: qcproduct get form
+[33m086de7f[m HEAD@{93}: commit: qcproduct get form
+[33m145e22c[m HEAD@{94}: checkout: moving from doublekill to master
+[33m75207de[m HEAD@{95}: commit: custom price
+[33m949b932[m HEAD@{96}: checkout: moving from master to doublekill
+[33m145e22c[m HEAD@{97}: commit: custom price
+[33mda7719f[m HEAD@{98}: commit: custom price
+[33m2e93cec[m HEAD@{99}: commit: custom price
+[33m4ffba48[m HEAD@{100}: commit: custom price
+[33m278a393[m HEAD@{101}: commit: custom price
+[33m5defd4f[m HEAD@{102}: commit: lbh and removed refund from non super users
+[33m8b94d5d[m HEAD@{103}: merge origin/master: Merge made by the 'recursive' strategy.
+[33m53bbc44[m HEAD@{104}: commit: lbh
+[33m41f7646[m HEAD@{105}: checkout: moving from doublekill to master
+[33m949b932[m HEAD@{106}: merge origin/doublekill: Merge made by the 'recursive' strategy.
+[33me01682e[m HEAD@{107}: commit: ff export
+[33m335fa69[m HEAD@{108}: merge master: Merge made by the 'recursive' strategy.
+[33m5d8e5a4[m HEAD@{109}: checkout: moving from master to doublekill
+[33m41f7646[m HEAD@{110}: commit: ff export
+[33m2c88881[m HEAD@{111}: commit: show max orders + order_sms 2 days changes
+[33mf74f9a8[m HEAD@{112}: commit: show max orders + order_sms 2 days changes
+[33m410da7c[m HEAD@{113}: commit: show max orders + order_sms 2 days changes
+[33m976a98b[m HEAD@{114}: commit: show max orders
+[33mc1fef94[m HEAD@{115}: commit: sum of cod
+[33m0a55721[m HEAD@{116}: commit: sum of cod
+[33m6b445f6[m HEAD@{117}: merge origin/master: Merge made by the 'recursive' strategy.
+[33m2403b52[m HEAD@{118}: commit: zone error + cod changes
+[33m6fc020f[m HEAD@{119}: commit: nsdf
+[33m0b59be7[m HEAD@{120}: commit: bugfix
+[33m10ae120[m HEAD@{121}: commit: ads
+[33ma11994d[m HEAD@{122}: commit: new warnings
+[33m2f06d51[m HEAD@{123}: commit: new warnings
+[33m93305ef[m HEAD@{124}: commit: order__status in export order
+[33m2648f32[m HEAD@{125}: commit: default pricing command
+[33m789a87b[m HEAD@{126}: commit: default pricing command
+[33m751904a[m HEAD@{127}: commit: default pricing command
+[33m2c6b604[m HEAD@{128}: pull: Merge made by the 'recursive' strategy.
+[33m1884cf8[m HEAD@{129}: commit: proxy product
+[33m26c1e36[m HEAD@{130}: pull: Merge made by the 'recursive' strategy.
+[33md8eac90[m HEAD@{131}: commit: nandan
+[33mf0f8b58[m HEAD@{132}: commit: pricing and ff comment
+[33m156f79b[m HEAD@{133}: commit: pricing and ff comment
+[33mcca23e6[m HEAD@{134}: commit: more stats
+[33m11d7720[m HEAD@{135}: commit: more stats
+[33md48b5c2[m HEAD@{136}: commit: barcode_stats
+[33m719e8e1[m HEAD@{137}: merge origin/master: Merge made by the 'recursive' strategy.
+[33m00cf0c0[m HEAD@{138}: commit: barcode_stats
+[33m9429f79[m HEAD@{139}: merge origin/master: Merge made by the 'recursive' strategy.
+[33m83487b0[m HEAD@{140}: commit: new form
+[33ma1bb02a[m HEAD@{141}: commit: new form
+[33m11968c3[m HEAD@{142}: commit: new form
+[33m4376372[m HEAD@{143}: commit: test
+[33m609090f[m HEAD@{144}: commit: test
+[33m9fa583b[m HEAD@{145}: commit: product display
+[33m26cf602[m HEAD@{146}: commit: product display
+[33md2a6e7e[m HEAD@{147}: commit: product display
+[33mbe15061[m HEAD@{148}: commit: product display
+[33md9be30b[m HEAD@{149}: commit: cosmetic changes
+[33m0c4b3fe[m HEAD@{150}: commit: cosmetic changes
+[33macd043c[m HEAD@{151}: commit: cosmetic changes
+[33m087ba65[m HEAD@{152}: commit: cosmetic changes
+[33mcb4d9d8[m HEAD@{153}: commit: New status filter for qcproduct
+[33m6844536[m HEAD@{154}: commit: New status filter for qcproduct
+[33m5b11bda[m HEAD@{155}: commit: New status filter for qcproduct
+[33m19e24de[m HEAD@{156}: merge origin/master: Merge made by the 'recursive' strategy.
+[33meb7e389[m HEAD@{157}: commit: default pricing command
+[33m26090ff[m HEAD@{158}: commit: added cod fields to model
+[33ma9a0c44[m HEAD@{159}: pull: Merge made by the 'recursive' strategy.
+[33mdee1d3f[m HEAD@{160}: commit: minor bugfix
+[33mb72b467[m HEAD@{161}: commit: minor bugfix bd head
+[33m81ad555[m HEAD@{162}: commit: minor bugfix bd head
+[33m5d93908[m HEAD@{163}: commit: bd head panel minor changes
+[33mcd59132[m HEAD@{164}: commit: sdfa
+[33m294c7a8[m HEAD@{165}: commit: extra fields
+[33m068e01c[m HEAD@{166}: commit: date/fieldsets
+[33m086a8b7[m HEAD@{167}: commit: qc error
+[33m9a414ca[m HEAD@{168}: pull: Merge made by the 'recursive' strategy.
+[33m68eb655[m HEAD@{169}: commit: qc product export
+[33maebbcce[m HEAD@{170}: commit: removed dtdc
+[33mf356fe2[m HEAD@{171}: commit: order_sms
+[33mdd088bb[m HEAD@{172}: commit: order_sms
+[33m7b83cdd[m HEAD@{173}: commit: pincode
+[33ma96fe71[m HEAD@{174}: commit: pincode
+[33m07b2576[m HEAD@{175}: commit: pincode
+[33m7a1782d[m HEAD@{176}: commit: bugfix
+[33m8d65357[m HEAD@{177}: commit: asdf
+[33m8b27e02[m HEAD@{178}: commit: asdf
+[33m1aea8e6[m HEAD@{179}: commit: asdf
+[33m056b394[m HEAD@{180}: commit: asdf
+[33me4c97f0[m HEAD@{181}: commit: asdf
+[33m32dd864[m HEAD@{182}: commit: asdf
+[33md2bc066[m HEAD@{183}: commit: bugfix excel
+[33m8106bcb[m HEAD@{184}: commit: bugfix excel
+[33med45f00[m HEAD@{185}: commit: bugfix
+[33m0346487[m HEAD@{186}: merge origin/master: Merge made by the 'recursive' strategy.
+[33m2a05f1f[m HEAD@{187}: commit: default pricing command
+[33mb6df8d8[m HEAD@{188}: commit: various qc panel admin cahnges
+[33m7b7af2a[m HEAD@{189}: pull origin master: Merge made by the 'recursive' strategy.
+[33m865fd15[m HEAD@{190}: commit: proxy business pricing
+[33mf1d1b57[m HEAD@{191}: checkout: moving from fake to master
+[33mf1d1b57[m HEAD@{192}: checkout: moving from master to fake
+[33mf1d1b57[m HEAD@{193}: commit: fake commit
+[33m4f7ce34[m HEAD@{194}: commit: business filtering
+[33m3b6029b[m HEAD@{195}: commit: filtering on
+[33m3a8b47d[m HEAD@{196}: commit: bd head
+[33m0ba871a[m HEAD@{197}: commit: bd head
+[33m1e9dac0[m HEAD@{198}: commit: bd head
+[33m7694ebc[m HEAD@{199}: commit: bd head
+[33mca86c1d[m HEAD@{200}: commit: bd head
+[33m3c086d8[m HEAD@{201}: commit: ecom
+[33mf4ba5b8[m HEAD@{202}: commit: ecom
+[33maf3d3b1[m HEAD@{203}: commit: ecom
+[33mf39139b[m HEAD@{204}: commit: mail to venkush
+[33m796b234[m HEAD@{205}: commit: add shipment
+[33mf9b5739[m HEAD@{206}: commit: cod
+[33m71f1baf[m HEAD@{207}: commit: Kartrocke cron job
+[33m26175ed[m HEAD@{208}: commit: Kartrocke cron job
+[33m9a08943[m HEAD@{209}: commit: sms done
+[33m504361e[m HEAD@{210}: commit: sms done
+[33mf446986[m HEAD@{211}: commit: sms done
+[33m8388436[m HEAD@{212}: merge origin/master: Merge made by the 'recursive' strategy.
+[33m61537c2[m HEAD@{213}: commit: sms try
+[33m1825b51[m HEAD@{214}: commit: remove loaders
+[33m87d955f[m HEAD@{215}: commit: kartrocket
+[33m0b8293e[m HEAD@{216}: commit: remove time error in tracking
+[33mb161413[m HEAD@{217}: commit: remove time error in tracking
+[33mb4c6d0c[m HEAD@{218}: commit: sms and email command
+[33m8fe6fc8[m HEAD@{219}: commit: sms
+[33m590e133[m HEAD@{220}: commit: New changelist
+[33mb931d0a[m HEAD@{221}: commit: zipcode
+[33ma0dd787[m HEAD@{222}: commit: zipcode
+[33mebbddd1[m HEAD@{223}: commit: zipcode
+[33m487fb00[m HEAD@{224}: commit: static url removed
+[33m6da2a25[m HEAD@{225}: commit: web booking error
+[33maa111a5[m HEAD@{226}: commit: static url removed
+[33me1d4749[m HEAD@{227}: commit: order search
+[33me6111d8[m HEAD@{228}: pull: Fast-forward
+[33m9c286c8[m HEAD@{229}: commit: sad
+[33m86b19f6[m HEAD@{230}: commit: sa
+[33m01b3e1f[m HEAD@{231}: commit: multipart
+[33m02f03f7[m HEAD@{232}: commit: apiv3
+[33me38eef5[m HEAD@{233}: pull: Merge made by the 'recursive' strategy.
+[33m24f5c8b[m HEAD@{234}: commit: warehouse column
+[33m0baccc6[m HEAD@{235}: pull: Merge made by the 'recursive' strategy.
+[33m76b25b3[m HEAD@{236}: commit: pb template
+[33mc781ce5[m HEAD@{237}: commit: added support for both shipment and product redirection
+[33m63da55b[m HEAD@{238}: commit: sms bugfix
+[33m31d3881[m HEAD@{239}: pull: Merge made by the 'recursive' strategy.
+[33m3a40585[m HEAD@{240}: commit: changes
+[33mac1234d[m HEAD@{241}: commit: push
+[33m70c7fcf[m HEAD@{242}: commit: added vichare
+[33me176755[m HEAD@{243}: commit: make approved
+[33mecbc005[m HEAD@{244}: commit: minor fixes
+[33m6a31281[m HEAD@{245}: commit: bugfix
+[33m6376fdc[m HEAD@{246}: commit: sd
+[33m150174a[m HEAD@{247}: pull: Merge made by the 'recursive' strategy.
+[33mdb7cb56[m HEAD@{248}: commit: address pk
+[33m21687a4[m HEAD@{249}: commit: bugfix
+[33mb1e832a[m HEAD@{250}: pull: Merge made by the 'recursive' strategy.
+[33mce54d25[m HEAD@{251}: commit: sdfjfds
+[33m2551059[m HEAD@{252}: commit: qwe
+[33md56128d[m HEAD@{253}: commit: vugfix
+[33m0e13c3f[m HEAD@{254}: commit: pincodes check
+[33m7fc80e7[m HEAD@{255}: commit: strftime removed
+[33md46189f[m HEAD@{256}: commit: major bugfix
+[33m006da35[m HEAD@{257}: commit: bugfix
+[33m840fc4f[m HEAD@{258}: commit: stats
+[33m000788b[m HEAD@{259}: commit: bugfix
+[33madafb2e[m HEAD@{260}: merge history: Merge made by the 'recursive' strategy.
+[33m6c232ad[m HEAD@{261}: checkout: moving from history to master
+[33md151c18[m HEAD@{262}: commit: forms
+[33md2fa2ee[m HEAD@{263}: checkout: moving from master to history
+[33m6c232ad[m HEAD@{264}: checkout: moving from history to master
+[33md2fa2ee[m HEAD@{265}: commit: forms changes
+[33m2c2f553[m HEAD@{266}: checkout: moving from history to history
+[33m2c2f553[m HEAD@{267}: checkout: moving from master to history
+[33m6c232ad[m HEAD@{268}: commit: templates changes
+[33m54d8083[m HEAD@{269}: checkout: moving from history to master
+[33m2c2f553[m HEAD@{270}: commit: some form changes
+[33mbe05ca5[m HEAD@{271}: commit: unicode bugfix
+[33mbab2e00[m HEAD@{272}: commit: unicode bugfix
+[33m1831870[m HEAD@{273}: commit: bugfix
+[33m93bd1d4[m HEAD@{274}: commit: reversion/history log/action
+[33m54d8083[m HEAD@{275}: checkout: moving from master to history
+[33m54d8083[m HEAD@{276}: pull: Merge made by the 'recursive' strategy.
+[33m9d82c4e[m HEAD@{277}: commit: dhjsdjds
+[33m07813bc[m HEAD@{278}: commit: pickup boy queryset
+[33m0d1eb08[m HEAD@{279}: commit: alloted
+[33m5f30393[m HEAD@{280}: pull: Fast-forward
+[33m7551421[m HEAD@{281}: commit: not approved
+[33m859b160[m HEAD@{282}: commit: sms for business,is completed tab
+[33m5083281[m HEAD@{283}: commit: s
+[33m2a2591c[m HEAD@{284}: pull: Merge made by the 'recursive' strategy.
+[33m706fd68[m HEAD@{285}: commit: print address added in admin
+[33mc8dbd3a[m HEAD@{286}: commit: removed barcode
+[33md612a11[m HEAD@{287}: pull: Merge made by the 'recursive' strategy.
+[33m1e54528[m HEAD@{288}: commit: barcode in apiv1
+[33m53572e4[m HEAD@{289}: commit: some admin changes
+[33mc3dd3ed[m HEAD@{290}: commit: filtering in products
+[33m4fd1464[m HEAD@{291}: commit: filtering in products
+[33mccaa8a6[m HEAD@{292}: commit: filtering in products
+[33m0cf2235[m HEAD@{293}: pull: Fast-forward
+[33meb80de6[m HEAD@{294}: commit: unresolved
+[33md441731[m HEAD@{295}: pull: Fast-forward
+[33m7b3397b[m HEAD@{296}: commit: book time time change + status change permision
+[33m1e3fa0a[m HEAD@{297}: pull: Merge made by the 'recursive' strategy.
+[33m440ddb6[m HEAD@{298}: commit: cors
+[33m14776c5[m HEAD@{299}: commit: admin filter for company qcpanel
+[33m00ef83f[m HEAD@{300}: commit: addmin pricing foreign key queryset change
+[33m476dbdf[m HEAD@{301}: pull: Merge made by the 'recursive' strategy.
+[33m0c40234[m HEAD@{302}: commit: api v1 doctoring
+[33m31329f9[m HEAD@{303}: commit: remove hydrate on invoice sent
+[33m19ff31b[m HEAD@{304}: commit: remove holachef
+[33me6d1eae[m HEAD@{305}: commit: warning on no update for 12 hours
+[33m582fb66[m HEAD@{306}: commit: bugfix json
+[33m02f5e86[m HEAD@{307}: commit: bugfix json
+[33meb23bb7[m HEAD@{308}: commit: pincode api check
+[33mbf2c1c5[m HEAD@{309}: pull: Merge made by the 'recursive' strategy.
+[33m686c05b[m HEAD@{310}: commit: warning qc panel
+[33m742c9f8[m HEAD@{311}: commit: bugfix for tracking_history
+[33m8409957[m HEAD@{312}: commit: tracking history implemented
+[33mb7efebc[m HEAD@{313}: pull: Merge made by the 'recursive' strategy.
+[33m19c3a74[m HEAD@{314}: commit: tracking changes
+[33m6901208[m HEAD@{315}: commit: update time
+[33m64652a0[m HEAD@{316}: commit: update time
+[33m9062f0a[m HEAD@{317}: commit: removed ghasitaram and ecell + valid json
+[33mcc4e10a[m HEAD@{318}: pull: Merge made by the 'recursive' strategy.
+[33m8411d24[m HEAD@{319}: commit: pincode check api
+[33m2fdf8a8[m HEAD@{320}: commit: core ogd readonly
+[33m5ba441c[m HEAD@{321}: pull: Fast-forward
+[33m47aae16[m HEAD@{322}: commit: cors
+[33m0fd19bd[m HEAD@{323}: commit: cors
+[33m1c40d9c[m HEAD@{324}: commit: added time in fedex tracking
+[33m0ccd279[m HEAD@{325}: commit: Queryset change for QC panel
+[33m0f31980[m HEAD@{326}: commit: order patch
+[33m1e14c4d[m HEAD@{327}: commit: some bugfixes
+[33m6287e1b[m HEAD@{328}: pull: Merge made by the 'recursive' strategy.
+[33mda03de4[m HEAD@{329}: commit: qc panel changes
+[33me8cddc7[m HEAD@{330}: pull: Merge made by the 'recursive' strategy.
+[33m20ecbce[m HEAD@{331}: commit: dispatched bug
+[33me5d0629[m HEAD@{332}: pull: Merge made by the 'recursive' strategy.
+[33m7967535[m HEAD@{333}: pull: Merge made by the 'recursive' strategy.
+[33m6fe2f2a[m HEAD@{334}: commit: sorting on last updated
+[33md6d0dfa[m HEAD@{335}: commit: sorting on last updated
+[33m2e2464b[m HEAD@{336}: pull: Fast-forward
+[33m5e9dd07[m HEAD@{337}: commit: more changes
+[33mb6b4047[m HEAD@{338}: commit: qc panel changes
+[33m71a3f26[m HEAD@{339}: pull: Merge made by the 'recursive' strategy.
+[33mb31bf8b[m HEAD@{340}: commit: qc panel
+[33ma0addb0[m HEAD@{341}: pull: Fast-forward
+[33m540db66[m HEAD@{342}: pull: Fast-forward
+[33mf2fd16b[m HEAD@{343}: commit: make complete in alloted business
+[33me166b0c[m HEAD@{344}: commit: enabled export of businesses in admin
+[33m6db902e[m HEAD@{345}: commit: bugfix for dispatched status
+[33m7924fad[m HEAD@{346}: commit: bugfix for dispatched status
+[33m104e08e[m HEAD@{347}: pull: Fast-forward
+[33m537084b[m HEAD@{348}: commit: bugfix
+[33me442f28[m HEAD@{349}: pull: Merge made by the 'recursive' strategy.
+[33m275d07d[m HEAD@{350}: commit: cs and ff panel changes + count ordering
+[33m1a9b8a6[m HEAD@{351}: pull: Fast-forward
+[33m5e67ba3[m HEAD@{352}: commit: mapped ok
+[33m81907f3[m HEAD@{353}: commit: fdsfds
+[33m6ddc8b6[m HEAD@{354}: commit: cs/ff panel
+[33mb6948ff[m HEAD@{355}: pull: Fast-forward
+[33m4e07d11[m HEAD@{356}: pull: Fast-forward
+[33m82ec5c4[m HEAD@{357}: commit: msg urlencoded
+[33m50e74ce[m HEAD@{358}: commit: status_code debugging
+[33maaff4d1[m HEAD@{359}: commit: status _code logging
+[33mc5b8be6[m HEAD@{360}: commit: approved orders tab
+[33md0cce7b[m HEAD@{361}: commit: bugfix
+[33m7aa4527[m HEAD@{362}: commit: admin changes
+[33m79f7440[m HEAD@{363}: pull origin master: Merge made by the 'recursive' strategy.
+[33m4e486cb[m HEAD@{364}: commit: admin
+[33mb65d8cc[m HEAD@{365}: commit: request msg
+[33mc2a2cfa[m HEAD@{366}: pull: Merge made by the 'recursive' strategy.
+[33ma5cb5b4[m HEAD@{367}: commit: requests
+[33m17ca259[m HEAD@{368}: commit: asd
+[33m828f65b[m HEAD@{369}: pull: Merge made by the 'recursive' strategy.
+[33m765d16c[m HEAD@{370}: commit: urllib
+[33m229a29c[m HEAD@{371}: commit: shipping_method
+[33mad0c272[m HEAD@{372}: commit: bugfix
+[33m036465d[m HEAD@{373}: commit: bugfix
+[33mec321c8[m HEAD@{374}: commit: stats
+[33ma7963ee[m HEAD@{375}: commit: bugfix
+[33m2951eaf[m HEAD@{376}: commit: stats
+[33m06c8da5[m HEAD@{377}: commit: bugfix
+[33meac0b23[m HEAD@{378}: commit: bugfixes
+[33m08f5297[m HEAD@{379}: commit: api v3 bulk + proper api business orders
+[33m6524b56[m HEAD@{380}: pull: Fast-forward
+[33m94c9eae[m HEAD@{381}: commit: linkfix
+[33m927eda7[m HEAD@{382}: pull: Fast-forward
+[33m44a8c92[m HEAD@{383}: commit: bugfix
+[33m5c60b4c[m HEAD@{384}: commit: bigfix
+[33m7563712[m HEAD@{385}: commit: bugfix
+[33m5edad34[m HEAD@{386}: commit: change list changed
+[33m4bc4500[m HEAD@{387}: commit: hyperlink for search
+[33ma02dcf8[m HEAD@{388}: commit: bugfix
+[33m35382be[m HEAD@{389}: commit: search by drop_name/number
+[33mb13b224[m HEAD@{390}: commit: cs panel business
+[33m56b58b1[m HEAD@{391}: pull: Merge made by the 'recursive' strategy.
+[33m132709f[m HEAD@{392}: commit: myapp cs panel
+[33mb0c1f45[m HEAD@{393}: commit: msg on allotment of pickupboy
+[33mfaca352[m HEAD@{394}: commit: biz sign up + cspanel changes
+[33m8088cf0[m HEAD@{395}: commit: bugfix
+[33m5c3396a[m HEAD@{396}: commit: mapped ok
+[33m4e299d5[m HEAD@{397}: revert: Revert "mapped ok"
+[33mac958a4[m HEAD@{398}: checkout: moving from b76fc3362d6d8f59d27139b0e994fd687348f2ae to master
+[33mb76fc33[m HEAD@{399}: commit: mapped ok
+[33m711c160[m HEAD@{400}: commit: mapped ok
+[33m7239f4e[m HEAD@{401}: checkout: moving from master to 7239f4e001a1cdec036a3649e0c15b5dee2d5068
+[33mac958a4[m HEAD@{402}: commit: mapped ok
+[33m7239f4e[m HEAD@{403}: pull: Fast-forward
+[33mea54867[m HEAD@{404}: checkout: moving from temp to master
+[33m3998cfc[m HEAD@{405}: commit: temp
+[33mea54867[m HEAD@{406}: checkout: moving from master to temp
+[33mea54867[m HEAD@{407}: commit: ankur
+[33m270874a[m HEAD@{408}: commit: ankur
+[33m10e6e6c[m HEAD@{409}: commit: ankur
+[33mc67d835[m HEAD@{410}: commit: ankur
+[33m56178e1[m HEAD@{411}: commit: admin, name type = nonetype
+[33me8f5288[m HEAD@{412}: pull: Fast-forward
+[33m58007b7[m HEAD@{413}: pull: Merge made by the 'recursive' strategy.
+[33m6d75057[m HEAD@{414}: commit: bd returned
+[33m02d285b[m HEAD@{415}: commit: barcode added to api
+[33m286c30b[m HEAD@{416}: commit: bugfix
+[33m03ef5eb[m HEAD@{417}: commit: bugfix
+[33ma035e7c[m HEAD@{418}: commit: bd
+[33me1cb562[m HEAD@{419}: commit: tracking update
+[33m17f2a31[m HEAD@{420}: commit: bd3 tracking update
+[33m346022b[m HEAD@{421}: commit (merge): merge
+[33m412cb42[m HEAD@{422}: commit: tracking updated
+[33ma80817a[m HEAD@{423}: commit: bussiness orders
+[33md3950cd[m HEAD@{424}: commit: promocode null handling
+[33m3920ae9[m HEAD@{425}: commit: undo
+[33m347a63a[m HEAD@{426}: commit: save otp
+[33mc9dce08[m HEAD@{427}: commit: bo templates
+[33mec7df30[m HEAD@{428}: commit: fix
+[33m2f9659e[m HEAD@{429}: commit: bugfix
+[33ma412ddf[m HEAD@{430}: commit: added profile types/ quality control proxy model + dispatched feature
+[33m2484755[m HEAD@{431}: commit: fsd
+[33mb336d09[m HEAD@{432}: commit: bugfix
+[33mdb743a7[m HEAD@{433}: commit: bugfix
+[33m7345c1e[m HEAD@{434}: commit: trinity
+[33m1fba6e3[m HEAD@{435}: commit: trinity
+[33m127a224[m HEAD@{436}: commit: dsfsdf
+[33m5ea2f6b[m HEAD@{437}: commit: link
+[33m40cc3c1[m HEAD@{438}: pull: Merge made by the 'recursive' strategy.
+[33m5745bbe[m HEAD@{439}: commit: bd
+[33mb5dfef2[m HEAD@{440}: commit: bd
+[33m57641d5[m HEAD@{441}: commit: bd
+[33mbc550c0[m HEAD@{442}: commit: bluedart3
+[33m2bea7bb[m HEAD@{443}: pull: Fast-forward
+[33m84e65b9[m HEAD@{444}: commit: promocode changes
+[33m555fdd5[m HEAD@{445}: commit: bugfix
+[33m5d8a11e[m HEAD@{446}: commit: bd bugfix
+[33m63b8378[m HEAD@{447}: commit: bluedart
+[33m5da4aa3[m HEAD@{448}: commit: bluedart business panel
+[33m9cda201[m HEAD@{449}: commit: bluedart barcode
+[33m5e44ff6[m HEAD@{450}: pull: Fast-forward
+[33mfd9f163[m HEAD@{451}: commit: bugfix
+[33m081bc06[m HEAD@{452}: commit: readonly fields
+[33m6232f25[m HEAD@{453}: commit (merge): a
+[33m51e683c[m HEAD@{454}: commit: bd update
+[33m6d6ccea[m HEAD@{455}: pull: Fast-forward
+[33m0db2de6[m HEAD@{456}: commit: zipcode api
+[33m9251e1a[m HEAD@{457}: commit: mapped
+[33m38b9ef8[m HEAD@{458}: commit: price/cost of courier
+[33m3ededa7[m HEAD@{459}: commit: tracking
+[33md63c3ad[m HEAD@{460}: commit: city/state search
+[33m8bea1c3[m HEAD@{461}: commit: bugfixing printing erro
+[33m142569c[m HEAD@{462}: commit: update barcode file
+[33mc590864[m HEAD@{463}: commit: bugfix
+[33mca58c7b[m HEAD@{464}: pull: Fast-forward
+[33m09aa8f1[m HEAD@{465}: commit: business manager name showing in panel
+[33me9d9a65[m HEAD@{466}: commit: added blue dart tracking migration is required
+[33m82991a1[m HEAD@{467}: commit: showed actual_shipping_cost in product inline
+[33m181c70a[m HEAD@{468}: pull: Fast-forward
+[33m5cda078[m HEAD@{469}: checkout: moving from cspanel to master
+[33m4395fda[m HEAD@{470}: commit: dsfdsa
+[33m0205399[m HEAD@{471}: commit: cspanel
+[33m8a4a8c0[m HEAD@{472}: commit: cspanel
+[33mc25c06a[m HEAD@{473}: commit: cspanel
+[33mbaa839b[m HEAD@{474}: commit: migrations
+[33m5cda078[m HEAD@{475}: checkout: moving from master to cspanel
+[33m5cda078[m HEAD@{476}: commit: bugfix
+[33maeb26a2[m HEAD@{477}: commit: barcode and tracking view diffrent
+[33m6f78d42[m HEAD@{478}: commit: removed incorrect json being formed
+[33m0d51c17[m HEAD@{479}: commit: pickup pincodes changed
+[33m71b75e8[m HEAD@{480}: pull: Fast-forward
+[33m7c313ac[m HEAD@{481}: commit: bugfix
+[33m256f10f[m HEAD@{482}: commit: bugfix
+[33m39ec134[m HEAD@{483}: commit: remittance/ pending complete
+[33m2b85ccf[m HEAD@{484}: commit: late orders holachef removed
+[33m9b4dadc[m HEAD@{485}: pull: Fast-forward
+[33m0f9411c[m HEAD@{486}: pull origin master: Merge made by the 'recursive' strategy.
+[33maddfbf2[m HEAD@{487}: commit: bugfix signals
+[33m360cbcc[m HEAD@{488}: pull: Fast-forward
+[33m4a91705[m HEAD@{489}: pull: Fast-forward
+[33m639e357[m HEAD@{490}: commit: kartrocket modified script
+[33m9b92906[m HEAD@{491}: pull: Fast-forward
+[33m316bd45[m HEAD@{492}: pull: Fast-forward
+[33m222bb9b[m HEAD@{493}: pull origin master: Merge made by the 'recursive' strategy.
+[33mc2343f4[m HEAD@{494}: commit: remittance
+[33mbf4d511[m HEAD@{495}: commit: barcode search
+[33m1a49909[m HEAD@{496}: commit: bug fix + urls fixed + order status change logic changed
+[33mdaaa04e[m HEAD@{497}: commit: bugfix
+[33m38565b3[m HEAD@{498}: commit: bugfix
+[33m661275f[m HEAD@{499}: commit: bugfix
+[33m363ee4b[m HEAD@{500}: pull: Fast-forward
+[33m5cf3c53[m HEAD@{501}: pull origin master: Merge made by the 'recursive' strategy.
+[33mf4136e8[m HEAD@{502}: commit: signals
+[33m0f78531[m HEAD@{503}: pull: Fast-forward
+[33m72831ec[m HEAD@{504}: pull: Fast-forward
+[33ma7d4ba1[m HEAD@{505}: checkout: moving from stable to master
+[33m8698d0f[m HEAD@{506}: checkout: moving from master to stable
+[33m0ad07dc[m HEAD@{507}: checkout: moving from stable to master
+[33m8698d0f[m HEAD@{508}: commit: SEN-24 #commit business managers custom
+[33m6360cf2[m HEAD@{509}: commit: complete
+[33mbbc2ae5[m HEAD@{510}: commit: complete
+[33m50a2e7a[m HEAD@{511}: commit: removed
+[33m39dc101[m HEAD@{512}: commit: tracking improved and showing status on late products
+[33mf953364[m HEAD@{513}: pull: Fast-forward
+[33mb79f638[m HEAD@{514}: commit: .pyc removed
+[33m2e7b24a[m HEAD@{515}: commit: returned
+[33m07c28b6[m HEAD@{516}: checkout: moving from master to stable
+[33m0ad07dc[m HEAD@{517}: commit: apiv2
+[33m9024d06[m HEAD@{518}: commit: remove shipment dehydrate
+[33me77a3c6[m HEAD@{519}: commit: return integrated
+[33m532b1e0[m HEAD@{520}: pull origin master: Merge made by the 'recursive' strategy.
+[33ma8626bb[m HEAD@{521}: commit: admin changes
+[33m07c28b6[m HEAD@{522}: commit: v
+[33m49b5ab4[m HEAD@{523}: commit: billing view
+[33m66e1f5b[m HEAD@{524}: commit: changes
+[33m429b0ae[m HEAD@{525}: commit: :(
+[33m970d9f9[m HEAD@{526}: commit: mapped
+[33m43da10b[m HEAD@{527}: commit: business admin
+[33m1827cdf[m HEAD@{528}: pull origin master: Fast-forward
+[33mcb65f79[m HEAD@{529}: commit: migrations rm
+[33m2bfd971[m HEAD@{530}: commit: shipment patch
+[33m6f76fc2[m HEAD@{531}: commit: gitignore
+[33md94721e[m HEAD@{532}: commit: test
+[33mb4f5024[m HEAD@{533}: pull origin master: Merge made by the 'recursive' strategy.
+[33made9607[m HEAD@{534}: pull origin master: Merge made by the 'recursive' strategy.
+[33m472c3f3[m HEAD@{535}: commit: views modified
+[33mbbc0f88[m HEAD@{536}: checkout: moving from test_merge to master
+[33m793cc7f[m HEAD@{537}: pull: Fast-forward
+[33m86e9f3e[m HEAD@{538}: checkout: moving from master to test_merge
+[33mbbc0f88[m HEAD@{539}: commit: order by in tracking comand
+[33mfe09592[m HEAD@{540}: commit: name error
+[33mc84facd[m HEAD@{541}: commit: customer name
+[33m48c9d26[m HEAD@{542}: commit: views/migrations and what not
+[33m07a63aa[m HEAD@{543}: commit: removed null from shipment status
+[33m6b36a21[m HEAD@{544}: commit: tracking field removed
+[33m2f4d277[m HEAD@{545}: commit: added apiv2 for business holachef
+[33m26617a5[m HEAD@{546}: commit: india post
+[33mfbbe1fb[m HEAD@{547}: commit: order complete command
+[33m5cde103[m HEAD@{548}: commit: views edited
+[33m0133d6a[m HEAD@{549}: commit: tracking commands + 1 view
+[33mca9e636[m HEAD@{550}: checkout: moving from dev to master
+[33m103050f[m HEAD@{551}: pull origin dev: Fast-forward
+[33m2215d69[m HEAD@{552}: checkout: moving from master to dev
+[33mca9e636[m HEAD@{553}: checkout: moving from dev to master
+[33m2215d69[m HEAD@{554}: checkout: moving from master to dev
+[33mca9e636[m HEAD@{555}: rebase finished: returning to refs/heads/master
+[33mca9e636[m HEAD@{556}: rebase: Reformat
+[33me7bf9e2[m HEAD@{557}: rebase: checkout origin
+[33m2215d69[m HEAD@{558}: commit: .pyc
+[33ma77971c[m HEAD@{559}: checkout: moving from master to dev
+[33m061fb45[m HEAD@{560}: checkout: moving from origin/dev to master
+[33m061fb45[m HEAD@{561}: checkout: moving from dev to origin/dev
+[33m061fb45[m HEAD@{562}: checkout: moving from master to dev
+[33m061fb45[m HEAD@{563}: pull origin dev: Merge made by the 'recursive' strategy.
+[33me7bf9e2[m HEAD@{564}: commit: commands for tracking
+[33m1350f40[m HEAD@{565}: commit: default value changed
+[33m6f16106[m HEAD@{566}: checkout: moving from develop to master
+[33m658f663[m HEAD@{567}: commit: change default values
+[33m4e81be8[m HEAD@{568}: commit: default changed for order_status
+[33m6f16106[m HEAD@{569}: checkout: moving from master to develop
+[33m6f16106[m HEAD@{570}: commit: removed user from list_editable
+[33m83b42ac[m HEAD@{571}: commit: removed user from list_display
+[33m2be0f0b[m HEAD@{572}: commit: stats added
+[33m6f5491d[m HEAD@{573}: commit: proxy models
+[33mf0ec0e8[m HEAD@{574}: commit: views
+[33m9c22290[m HEAD@{575}: commit: views
+[33m02da970[m HEAD@{576}: commit: views
+[33me3ec871[m HEAD@{577}: commit: views
+[33m27a9bdf[m HEAD@{578}: commit: stats view
+[33ma9e1763[m HEAD@{579}: commit: product link
+[33m3a7294b[m HEAD@{580}: commit: good pincodes
+[33mfddaf99[m HEAD@{581}: commit: zipcode corsresource
+[33md2ed103[m HEAD@{582}: commit: product display
+[33m685659e[m HEAD@{583}: commit: corsmodel resource for website
+[33m925aac1[m HEAD@{584}: commit: product searchable
+[33m973ee32[m HEAD@{585}: commit: tracking number
+[33m5b146c4[m HEAD@{586}: commit: url change
+[33madbf1f9[m HEAD@{587}: commit: make in transit
+[33m8f3be32[m HEAD@{588}: commit: in transit
+[33m5ee3b19[m HEAD@{589}: commit: small mistake
+[33m2acfda3[m HEAD@{590}: commit: unique gcm reg
+[33me3b41bb[m HEAD@{591}: commit: redis conf
+[33me9d57c5[m HEAD@{592}: commit: redis3
+[33m3ddc47e[m HEAD@{593}: commit: redis2
+[33m042e25f[m HEAD@{594}: commit: redis
+[33m8d6f89d[m HEAD@{595}: commit: date/price api changed
+[33m6b5fec5[m HEAD@{596}: commit: zipcode
+[33ma38e23e[m HEAD@{597}: commit: zipcode instead of pincode
+[33mb2f86e5[m HEAD@{598}: commit: das
+[33m6438282[m HEAD@{599}: commit: weborder
+[33mf8488a7[m HEAD@{600}: commit: deleted migrations+ weborder api
+[33m8ec8d27[m HEAD@{601}: commit: weborder api changed
+[33m27665a9[m HEAD@{602}: commit: url
+[33mf2f0a59[m HEAD@{603}: commit: edit address
+[33md2fa43d[m HEAD@{604}: commit: b panel
+[33m248f9bc[m HEAD@{605}: commit: actions businesapp
+[33m0710066[m HEAD@{606}: commit: img
+[33mfdda668[m HEAD@{607}: commit: img
+[33mf07f4be[m HEAD@{608}: commit: business shipping cost
+[33mfd5caf5[m HEAD@{609}: commit: response change redirect
+[33m8403c1a[m HEAD@{610}: commit: response change redirect
+[33me8c41d6[m HEAD@{611}: commit: response change redirect
+[33mc51caec[m HEAD@{612}: commit: business panel create order
+[33mdc449dd[m HEAD@{613}: commit: pincode
+[33m4da8c34[m HEAD@{614}: commit: a
+[33mc876e32[m HEAD@{615}: commit: business
+[33mbce8ceb[m HEAD@{616}: commit: N/A
+[33m50679ed[m HEAD@{617}: commit: float field and price
+[33m077178b[m HEAD@{618}: commit: cors
+[33me7d2db2[m HEAD@{619}: commit: pincode api
+[33m2c55899[m HEAD@{620}: commit: cors resource
+[33m5246754[m HEAD@{621}: commit: getting kartrocket id
+[33m4311a91[m HEAD@{622}: commit: panel changes
+[33m32540eb[m HEAD@{623}: commit: colour
+[33mb0f387d[m HEAD@{624}: commit: business changes
+[33mee3e996[m HEAD@{625}: commit: business manager
+[33mffd15b5[m HEAD@{626}: commit: password
+[33md3355b2[m HEAD@{627}: commit: patch authorisation
+[33m8fdac32[m HEAD@{628}: commit: rm migrations
+[33m5dc85a1[m HEAD@{629}: commit: business app display , comment , invoice sent complete
+[33m88decb4[m HEAD@{630}: commit: cod
+[33mcfea4d6[m HEAD@{631}: commit: admin button
+[33m0ffa73e[m HEAD@{632}: commit: business panel
+[33md6efaae[m HEAD@{633}: commit: generate pdf
+[33m71cab6c[m HEAD@{634}: commit: generate pdf
+[33mf646cb0[m HEAD@{635}: commit: generate pdf
+[33m032fc55[m HEAD@{636}: commit: generate pdf
+[33m39c08cc[m HEAD@{637}: commit: tracking business
+[33m9936345[m HEAD@{638}: commit: nbsp
+[33m5307651[m HEAD@{639}: commit: error
+[33m073608a[m HEAD@{640}: commit: business panel changes
+[33mae21579[m HEAD@{641}: commit: billing
+[33m541dde7[m HEAD@{642}: commit: promocode searchable
+[33m17c91b5[m HEAD@{643}: commit: auth
+[33mc34f89a[m HEAD@{644}: commit: change password
+[33m1669eba[m HEAD@{645}: commit: passchange
+[33m4eba661[m HEAD@{646}: commit: ppsku
+[33mae5990c[m HEAD@{647}: commit: sku order
+[33mc39afce[m HEAD@{648}: commit: apikey
+[33m90bb293[m HEAD@{649}: commit: generate pdf
+[33me61e946[m HEAD@{650}: commit: generate pdf
+[33m5358fc5[m HEAD@{651}: commit: generate pdf
+[33m0c0b32c[m HEAD@{652}: commit: generate pdf
+[33m7e1ccf3[m HEAD@{653}: commit: generate pdf
+[33mfa6b191[m HEAD@{654}: commit: no pincode
+[33md97f84e[m HEAD@{655}: commit: order@sendd.co
+[33m98c06f6[m HEAD@{656}: commit: status cancelled
+[33mb1c9486[m HEAD@{657}: commit: patch in order
+[33m04bd52a[m HEAD@{658}: commit: email change order change
+[33mce8fe71[m HEAD@{659}: commit: order date + patch
+[33mfe4195e[m HEAD@{660}: commit: order date + patch
+[33ma4ee93e[m HEAD@{661}: commit: removed migrations
+[33m06d8071[m HEAD@{662}: commit: addres 1 2
+[33m1db58b5[m HEAD@{663}: commit: busines smanager
+[33m6def23d[m HEAD@{664}: commit: rm migrations
+[33me706f20[m HEAD@{665}: commit: business api changes
+[33mc752fc2[m HEAD@{666}: commit: target blank href
+[33m86edf2f[m HEAD@{667}: commit: admin changes
+[33m78a363c[m HEAD@{668}: commit: admin wordings
+[33m2047da6[m HEAD@{669}: commit: a
+[33m92d8e96[m HEAD@{670}: commit: improv
+[33mf822a75[m HEAD@{671}: commit: admin improv
+[33m9c05703[m HEAD@{672}: commit: tabs
+[33mc68e317[m HEAD@{673}: commit: bub
+[33mf8c0243[m HEAD@{674}: commit: unicode
+[33m5e9ee5b[m HEAD@{675}: commit: unicode
+[33mefe6883[m HEAD@{676}: commit: temp
+[33m1440a63[m HEAD@{677}: commit: unicode error
+[33mc0ac5a1[m HEAD@{678}: commit: unicode + error message
+[33m619047b[m HEAD@{679}: commit: method added in product business app
+[33m3041122[m HEAD@{680}: commit: pincode fixed way added in check
+[33m98ee217[m HEAD@{681}: commit: business app method
+[33mc135961[m HEAD@{682}: commit: ordering
+[33m745ed47[m HEAD@{683}: commit: delete wala and product single
+[33m2e1bc38[m HEAD@{684}: commit: edit/del product
+[33m5166461[m HEAD@{685}: commit: added order no
+[33ma624f20[m HEAD@{686}: commit: business product values
+[33md2079ce[m HEAD@{687}: commit: product and username check
+[33m54bc779[m HEAD@{688}: commit: over ride header added
+[33mdc36b85[m HEAD@{689}: commit: business resource
+[33m1c5712a[m HEAD@{690}: commit: address unicode
+[33m6365c39[m HEAD@{691}: commit: unicode profblem
+[33m6f0f2d0[m HEAD@{692}: commit: adding more headers
+[33m4bc461a[m HEAD@{693}: commit: added x-requested headers
+[33ma4c22da[m HEAD@{694}: commit: pdf for print
+[33m177327c[m HEAD@{695}: commit: number of invoices
+[33mfc721cc[m HEAD@{696}: commit: invoice sent
+[33mecfadb7[m HEAD@{697}: commit: invoice admin
+[33m96f1de3[m HEAD@{698}: commit: admin cange
+[33mfda9c9d[m HEAD@{699}: commit: test resource
+[33mda44e07[m HEAD@{700}: commit: CORS correction
+[33m9406dc6[m HEAD@{701}: commit: migrations removed
+[33md6c1914[m HEAD@{702}: commit: fixed promocode
+[33m434a776[m HEAD@{703}: commit: business api
+[33m7d71b02[m HEAD@{704}: commit: bangalore added and more pincodes implemented
+[33m287d95b[m HEAD@{705}: pull origin master: Merge made by the 'recursive' strategy.
+[33m674feea[m HEAD@{706}: commit: businessapp
+[33mb5b99aa[m HEAD@{707}: reset: moving to HEAD^
+[33m3fb4c2b[m HEAD@{708}: commit: businessapp
+[33mb5b99aa[m HEAD@{709}: reset: moving to HEAD^
+[33m2e4a92d[m HEAD@{710}: commit: arbit
+[33mb5b99aa[m HEAD@{711}: reset: moving to HEAD^
+[33m45afa1f[m HEAD@{712}: reset: moving to HEAD^
+[33m5489787[m HEAD@{713}: commit: arbit
+[33m45afa1f[m HEAD@{714}: reset: moving to HEAD^
+[33mce9290f[m HEAD@{715}: commit: arbit
+[33m45afa1f[m HEAD@{716}: commit: shipment search
+[33mb5b99aa[m HEAD@{717}: commit: title gcm
+[33m148cc8a[m HEAD@{718}: commit: patch user fixed
+[33m86efc44[m HEAD@{719}: reset: moving to 86efc4454e3acc0a616a1860483dc32c07bc20fd
+[33m12f8475[m HEAD@{720}: commit: patch device id gcm id
+[33m86efc44[m HEAD@{721}: commit: promocode in order++ pincode check
+[33mad58c42[m HEAD@{722}: commit: promo code backend
+[33mab3b306[m HEAD@{723}: commit: corrective measures
+[33md550655[m HEAD@{724}: commit: deleted video file
+[33m082e29c[m HEAD@{725}: commit: search functionality
+[33m21f3965[m HEAD@{726}: commit: pincode
+[33m8785825[m HEAD@{727}: commit: and correction
+[33m9be39ea[m HEAD@{728}: commit: push library
+[33m92496dc[m HEAD@{729}: commit: mail fixed
+[33m447d8af[m HEAD@{730}: commit: gcmid
+[33m76ea4a5[m HEAD@{731}: commit: generate order v2
+[33me12953c[m HEAD@{732}: commit: generate order
+[33me7fce36[m HEAD@{733}: commit: number input
+[33m0978bf4[m HEAD@{734}: commit: cost of courier/price added
+[33mf1546b4[m HEAD@{735}: commit: address in shipment
+[33m589df5b[m HEAD@{736}: commit: simple mistake
+[33m2ad9de0[m HEAD@{737}: commit: time in user/ address db changes
+[33me4dcba2[m HEAD@{738}: commit: emails
+[33m513e8cc[m HEAD@{739}: commit: namemailresource
+[33m638e5f9[m HEAD@{740}: commit: namemailresource
+[33me845dba[m HEAD@{741}: commit: namemailresource
+[33m6ddd121[m HEAD@{742}: commit: namemailresource
+[33md8aa777[m HEAD@{743}: commit: namemail in weborder and order
+[33maa2af2e[m HEAD@{744}: commit: old user bug fixes
+[33mbb88e4a[m HEAD@{745}: commit: name email
+[33mfd21b8e[m HEAD@{746}: commit: custom url +weborder
+[33mf87dcf9[m HEAD@{747}: commit: orders detail in shipment api3
+[33ma245850[m HEAD@{748}: commit: orders detail in shipment api2
+[33m537e580[m HEAD@{749}: commit: orders detail in shipment api
+[33mda9f7c4[m HEAD@{750}: commit: weborder to normal order
+[33mc4a0747[m HEAD@{751}: commit: added date and time
+[33m0689d71[m HEAD@{752}: commit: changed v2 in apiv2.py
+[33m6a1a73b[m HEAD@{753}: commit: address popup
+[33md062a5c[m HEAD@{754}: commit: v2 of api
+[33mda15c14[m HEAD@{755}: commit: mail on orders+ api phone
+[33m0315cc9[m HEAD@{756}: commit: shipment no req4
+[33mf864120[m HEAD@{757}: commit: shipment no req3
+[33m3168f0f[m HEAD@{758}: commit: shipment no req2
+[33ma0e7345[m HEAD@{759}: commit: shipment no req
+[33mb985c8c[m HEAD@{760}: commit: default order changed to P
+[33m01cbe24[m HEAD@{761}: commit: rm migrations
+[33mdcc6d9f[m HEAD@{762}: commit: improved admin part 1
+[33m92c7a82[m HEAD@{763}: commit: img on mouse hover
+[33m2529258[m HEAD@{764}: commit: removed settings.py
+[33m2121506[m HEAD@{765}: commit: removed migrations
+[33m28efa94[m HEAD@{766}: commit: textarea for shipemnt tracking_data
+[33m46a5bb2[m HEAD@{767}: commit: textarea for shipemnt tracking_data
+[33macd9ad4[m HEAD@{768}: commit: textarea for shipemnt tracking_data
+[33m1203470[m HEAD@{769}: commit: textarea for shipemnt tracking_data
+[33m633218f[m HEAD@{770}: commit: 2nd
+[33m6bb52ca[m HEAD@{771}: clone: from https://github.com/VVILD/sendd.git

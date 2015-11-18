@@ -1,4 +1,4 @@
-from django.forms import ModelForm, Textarea
+from django.forms import ModelForm, Textarea, HiddenInput
 from django import forms
 from myapp.mail.bookingConfirmationMail import SendConfirmationMail
 from myapp.models import Shipment, Order, User, Namemail, Address
@@ -26,6 +26,19 @@ class NewShipmentForm(ModelForm):
     #    fields =  ['xx']
 #           exclude=['last_tracking_status','qc_comment','tracking_history']
 
+
+class Approveconfirmform(ModelForm):
+    sure=forms.BooleanField(initial=True)
+    class Meta:
+        model = Order
+        fields = ('sure','status')
+        widgets = {
+        'status': HiddenInput,
+        }
+    def clean(self):
+        if self.cleaned_data['sure']:
+            self.cleaned_data['status']='Y'
+            self.cleaned_data['is_approved']=True
 
 
 
