@@ -237,7 +237,7 @@ class BaseBusinessAdmin(reversion.VersionAdmin):
 
 	def changelist_view(self, request, extra_context=None):
 		extra_context = extra_context or {}
-		
+
 		cs=False
 		op=False
 		try:
@@ -252,22 +252,28 @@ class BaseBusinessAdmin(reversion.VersionAdmin):
 				op=True
 		except:
 			pass
+		csall=AddressDetails.objects.all().count()
+		threshold_time =datetime.datetime.combine(date.today(),datetime.time(19, 00))
+
+
 		a = Business.objects.filter(status='A',is_completed=False).count()
-		
+
+		csall = AddressDetails.objects.filter().count()
+
 		nap = Order.objects.filter(business__status='N',status='P').count()
-		ap = Business.objects.filter(status='Y',is_completed=False).count()
-		apcs=Business.objects.filter().exclude(status='N').count()
-		d = Business.objects.filter(daily=True).count()
+		ap = AddressDetails.objects.filter(status__in=['Y','A'],default_pickup_time__lt=threshold_time).distinct().count()
+		apcs=AddressDetails.objects.filter(status__in=['Y','A','C']).count()
+		d = AddressDetails.objects.filter(daily=True).count()
 		c = Business.objects.filter(status='C').count()
 		#pa = Business.objects.filter(order_status='AP').count()
 		#c = Business.objects.filter(order_status='DI').count()
 		p= Order.objects.filter(status='P').count()
 		pu= Order.objects.filter(status='PU').count()
 		di= Order.objects.filter(status='DI').count()
-		un=Product.objects.filter(Q(order__book_time__gt=datetime.date(2015, 9, 1)) & (Q(order__status__in=['PU','D'])) &(Q(mapped_tracking_no__isnull=True) | Q(mapped_tracking_no__exact="")) ).count()
-		picked= Business.objects.filter(is_completed=True,status='A').count()
+		un= Order.objects.filter(status__in=['PU','D']).count()
+		picked= AddressDetails.objects.filter(status='C').count()
 
-		context = {'cs':cs,'op':op,'nap':nap,'ap':ap,'d':d,'c':c,'p':p,'pu':pu,'di':di,'a':a,'apcs':apcs,'un':un,'picked':picked}
+		context = {'cs':cs,'op':op,'nap':nap,'ap':ap,'d':d,'c':c,'p':p,'pu':pu,'di':di,'a':a,'apcs':apcs,'un':un,'picked':picked,'csall':csall}
 		return super(BaseBusinessAdmin, self).changelist_view(request, extra_context=context)
 
 
@@ -1013,6 +1019,7 @@ class OrderAdmin(FilterUserAdmin,ImportExportActionModelAdmin):
 	list_filter = ['business', 'status', 'book_time','product__company','product__return_action']
 
 	readonly_fields=('master_tracking_number', 'mapped_master_tracking_number', 'fedex')
+
 
 
 
@@ -2584,6 +2591,36 @@ class PendingOrderAdmin(OrderAdmin):
 	# def status_action(self,obj):
 	# 	return obj.get_status_display() + '<br>'
 	# status_action.allow_tags = True
+
+	def make_pickedup(modeladmin, request, queryset):
+#checking if valid
+		ct = ContentType.objects.get_for_model(queryset.model)
+
+		for obj in queryset:
+			LogEntry.objects.log_action(
+				user_id=request.user.id,
+				content_type_id=ct.pk,
+				object_id=obj.pk,
+				object_repr=str(obj.pk),
+				action_flag=CHANGE,
+				change_message="action button : picked up of these order")
+
+
+		product_queryset=Product.objects.filter(order__in=queryset)
+
+
+
+		#messages.error(request, "Error for "+ str(intersection.first().business_name))
+		for product in product_queryset:
+			product.status='PU'
+			product.pickup_time=datetime.datetime.now()
+			product.save()
+
+
+	make_pickedup.short_description = "make pickedup of selected orders"
+
+	actions = ['make_pickedup']
+
 
 
 	def get_queryset(self, request):
