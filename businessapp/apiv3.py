@@ -9,6 +9,8 @@ from rq import Queue
 from tastypie.utils import trailing_slash
 import time
 from datetime import datetime, timedelta
+
+from businessapp.apiv4 import BusinessPickupAddressResource
 from businessapp.models import *
 from myapp.models import Zipcode, Shipment
 from tastypie.authorization import Authorization
@@ -277,6 +279,7 @@ class BusinessResource(CORSModelResource):
 class OrderResource3(CORSModelResource):
     business = fields.ForeignKey(BusinessResource, 'business', null=True)
     products = fields.ToManyField("businessapp.apiv3.ProductResource3", 'product_set', related_name='product')
+    pickup_address = fields.ForeignKey(BusinessPickupAddressResource, 'pickup_address', null=True)
 
     class Meta:
         queryset = Order.objects.all()
@@ -300,7 +303,7 @@ class OrderResource3(CORSModelResource):
             pickup_addr = AddressDetails.objects.filter(business=business_obj)
             if pickup_addr.count() == 0:
                 raise ImmediateHttpResponse(HttpBadRequest("No pickupaddress found for the business"))
-            bundle.data['pickup_address'] = pickup_addr.first()
+            bundle.data['pickup_address'] = "/bapi/v4/pickup_address/" + str(pickup_addr.first().pk) + "/"
         except Business.DoesNotExist:
             raise ImmediateHttpResponse(HttpBadRequest("Username doesnt exist"))
         except KeyError:

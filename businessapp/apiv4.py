@@ -6,16 +6,86 @@ from tastypie import fields
 from tastypie.authentication import Authentication
 from tastypie.authorization import Authorization
 from tastypie.constants import ALL, ALL_WITH_RELATIONS
-from tastypie.exceptions import ImmediateHttpResponse
+from tastypie.exceptions import ImmediateHttpResponse, Unauthorized
+from tastypie.http import HttpBadRequest
 from tastypie.resources import ModelResource, Resource, csrf_exempt
 from tastypie.utils import trailing_slash
-from businessapp.apiv3 import OnlyAuthorization
 from businessapp.models import Business, AddressDetails, Product, Order
 from core.models import Pincode
 from core.views import fedex_view_util
 from pickupboyapp.exceptions import CustomBadRequest
 
 __author__ = 'vatsalshah'
+
+class OnlyAuthorization(Authorization):
+    def read_list(self, object_list, bundle):
+        business_username = bundle.request.GET.get("username", None)
+        if business_username is None:
+            raise ImmediateHttpResponse(HttpBadRequest("Please Provide a valid username key"))
+        try:
+            business_obj = Business.objects.get(username=business_username)
+        except Business.DoesNotExist:
+            raise ImmediateHttpResponse(HttpBadRequest("Username doesnt exist"))
+        try:
+            if bundle.request.META["HTTP_AUTHORIZATION"] == 'B' or business_obj.apikey == bundle.request.META[
+                "HTTP_AUTHORIZATION"]:
+                return object_list.filter(business=business_obj)
+            else:
+                raise Unauthorized
+        except KeyError:
+            raise ImmediateHttpResponse(HttpBadRequest("Provide valid authorization headers"))
+
+    def read_detail(self, object_list, bundle):
+        # Is the requested object owned by the user?
+
+        # these 2 lines due to product wanting to use this authorisation
+        try:
+            if (bundle.request.META["HTTP_AUTHORIZATION"] == 'B'):
+                return True
+
+            return bundle.obj.business.apikey == bundle.request.META["HTTP_AUTHORIZATION"]
+        except:
+            return False
+
+    def create_list(self, object_list, bundle):
+        # Assuming they're auto-assigned to ``user``.
+        return object_list
+
+    def create_detail(self, object_list, bundle):
+        try:
+            if (bundle.request.META["HTTP_AUTHORIZATION"] == 'B'):
+                return True
+
+            return bundle.obj.business.apikey == bundle.request.META["HTTP_AUTHORIZATION"]
+        except:
+            return False
+
+    def update_list(self, object_list, bundle):
+        allowed = []
+
+        # Since they may not all be saved, iterate over them.
+        for obj in object_list:
+            if obj.user == bundle.request.user:
+                allowed.append(obj)
+
+        return allowed
+
+    def update_detail(self, object_list, bundle):
+        try:
+            if (bundle.request.META["HTTP_AUTHORIZATION"] == 'B'):
+                return True
+
+            return bundle.obj.business.apikey == bundle.request.META["HTTP_AUTHORIZATION"]
+        except:
+            return False
+
+    def delete_list(self, object_list, bundle):
+        # Sorry user, no deletes for you!
+        raise Unauthorized("Sorry, no deletes.")
+
+    def delete_detail(self, object_list, bundle):
+        raise Unauthorized("Sorry, no deletes.")
+
 
 
 class BaseCorsResource(Resource):
