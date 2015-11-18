@@ -47,10 +47,11 @@ class Command(BaseCommand):
                                     try:
                                         delivery_time = datetime.strptime(row['DELIVERY DATE'], "%d/%m/%y")
                                         product.actual_delivery_timestamp = delivery_time
+                                        print("Delivery date captured {}".format(row['DELIVERY DATE']))
                                     except:
                                         pass
                             elif row['STATUS'] == 'Return':
-                                product.status = 'R'
+                                product.status = 'R'Minor
                         product.save()
                     mapped_orders.append(order)
                     print("awb {} mapped for order no {} of business {}".format(row["AWB NO"], order.order_no, order.business.business_name))
