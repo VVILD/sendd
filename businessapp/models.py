@@ -444,12 +444,17 @@ class Order(models.Model):
                 self.book_time = ind_time
             super(Order, self).save(*args, **kwargs)
             order_no = self.pk + 1000
+            if self.pickup_address.status=='N':
+                self.pickup_address.status='Y'
+                self.pickup_address.save()
+
             if str(order_no) > 4:
                 order_no = str(order_no)[:4]
             self.master_tracking_number = 'M' + order_no + str(uuid.uuid4().get_hex().upper()[:5])
 
         if self.status != self.__status or not self.last_updated_status:
             self.last_updated_status = datetime.now()
+
 
         if self.state:
             if not state_matcher.is_state(self.state):
