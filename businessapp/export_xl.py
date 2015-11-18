@@ -1,15 +1,49 @@
-from businessapp.models import Product,Order
+from businessapp.models import Product,Order,Business
 from import_export import resources
 from import_export import fields
 from datetime import timedelta
 import json
-
+from django.db.models import Avg, Count, F, Max, Min, Sum, Q, Prefetch
 class ProductResource(resources.ModelResource):
-
+	last_status = fields.Field()
+	last_date = fields.Field()
 	class Meta:
 		model = Product
 		import_id_fields = ('order_id',)
-		fields = ('order','order__book_time','order__reference_id','order__payment_method','order__name','order__city','order__pincode', 'real_tracking_no', 'mapped_tracking_no', 'company','status','last_tracking_status','weight','applied_weight','barcode','order__method','name','price','remittance','remittance_date')
+		fields = ('order','order__book_time','order__reference_id','order__payment_method','order__name','order__city','order__pincode', 'real_tracking_no', 'mapped_tracking_no', 'company','status','last_tracking_status','weight','applied_weight','barcode','order__method','name','price','remittance','remittance_date','ff_comment','last_status','last_date')
+
+
+	def dehydrate_last_status(self, product):
+		return json.loads(product.tracking_data)[-1]['status']
+
+
+	def dehydrate_last_date(self, product):
+		return json.loads(product.tracking_data)[-1]['date']
+
+	def dehydrate_ff_comment(self, product):
+		return product.order.ff_comment
+
+class BusinessResource(resources.ModelResource):
+
+	class Meta:
+		model = Business
+		fields = ('username','business_name','email','warehouse__name','address','pincode','name')
+
+
+class CodBusinessResource(resources.ModelResource):
+	amount = fields.Field()
+	class Meta:
+		model = Business
+		fields = ('username','business_name','amount','billed_to','account_name','account_type','bank_name','branch','ifsc_code')
+
+	def dehydrate_amount(self, business):
+
+		today_orders_b2b = Order.objects.filter(business=business,payment_method='C')
+
+		query_complete=Product.objects.filter(order=today_orders_b2b,status='C',remittance_status='I')
+		sum_complete = query_complete.aggregate(total=Sum('price'))['total']
+		return sum_complete
+
 
 
 
@@ -43,8 +77,8 @@ class FFOrderResource(resources.ModelResource):
 
 	class Meta:
 		model = Order
-		fields = ('order_no','book_time','business__business_name','city','pincode','mapped_ok','no_of_products','company','ff_comment')
-		export_order = ('order_no','book_time','business__business_name','city','pincode','mapped_ok','no_of_products','company','ff_comment')
+		fields = ('order_no','book_time','business__business_name','city','pincode','name','mapped_ok','no_of_products','company','ff_comment')
+		export_order = ('order_no','book_time','business__business_name','city','pincode','name','mapped_ok','no_of_products','company','ff_comment')
 
 	def dehydrate_mapped_ok(self,order):
 		products=Product.objects.filter(order=order)
@@ -60,7 +94,7 @@ class FFOrderResource(resources.ModelResource):
 
 	def dehydrate_company(self, order):
 		try:
-			return order.product_set.first().company
+			return order.product_set.first().get_company_display()
 		except:
 			return "no product"
 

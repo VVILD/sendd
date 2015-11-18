@@ -7,7 +7,7 @@ from datetime import datetime
 from geopy.distance import vincenty
 from geopy.geocoders import googlev3
 from pytz import timezone
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, pre_save
 import hashlib
 import random
 # Create your models here.
@@ -120,7 +120,16 @@ class Business(models.Model):
     warehouse = models.ForeignKey(Warehouse, null=True, blank=True)
     cod_sum=models.FloatField(default=40.0)
     cod_percentage=models.FloatField(default=1.5)
+    fuel_surcharge=models.FloatField(default=20.0)
     discount_percentage=models.FloatField(default=0.0)
+    billed_to=models.CharField(max_length=100,blank=True,null=True)
+    account_name=models.CharField(max_length=100,blank=True,null=True)
+    account_type=models.CharField(max_length=1,
+                              choices=(('S', 'savings'), ('C', 'current'),),
+                              null=True, blank=True)
+    bank_name=models.CharField(max_length=100,blank=True,null=True)
+    branch=models.CharField(max_length=100,blank=True,null=True)
+    ifsc_code=models.CharField(max_length=100,blank=True,null=True)
 
     class Meta:
         ordering = ['business_name', ]
@@ -144,7 +153,7 @@ class Business(models.Model):
                 name) + "%2C+Address%3A" + str(address) + "%2C+Mobile+No%3A" + str(
                 user_phone) + "&msg_type=TEXT&userid=2000142364&auth_scheme=plain&password=h0s6jgB4N&format=text"
             query = ''.join([msg0, msga, msg1])
-            print query
+            # print query
             req = requests.get(query)
 
         if not self.apikey:
@@ -344,6 +353,16 @@ class CodBusinessPanel(Business):
         proxy = True
         verbose_name_plural = "CodBusinessPanel"
 
+class InitiatedBusinessRemittance(Business):
+    class Meta:
+        proxy = True
+        verbose_name_plural = "InitiatedBusinessRemittance"
+
+class PendingBusinessRemittance(Business):
+    class Meta:
+        proxy = True
+        verbose_name_plural = "PendingBusinessRemittance"
+
 
 class LoginSession(models.Model):
     Business = models.ForeignKey(Business, null=True, blank=True)
@@ -421,7 +440,8 @@ class Order(models.Model):
         fmt = '%Y-%m-%d %H:%M:%S'
         ind_time = datetime.now(z)
         if not self.pk:
-            self.book_time = ind_time
+            if not self.book_time:
+                self.book_time = ind_time
             super(Order, self).save(*args, **kwargs)
             order_no = self.pk + 1000
             if str(order_no) > 4:
@@ -484,6 +504,9 @@ class Product(models.Model):
 
     date = models.DateTimeField(null=True, blank=True)
     remittance = models.BooleanField(default=False)
+    remittance_status=models.CharField(max_length=1,
+                              choices=(('P', 'pending'), ('C', 'complete'), ('I', 'initiated')),
+                              default='P')
     fedex_cod_return_label = models.FileField(upload_to='shipment/', blank=True, null=True)
     fedex_outbound_label = models.FileField(upload_to='shipment/', blank=True, null=True)
     fedex_ship_docs = models.FileField(upload_to='shipment/', blank=True, null=True)
@@ -499,6 +522,7 @@ class Product(models.Model):
     remittance_date = models.DateTimeField(null=True, blank=True)
 
     qc_comment = models.TextField(null=True, blank=True)
+    ff_comment = models.TextField(null=True, blank=True)
     tracking_history = models.TextField(null=True, blank=True)
     warning = models.BooleanField(default=False)
 
@@ -535,9 +559,15 @@ class Product(models.Model):
         if self.status == 'PU' and not self.pickup_time:
             self.pickup_time = time
 
+
         if self.mapped_tracking_no:
             if " " in self.mapped_tracking_no:
                 self.mapped_tracking_no=self.mapped_tracking_no.replace(" ","")
+            if not self.applied_weight:
+                raise ValidationError("please enter applied weight as well after entering mapped tracking no on order"+str(self.order.pk))
+            if not self.company:
+                raise ValidationError("please enter company as well after entering mapped tracking no on order"+str(self.order.pk))
+
 
         if self.mapped_tracking_no and (self.status == 'PU' or self.status == 'D' or self.status == 'P'):
             self.status = 'DI'
@@ -596,18 +626,25 @@ class Product(models.Model):
             raise ValidationError("Barcode length should be 10")
 
         super(Product, self).save(*args, **kwargs)
+        if self.order:
+            self.order.save()
         self.__original_tracking_data = self.tracking_data
 
 class ProxyProduct(Product):
     class Meta:
         proxy = True
 
-
+class ProxyProduct2(Product):
+    class Meta:
+        proxy = True
 
 class RemittanceProductPending(Product):
     class Meta:
         proxy = True
 
+class RemittanceProductInitiated(Product):
+    class Meta:
+        proxy = True
 
 
 class ExportOrder(Product):
@@ -622,309 +659,6 @@ class RemittanceProductComplete(Product):
 class QcProduct(Product):
     class Meta:
         proxy = True
-
-
-def send_update(sender, instance, created, **kwargs):
-
-    # product can be pending complete returned picked up
-
-    #                              choices=(('P', 'pending'), ('C', 'complete'), ('PU', 'pickedup'), ('CA', 'cancelled'), ('R', 'return')),
-
-    #       ('P', 'pending'), ('C', 'complete'), ('N', 'cancelled'), ('D', 'in transit'), ('PU', 'pickedup')), default='P')
-
-    # order will be pending intransit complete cancelled picked up
-
-    products_in_order = Product.objects.filter(order=instance.order)
-
-    if (instance.l and instance.b and instance.h):
-        vol_weight= (instance.l *instance.b *instance.h)/5000
-    else:
-        vol_weight=None
-
-    best_weight=max(instance.applied_weight,vol_weight)
-
-
-    if best_weight:
-        method = instance.order.method
-
-        if (instance.order.payment_method == 'C'):
-            cod_price1 = (1.5 / 100) * instance.price
-            if (cod_price1 < 40):
-                cod_price = 40
-            else:
-                cod_price = cod_price1
-
-        else:
-            cod_price = 0
-
-        pincode = instance.order.pincode
-        print pincode
-
-        two_digits = pincode[:2]
-        three_digits = pincode[:3]
-
-        pricing = Pricing.objects.get(pk=instance.order.business.pk)
-
-        if (method == 'N'):
-            if (three_digits == '400'):
-                price1 = pricing.normal_zone_a_0
-                price2 = pricing.normal_zone_a_1
-                price3 = pricing.normal_zone_a_2
-
-            elif (two_digits == '41' or two_digits == '42' or two_digits == '43' or two_digits == '44' or three_digits == '403' or three_digits == '401' or two_digits == '36' or two_digits == '37' or two_digits == '38' or two_digits == '39'):
-                price1 = pricing.normal_zone_b_0
-                price2 = pricing.normal_zone_b_1
-                price3 = pricing.normal_zone_b_2
-            elif (two_digits == '56' or two_digits == '11' or three_digits == '600' or three_digits == '700'):
-                price1 = pricing.normal_zone_c_0
-                price2 = pricing.normal_zone_c_1
-                price3 = pricing.normal_zone_c_2
-
-            elif (two_digits == '78' or two_digits == '79' or two_digits == '18' or two_digits == '19'):
-                price1 = pricing.normal_zone_e_0
-                price2 = pricing.normal_zone_e_1
-                price3 = pricing.normal_zone_e_2
-            else:
-                price1 = pricing.normal_zone_d_0
-                price2 = pricing.normal_zone_d_1
-                price3 = pricing.normal_zone_d_2
-
-            if (best_weight <= 0.25):
-                price = price1
-            elif (best_weight <= 0.50):
-                price = price2
-            else:
-                price = price2 + math.ceil((best_weight * 2 - 1)) * price3
-
-        if (method == 'B'):
-            if (three_digits == '400'):
-                price1 = pricing.bulk_zone_a
-
-            elif (
-                                                        two_digits == '41' or two_digits == '42' or two_digits == '43' or two_digits == '44' or three_digits == '403' or two_digits == '36' or two_digits == '37' or two_digits == '38' or two_digits == '39'):
-                price1 = pricing.bulk_zone_b
-            elif (two_digits == '56' or two_digits == '11' or three_digits == '600' or three_digits == '700'):
-                price1 = pricing.bulk_zone_c
-
-            elif (two_digits == '78' or two_digits == '79' or two_digits == '18' or two_digits == '19'):
-                price1 = pricing.bulk_zone_e
-            else:
-                price1 = pricing.bulk_zone_d
-
-            if (best_weight <= 10):
-                price = price1 * 10
-            else:
-                price = price1 * best_weight
-
-        Order.objects.filter(pk=instance.order.pk).update(status='D')
-        #        print "prrriiiceee"
-
-        price = math.ceil(1.20 * price)
-
-        Product.objects.filter(pk=instance.pk).update(shipping_cost=price, cod_cost=cod_price)
-    #        print "Done"
-    # MyModel.objects.filter(pk=some_value).update(field1='some value')
-    #        print "in  loop"
-
-    if instance.status == 'C' or instance.status == 'R':
-        complete = True
-        return_value = True
-        other_case = False
-        #		print "in complete loop"
-
-        for product in products_in_order:
-            if product.status != 'C':
-                # print "false check"
-                complete = False
-            # print "1aaa"
-            elif product.status != 'R':
-                return_value = False
-            # print "2aaa"
-            elif (product.status != 'R' & product.status != 'C'):
-                other_case = True
-                #    print "3aaa"
-
-        signals.post_save.disconnect(send_update_order, sender=Order)
-
-        if (complete & (not return_value)):
-            # print "am i here"
-            # print "1111111111111111111111111111111111111111111111"
-            instance.order.status = 'C'
-            instance.order.save()
-
-        elif ((not complete) & return_value):
-            # print "222222222222222222222222222222222222222222222"
-            # print "am i here"
-            instance.order.status = 'R'
-            instance.order.save()
-        elif (other_case):
-            pass
-        else:
-            # print "33333333333333333333333333333333333333333333	"
-            instance.order.status = 'RC'
-            instance.order.save()
-
-        signals.post_save.connect(send_update_order, sender=Order)
-
-    if (instance.status == 'PU') or (instance.status == 'CA'):
-        # print "33333333333333333333333333333333333333333333	"
-        pickedup = True
-        for product in products_in_order:
-            if (product.status != 'PU') & (product.status != 'CA'):
-                pickedup = False
-
-        if (pickedup):
-            signals.post_save.disconnect(send_update_order, sender=Order)
-            instance.order.status = 'PU'
-            instance.order.save()
-            signals.post_save.connect(send_update_order, sender=Order)
-
-    if (instance.status == 'DI') or (instance.status == 'CA'):
-        # print "33333333333333333333333333333333333333333333    "
-        Dispatched = True
-        for product in products_in_order:
-            if (product.status != 'DI') & (product.status != 'CA'):
-                Dispatched = False
-
-        if (Dispatched):
-            signals.post_save.disconnect(send_update_order, sender=Order)
-            instance.order.status = 'DI'
-            instance.order.save()
-            signals.post_save.connect(send_update_order, sender=Order)
-
-    if (instance.status == 'CA'):
-        Cancelled = True
-        for product in products_in_order:
-            if (product.status != 'CA'):
-                Cancelled = False
-        if (Cancelled):
-            # signals.post_save.disconnect(send_update_order, sender=Order)
-            signals.post_save.disconnect(send_update_order, sender=Order)
-            instance.order.status = 'N'
-            instance.order.save()
-            signals.post_save.connect(send_update_order, sender=Order)
-
-
-post_save.connect(send_update, sender=Product)
-
-
-# to change cost on product when order is saved
-
-
-def send_update_order(sender, instance, created, **kwargs):
-    # product can be pending complete returned picked up
-
-    #                              choices=(('P', 'pending'), ('C', 'complete'), ('PU', 'pickedup'), ('CA', 'cancelled'), ('R', 'return')),
-
-    #       ('P', 'pending'), ('C', 'complete'), ('N', 'cancelled'), ('D', 'in transit'), ('PU', 'pickedup')), default='P')
-
-    # order will be pending intransit complete cancelled picked up
-
-    products = Product.objects.filter(order=instance)
-
-    if instance.status == 'C' or instance.status == 'PU' or instance.status == 'CA' or instance.status == 'P' or instance.status == 'R':
-        signals.post_save.disconnect(send_update, sender=Product)
-        for product in products:
-            product.status = instance.status
-            product.save()
-
-        signals.post_save.connect(send_update, sender=Product)
-
-    for product in products:
-
-        if (product.l and product.b and product.h):
-            vol_weight= (product.l *product.b *product.h)/5000
-        else:
-            vol_weight=None
-
-        best_weight=max(product.applied_weight,vol_weight)
-
-        if best_weight:
-            method = instance.method
-
-            if (instance.payment_method == 'C'):
-                cod_price1 = (1.5 / 100) * product.price
-                if (cod_price1 < 40):
-                    cod_price = 40
-                else:
-                    cod_price = cod_price1
-
-            else:
-                cod_price = 0
-
-            pincode = instance.pincode
-            print pincode
-
-            two_digits = pincode[:2]
-            three_digits = pincode[:3]
-
-            pricing = Pricing.objects.get(pk=instance.business.pk)
-            print "methhhhhhhoooooooooooood"
-            print method
-            if (method == 'N'):
-                if (three_digits == '400'):
-                    price1 = pricing.normal_zone_a_0
-                    price2 = pricing.normal_zone_a_1
-                    price3 = pricing.normal_zone_a_2
-
-                elif (two_digits == '41' or two_digits == '42' or two_digits == '43' or two_digits == '44' or three_digits == '403' or three_digits == '401' or two_digits == '36' or two_digits == '37' or two_digits == '38' or two_digits == '39'):
-                    price1 = pricing.normal_zone_b_0
-                    price2 = pricing.normal_zone_b_1
-                    price3 = pricing.normal_zone_b_2
-                elif (two_digits == '56' or two_digits == '11' or three_digits == '600' or three_digits == '700'):
-                    price1 = pricing.normal_zone_c_0
-                    price2 = pricing.normal_zone_c_1
-                    price3 = pricing.normal_zone_c_2
-
-                elif (two_digits == '78' or two_digits == '79' or two_digits == '18' or two_digits == '19'):
-                    price1 = pricing.normal_zone_e_0
-                    price2 = pricing.normal_zone_e_1
-                    price3 = pricing.normal_zone_e_2
-                else:
-                    price1 = pricing.normal_zone_d_0
-                    price2 = pricing.normal_zone_d_1
-                    price3 = pricing.normal_zone_d_2
-
-                if (best_weight <= 0.25):
-                    price = price1
-                elif (best_weight <= 0.50):
-                    price = price2
-                else:
-                    price = price2 + math.ceil((best_weight * 2 - 1)) * price3
-
-            if (method == 'B'):
-                if (three_digits == '400'):
-                    price1 = pricing.bulk_zone_a
-
-                elif (
-                                                            two_digits == '41' or two_digits == '42' or two_digits == '43' or two_digits == '44' or three_digits == '403' or two_digits == '36' or two_digits == '37' or two_digits == '38' or two_digits == '39'):
-                    price1 = pricing.bulk_zone_b
-                elif (two_digits == '56' or two_digits == '11' or three_digits == '600' or three_digits == '700'):
-                    price1 = pricing.bulk_zone_c
-
-                elif (two_digits == '78' or two_digits == '79' or two_digits == '18' or two_digits == '19'):
-                    price1 = pricing.bulk_zone_e
-                else:
-                    price1 = pricing.bulk_zone_d
-
-                if (best_weight <= 10):
-                    price = price1 * 10
-                else:
-                    price = price1 * best_weight
-
-            # print "prrriiiceee"
-
-            price = math.ceil(1.20 * price)
-            signals.post_save.disconnect(send_update, sender=Product)
-
-            product.shipping_cost = price
-            product.cod_cost = cod_price
-            product.save()
-            signals.post_save.connect(send_update, sender=Product)
-
-
-post_save.connect(send_update_order, sender=Order)
-
 
 class Billing(models.Model):
     id = models.AutoField(primary_key=True)
@@ -1090,6 +824,147 @@ class Barcode(models.Model):
             raise ValidationError("Barcode length should be 10")
 
         super(Barcode, self).save(*args, **kwargs)
+
+
+
+def update_status(order):
+    if order is not None:
+        products=Product.objects.filter(order=order)
+        status_map = {
+            'CA': 10,
+            'P': 4,
+            'PU': 5,
+            'D': 6,
+            'DI': 7,
+            'R': 8,
+            'C': 8,
+        }
+        reverse_map={4: 'P', 5: 'PU', 6: 'D', 7: 'DI', 10: 'CA'}
+        status_list=[]
+        true_status_list=[]
+        for product in products:
+            status_list.append(status_map[product.status])
+            true_status_list.append(product.status)
+        try:
+            status=min(status_list)
+        except:
+            status=4
+        if status !=8:
+            order_status=reverse_map[status]
+
+        else:
+            if 'R' in true_status_list and 'C' in true_status_list:
+                order_status='RC'
+            elif 'C' in true_status_list:
+                order_status='C'
+            elif 'R' in true_status_list:
+                order_status='R'
+        if order_status=='CA':
+            order_status='N'
+
+        order.status=order_status
+        signals.post_save.disconnect(send_update_order, sender=Order)
+        signals.post_save.disconnect(send_update_product, sender=Product)
+        order.save()
+        signals.post_save.connect(send_update_order, sender=Order)
+        signals.post_save.connect(send_update_product, sender=Product)
+
+
+
+            # signals.post_save.disconnect(send_update_order, sender=Order)
+            # signals.post_save.connect(send_update_order, sender=Order)
+
+
+
+#return zone objects and takes only pincode as parameter
+def get_zone(pincode):
+    two_digits = pincode[:2]
+    three_digits = pincode[:3]
+    if (three_digits == '400'):
+        return Zone.objects.get(zone='a')
+    elif (two_digits == '41' or two_digits == '42' or two_digits == '43' or two_digits == '44' or three_digits == '403' or two_digits == '36' or two_digits == '37' or two_digits == '38' or two_digits == '39'):
+        return Zone.objects.get(zone='b')
+    elif (two_digits == '56' or two_digits == '11' or three_digits == '600' or three_digits == '700'):
+        return Zone.objects.get(zone='c')
+    elif (two_digits == '78' or two_digits == '79' or two_digits == '18' or two_digits == '19'):
+        return Zone.objects.get(zone='e')
+    else:
+        return Zone.objects.get(zone='d')
+
+
+def nround(number):
+    return round(number * 2) / 2
+
+#return weight objects and takes only weight and type
+def get_weight(weight,type):
+    if type == 'N':
+        if (weight<=0.25):
+            return Weight.objects.get(weight=0.25)
+        elif (weight<=0.5):
+            return Weight.objects.get(weight=0.5)
+        elif (weight>10):
+            return Weight.objects.get(weight=11)
+        else:
+            return Weight.objects.get(weight=nround(weight))
+    if type == 'B':
+        if (weight>10):
+            return Weight.objects.get(weight=11)
+        else:
+            return Weight.objects.get(weight=math.ceil(weight))
+
+def update_price(order):
+    if order is not None:
+        products=Product.objects.filter(order=order)
+        business=order.business
+        for product in products:
+            if product.applied_weight:
+                # print "pk=",product.pk
+                zone=get_zone(order.pincode)
+                if (product.l and product.b and product.h):
+                    vol_weight= (product.l *product.b *product.h)/5000
+                else:
+                    vol_weight=None
+
+                best_weight=max(product.applied_weight,vol_weight)
+                # print "weight=",best_weight
+                weight=get_weight(best_weight,order.method)
+                ppkg=Pricing2.objects.get(business=order.business,weight=weight,zone=zone,type=order.method).ppkg
+                # print "ppkg=",ppkg
+                shipping_cost=ppkg*weight.weight
+                if order.payment_method=='C':
+                    percentage=business.cod_percentage*product.price/100
+                    if percentage > business.cod_sum:
+                        cod_cost=percentage
+                    else:
+                        cod_cost=business.cod_sum
+                else:
+                    cod_cost=0
+                shipping_cost=shipping_cost+business.fuel_surcharge*shipping_cost/100
+                product.shipping_cost=shipping_cost
+                product.cod_cost=cod_cost
+                signals.post_save.disconnect(send_update_product, sender=Product)
+                signals.post_save.disconnect(send_update_order, sender=Order)
+                product.save()
+                signals.post_save.connect(send_update_product, sender=Product)
+                signals.post_save.connect(send_update_order, sender=Order)
+
+
+def send_update_order(sender, instance, created, **kwargs):
+    update_price(instance)
+    update_status(instance)
+
+
+post_save.connect(send_update_order, sender=Order)
+
+
+def send_update_product(sender, instance, created, **kwargs):
+    update_price(instance.order)
+    update_status(instance.order)
+
+
+post_save.connect(send_update_product, sender=Product)
+
+
 
 
 def add_pricing(sender, instance, created, **kwargs):

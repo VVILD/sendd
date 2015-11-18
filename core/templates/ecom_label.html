@@ -1,0 +1,380 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" dir="ltr" lang="en" xml:lang="en">
+
+<head>
+
+    <title>Orders-Shipping Label</title>
+
+    <style type="text/css">
+
+        body {
+            background: #FFFFFF;
+        }
+        body, td, th, input, select, textarea, option, optgroup {
+            font-family: "Mako", sans-serif;
+            font-size: 10px;
+            color: #000000;
+        }
+        h1 {
+            text-transform: uppercase;
+            color:#333333;
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            padding-bottom: 5px;
+            margin-top: 0px;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #999999;
+        }
+        h2 {
+            color:#333333;
+            text-align: center;
+            font-size: 18px;
+            font-weight: normal;
+            padding-bottom: 5px;
+            margin-top: 0px;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #999999;
+        }
+        .store {
+            width: 100%;
+            margin-bottom: 20px;
+            border-collapse:collapse;
+            /*border: 1px solid #999999;*/
+        }
+        .subbox{
+            border-collapse:collapse;
+            border: 1px solid #999999;
+        }
+        .div2 {
+            float: left;
+            display: inline-block;
+        }
+        .div3 {
+            float: right;
+            display: inline-block;
+            padding: 5px;
+        }
+        .heading td {
+            background:#CCCCCC;
+        }
+        .address, .product {
+            border-collapse: collapse;
+        }
+        .address {
+            width: 100%;
+            margin-bottom: 20px;
+            border-top: 1px solid #999999;
+            border-right: 1px solid #999999;
+        }
+        .address th, .address td {
+            border-left: 1px solid #999999;
+            border-bottom: 1px solid #999999;
+            padding: 5px;
+            vertical-align: text-bottom;
+        }
+        .address td {
+            width: 50%;
+        }
+
+        #shipping-labels td {
+            padding:0 5px;
+        }
+
+        .product {
+            width: 100%;
+            margin-bottom: 20px;
+            border-top: 1px solid #999999;
+            border-right: 1px solid #999999;
+        }
+        .product td {
+            border-left: 1px solid #999999;
+            border-bottom: 1px solid #999999;
+            padding: 5px;
+        }
+
+        .barcode {
+            font-family: 'Code39TextHigh';
+            font-size:70px;
+            position:absolute;
+            top:0;
+            -webkit-margin-before:-103px;}
+        .barcode_small {
+            font-family: 'Code39TextHigh';
+            font-size:30px;
+            line-height:0;
+        }
+        @-moz-document url-prefix() {
+            .barcode_small {line-height:32px;}
+
+        }
+        p.breakhere {page-break-before: always}
+        .label_container {
+            width:100%;
+            border: solid 1px;
+        }
+        .turn {
+            -webkit-transform: rotate(-90deg);
+            -moz-transform: rotate(-90deg);
+            filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=3);
+
+        }
+    </style>
+
+</head>
+
+<body>
+
+<div style="page-break-after: always;">
+
+    <!-- Start Shipping Label Here -->
+
+    <table width="99%" border="0" align="center" cellpadding="0" cellspacing="3" style="border:1px solid #999999">
+
+        <tbody><tr>
+
+            <td style="border-bottom:1px solid #999999;width:30%;"><img src="http://res.cloudinary.com/kartrocket/image/fetch/w_400%2Cq_90%2Ch_75%2Cc_pad/http%3A%2F%2Fkartrocket-mtp.s3.amazonaws.com%2Fall-stores%2Fimage_crazymindtechnologies%2Fdata%2Flogo%2F13178_1599967513574940_2546502154707552138_n.png" alt="Sendd" id="logo" /></td>
+
+            <td colspan="2" style="border-bottom:1px solid #999999;">
+
+                <div style="float:left;width:200px;">
+
+                    <b>{{ product.order.business.business_name }}</b>,<br />
+                    C/O: Sendd
+                    {{ product.order.business.warehouse.address_line_1 }},
+                    {{ product.order.business.warehouse.address_line_2 }},
+                    {{ product.order.business.warehouse.city }},
+                    {{ product.order.business.warehouse.state }},
+                    India,
+                    {{ product.order.business.warehouse.pincode }},
+                    <br />
+
+                    <b>Telephone: 8080028081</b><br />
+{##}
+{##}
+{#                    Landline: 8879475752, <br />#}
+{##}
+{##}
+{#                    (TIN: 9999999999)#}
+{#                    Email:hello@sendd.co<br />#}
+
+
+
+                </div>
+
+                <div style="float:right; border-left:1px solid #999999;padding:0 10px;">
+                    {% if product.order.payment_method == 'C' %}
+                    <b>COD SHIPMENT</b><br />
+                    {% else %}
+                    <b>PREPAID SHIPMENT</b><br />
+                    {% endif %}
+
+
+{#                    Invoice No: INV-201431<br />#}
+{##}
+{##}
+{#                    Invoice Date: 05/11/2015<br />#}
+
+                    Order ID: {{ product.order.order_no }}
+
+                    <div class="order_id">
+
+                        <span style="font-size:16px"><b>ORDER ID</b></b></span>
+
+                        <br>
+                        <span class="barcode_small"><img src="http://crazymindtechnologies.kartrocket.co/admin/barcode/generator.php?data={{ product.order.order_no }}" style="width:140px;margin-left:-10px;"></img></span>
+
+                    </div>
+
+
+                </div>
+
+            </td>
+
+        </tr>
+
+        <tr>
+
+            <td>
+
+                <div style="width:250px;">
+
+                    <b>SHIP TO</b><br />
+
+    	<span style="font-size:12px;">
+
+    	{{ product.order.name }},<br /> {{ product.order.address1 }},<br /> {{ product.order.address2 }},<br /> {{ product.order.city }} {{ product.order.pincode }},<br /> {{ product.order.state }},<br /> India<br/>
+
+        Email: {{ product.order.email }}<br/>
+
+        Mobile: {{ product.order.phone }}</span><br/>
+
+
+
+                    <span style="font-size:16px;font-weight:bold;">NA</span>
+
+                </div>
+
+            </td>
+
+            <!--<td align="left"><span style="font-size:16px"><b>ORDER ID</b></span><br />
+
+                <span class="barcode_small"></span>
+
+            </td>-->
+
+            <td colspan="2" align="left" valign="top" style="position:relative; padding-left:10px;">
+
+                <div style="position:absolute;">
+
+
+                    <div >
+
+                        <span style="font-size:16px"><b>COURIER: </b><b>ECOMEXP</b></span>
+
+                    </div>
+
+                    <div style="position:absolute;">
+
+		   <span class="barcode" style="-webkit-margin-before:1px;">
+			<img style="margin-left:-17px;" src="http://crazymindtechnologies.kartrocket.co/admin/barcode/generator.php?data={{ product.mapped_tracking_no }}" ></img>
+
+
+		  </span>
+                    </div>
+
+                </div>
+
+            </td>
+
+        </tr>
+
+        <tr>
+
+            <td colspan="2" align="center">
+
+                {% if product.order.payment_method == 'C' %}
+                <span style="font-size:22px; font-weight:bold; text-align:center;">COD SHIPMENT</span><br />
+
+	<span style="font-size:18px; font-weight:bold; text-align:center;">AMOUNT TO BE COLLECTED -
+
+	Rs.{{ product.price }}</span>
+                {% endif %}
+
+
+            </td>
+
+            <td><div style="float:right; font-size:16px;background-color:#FFFFCC">AWB No: {{ product.mapped_tracking_no }}<br />
+
+                Shipment Weight: {{ product.applied_weight }} KG
+
+            </div>
+
+            </td>
+
+        </tr>
+
+        <tr>
+
+            <td colspan="3">
+
+                <table id="shipping-labels" class="product">
+
+                    <tr class="heading">
+
+                        <td><b>Product</b></td>
+
+                        <td><b>Model</b></td>
+
+                        <td><b>SKU</b></td>
+
+                        <td align="right"><b>Quantity</b></td>
+
+                        <td align="right"><b>Unit Price</b></td>
+
+                        <td align="right"><b>Total</b></td>
+
+                    </tr>
+
+
+                    <tr>
+
+                        <td>{{ product.name }}
+                        </td>
+
+                        <td>SE</td>
+
+                        <td>{{ product.sku }}</td>
+
+                        <td align="right">{{ product.quantity }}</td>
+
+                        <td align="right">Rs.{{ product.price }}</td>
+
+                        <td align="right">Rs.{{ product.price }}</td>
+
+                    </tr>
+
+
+
+                    <tr>
+
+                        <td align="right" colspan="5"><b>Sub Total:</b></td>
+
+                        <td align="right">Rs.{{ product.price }}</td>
+
+                    </tr>
+
+
+                    <tr>
+
+                        <td align="right" colspan="5"><b>Total:</b></td>
+
+                        <td align="right">Rs.{{ product.price }}</td>
+
+                    </tr>
+
+
+
+
+                </table>
+
+            </td>
+
+        </tr>
+
+        <tr>
+
+            <td colspan="3" style="border-top:1px solid #999999;">
+
+                <div style="float:left;width:70%;">If Undelivered, Return To: <b>{{ product.order.business.business_name }}</b>, C/O: Sendd, {{ product.order.business.warehouse.address_line_1 }},
+                    {{ product.order.business.warehouse.address_line_2 }},,
+                    {{ product.order.business.warehouse.city }},
+                   {{ product.order.business.warehouse.state }},
+                    India,
+                    {{ product.order.business.warehouse.pincode }},
+                    </div>
+
+                <!-- <div style="float:right;"><span style="font-size:14px;font-weight:bold;">RC: </span></div>-->
+
+            </td>
+
+        </tr>
+
+        </tbody></table>
+
+    <!-- End Shipping Label Here -->
+
+</div>
+
+</body>
+<script>
+    window.onload = function(){
+        window.print();
+    };
+
+</script>
+</html>
+

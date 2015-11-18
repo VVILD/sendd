@@ -32,6 +32,11 @@ class PBUser(models.Model):
         return str(self.name)
 
 
+class Checkapp(PBUser):
+    class Meta:
+        proxy = True
+
+
 class PBLocations(models.Model):
     pbuser = models.ForeignKey(PBUser)
     updated_at = models.DateTimeField(auto_now=True)

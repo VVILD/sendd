@@ -37,5 +37,61 @@ $(function () {
 </script>
 </head>
 <body>
+<style>
+table, th, td {
+    border: 1px solid black;
+    border-collapse: collapse;
+}
+th, td {
+    padding: 5px;
+    text-align: left;
+}
+</style>
+
 <div id="container" style="width:100%; height:400px;"></div>
+<table style="width:30%">
+
+<th>Company</th>
+<th>Pickupboy</th>
+
+    <th>Total order</th>
+<th>with barcode</th>
+<th>without barcode</th>
+{% for row in data2 %}
+
+<tr>
+    <td>{{ row.order__business }}</td>
+    <td>{{ row.order__business__pb__name }}</td>
+    <td>{{ row.product_total }}</td>
+    <td>{{ row.barcode_total }}</td>
+    <td>{{ row.without }}</td>
+<td>{{ row.order__business__warehouse__name }}</td>
+</tr>
+{% endfor %}
+</table>
+
+<h2>Yesterday stats</h2>
+
+<table style="width:30%">
+
+<th>Company</th>
+<th>Pickupboy</th>
+
+    <th>Total order</th>
+<th>with barcode</th>
+<th>without barcode</th>
+{% for row in data3 %}
+
+<tr>
+    <td>{{ row.order__business }}</td>
+    <td>{{ row.order__business__pb__name }}</td>
+    <td>{{ row.product_total }}</td>
+    <td>{{ row.barcode_total }}</td>
+    <td>{{ row.without }}</td>
+<td>{{ row.order__business__warehouse__name }}</td>
+</tr>
+{% endfor %}
+</table>
+
+
 </body>

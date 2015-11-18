@@ -266,7 +266,7 @@ class OrderResource(CORSModelResource):
     products = ListField(attribute='products', null=True)
 
     class Meta:
-        queryset = Order.objects.all()
+        queryset = Order.objects.filter(confirmed=True)
         resourcese_name = 'order'
         authorization = OnlyAuthorization()
         # authentication=Authentication()
@@ -350,14 +350,14 @@ class TrackingResource(CORSResource):
                 message="No tracking_id found. Please supply tracking_id as a GET URL parameter")
         elif str(tracking_id).lower().startswith('m'):
             products = Product.objects.filter(order__master_tracking_number=tracking_id).values("real_tracking_no",
-                                                                                                "tracking_data")
+                                                                                                "tracking_data", "company")
             master = True
         elif str(tracking_id).lower().startswith('se'):
-            products = Product.objects.filter(barcode=tracking_id).values("real_tracking_no", "tracking_data", "actual_delivery_timestamp", "estimated_delivery_timestamp")
+            products = Product.objects.filter(barcode=tracking_id).values("real_tracking_no", "tracking_data", "actual_delivery_timestamp", "estimated_delivery_timestamp", "company")
         elif str(tracking_id).lower().startswith('b'):
-            products = Product.objects.filter(real_tracking_no=tracking_id).values("real_tracking_no", "tracking_data", "actual_delivery_timestamp", "estimated_delivery_timestamp")
+            products = Product.objects.filter(real_tracking_no=tracking_id).values("real_tracking_no", "tracking_data", "actual_delivery_timestamp", "estimated_delivery_timestamp", "company")
         else:
-            products = Shipment.objects.filter(real_tracking_no=tracking_id).values("real_tracking_no", "tracking_data", "actual_delivery_timestamp", "estimated_delivery_timestamp")
+            products = Shipment.objects.filter(real_tracking_no=tracking_id).values("real_tracking_no", "tracking_data", "actual_delivery_timestamp", "estimated_delivery_timestamp", "company")
 
         for product in products:
             product['tracking_data'] = json.loads(product['tracking_data'])
@@ -505,20 +505,26 @@ class SearchResource(CORSResource):
         self.throttle_check(request)
 
         tracking_id = request.GET.get('tracking_id', False)
+        username = request.GET.get('username', False)
 
         if not tracking_id:
             raise CustomBadRequest(
                 code="request_invalid",
                 message="No tracking_id found. Please supply tracking_id as a GET parameter")
+        if not username:
+            raise CustomBadRequest(
+                code="request_invalid",
+                message="No username found. Please supply username as a GET parameter")
 
         try:
             tracking_id_int = int(tracking_id)
         except:
             tracking_id_int = 000
-        orders = Order.objects.filter(Q(product__real_tracking_no=tracking_id) | Q(product__barcode=tracking_id) |
+        business = Business.objects.get(username=username)
+        orders = Order.objects.filter((Q(product__real_tracking_no=tracking_id) | Q(product__barcode=tracking_id) |
                                       Q(product__sku=tracking_id) | Q(reference_id=tracking_id) |
                                       Q(third_party_id=tracking_id) | Q(pk=tracking_id_int) |
-                                      Q(master_tracking_number=tracking_id)).distinct().select_related('product_set')
+                                      Q(master_tracking_number=tracking_id)) & ~Q(status='N') & Q(business=business)).distinct().select_related('product_set')
 
         result = []
         for order in orders:
@@ -606,7 +612,7 @@ class InvoiceResource(CORSResource):
                     "cod_cost": product.cod_cost,
                     "return_cost": product.return_cost,
                     "price": product.price,
-                    "remittance": product.remittance,
+                    "remittance": True if product.remittance_status == 'C' else False,
                     "tracking_id": product.real_tracking_no,
                     "quantity": product.quantity
                 })
@@ -614,7 +620,7 @@ class InvoiceResource(CORSResource):
                     product.cod_cost)
                 if product.order.payment_method == 'C' and product.status != 'R':
                     orders[p_order]["total_cod_remittance"] += int(product.price)
-                    if not product.remittance:
+                    if product.remittance_status != 'C':
                         orders[p_order]["total_remittance_pending"] += int(product.price)
             else:
                 orders[p_order] = {
@@ -638,13 +644,13 @@ class InvoiceResource(CORSResource):
                                                    "cod_cost": product.cod_cost,
                                                    "return_cost": product.return_cost,
                                                    "price": product.price,
-                                                   "remittance": product.remittance,
+                                                   "remittance": True if product.remittance_status == 'C' else False,
                                                    "tracking_id": product.real_tracking_no,
                                                    "quantity": product.quantity
                                                }]
                 if product.order.payment_method == 'C' and product.status != 'R':
                     orders[p_order]["total_cod_remittance"] += int(product.price)
-                    if not product.remittance:
+                    if product.remittance_status != 'C':
                         orders[p_order]["total_remittance_pending"] += int(product.price)
 
         bundle = []

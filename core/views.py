@@ -1,4 +1,11 @@
 import json
+import io
+import string
+
+from datetime import datetime, timedelta
+from pytz import timezone
+
+from xlsxwriter.workbook import Workbook
 from PyPDF2 import PdfFileWriter, PdfFileReader, PdfFileMerger
 import cStringIO
 from django.contrib.auth.decorators import login_required
@@ -8,6 +15,7 @@ from django.shortcuts import render, redirect
 import base64
 from businessapp.models import Product
 from businessapp.models import Order as BusinessOrder
+from core.models import EcomAWB
 from core.utils.fedex_legacy_helper import FedexLegacy
 from myapp.models import Order as CustomerOrder
 import core.utils.fedex_api_helper as fedex
@@ -129,8 +137,9 @@ def fedex_view_util(order_pk, client_type):
                     f3 = ContentFile(base64.b64decode(result['COMMERCIAL_INVOICE']))
                     input3 = PdfFileReader(f3, strict=False)
                     output.addPage(input3.getPage(0))
-                    if products[0].order.method == 'B':
-                        output.addPage(input3.getPage(0))
+                    output.addPage(input3.getPage(0))
+                    output.addPage(input3.getPage(0))
+                    if products[0].order.method == 'B' or service_type == "FEDEX_EXPRESS_SAVER":
                         output.addPage(input3.getPage(0))
 
                 if result["shipping_cost"]:
@@ -474,3 +483,113 @@ def schedule_reverse_pickup(request):
     order.save()
 
     return HttpResponse(result, content_type='application/json')
+
+
+
+def create_ecom_shipment(request):
+    shipment_pk = request.GET.get('shipment_pk', None)
+    client_type = request.GET.get('client_type', None)
+    action_type = request.GET.get('type', None)
+
+    if client_type == 'business':
+        product = Product.objects.get(pk=shipment_pk)
+        if action_type == "create":
+            is_cod = False
+            if product.order.payment_method == 'C':
+                is_cod = True
+            if is_cod:
+                awb = EcomAWB.objects.filter(label_type='C', used=False)
+                if awb.count() == 0:
+                    return HttpResponseBadRequest("Ran out of ecom cod awb. Contact tech-support@sendd.co")
+            else:
+                awb = EcomAWB.objects.filter(label_type='P', used=False)
+                if awb.count() == 0:
+                    return HttpResponseBadRequest("Ran out of ecom prepaid awb. Contact tech-support@sendd.co")
+            selected_awb = awb.first()
+            product.mapped_tracking_no = selected_awb.awb
+            product.company = 'E'
+            product.status = 'DI'
+            product.dispatch_time = datetime.now(timezone('Asia/Kolkata'))
+            product.save()
+            selected_awb.used = True
+            selected_awb.save()
+
+            return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
+        if action_type == 'invoice':
+            return render(request, 'ecom_invoice.html', {"product": product})
+
+        if action_type == 'label':
+            return render(request, 'ecom_label.html', {"product": product})
+
+        return HttpResponseBadRequest("Can't recognize the request type")
+
+    else:
+        return HttpResponseBadRequest("Can't recognize the request type")
+
+LETTERS = string.uppercase
+
+
+def excel_style(row, col):
+    """ Convert given row and column number to an Excel-style cell name. """
+    result = []
+    while col:
+        col, rem = divmod(col-1, 26)
+        result[:0] = LETTERS[rem]
+    return ''.join(result) + str(row)
+
+
+def download_ecom_orders(request):
+    date = request.GET.get('date', None)
+    if date is None:
+        return HttpResponseBadRequest("Please provide a valid date")
+
+    output = io.BytesIO()
+    workbook = Workbook(output, {'in_memory': True})
+    worksheet = workbook.add_worksheet()
+
+    # Add a bold format to use to highlight cells.
+    bold = workbook.add_format({'bold': True})
+
+    column_titles = ["Air Waybill number", "Order Number", "Product", "Shipper", "Consignee", "Consignee Address1",
+                     "Consignee Address2", "Consignee Address3", "Destination City", "Pincode", "State", "Mobile",
+                     "Telephone", "Item Description", "Pieces", "Collectable Value", "Declared value",
+                     "Actual Weight(g)", "Volumetric Weight(g)", "Length(cms)", "Breadth(cms)", "Height(cms)",
+                     "Sub Customer ID", "Pickup name", "Pickup Address", "Pickup Phone", "Pickup Pincode",
+                     "Return name", "Return Address", "Return Phone", "Return Pincode"]
+
+    for i, column_title in enumerate(column_titles, 1):
+        cell = excel_style(1, i)
+        worksheet.write(cell, column_title, bold)
+
+    start_date = datetime.strptime(str(date), "%d-%m-%Y")
+    end_date = datetime.strptime(str(date), "%d-%m-%Y") + timedelta(days=1)
+
+    products = Product.objects.filter(status='DI', company='E', mapped_tracking_no__isnull=False,
+                                      dispatch_time__gt=start_date, dispatch_time__lt=end_date).select_related('order')
+
+    for i, product in enumerate(products, 2):
+        product_columns = [product.mapped_tracking_no, product.order.order_no, product.name,
+                           product.order.business.business_name, product.order.name, product.order.address1,
+                           product.order.address2, " ", product.order.city, product.order.pincode,
+                           product.order.state, product.order.phone, product.order.phone, product.name,
+                           product.quantity, product.price, product.price, product.applied_weight, 0, 0, 0, 0, "77492",
+                           product.order.business.business_name + " C/O: Sendd",
+                           product.order.business.warehouse.address_line_1 +
+                           product.order.business.warehouse.address_line_2, "8080028081",
+                           product.order.business.warehouse.pincode,
+                           product.order.business.business_name + " C/O: Sendd",
+                           product.order.business.warehouse.address_line_1 +
+                           product.order.business.warehouse.address_line_2, "8080028081",
+                           product.order.business.warehouse.pincode]
+        for j, product_column in enumerate(product_columns, 1):
+            worksheet.write(excel_style(i, j), product_column)
+
+    workbook.close()
+    output.seek(0)
+
+    response = HttpResponse(output.read(), content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    response['Content-Disposition'] = "attachment; filename=ecom" + date + ".xlsx"
+
+    return response
+
