@@ -97,25 +97,25 @@
         }
 
         .barcode {
-         font-family: 'Code39TextHigh';
-         font-size:70px;
-         position:absolute;
-         top:0;
-         -webkit-margin-before:-103px;}
+            font-family: 'Code39TextHigh';
+            font-size:70px;
+            position:absolute;
+            top:0;
+            -webkit-margin-before:-103px;}
         .barcode_small {
-         font-family: 'Code39TextHigh';
-         font-size:30px;
-         line-height:0;
+            font-family: 'Code39TextHigh';
+            font-size:30px;
+            line-height:0;
         }
         @-moz-document url-prefix() {
-          .barcode_small {line-height:32px;}
+            .barcode_small {line-height:32px;}
 
         }
         p.breakhere {page-break-before: always}
         .label_container {
             width:100%;
             border: solid 1px;
-            }
+        }
         .turn {
             -webkit-transform: rotate(-90deg);
             -moz-transform: rotate(-90deg);
@@ -137,9 +137,9 @@
 
     <div style="background:#CCCCCC;"><h1>Invoice</h1></div>
     {% if product.order.payment_method == 'C' %}
-    <h2>COD SHIPMENT - Collect Only Cash On Delivery</h2><br />
+        <h2>COD SHIPMENT - Collect Only Cash On Delivery</h2><br />
     {% else %}
-    <h2>PREPAID SHIPMENT - Deliver Order Only</h2><br />
+        <h2>PREPAID SHIPMENT - Deliver Order Only</h2><br />
     {% endif %}
 
     <table class="store">
@@ -263,21 +263,21 @@
                 </tr>
 
                 {% if product.order.payment_method == 'C' %}
-                <tr>
+                    <tr>
 
-                    <td><b>Cash On Delivery		</b></td>
+                        <td><b>Cash On Delivery		</b></td>
 
-                    <td></td>
+                        <td></td>
 
-                </tr>
+                    </tr>
                 {% else %}
-                <tr>
+                    <tr>
 
-                  <td><b>Free checkout		</b></td>
+                        <td><b>Free checkout		</b></td>
 
-                  <td></td>
+                        <td></td>
 
-                </tr>
+                    </tr>
                 {% endif %}
 
 
@@ -379,21 +379,21 @@
     </table>
 
 
-{#    <table class="comment">#}
-{##}
-{#        <tr class="heading">#}
-{##}
-{#            <td><b>Comment</b></td>#}
-{##}
-{#        </tr>#}
-{##}
-{#        <tr>#}
-{##}
-{#            <td> Imported Order Id: </td>#}
-{##}
-{#        </tr>#}
-{##}
-{#    </table>#}
+    {#    <table class="comment">#}
+    {##}
+    {#        <tr class="heading">#}
+    {##}
+    {#            <td><b>Comment</b></td>#}
+    {##}
+    {#        </tr>#}
+    {##}
+    {#        <tr>#}
+    {##}
+    {#            <td> Imported Order Id: </td>#}
+    {##}
+    {#        </tr>#}
+    {##}
+    {#    </table>#}
 
 
     <div style="font-size:9px;">
@@ -410,6 +410,12 @@
 
 
 </body>
+<script>
+    window.onload = function(){
+        window.print();
+    };
+
+</script>
 
 </html>
 
