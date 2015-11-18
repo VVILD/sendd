@@ -519,7 +519,7 @@ def download_ecom_orders(request):
         cell = excel_style(1, i)
         worksheet.write(cell, column_title, bold)
 
-    start_date = datetime.strptime(str(date), "%d-%m-%Y") - timedelta(days=1)
+    start_date = datetime.strptime(str(date), "%d-%m-%Y")
     end_date = datetime.strptime(str(date), "%d-%m-%Y") + timedelta(days=1)
 
     products = Product.objects.filter(status='DI', company='E', mapped_tracking_no__isnull=False,
