@@ -297,6 +297,10 @@ class OrderResource3(CORSModelResource):
         try:
             business_obj = Business.objects.get(username=bundle.data['username'])
             bundle.data['business'] = "/bapi/v1/business/" + str(bundle.data['username']) + "/"
+            pickup_addr = AddressDetails.objects.filter(business=business_obj)
+            if pickup_addr.count() == 0:
+                raise ImmediateHttpResponse(HttpBadRequest("No pickupaddress found for the business"))
+            bundle.data['pickup_address'] = pickup_addr.first()
         except Business.DoesNotExist:
             raise ImmediateHttpResponse(HttpBadRequest("Username doesnt exist"))
         except KeyError:
