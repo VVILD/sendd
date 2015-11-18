@@ -9,6 +9,8 @@ from rq import Queue
 from tastypie.utils import trailing_slash
 import time
 from datetime import datetime, timedelta
+
+from businessapp.apiv4 import BusinessPickupAddressResource
 from businessapp.models import *
 from myapp.models import Zipcode, Shipment
 from tastypie.authorization import Authorization
@@ -277,6 +279,7 @@ class BusinessResource(CORSModelResource):
 class OrderResource3(CORSModelResource):
     business = fields.ForeignKey(BusinessResource, 'business', null=True)
     products = fields.ToManyField("businessapp.apiv3.ProductResource3", 'product_set', related_name='product')
+    pickup_address = fields.ForeignKey(BusinessPickupAddressResource, 'pickup_address', null=True)
 
     class Meta:
         queryset = Order.objects.all()
