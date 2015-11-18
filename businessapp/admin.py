@@ -741,16 +741,16 @@ class ProductInline(admin.TabularInline):
 	model = Product
 	form = ProductForm
 	exclude = ['sku', 'weight', 'real_tracking_no', 'tracking_data']
-	readonly_fields = ('product_info', 'weight', 'shipping_cost', 'generate_order', 'dimensions')
+	readonly_fields = ('product_info', 'weight', 'shipping_cost', 'generate_order', 'dimensions', 'ecom')
 	fields = (
-		'product_info', 'name', 'quantity', 'price', 'weight', 'applied_weight', 'is_document','dimensions' ,'generate_order',)
+		'product_info', 'name', 'quantity', 'price', 'weight', 'applied_weight', 'is_document','dimensions' ,'generate_order', 'ecom')
 	extra = 0
 
-	def get_formset(self, request, obj=None, **kwargs):
-		if request.user.is_superuser:
-			self.fields += ('ecom',)
-			self.readonly_fields += ('ecom',)
-		return super(ProductInline, self).get_formset(request, obj, **kwargs)
+	# def get_formset(self, request, obj=None, **kwargs):
+	# 	if request.user.is_superuser:
+	# 		self.fields += ('ecom',)
+	# 		self.readonly_fields += ('ecom',)
+	# 	return super(ProductInline, self).get_formset(request, obj, **kwargs)
 
 	def dimensions(self,obj):
 
