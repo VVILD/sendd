@@ -51,7 +51,7 @@ class Command(BaseCommand):
                                     except:
                                         pass
                             elif row['STATUS'] == 'Return':
-                                product.status = 'R'Minor
+                                product.status = 'R'
                         product.save()
                     mapped_orders.append(order)
                     print("awb {} mapped for order no {} of business {}".format(row["AWB NO"], order.order_no, order.business.business_name))
