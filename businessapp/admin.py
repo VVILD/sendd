@@ -2979,6 +2979,8 @@ class FfApprovedpickupAdmin(FfAddressAdmin):
 
 	def get_form(self, request, obj=None, **kwargs):
 		#tracking=request.GET.get["tracking",None]
+		reschedule=False
+		complete=False
 		reschedule = request.GET.get('reschedule',None)
 		#print self.form
 		complete = request.GET.get('complete',None)
