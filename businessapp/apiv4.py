@@ -128,7 +128,7 @@ class BaseCorsResource(Resource):
           regardless of returning data
           """
         # logger.debug("post detail %s\n%s" (request, **kwargs));
-        response = super(BaseCorsResource, self).post_list(request, **kwargs)
+        response = super(BaseCorsResource, self).post_detail(request, **kwargs)
         return self.add_cors_headers(response, True)
 
     def put_list(self, request, **kwargs):
