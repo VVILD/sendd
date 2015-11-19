@@ -131,7 +131,6 @@ def create_fedex_shipment(request):
 
                 if result["shipping_cost"]:
                     shipping_cost = float(result["shipping_cost"])
-                product.status = 'DI'
                 product.company = 'F'
                 product.save()
 
@@ -400,7 +399,6 @@ def create_individual_fedex_shipment(request):
             fedex_ship_docs_url = str(product.fedex_ship_docs.name).split('/')[-1]
             if result["shipping_cost"]:
                 product.actual_shipping_cost = float(result["shipping_cost"])
-            product.status = 'DI'
             product.company = 'F'
             product.save()
         elif client_type == 'customer':
@@ -465,8 +463,6 @@ def create_ecom_shipment(request):
             selected_awb = awb.first()
             product.mapped_tracking_no = selected_awb.awb
             product.company = 'E'
-            product.status = 'DI'
-            product.dispatch_time = datetime.now(timezone('Asia/Kolkata'))
             product.save()
             selected_awb.used = True
             selected_awb.save()
