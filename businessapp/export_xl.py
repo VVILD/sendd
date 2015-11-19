@@ -72,7 +72,6 @@ class QcProductResource(resources.ModelResource):
 
 class FFOrderResource(resources.ModelResource):
 	mapped_ok = fields.Field()
-	company = fields.Field()
 	no_of_products = fields.Field()
 	cod_or_free= fields.Field()
 	bulk_or_normal= fields.Field()
