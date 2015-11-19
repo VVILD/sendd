@@ -761,6 +761,11 @@ class OrderCancelResource(CORSModelResource):
                 )
             )
 
+        if 'status' in new_data:
+            products = Product.objects.filter(order__pk=original_bundle.data['order_no'])
+            if new_data['status'] == 'N':
+                products.update(status='CA')
+
         return super(OrderCancelResource, self).update_in_place(
             request, original_bundle, new_data
         )
