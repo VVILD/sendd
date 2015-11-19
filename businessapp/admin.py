@@ -2,7 +2,7 @@ from django.contrib.admin.filters import SimpleListFilter
 import urllib
 import json
 from django.contrib.admin import ModelAdmin, RelatedFieldListFilter, BooleanFieldListFilter
-
+import urllib2
 from django.contrib.admin.models import LogEntry, CHANGE
 from django.contrib.contenttypes.models import ContentType
 from random import randint
@@ -240,18 +240,15 @@ def export_as_csv_action(description="Export selected objects as CSV file",
 # <br>
 class BaseBusinessAdmin(reversion.VersionAdmin):
 
-	
-
 	def changelist_view(self, request, extra_context=None):
 		extra_context = extra_context or {}
-
+		warehouse=None
 		cs=False
 		op=False
 		try:
-			print "jkjkjkjkjkjkjkjkjkjk"
-			print "see"
 			profile=Profile.objects.get(user=request.user)
 			usertype=profile.usertype
+			warehouse=profile.warehouse
 			if (usertype=='C'):
 				print "jkjkjkjkjkjkjkjkjkjk"
 				cs=True
@@ -261,24 +258,26 @@ class BaseBusinessAdmin(reversion.VersionAdmin):
 			pass
 		csall=AddressDetails.objects.all().count()
 		threshold_time =datetime.datetime.combine(date.today(),datetime.time(19, 00))
+		if not warehouse:
+			warehouse = Warehouse.objects.all()
 
 
-		a = Business.objects.filter(status='A',is_completed=False).count()
+		a = Business.objects.filter(status='A',warehouse=warehouse,is_completed=False).count()
 
 		csall = AddressDetails.objects.filter().count()
 
-		nap = Order.objects.filter(business__status='N',status='P').count()
-		ap = AddressDetails.objects.filter(status__in=['Y','A'],default_pickup_time__lt=threshold_time).distinct().count()
-		apcs=AddressDetails.objects.filter(status__in=['Y','A','C']).count()
-		d = AddressDetails.objects.filter(daily=True).count()
-		c = Business.objects.filter(status='C').count()
+		nap = Order.objects.filter(business__status='N',status='P',business__warehouse=warehouse).count()
+		ap = AddressDetails.objects.filter(status__in=['Y','A'],default_pickup_time__lt=threshold_time,warehouse=warehouse).distinct().count()
+		apcs=AddressDetails.objects.filter(status__in=['Y','A','C'],warehouse=warehouse).count()
+		d = AddressDetails.objects.filter(daily=True,warehouse=warehouse).count()
+		c = Business.objects.filter(status='C',warehouse=warehouse).count()
 		#pa = Business.objects.filter(order_status='AP').count()
 		#c = Business.objects.filter(order_status='DI').count()
-		p= Order.objects.filter(status='P').count()
-		pu= Order.objects.filter(status='PU').count()
-		di= Order.objects.filter(status='DI').count()
-		un= Order.objects.filter(status__in=['PU','D']).count()
-		picked= AddressDetails.objects.filter(status='C').count()
+		p= Order.objects.filter(status='P',pickup_address__warehouse=warehouse).count()
+		pu= Order.objects.filter(status='PU',pickup_address__warehouse=warehouse).count()
+		di= Order.objects.filter(status='DI',pickup_address__warehouse=warehouse).count()
+		un=Product.objects.filter(Q(order__book_time__gt=datetime.date(2015, 9, 1))&Q(order__pickup_address__warehouse=warehouse) & (Q(order__status__in=['PU','D'])) &(Q(mapped_tracking_no__isnull=True) | Q(mapped_tracking_no__exact="")) ).count()
+		picked= AddressDetails.objects.filter(status='C',warehouse=warehouse).count()
 
 		context = {'cs':cs,'op':op,'nap':nap,'ap':ap,'d':d,'c':c,'p':p,'pu':pu,'di':di,'a':a,'apcs':apcs,'un':un,'picked':picked,'csall':csall}
 		return super(BaseBusinessAdmin, self).changelist_view(request, extra_context=context)
@@ -1087,7 +1086,7 @@ class OrderAdmin(FilterUserAdmin,ImportExportActionModelAdmin):
 		'order_no', 'book_time', 'business_details', 'name', 'status','mapped_ok', 'no_of_products', 'total_shipping_cost',
 		'total_cod_cost', 'method', 'fedex','print_links','payment_method','ff_comment')
 	list_editable = ('ff_comment','status')
-	list_filter = ['business', 'status', 'book_time','product__company','product__return_action','product__dispatch_time']
+	list_filter = ['business', 'status', 'book_time','product__company','product__return_action','product__dispatch_time','pickup_address','product__pickup_time']
 
 	readonly_fields=('master_tracking_number', 'mapped_master_tracking_number', 'fedex')
 
@@ -2798,8 +2797,8 @@ class BaseAddressAdmin(admin.ModelAdmin):
 			'transit': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.pickup_address_id = businessapp_addressdetails.id and businessapp_order.status='D' ",
 			'dispatch': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.pickup_address_id = businessapp_addressdetails.id and businessapp_order.status='DI' ",
 			'pending_today': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.pickup_address_id = businessapp_addressdetails.id and businessapp_order.status='P' and businessapp_order.book_time BETWEEN %s AND %s",
-			'pickedup_today': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.pickup_address_id = businessapp_addressdetails.id and businessapp_order.status='PU' and businessapp_order.book_time BETWEEN %s AND %s",
-			'dispatched_today': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.pickup_address_id = businessapp_addressdetails.id and businessapp_order.status='DI' and businessapp_order.book_time BETWEEN %s AND %s",},
+			'pickedup_today': "SELECT COUNT(DISTINCT businessapp_order.order_no) from businessapp_order LEFT OUTER JOIN businessapp_product on businessapp_order.order_no =businessapp_product.order_id where businessapp_order.pickup_address_id = businessapp_addressdetails.id and businessapp_order.status='PU' and businessapp_product.pickup_time BETWEEN %s AND %s",
+			'dispatched_today': "SELECT COUNT(DISTINCT businessapp_order.order_no) from businessapp_order LEFT OUTER JOIN businessapp_product on businessapp_order.order_no =businessapp_product.order_id where businessapp_order.pickup_address_id = businessapp_addressdetails.id and businessapp_order.status='DI' and businessapp_product.dispatch_time BETWEEN %s AND %s",},
 			select_params=(date_min,date_max,date_min,date_max,date_min,date_max,),
 			)
 
@@ -2808,14 +2807,13 @@ class BaseAddressAdmin(admin.ModelAdmin):
 
 	def changelist_view(self, request, extra_context=None):
 		extra_context = extra_context or {}
-
+		warehouse=None
 		cs=False
 		op=False
 		try:
-			print "jkjkjkjkjkjkjkjkjkjk"
-			print "see"
 			profile=Profile.objects.get(user=request.user)
 			usertype=profile.usertype
+			warehouse=profile.warehouse
 			if (usertype=='C'):
 				print "jkjkjkjkjkjkjkjkjkjk"
 				cs=True
@@ -2825,48 +2823,59 @@ class BaseAddressAdmin(admin.ModelAdmin):
 			pass
 		csall=AddressDetails.objects.all().count()
 		threshold_time =datetime.datetime.combine(date.today(),datetime.time(19, 00))
+		if not warehouse:
+			warehouse = Warehouse.objects.all()
 
 
-		a = Business.objects.filter(status='A',is_completed=False).count()
+		a = Business.objects.filter(status='A',warehouse=warehouse,is_completed=False).count()
 
 		csall = AddressDetails.objects.filter().count()
 
-		nap = Order.objects.filter(business__status='N',status='P').count()
-		ap = AddressDetails.objects.filter(status__in=['Y','A'],default_pickup_time__lt=threshold_time).distinct().count()
-		apcs=AddressDetails.objects.filter(status__in=['Y','A','C']).count()
-		d = AddressDetails.objects.filter(daily=True).count()
-		c = Business.objects.filter(status='C').count()
+		nap = Order.objects.filter(business__status='N',status='P',pickup_address__warehouse=warehouse).count()
+		ap = AddressDetails.objects.filter(status__in=['Y','A'],default_pickup_time__lt=threshold_time,warehouse=warehouse).distinct().count()
+		apcs=AddressDetails.objects.filter(status__in=['Y','A','C'],warehouse=warehouse).count()
+		d = AddressDetails.objects.filter(daily=True,warehouse=warehouse).count()
+		c = Business.objects.filter(status='C',warehouse=warehouse).count()
 		#pa = Business.objects.filter(order_status='AP').count()
 		#c = Business.objects.filter(order_status='DI').count()
-		p= Order.objects.filter(status='P').count()
-		pu= Order.objects.filter(status='PU').count()
-		di= Order.objects.filter(status='DI').count()
-		un= Order.objects.filter(status__in=['PU','D']).count()
-		picked= AddressDetails.objects.filter(status='C').count()
+		p= Order.objects.filter(status='P',pickup_address__warehouse=warehouse).count()
+		pu= Order.objects.filter(status='PU',pickup_address__warehouse=warehouse).count()
+		di= Order.objects.filter(status='DI',pickup_address__warehouse=warehouse).count()
+		un=Product.objects.filter(Q(order__book_time__gt=datetime.date(2015, 9, 1))&Q(order__pickup_address__warehouse=warehouse) & (Q(order__status__in=['PU','D'])) &(Q(mapped_tracking_no__isnull=True) | Q(mapped_tracking_no__exact="")) ).count()
+		picked= AddressDetails.objects.filter(status='C',warehouse=warehouse).count()
 
 		context = {'cs':cs,'op':op,'nap':nap,'ap':ap,'d':d,'c':c,'p':p,'pu':pu,'di':di,'a':a,'apcs':apcs,'un':un,'picked':picked,'csall':csall}
 		return super(BaseAddressAdmin, self).changelist_view(request, extra_context=context)
 
 
 	def business_details(self, obj):
-		return '<a href="/admin/businessapp/business/%s/">%s</a>' % (obj.business.username, obj.business.business_name)
+		try:
+			return '<a href="/admin/businessapp/business/%s/">%s</a>' % (obj.business.username, obj.business.business_name)
+		except:
+			return 'No business'
 	business_details.allow_tags = True
 	pass
 
 
 class CsAddressAdmin(BaseAddressAdmin):
-	search_fields = ['business','address','pincode','city']
+	search_fields = ['business__username','business__business_name','address','pincode','city']
 	list_filter = ['business__username','business__business_name','default_pickup_time']
-	list_display = ['__str__','business_details','warehouse','default_pickup_time','default_vehicle','cs_comment','default_vehicle','status']
+	list_display = ['pickup_address','business_details','warehouse','default_pickup_time','default_vehicle','cs_comment','status']
 	list_editable=['cs_comment','default_vehicle']
-
+	def pickup_address(self,obj):
+		return str(obj.company_name) + "<br>" +str(obj.address)
+	pickup_address.allow_tags = True
 
 class FfAddressAdmin(BaseAddressAdmin):
-	search_fields = ['business','address','pincode','city']
+	search_fields = ['business__username','business__business_name','address','pincode','city']
 	list_filter = ['business__username','business__business_name','default_pickup_time']
-	list_display = ['__str__','business_details','warehouse','default_pickup_time','pb','cs_comment','ff_comment','default_vehicle','status']
+	list_display = ['pickup_address','business_details','warehouse','default_pickup_time','pb','cs_comment','ff_comment','default_vehicle','status']
 	raw_id_fields = ['pb']
 	list_editable = ['pb','ff_comment']
+	def pickup_address(self,obj):
+		return str(obj.company_name) + "<br>" +str(obj.address)
+	pickup_address.allow_tags = True
+
 
 class CsApprovedpickupAdmin(CsAddressAdmin):
 	def get_queryset(self, request):
@@ -2943,8 +2952,15 @@ class FfApprovedpickupAdmin(FfAddressAdmin):
 
 	list_display = FfAddressAdmin.list_display + ['tasks','pending']
 
-	def pending(self,obj):
-		return obj.pending
+	def pending(self, obj):
+
+		return '<a href="/admin/businessapp/pendingorder/?q=&pickup_address__id__exact=%s"> %s </a>' % (
+			obj.pk, obj.pending)
+
+	pending.allow_tags = True
+	pending.admin_order_field='pending'
+
+
 
 	def tasks(self,obj):
 		return '<a href="/admin/businessapp/ffapprovedpickup/%s/?reschedule=True" onclick="return showAddAnotherPopup(this);">reschedule</a><br><a href="/admin/businessapp/ffapprovedpickup/%s/?complete=True" onclick="return showAddAnotherPopup(this);">complete</a> ' % (obj.pk,obj.pk)
@@ -3013,22 +3029,25 @@ admin.site.register(FFApprovedPickup,FfApprovedpickupAdmin)
 class FFCompletedPickupAdmin(FfAddressAdmin):
 
 	list_display = FfAddressAdmin.list_display +['pending_orders_total','pickedup_orders','dispatched_orders']
+	list_display.remove('status')
+	list_display.remove('default_vehicle')
+	list_display.remove('default_pickup_time')
 
 	def pending_orders_total(self, obj):
 
-		return '<a href="/admin/businessapp/order/?q=&business__username__exact=%s&status__exact=P"> %s </a>' % (
-			obj.business.username, obj.pending)
+		return '<a href="/admin/businessapp/pendingorder/?q=&pickup_address__id__exact=%s"> %s </a>' % (
+			obj.pk, obj.pending)
 
 	pending_orders_total.allow_tags = True
 	pending_orders_total.admin_order_field='pending'
 
 	def pickedup_orders(self, obj):
-		return '<a href="/admin/businessapp/order/?q=&business__username__exact=%s&status__exact=PU"> %s </a>' % (obj.business.username, obj.pickedup_today)
+		return '<a href="/admin/businessapp/pickedorder/?q=&pickup_address__id__exact=%s&status__exact=PU&product__pickup_time__gte=%s&product__pickup_time__lt=%s"> %s </a>' % (obj.pk,urllib2.quote(str(date.today())+str(' 00:00:00+05:30')),urllib2.quote(str(date.today()+datetime.timedelta(days=1))+str(' 00:00:00+05:30')), obj.pickedup_today)
 	pickedup_orders.allow_tags = True
 	pickedup_orders.admin_order_field='pickedup_today'
 
 	def dispatched_orders(self, obj):
-		return '<a href="/admin/businessapp/order/?q=&business__username__exact=%s&status__exact=DI"> %s </a>' % (obj.business.username, obj.dispatched_today)
+		return '<a href="/admin/businessapp/dispatchedorder/?q=&pickup_address__id__exact=%s&product__dispatch_time__gte=%s&product__dispatch_time__lt=%s"> %s </a>' % (obj.pk,urllib2.quote(str(date.today())+str(' 00:00:00+05:30')),urllib2.quote(str(date.today()+datetime.timedelta(days=1))+str(' 00:00:00+05:30')), obj.dispatched_today)
 	dispatched_orders.allow_tags = True
 	dispatched_orders.admin_order_field='dispatched_today'
 
@@ -3096,6 +3115,23 @@ class PendingOrderAdmin(OrderAdmin):
 
 admin.site.register(PendingOrder,PendingOrderAdmin)
 
+
+class PickedOrderAdmin(OrderAdmin):
+	new_list=list(OrderAdmin.list_display)
+	new_list.remove('mapped_ok')
+	new_list.remove('total_cod_cost')
+	new_list.remove('total_shipping_cost')
+	list_display = new_list
+
+	def get_queryset(self, request):
+		#threshold_time =datetime.datetime.combine(date.today(),datetime.time(19, 00))
+		qs = super(OrderAdmin, self).queryset(request)
+		qs = qs.filter(status='PU')
+		return qs
+
+
+
+admin.site.register(PickedOrder,PickedOrderAdmin)
 
 class DispatchedOrderAdmin(OrderAdmin):
 

@@ -30,6 +30,7 @@ class Profile(models.Model):
     usertype = models.CharField(max_length=1, choices=(
     ('O', 'ops'), ('B', 'bd'), ('A', 'admin'), ('Q', 'qc'), ('C', 'customer support'),),
                                 null=True, blank=True)
+    warehouse = models.ForeignKey(Warehouse, null=True, blank=True)
 
     def __unicode__(self):
         return str(self.user.username)
@@ -467,6 +468,11 @@ class Order(models.Model):
 class PendingOrder(Order):
     class Meta:
         proxy = True
+
+class PickedOrder(Order):
+    class Meta:
+        proxy = True
+
 
 class DispatchedOrder(Order):
     class Meta:
