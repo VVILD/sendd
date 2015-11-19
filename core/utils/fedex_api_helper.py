@@ -78,13 +78,13 @@ def create_shipment(sender, receiver, item, FEDEX_CONFIG_OBJ, service_type, sequ
 
     else:
         shipment.RequestedShipment.Shipper.Contact.PersonName = str(sender['sender_details']['contact_person'])
-        shipment.RequestedShipment.Shipper.Contact.CompanyName = str(sender['sender_details']['company_name'])
         shipment.RequestedShipment.Shipper.Contact.PhoneNumber = str(sender['sender_details']['phone_office'])
         sender_address = textwrap.wrap(text=str(sender['sender_details']['address']), width=35)
-        if len(sender_address) > 2:
-            raise ValidationError("Sender Address Length > 90 chars")
+        if len(sender_address) > 3:
+            raise ValidationError("Sender Address Length > 130 chars")
         if len(sender_address) > 1:
-            shipment.RequestedShipment.Shipper.Address.StreetLines = [sender_address[0:]]
+            shipment.RequestedShipment.Shipper.Contact.CompanyName = str(sender_address[0])
+            shipment.RequestedShipment.Shipper.Address.StreetLines = [sender_address[1:]]
         else:
             shipment.RequestedShipment.Shipper.Address.StreetLines = [sender_address[0]]
         shipment.RequestedShipment.Shipper.Address.City = str(sender['sender_details']['city'])
