@@ -261,27 +261,29 @@ class BaseBusinessAdmin(reversion.VersionAdmin):
 		if not warehouse:
 			warehouse = Warehouse.objects.all()
 
+		todays_date=date.today()
+		today_min=datetime.datetime.combine(todays_date, datetime.time.min)
+		today_max = datetime.datetime.combine(todays_date, datetime.time.max)
 
 		a = Business.objects.filter(status='A',warehouse=warehouse,is_completed=False).count()
 
 		csall = AddressDetails.objects.filter().count()
 
-		nap = Order.objects.filter(business__status='N',status='P',business__warehouse=warehouse).count()
+		nap = Order.objects.filter(book_time__gt=today_min,book_time__lt=today_max,business__status='N',status='P',pickup_address__warehouse=warehouse).count()
 		ap = AddressDetails.objects.filter(status__in=['Y','A'],default_pickup_time__lt=threshold_time,warehouse=warehouse).distinct().count()
 		apcs=AddressDetails.objects.filter(status__in=['Y','A','C'],warehouse=warehouse).count()
 		d = AddressDetails.objects.filter(daily=True,warehouse=warehouse).count()
 		c = Business.objects.filter(status='C',warehouse=warehouse).count()
 		#pa = Business.objects.filter(order_status='AP').count()
 		#c = Business.objects.filter(order_status='DI').count()
-		p= Order.objects.filter(status='P',pickup_address__warehouse=warehouse).count()
-		pu= Order.objects.filter(status='PU',pickup_address__warehouse=warehouse).count()
-		di= Order.objects.filter(status='DI',pickup_address__warehouse=warehouse).count()
+		p= Order.objects.filter(book_time__gt=today_min,book_time__lt=today_max,status='P',pickup_address__warehouse=warehouse).count()
+		pu= Order.objects.filter(pickup_time__gt=today_min,pickup_time__lt=today_max,status='PU',pickup_address__warehouse=warehouse).count()
+		di= Order.objects.filter(dispatch_time__gt=today_min,dispatch_time__lt=today_max,status='DI',pickup_address__warehouse=warehouse).count()
 		un=Product.objects.filter(Q(order__book_time__gt=datetime.date(2015, 9, 1))&Q(order__pickup_address__warehouse=warehouse) & (Q(order__status__in=['PU','D'])) &(Q(mapped_tracking_no__isnull=True) | Q(mapped_tracking_no__exact="")) ).count()
 		picked= AddressDetails.objects.filter(status='C',warehouse=warehouse).count()
 
 		context = {'cs':cs,'op':op,'nap':nap,'ap':ap,'d':d,'c':c,'p':p,'pu':pu,'di':di,'a':a,'apcs':apcs,'un':un,'picked':picked,'csall':csall}
 		return super(BaseBusinessAdmin, self).changelist_view(request, extra_context=context)
-
 
 
 
@@ -2826,21 +2828,24 @@ class BaseAddressAdmin(admin.ModelAdmin):
 		if not warehouse:
 			warehouse = Warehouse.objects.all()
 
+		todays_date=date.today()
+		today_min=datetime.datetime.combine(todays_date, datetime.time.min)
+		today_max = datetime.datetime.combine(todays_date, datetime.time.max)
 
 		a = Business.objects.filter(status='A',warehouse=warehouse,is_completed=False).count()
 
 		csall = AddressDetails.objects.filter().count()
 
-		nap = Order.objects.filter(business__status='N',status='P',pickup_address__warehouse=warehouse).count()
+		nap = Order.objects.filter(book_time__gt=today_min,book_time__lt=today_max,business__status='N',status='P',pickup_address__warehouse=warehouse).count()
 		ap = AddressDetails.objects.filter(status__in=['Y','A'],default_pickup_time__lt=threshold_time,warehouse=warehouse).distinct().count()
 		apcs=AddressDetails.objects.filter(status__in=['Y','A','C'],warehouse=warehouse).count()
 		d = AddressDetails.objects.filter(daily=True,warehouse=warehouse).count()
 		c = Business.objects.filter(status='C',warehouse=warehouse).count()
 		#pa = Business.objects.filter(order_status='AP').count()
 		#c = Business.objects.filter(order_status='DI').count()
-		p= Order.objects.filter(status='P',pickup_address__warehouse=warehouse).count()
-		pu= Order.objects.filter(status='PU',pickup_address__warehouse=warehouse).count()
-		di= Order.objects.filter(status='DI',pickup_address__warehouse=warehouse).count()
+		p= Order.objects.filter(book_time__gt=today_min,book_time__lt=today_max,status='P',pickup_address__warehouse=warehouse).count()
+		pu= Order.objects.filter(pickup_time__gt=today_min,pickup_time__lt=today_max,status='PU',pickup_address__warehouse=warehouse).count()
+		di= Order.objects.filter(dispatch_time__gt=today_min,dispatch_time__lt=today_max,status='DI',pickup_address__warehouse=warehouse).count()
 		un=Product.objects.filter(Q(order__book_time__gt=datetime.date(2015, 9, 1))&Q(order__pickup_address__warehouse=warehouse) & (Q(order__status__in=['PU','D'])) &(Q(mapped_tracking_no__isnull=True) | Q(mapped_tracking_no__exact="")) ).count()
 		picked= AddressDetails.objects.filter(status='C',warehouse=warehouse).count()
 
@@ -2977,7 +2982,7 @@ class FfApprovedpickupAdmin(FfAddressAdmin):
 	def get_queryset(self, request):
 		threshold_time =datetime.datetime.combine(date.today(),datetime.time(19, 00))
 		qs = super(FfAddressAdmin, self).queryset(request)
-		qs = qs.filter((Q(status='Y')|Q(status='A')),default_pickup_time__lt=threshold_time).distinct()
+		qs = qs.filter((Q(status='Y')|Q(status='A'))).order_by('-status').distinct()
 		return qs
 
 	def response_change(self, request, obj):

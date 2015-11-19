@@ -30,7 +30,7 @@ class Profile(models.Model):
     usertype = models.CharField(max_length=1, choices=(
     ('O', 'ops'), ('B', 'bd'), ('A', 'admin'), ('Q', 'qc'), ('C', 'customer support'),),
                                 null=True, blank=True)
-    warehouse = models.ForeignKey(Warehouse, null=True, blank=True)
+    warehouse = models.ManyToManyField(Warehouse, null=True, blank=True)
 
     def __unicode__(self):
         return str(self.user.username)
@@ -241,7 +241,7 @@ class AddressDetails(models.Model):
                               choices=(('Y', 'approved'), ('N', 'not approved'), ('A', 'alloted'),('C', 'complete'),),
                               null=True, blank=True,
                               default='N')
-    default_pickup_time = models.DateTimeField(null=True, blank=True)
+    default_pickup_time = models.DateTimeField()
     default = models.BooleanField(default=False)
     warehouse = models.ForeignKey(Warehouse, null=True, blank=True)
     daily = models.BooleanField(default=False)
