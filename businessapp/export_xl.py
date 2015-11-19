@@ -77,12 +77,43 @@ class FFOrderResource(resources.ModelResource):
 
 	class Meta:
 		model = Order
-		fields = ('order_no','book_time','business__business_name','city','pincode','name','mapped_ok','no_of_products','company','ff_comment')
-		export_order = ('order_no','book_time','business__business_name','city','pincode','name','mapped_ok','no_of_products','company','ff_comment')
+		fields = ('tracking_list','company_list','dispatched_date','order_no','book_time','business__business_name','city','pincode','name','mapped_ok','no_of_products','bulk_or_normal','cod_or_free','ff_comment','address1','reference_id','address2')
 
-	def dispatched_date(self,order):
+	def dehydrate_bulk_or_normal(self,order):
+		return order.get_method_display()
+
+	def dehydrate_cod_or_free(self,order):
+		return order.get_payment_method_display()
+
+
+	def dehydrate_dispatched_date(self,order):
 		products=Product.objects.filter(order=order)
 		return_string=''
+		for product in products:
+			if (product.dispatch_time):
+				return_string=return_string+str(product.dispatch_time)+','
+
+
+		return return_string
+
+	def dehydrate_company_list(self,order):
+		products=Product.objects.filter(order=order)
+		return_string=''
+		for product in products:
+			if (product.company):
+				return_string=return_string+str(product.get_company_display())+','
+
+
+		return return_string
+
+
+	def dehydrate_tracking_list(self,order):
+		products=Product.objects.filter(order=order)
+		return_string=''
+		for product in products:
+			if (product.mapped_tracking_no):
+				return_string=return_string+str(product.mapped_tracking_no)+','
+
 
 		return return_string
 
@@ -99,11 +130,6 @@ class FFOrderResource(resources.ModelResource):
 	def dehydrate_no_of_products(self, order):
 		return Product.objects.filter(order=order).count()
 
-	def dehydrate_company(self, order):
-		try:
-			return order.product_set.first().get_company_display()
-		except:
-			return "no product"
 
 
 # 1.Order No.
