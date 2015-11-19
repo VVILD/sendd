@@ -80,6 +80,13 @@ class FFOrderResource(resources.ModelResource):
 		fields = ('order_no','book_time','business__business_name','city','pincode','name','mapped_ok','no_of_products','company','ff_comment')
 		export_order = ('order_no','book_time','business__business_name','city','pincode','name','mapped_ok','no_of_products','company','ff_comment')
 
+	def dispatched_date(self,order):
+		products=Product.objects.filter(order=order)
+		return_string=''
+
+		return return_string
+
+
 	def dehydrate_mapped_ok(self,order):
 		products=Product.objects.filter(order=order)
 		mapped_ok=True
