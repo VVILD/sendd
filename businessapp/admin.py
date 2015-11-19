@@ -277,8 +277,8 @@ class BaseBusinessAdmin(reversion.VersionAdmin):
 		#pa = Business.objects.filter(order_status='AP').count()
 		#c = Business.objects.filter(order_status='DI').count()
 		p= Order.objects.filter(book_time__gt=today_min,book_time__lt=today_max,status='P',pickup_address__warehouse=warehouse).count()
-		pu= Order.objects.filter(pickup_time__gt=today_min,pickup_time__lt=today_max,status='PU',pickup_address__warehouse=warehouse).count()
-		di= Order.objects.filter(dispatch_time__gt=today_min,dispatch_time__lt=today_max,status='DI',pickup_address__warehouse=warehouse).count()
+		pu= Order.objects.filter(product__pickup_time__gt=today_min,pickup_time__lt=today_max,status='PU',pickup_address__warehouse=warehouse).count()
+		di= Order.objects.filter(product__dispatch_time__gt=today_min,dispatch_time__lt=today_max,status='DI',pickup_address__warehouse=warehouse).count()
 		un=Product.objects.filter(Q(order__book_time__gt=datetime.date(2015, 9, 1))&Q(order__pickup_address__warehouse=warehouse) & (Q(order__status__in=['PU','D'])) &(Q(mapped_tracking_no__isnull=True) | Q(mapped_tracking_no__exact="")) ).count()
 		picked= AddressDetails.objects.filter(status='C',warehouse=warehouse).count()
 
@@ -2846,8 +2846,8 @@ class BaseAddressAdmin(admin.ModelAdmin):
 		#pa = Business.objects.filter(order_status='AP').count()
 		#c = Business.objects.filter(order_status='DI').count()
 		p= Order.objects.filter(book_time__gt=today_min,book_time__lt=today_max,status='P',pickup_address__warehouse=warehouse).count()
-		pu= Order.objects.filter(pickup_time__gt=today_min,pickup_time__lt=today_max,status='PU',pickup_address__warehouse=warehouse).count()
-		di= Order.objects.filter(dispatch_time__gt=today_min,dispatch_time__lt=today_max,status='DI',pickup_address__warehouse=warehouse).count()
+		pu= Order.objects.filter(product__pickup_time__gt=today_min,pickup_time__lt=today_max,status='PU',pickup_address__warehouse=warehouse).count()
+		di= Order.objects.filter(product__dispatch_time__gt=today_min,dispatch_time__lt=today_max,status='DI',pickup_address__warehouse=warehouse).count()
 		un=Product.objects.filter(Q(order__book_time__gt=datetime.date(2015, 9, 1))&Q(order__pickup_address__warehouse=warehouse) & (Q(order__status__in=['PU','D'])) &(Q(mapped_tracking_no__isnull=True) | Q(mapped_tracking_no__exact="")) ).count()
 		picked= AddressDetails.objects.filter(status='C',warehouse=warehouse).count()
 
