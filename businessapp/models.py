@@ -31,7 +31,6 @@ class Profile(models.Model):
     ('O', 'ops'), ('B', 'bd'), ('A', 'admin'), ('Q', 'qc'), ('C', 'customer support'),),
                                 null=True, blank=True)
     #warehouse = models.ManyToManyField(Warehouse, null=True, blank=True)
-    warehouse = models.ForeignKey(Warehouse, null=True, blank=True)
     def __unicode__(self):
         return str(self.user.username)
 
