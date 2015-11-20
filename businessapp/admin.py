@@ -269,21 +269,25 @@ class BaseBusinessAdmin(reversion.VersionAdmin):
 
 		csall = AddressDetails.objects.filter().count()
 
-		nap = Order.objects.filter(book_time__gt=today_min,book_time__lt=today_max,business__status='N',status='P',pickup_address__warehouse=warehouse).count()
+		nap = Order.objects.filter(book_time__gt=today_min,book_time__lt=today_max,business__status='N',status='P',pickup_address__warehouse=warehouse).distinct().count()
 		ap = AddressDetails.objects.filter(status__in=['Y','A'],default_pickup_time__lt=threshold_time,warehouse=warehouse).distinct().count()
 		apcs=AddressDetails.objects.filter(status__in=['Y','A','C'],warehouse=warehouse).count()
 		d = AddressDetails.objects.filter(daily=True,warehouse=warehouse).count()
 		c = Business.objects.filter(status='C',warehouse=warehouse).count()
 		#pa = Business.objects.filter(order_status='AP').count()
 		#c = Business.objects.filter(order_status='DI').count()
-		p= Order.objects.filter(book_time__gt=today_min,book_time__lt=today_max,status='P',pickup_address__warehouse=warehouse).count()
-		pu= Order.objects.filter(product__pickup_time__gt=today_min,product__pickup_time__lt=today_max,status='PU',pickup_address__warehouse=warehouse).count()
-		di= Order.objects.filter(product__dispatch_time__gt=today_min,product__dispatch_time__lt=today_max,status='DI',pickup_address__warehouse=warehouse).count()
-		un=Product.objects.filter(Q(order__book_time__gt=datetime.date(2015, 9, 1))&Q(order__pickup_address__warehouse=warehouse) & (Q(order__status__in=['PU','D'])) &(Q(mapped_tracking_no__isnull=True) | Q(mapped_tracking_no__exact="")) ).count()
+		p= Order.objects.filter(book_time__gt=today_min,book_time__lt=today_max,status='P',pickup_address__warehouse=warehouse).distinct().count()
+		pu= Order.objects.filter(product__pickup_time__gt=today_min,product__pickup_time__lt=today_max,status='PU',pickup_address__warehouse=warehouse).distinct().count()
+		di= Order.objects.filter(product__dispatch_time__gt=today_min,product__dispatch_time__lt=today_max,status='DI',pickup_address__warehouse=warehouse).distinct().count()
+		un=Product.objects.filter(Q(order__book_time__gt=datetime.date(2015, 9, 1))&Q(order__pickup_address__warehouse=warehouse) & (Q(order__status__in=['PU','D'])) &(Q(mapped_tracking_no__isnull=True) | Q(mapped_tracking_no__exact="")) ).distinct().count()
 		picked= AddressDetails.objects.filter(status='C',warehouse=warehouse).count()
 
 
-		context = {'cs':cs,'op':op,'nap':nap,'ap':ap,'d':d,'c':c,'p':p,'pu':pu,'di':di,'a':a,'apcs':apcs,'un':un,'picked':picked,'csall':csall}
+		date_max=urllib2.quote(str(date.today()+datetime.timedelta(days=1))+str(' 00:00:00+05:30'))
+		date_min=urllib2.quote(str(date.today())+str(' 00:00:00+05:30'))
+
+
+		context = {'cs':cs,'op':op,'nap':nap,'ap':ap,'d':d,'c':c,'p':p,'pu':pu,'di':di,'a':a,'apcs':apcs,'un':un,'picked':picked,'csall':csall,'date_max':date_max,'date_min':date_min}
 
 		return super(BaseBusinessAdmin, self).changelist_view(request, extra_context=context)
 
@@ -2838,20 +2842,22 @@ class BaseAddressAdmin(admin.ModelAdmin):
 
 		csall = AddressDetails.objects.filter().count()
 
-		nap = Order.objects.filter(book_time__gt=today_min,book_time__lt=today_max,business__status='N',status='P',pickup_address__warehouse=warehouse).count()
+		nap = Order.objects.filter(book_time__gt=today_min,book_time__lt=today_max,business__status='N',status='P',pickup_address__warehouse=warehouse).distinct().count()
 		ap = AddressDetails.objects.filter(status__in=['Y','A'],default_pickup_time__lt=threshold_time,warehouse=warehouse).distinct().count()
 		apcs=AddressDetails.objects.filter(status__in=['Y','A','C'],warehouse=warehouse).count()
 		d = AddressDetails.objects.filter(daily=True,warehouse=warehouse).count()
 		c = Business.objects.filter(status='C',warehouse=warehouse).count()
 		#pa = Business.objects.filter(order_status='AP').count()
 		#c = Business.objects.filter(order_status='DI').count()
-		p= Order.objects.filter(book_time__gt=today_min,book_time__lt=today_max,status='P',pickup_address__warehouse=warehouse).count()
-		pu= Order.objects.filter(product__pickup_time__gt=today_min,product__pickup_time__lt=today_max,status='PU',pickup_address__warehouse=warehouse).count()
-		di= Order.objects.filter(product__dispatch_time__gt=today_min,product__dispatch_time__lt=today_max,status='DI',pickup_address__warehouse=warehouse).count()
-		un=Product.objects.filter(Q(order__book_time__gt=datetime.date(2015, 9, 1))&Q(order__pickup_address__warehouse=warehouse) & (Q(order__status__in=['PU','D'])) &(Q(mapped_tracking_no__isnull=True) | Q(mapped_tracking_no__exact="")) ).count()
+		p= Order.objects.filter(book_time__gt=today_min,book_time__lt=today_max,status='P',pickup_address__warehouse=warehouse).distinct().count()
+		pu= Order.objects.filter(product__pickup_time__gt=today_min,product__pickup_time__lt=today_max,status='PU',pickup_address__warehouse=warehouse).distinct().count()
+		di= Order.objects.filter(product__dispatch_time__gt=today_min,product__dispatch_time__lt=today_max,status='DI',pickup_address__warehouse=warehouse).distinct().count()
+		un=Product.objects.filter(Q(order__book_time__gt=datetime.date(2015, 9, 1))&Q(order__pickup_address__warehouse=warehouse) & (Q(order__status__in=['PU','D'])) &(Q(mapped_tracking_no__isnull=True) | Q(mapped_tracking_no__exact="")) ).distinct().count()
 		picked= AddressDetails.objects.filter(status='C',warehouse=warehouse).count()
 
-		context = {'cs':cs,'op':op,'nap':nap,'ap':ap,'d':d,'c':c,'p':p,'pu':pu,'di':di,'a':a,'apcs':apcs,'un':un,'picked':picked,'csall':csall}
+		date_max=urllib2.quote(str(date.today()+datetime.timedelta(days=1))+str(' 00:00:00+05:30'))
+		date_min=urllib2.quote(str(date.today())+str(' 00:00:00+05:30'))
+		context = {'cs':cs,'op':op,'nap':nap,'ap':ap,'d':d,'c':c,'p':p,'pu':pu,'di':di,'a':a,'apcs':apcs,'un':un,'picked':picked,'csall':csall,'date_min':date_min,'date_max':date_max}
 		return super(BaseAddressAdmin, self).changelist_view(request, extra_context=context)
 
 
@@ -3007,7 +3013,7 @@ class FfApprovedpickupAdmin(FfAddressAdmin):
 		reschedule = request.GET.get('reschedule',None)
 		#print self.form
 		complete = request.GET.get('complete',None)
-
+		self.fieldsets=()
 		if reschedule:
 			self.fieldsets = (
 				('Basic Information', {'fields': ['default_pickup_time']}),
@@ -3049,6 +3055,7 @@ class FFCompletedPickupAdmin(FfAddressAdmin):
 	pending_orders_total.admin_order_field='pending'
 
 	def pickedup_orders(self, obj):
+		urllib2.quote(str(date.today())+str(' 00:00:00+05:30')),urllib2.quote(str(date.today()+datetime.timedelta(days=1))+str(' 00:00:00+05:30'))
 		return '<a href="/admin/businessapp/pickedorder/?q=&pickup_address__id__exact=%s&status__exact=PU&product__pickup_time__gte=%s&product__pickup_time__lt=%s"> %s </a>' % (obj.pk,urllib2.quote(str(date.today())+str(' 00:00:00+05:30')),urllib2.quote(str(date.today()+datetime.timedelta(days=1))+str(' 00:00:00+05:30')), obj.pickedup_today)
 	pickedup_orders.allow_tags = True
 	pickedup_orders.admin_order_field='pickedup_today'
