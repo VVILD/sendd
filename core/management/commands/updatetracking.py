@@ -60,7 +60,6 @@ class Command(BaseCommand):
 
 	FEDEX_CONFIGS = [FEDEX_CONFIG_INDIA, FEDEX_CONFIG_INTRA_MUMBAI]
 
-	logging.basicConfig(level=logging.INFO)
 
 	@staticmethod
 	def remove_non_ascii_1(raw_text):
@@ -69,10 +68,7 @@ class Command(BaseCommand):
 
 	@staticmethod
 	def is_dtdc_complete(awbno):
-		command = "curl 'http://dtdc.in/tracking/tracking_results.asp' -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.80 Safari/537.36' --data 'Ttype=awb_no&strCnno=" + str(awbno) + "'"
-
-
-		import subprocess as sub
+		command = "curl 'http://dtdc.in/tracking/tracking_results.asp' -H 'Origin': 'chrome-extension://hgmloofddffdnphfgcellkdfbfbjeloo' -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.80 Safari/537.36' --data 'Ttype=awb_no&strCnno=" + str(awbno) + "'"
 
 		p = sub.Popen(command,stdout=sub.PIPE,stderr=sub.PIPE,shell=True)
 		output, errors = p.communicate()
@@ -91,7 +87,7 @@ class Command(BaseCommand):
 
 	@staticmethod
 	def make_request(awbno):
-		command = "curl 'http://dtdc.in/tracking/tracking_results_detail.asp' --data 'tracktype=D&shipno=" + str(awbno) + "'"
+		command = "curl 'http://dtdc.in/tracking/tracking_results_detail.asp' -H 'Origin': 'chrome-extension://hgmloofddffdnphfgcellkdfbfbjeloo' --data 'tracktype=D&shipno=" + str(awbno) + "'"
 		p = sub.Popen(command,stdout=sub.PIPE,stderr=sub.PIPE,shell=True)
 		output, errors = p.communicate()
 		return output
@@ -394,15 +390,18 @@ class Command(BaseCommand):
 		try:
 			html = self.make_request(str(product.mapped_tracking_no))
 			if(html != "error"):
+				#print html
 				soup = BeautifulSoup(html,'html.parser')
 
 				#print soup
 
 				all_the_tables = soup.find_all(id="box-table-a")
+				#print all_the_tables
+				#print len(all_the_tables)
 				tracking_table = all_the_tables[2]
 				#print all_the_tables[1]
 
-
+				print tracking_table
 				tracking_data = []
 				table_rows = tracking_table.find_all('tbody')[0].find_all('tr')
 
@@ -425,7 +424,7 @@ class Command(BaseCommand):
 				#     tracking_data.append(row)
 					# if "delivered" in row["status"].lower():
 					#     completed=True
-
+				print tracking_data
 				result = {
 					"company": company,
 					"tracking_no": product.mapped_tracking_no,
@@ -440,18 +439,23 @@ class Command(BaseCommand):
 				"updated": False,
 				"error": str(e)
 			}
-
+		completed=self.is_dtdc_complete(product.mapped_tracking_no)
 		if json.dumps(tracking_data) != '[]':
 			Product.objects.filter(pk=product.pk).update(tracking_data=json.dumps(tracking_data))
-			try:
-				completed=self.is_dtdc_complete(product.mapped_tracking_no)
-			except:
-				pass
+
 
 		if (completed):
-			Product.objects.filter(pk=product.pk).update(status='C')
+			#Product.objects.filter(pk=product.pk).update(status='C')
 			order = product.order
 			# getting all products of that order
+			temp_obj=Product.objects.get(pk=product.pk)
+			tracking_data=json.loads(temp_obj.tracking_data)
+			tracking_data.append({
+								"status": 'Delivered',
+								"date": (datetime.datetime.now()).strftime('%Y-%m-%d %H:%M:%S'),
+								"location": "recipient city"
+							})
+			Product.objects.filter(pk=product.pk).update(status='C',tracking_data=str(tracking_data))
 
 			if client_type == 'customer':
 				specific_products = Shipment.objects.filter(order=order)
