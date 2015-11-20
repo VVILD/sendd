@@ -1123,6 +1123,7 @@ class OrderAdmin(FilterUserAdmin,ImportExportActionModelAdmin):
 		#messages.error(request, "Error for "+ str(intersection.first().business_name))
 		for product in product_queryset:
 			product.status='PU'
+			product.pickup_time=datetime.datetime.now()
 			product.save()
 
 	make_pickedup.short_description = "make pickedup of selected orders"
