@@ -2868,13 +2868,17 @@ class BaseAddressAdmin(admin.ModelAdmin):
 		except:
 			return 'No business'
 	business_details.allow_tags = True
-	pass
 
+	def pickup_time(self,obj):
+		if obj.temp_time:
+			return obj.temp_time
+		else:
+			return obj.default_pickup_time
 
 class CsAddressAdmin(BaseAddressAdmin):
 	search_fields = ['business__username','business__business_name','address','pincode','city']
 	list_filter = ['business__username','business__business_name','default_pickup_time']
-	list_display = ['pickup_address','business_details','warehouse','default_pickup_time','default_vehicle','cs_comment','status']
+	list_display = ['pickup_address','business_details','warehouse','pickup_time','default_vehicle','cs_comment','status']
 	list_editable=['cs_comment','default_vehicle']
 	def pickup_address(self,obj):
 		return str(obj.company_name) + "<br>" +str(obj.address)
@@ -2883,7 +2887,7 @@ class CsAddressAdmin(BaseAddressAdmin):
 class FfAddressAdmin(BaseAddressAdmin):
 	search_fields = ['business__username','business__business_name','address','pincode','city']
 	list_filter = ['business__username','business__business_name','default_pickup_time']
-	list_display = ['pickup_address','business_details','warehouse','default_pickup_time','pb','cs_comment','ff_comment','default_vehicle','status']
+	list_display = ['pickup_address','business_details','warehouse','pickup_time','pb','cs_comment','ff_comment','default_vehicle','status']
 	raw_id_fields = ['pb']
 	list_editable = ['pb','ff_comment']
 	def pickup_address(self,obj):
@@ -3017,7 +3021,7 @@ class FfApprovedpickupAdmin(FfAddressAdmin):
 		self.fieldsets=()
 		if reschedule:
 			self.fieldsets = (
-				('Basic Information', {'fields': ['default_pickup_time']}),
+				('Basic Information', {'fields': ['temp_time']}),
 			)
 			#print "inside"
 		elif complete:
@@ -3032,6 +3036,9 @@ class FfApprovedpickupAdmin(FfAddressAdmin):
 		if obj.pb and obj.status=='Y':
 			obj.status='A'
 			obj.save()
+		elif not obj.pb and obj.status=='A':
+			obj.status='Y'
+			obj.save()
 		else:
 			obj.save()
 
@@ -3045,7 +3052,7 @@ class FFCompletedPickupAdmin(FfAddressAdmin):
 	list_display = FfAddressAdmin.list_display +['pending_orders_total','pickedup_orders','dispatched_orders']
 	list_display.remove('status')
 	list_display.remove('default_vehicle')
-	list_display.remove('default_pickup_time')
+	list_display.remove('pickup_time')
 
 	def pending_orders_total(self, obj):
 
