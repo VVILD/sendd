@@ -432,6 +432,13 @@ class Command(BaseCommand):
 					"updated": True,
 					"error": False
 				}
+			else:
+				result = {
+					"company": company,
+					"tracking_no": product.mapped_tracking_no,
+					"updated": True,
+					"error": html
+				}
 
 		except Exception as e:
 			result = {
