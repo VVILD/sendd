@@ -5,6 +5,7 @@ import urllib2
 
 from django.conf.urls import url
 from django.core import serializers
+from django.db.models import Q
 from tastypie import fields
 from tastypie.authorization import Authorization
 from tastypie.authentication import Authentication
@@ -90,9 +91,9 @@ class PickupboyResource(Resource):
         result = []
         customer_pending_orders = CustomerOrder.objects.filter(pb__phone=pb_ph, order_status='A',
                                                                date=datetime.date.today()).order_by("time")
-        business_pending_orders = BusinessOrder.objects.filter(pickup_address__pb__phone=pb_ph, status='P',
-                                                               pickup_address__is_completed=False)
-        alloted_businesses = AddressDetails.objects.filter(pb__phone=pb_ph, is_completed=False).exclude(order__status='P')
+        business_pending_orders = BusinessOrder.objects.filter(Q(pickup_address__pb__phone=pb_ph) | Q(status='P') |
+                                                               ~Q(pickup_address__status='C'))
+        alloted_businesses = AddressDetails.objects.filter(Q(pb__phone=pb_ph) | ~Q(status='C')).exclude(order__status='P')
 
         for order in business_pending_orders:
             business = Business.objects.get(pk=order.business.pk)
@@ -111,7 +112,7 @@ class PickupboyResource(Resource):
                 })
             order_transformed = {
                 "b_business_name": order.pickup_address.company_name,
-                "b_username": order.business.username,
+                "b_username": order.pickup_address.pk,
                 "b_address": order.pickup_address.address,
                 "b_contact_mob": order.pickup_address.phone_mobile,
                 "b_contact_office": order.pickup_address.phone_office,
@@ -139,7 +140,7 @@ class PickupboyResource(Resource):
         for business in alloted_businesses:
             order_transformed = {
                 "b_business_name": business.company_name,
-                "b_username": business.business.username,
+                "b_username": business.pk,
                 "b_address": business.address,
                 "b_contact_mob": business.phone_mobile,
                 "b_contact_office": business.phone_office,
