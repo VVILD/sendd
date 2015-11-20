@@ -89,11 +89,11 @@ class PickupboyResource(Resource):
                 code="request_invalid",
                 message="No pickupboy found. Please supply pb_ph as a GET parameter")
         result = []
-        customer_pending_orders = CustomerOrder.objects.filter(pb__phone=pb_ph, order_status='A',
-                                                               date=datetime.date.today()).order_by("time")
-        business_pending_orders = BusinessOrder.objects.filter(Q(pickup_address__pb__phone=pb_ph) | Q(status='P') |
+        # customer_pending_orders = CustomerOrder.objects.filter(pb__phone=pb_ph, order_status='A',
+        #                                                        date=datetime.date.today()).order_by("time")
+        business_pending_orders = BusinessOrder.objects.filter(Q(pickup_address__pb__phone=pb_ph) & Q(status='P') &
                                                                ~Q(pickup_address__status='C'))
-        alloted_businesses = AddressDetails.objects.filter(Q(pb__phone=pb_ph) | ~Q(status='C')).exclude(order__status='P')
+        alloted_businesses = AddressDetails.objects.filter(Q(pb__phone=pb_ph) & ~Q(status='C')).exclude(order__status='P')
 
         for order in business_pending_orders:
             business = Business.objects.get(pk=order.business.pk)
@@ -112,7 +112,7 @@ class PickupboyResource(Resource):
                 })
             order_transformed = {
                 "b_business_name": order.pickup_address.company_name,
-                "b_username": order.pickup_address.pk,
+                "b_username": str(order.pickup_address.pk),
                 "b_address": order.pickup_address.address,
                 "b_contact_mob": order.pickup_address.phone_mobile,
                 "b_contact_office": order.pickup_address.phone_office,
@@ -140,7 +140,7 @@ class PickupboyResource(Resource):
         for business in alloted_businesses:
             order_transformed = {
                 "b_business_name": business.company_name,
-                "b_username": business.pk,
+                "b_username": str(business.pk),
                 "b_address": business.address,
                 "b_contact_mob": business.phone_mobile,
                 "b_contact_office": business.phone_office,
@@ -163,69 +163,69 @@ class PickupboyResource(Resource):
                 "shipments": []
             }
             result.append(detailed_order)
-        for order in customer_pending_orders:
-            shipments = []
-            for shipment in Shipment.objects.filter(order=order, status='P'):
-                # drop_address = Address.objects.filter(pk=shipment.drop_address.pk)
-                drop_address = None
-                if shipment.drop_address is not None:
-                    drop_address = {
-                        "drop_address_flat_no": shipment.drop_address.flat_no,
-                        "drop_address_locality": shipment.drop_address.locality,
-                        "drop_address_city": shipment.drop_address.city,
-                        "drop_address_state": shipment.drop_address.state,
-                        "drop_address_pincode": shipment.drop_address.pincode,
-                        "drop_address_country": shipment.drop_address.country,
-                        "drop_address_pk": shipment.drop_address.pk
-                    }
-                full_img_uri = None
-                if shipment.img:
-                    shipment_name = str(shipment.img.name)
-                    full_img_uri = request.build_absolute_uri('/static/' + shipment_name.split('/')[-1])
-                shipments.append({
-                    "cost_of_courier": shipment.cost_of_courier,
-                    "category": shipment.category,
-                    "drop_address": drop_address,
-                    "drop_name": shipment.drop_name,
-                    "drop_phone": shipment.drop_phone,
-                    "img": full_img_uri,
-                    "item_name": shipment.item_name,
-                    "weight": shipment.weight,
-                    "price": shipment.price,
-                    "barcode": shipment.barcode,
-                    "real_tracking_no": shipment.real_tracking_no
-                })
-            promocode_type = None
-            promocode_amount = None
-            promocode_code = None
-            promocode_msg = None
-            if order.promocode:
-                if order.promocode.promocode_type:
-                    promocode_type = order.promocode.promocode_type
-                    promocode_code = order.promocode.code
-                    promocode_msg = order.promocode.msg
-                if order.promocode.promocode_amount:
-                    promocode_amount = order.promocode.promocode_amount
-            order_repr = {
-                "address": order.address,
-                "flat_no": order.flat_no,
-                "name": Namemail.objects.get(pk=order.namemail.pk).name,
-                "pincode": order.pincode,
-                "pickup_time": order.time,
-                "user": order.user,
-                "promocode_type": promocode_type,
-                "promocode_amount": promocode_amount,
-                "promocode_msg": promocode_msg,
-                "promocode_code": promocode_code,
-                "book_time": order.book_time
-            }
-            detailed_order = {
-                "type": "b2c",
-                "order": order_repr,
-                "shipments": shipments
-            }
-            if len(detailed_order['shipments']) > 0:
-                result.append(detailed_order)
+        # for order in customer_pending_orders:
+        #     shipments = []
+        #     for shipment in Shipment.objects.filter(order=order, status='P'):
+        #         # drop_address = Address.objects.filter(pk=shipment.drop_address.pk)
+        #         drop_address = None
+        #         if shipment.drop_address is not None:
+        #             drop_address = {
+        #                 "drop_address_flat_no": shipment.drop_address.flat_no,
+        #                 "drop_address_locality": shipment.drop_address.locality,
+        #                 "drop_address_city": shipment.drop_address.city,
+        #                 "drop_address_state": shipment.drop_address.state,
+        #                 "drop_address_pincode": shipment.drop_address.pincode,
+        #                 "drop_address_country": shipment.drop_address.country,
+        #                 "drop_address_pk": shipment.drop_address.pk
+        #             }
+        #         full_img_uri = None
+        #         if shipment.img:
+        #             shipment_name = str(shipment.img.name)
+        #             full_img_uri = request.build_absolute_uri('/static/' + shipment_name.split('/')[-1])
+        #         shipments.append({
+        #             "cost_of_courier": shipment.cost_of_courier,
+        #             "category": shipment.category,
+        #             "drop_address": drop_address,
+        #             "drop_name": shipment.drop_name,
+        #             "drop_phone": shipment.drop_phone,
+        #             "img": full_img_uri,
+        #             "item_name": shipment.item_name,
+        #             "weight": shipment.weight,
+        #             "price": shipment.price,
+        #             "barcode": shipment.barcode,
+        #             "real_tracking_no": shipment.real_tracking_no
+        #         })
+        #     promocode_type = None
+        #     promocode_amount = None
+        #     promocode_code = None
+        #     promocode_msg = None
+        #     if order.promocode:
+        #         if order.promocode.promocode_type:
+        #             promocode_type = order.promocode.promocode_type
+        #             promocode_code = order.promocode.code
+        #             promocode_msg = order.promocode.msg
+        #         if order.promocode.promocode_amount:
+        #             promocode_amount = order.promocode.promocode_amount
+        #     order_repr = {
+        #         "address": order.address,
+        #         "flat_no": order.flat_no,
+        #         "name": Namemail.objects.get(pk=order.namemail.pk).name,
+        #         "pincode": order.pincode,
+        #         "pickup_time": order.time,
+        #         "user": order.user,
+        #         "promocode_type": promocode_type,
+        #         "promocode_amount": promocode_amount,
+        #         "promocode_msg": promocode_msg,
+        #         "promocode_code": promocode_code,
+        #         "book_time": order.book_time
+        #     }
+        #     detailed_order = {
+        #         "type": "b2c",
+        #         "order": order_repr,
+        #         "shipments": shipments
+        #     }
+        #     if len(detailed_order['shipments']) > 0:
+        #         result.append(detailed_order)
 
         result.sort(key=lambda item: (item['order']['pickup_time']))
 
