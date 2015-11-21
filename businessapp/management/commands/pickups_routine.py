@@ -15,6 +15,10 @@ class Command(BaseCommand):
 
 
     def handle(self, *args, **options):
+
+        import pytz
+        ads=pytz.timezone('Asia/Kolkata')
+
         completed_pickups=AddressDetails.objects.filter(status='C')
         completed_pickups.update(status='N',temp_time=None)
 
@@ -24,7 +28,7 @@ class Command(BaseCommand):
 
         not_done_pickups2=AddressDetails.objects.filter(status__in=['Y','A'],default_pickup_time__lt=datetime.datetime.now(),temp_time=None)
         for p in not_done_pickups2:
-            p.default_pickup_time=datetime.datetime.combine(date.today(), p.default_pickup_time.time())
+            p.default_pickup_time=datetime.datetime.combine(date.today(), p.default_pickup_time.astimezone(ads).time())
             p.save()
 
 
