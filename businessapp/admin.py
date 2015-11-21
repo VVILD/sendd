@@ -248,9 +248,8 @@ class BaseBusinessAdmin(reversion.VersionAdmin):
 		try:
 			profile=Profile.objects.get(user=request.user)
 			usertype=profile.usertype
-			warehouse=profile.warehouse
+			warehouse=profile.warehouse.all()
 			if (usertype=='C'):
-				print "jkjkjkjkjkjkjkjkjkjk"
 				cs=True
 			if (usertype=='O'):
 				op=True
@@ -1047,9 +1046,22 @@ class FilterUserAdmin(BaseBusinessAdmin):
 
 
 	def get_queryset(self, request):
+		qs = super(FilterUserAdmin, self).queryset(request)
+
+
 		try:
-			qs = super(FilterUserAdmin, self).queryset(request)
-			print "queryyyset"
+			profile=Profile.objects.get(user=request.user)
+			warehouse=profile.warehouse.all()
+
+		except:
+			warehouse=Warehouse.objects.all()
+
+		if not warehouse:
+			warehouse=Warehouse.objects.all()
+
+		qs=qs.filter(pickup_address__warehouse=warehouse)
+
+		try:
 
 			profile=Profile.objects.get(user=request.user)
 
@@ -1375,6 +1387,7 @@ admin.site.register(ReverseOrder, ReverseOrderAdmin)
 class ProxyProductAdmin(BaseBusinessAdmin,ImportExportActionModelAdmin):
 	list_per_page=100
 
+
 	change_list_template='businessapp/templates/admin/businessapp/change_list.html'
 	list_display = ('order_no','get_business','sent_to','city','pincode','time',"applied_weight","mapped_tracking_no","company","ff")
 	list_editable = ("mapped_tracking_no","company")
@@ -1387,7 +1400,19 @@ class ProxyProductAdmin(BaseBusinessAdmin,ImportExportActionModelAdmin):
 	order_no.admin_order_field = 'order'
 
 	def get_queryset(self, request):
-		return self.model.objects.filter(Q(order__book_time__gt=datetime.date(2015, 9, 1)) & (Q(order__status__in=['PU','D'])) &(Q(mapped_tracking_no__isnull=True) | Q(mapped_tracking_no__exact=""))).select_related('order','order__business')
+		try:
+			profile=Profile.objects.get(user=request.user)
+			warehouse=profile.warehouse.all()
+
+		except:
+			warehouse=Warehouse.objects.all()
+
+		if not warehouse:
+			warehouse=Warehouse.objects.all()
+
+		print warehouse
+
+		return self.model.objects.filter(Q(order__pickup_address__warehouse=warehouse) & Q(order__book_time__gt=datetime.date(2015, 9, 1)) & (Q(order__status__in=['PU','D'])) &(Q(mapped_tracking_no__isnull=True) | Q(mapped_tracking_no__exact=""))).select_related('order','order__business')
 
 	def get_readonly_fields(self, request, obj=None):
 		return [f.name for f in self.model._meta.fields]
@@ -2798,9 +2823,20 @@ class BaseAddressAdmin(admin.ModelAdmin):
 		date_max = datetime.datetime.combine(todays_date, datetime.time.max)
 		date_min = datetime.datetime.combine(todays_date, datetime.time.min)
 
+		try:
+			profile=Profile.objects.get(user=request.user)
+			warehouse=profile.warehouse.all()
 
+		except:
+			warehouse=Warehouse.objects.all()
 
-		return AddressDetails.objects.extra(select={
+		if not warehouse:
+			warehouse=Warehouse.objects.all()
+
+		# qs = super(CsAddressAdmin, self).queryset(request)
+		# qs = qs.filter(status__in=['Y','A','C'])
+		#
+		return AddressDetails.objects.filter(warehouse=warehouse).extra(select={
 			'pending': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.pickup_address_id = businessapp_addressdetails.id and businessapp_order.status='P' ",
 			'picked': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.pickup_address_id = businessapp_addressdetails.id and businessapp_order.status='PU' ",
 			'transit': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.pickup_address_id = businessapp_addressdetails.id and businessapp_order.status='D' ",
@@ -2822,7 +2858,7 @@ class BaseAddressAdmin(admin.ModelAdmin):
 		try:
 			profile=Profile.objects.get(user=request.user)
 			usertype=profile.usertype
-			warehouse=profile.warehouse
+			warehouse=profile.warehouse.all()
 			if (usertype=='C'):
 				print "jkjkjkjkjkjkjkjkjkjk"
 				cs=True
