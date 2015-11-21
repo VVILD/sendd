@@ -309,12 +309,12 @@ class Command(BaseCommand):
 			b = 0
 			c = 0
 
-			while s < len(col): #This loop is used to split the date and location
-				date.append(col[s].split(','))
+			while s+2 < len(col): #This loop is used to split the date and location
+				date.append(col[s+1].split(','))
 				s += 2
 
 			while a < len(date): #This adds all the items to the list
-				data.append(date[a][0].strip()), data.append(date[a][1].strip()), data.append(col[b + 1])
+				data.append(date[a][0].strip()), data.append(date[a][1].strip()), data.append(col[b])
 				exp_date.append(date[a][0])
 				b += 2
 				a += 1
