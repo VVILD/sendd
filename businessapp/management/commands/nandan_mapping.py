@@ -50,7 +50,7 @@ class Command(BaseCommand):
                                         print("Delivery date captured {}".format(row['DELIVERY DATE']))
                                     except:
                                         pass
-                            elif row['STATUS'] == 'Return':
+                            elif row['STATUS'] == 'RTO':
                                 product.status = 'R'
                         product.save()
                     mapped_orders.append(order)
