@@ -3,7 +3,7 @@ from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 from django.db import models
 # from django.contrib.auth.models import User
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, time
 from geopy.distance import vincenty
 from geopy.geocoders import googlev3
 from pytz import timezone
@@ -448,7 +448,7 @@ class Order(models.Model):
             if self.pickup_address.status=='N':
                 self.pickup_address.status='Y'
 
-                cutoff_time=datetime.combine(date.today(), datetime.time(19, 00))
+                cutoff_time=datetime.combine(date.today(), time(19, 00))
                 if self.pickup_address.default_pickup_time:
                     if (datetime.now() > cutoff_time):
                         self.pickup_address.default_pickup_time=datetime.combine(date.today()+timedelta(days=1) , self.pickup_address.default_pickup_time.time())
