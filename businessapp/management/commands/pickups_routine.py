@@ -22,3 +22,11 @@ class Command(BaseCommand):
         not_done_pickups.update(temp_time=None)
 
 
+        not_done_pickups2=AddressDetails.objects.filter(status__in=['Y','A'],default_pickup_time__lt=datetime.datetime.now(),temp_time=None)
+        for p in not_done_pickups2:
+            p.default_pickup_time=datetime.datetime.combine(date.today(), p.default_pickup_time.time())
+            p.save()
+
+
+
+
