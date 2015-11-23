@@ -452,7 +452,7 @@ class Order(models.Model):
                 if self.pickup_address.default_pickup_time:
                     if (datetime.now() > cutoff_time):
                         self.pickup_address.default_pickup_time=datetime.combine(date.today()+timedelta(days=1) , self.pickup_address.default_pickup_time.time())
-                    elif (datetime.now().time() >self.pickup_address.default_pickup_time):
+                    elif (datetime.now().time() >self.pickup_address.default_pickup_time.time()):
                         self.pickup_address.temp_time = datetime.now()
                     elif (datetime.now().time() < self.pickup_address.default_pickup_time):
                         self.pickup_address.default_pickup_time=datetime.combine(date.today(), self.pickup_address.default_pickup_time.time())
