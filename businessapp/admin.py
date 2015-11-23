@@ -14,7 +14,7 @@ from django.utils.timezone import localtime
 from daterange_filter.filter import DateRangeFilter
 from django.contrib import admin
 from .models import *
-from businessapp.forms import NewQcCommentForm,NewTrackingStatus,OrderForm,NewReturnForm,Approveconfirmform,AddressForm,Completeconfirmform,ReverseTimeForm
+from businessapp.forms import NewQcCommentForm,NewTrackingStatus,OrderForm,NewReturnForm,Approveconfirmform,AddressForm,Completeconfirmform,ReverseTimeForm,Newpickupform
 from datetime import date,timedelta
 import reversion
 
@@ -2813,6 +2813,7 @@ admin.site.register(Bdheadpanel,BdheadAdmin)
 
 class BaseAddressAdmin(admin.ModelAdmin):
 
+	form = Newpickupform
 	def get_queryset(self, request):
 #total_order
 #pick_order
@@ -2942,6 +2943,7 @@ class CsApprovedpickupAdmin(CsAddressAdmin):
 admin.site.register(CSApprovedPickup,CsApprovedpickupAdmin)
 
 class CSAllPickupAdmin(CsAddressAdmin):
+	form=Newpickupform
 	actions = None
 	list_display = CsAddressAdmin.list_display + ['approve']
 
