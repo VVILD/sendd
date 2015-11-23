@@ -156,6 +156,7 @@ class ProfileInline(admin.StackedInline):
 	model = Profile
 	can_delete = False
 	verbose_name_plural = 'profile'
+	filter_horizontal =('warehouse',)
 
 # Define a new User admin
 class UserAdmin(UserAdmin):

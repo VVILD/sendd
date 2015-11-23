@@ -14,7 +14,7 @@ from django.forms import extras
 from django.utils.timezone import localtime
 
 class NewQcCommentForm(ModelForm):
-	new_comment=forms.CharField(max_length=100,required=False)
+	new_comment=forms.CharField(widget=forms.Textarea,required=False)
 	class Meta:
 		model = Product
 		widgets = {
