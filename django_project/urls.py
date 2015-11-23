@@ -138,7 +138,3 @@ urlpatterns = patterns('',
     url(r'^barcode_fedex_print/(?P<barcode>[\w]{10})/$', barcode_fedex_redirector, name='fedex_barcode_redirector'),
     url(r'^download_ecom_orders/', download_ecom_orders, name='download_ecom_orders'),
 )
-
-urlpatterns += patterns('',
-    (r'^django-rq/', include('django_rq.urls')),
-)
