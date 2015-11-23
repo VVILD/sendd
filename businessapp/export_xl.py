@@ -5,20 +5,20 @@ from datetime import timedelta
 import json
 from django.db.models import Avg, Count, F, Max, Min, Sum, Q, Prefetch
 class ProductResource(resources.ModelResource):
-	last_status = fields.Field()
-	last_date = fields.Field()
+	# last_status = fields.Field()
+	# last_date = fields.Field()
 	class Meta:
 		model = Product
 		import_id_fields = ('order_id',)
-		fields = ('order','order__book_time','order__reference_id','order__payment_method','order__name','order__city','order__pincode', 'real_tracking_no', 'mapped_tracking_no', 'company','status','last_tracking_status','weight','applied_weight','barcode','order__method','name','price','remittance','remittance_date','ff_comment','last_status','last_date','order__address1','order__address2')
+		fields = ('order','order__book_time','order__reference_id','order__payment_method','order__name','order__city','order__pincode', 'real_tracking_no', 'mapped_tracking_no', 'company','status','last_tracking_status','weight','applied_weight','barcode','order__method','name','price','remittance','remittance_date','ff_comment','order__address1','order__address2')
 
 
-	def dehydrate_last_status(self, product):
-		return json.loads(product.tracking_data)[-1]['status']
+	# def dehydrate_last_status(self, product):
+	# 	return json.loads(product.tracking_data)[-1]['status']
 
 
-	def dehydrate_last_date(self, product):
-		return json.loads(product.tracking_data)[-1]['date']
+	# def dehydrate_last_date(self, product):
+	# 	return json.loads(product.tracking_data)[-1]['date']
 
 	def dehydrate_ff_comment(self, product):
 		return product.order.ff_comment
