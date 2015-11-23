@@ -1,14 +1,8 @@
-import base64
-from urllib import urlencode, urlopen
-from PyPDF2 import PdfFileWriter, PdfFileReader
-import cStringIO
 from django.conf.urls import url
-from django.core.files.base import ContentFile
-from django.core.mail import EmailMessage
-from rq import Queue
 from tastypie.utils import trailing_slash
 
 from businessapp.models import *
+from businessapp.tasks import send_business_labels
 from myapp.models import Zipcode, Shipment
 
 from tastypie import fields
@@ -26,7 +20,6 @@ from tastypie.authorization import Authorization
 from tastypie.exceptions import Unauthorized, BadRequest
 from pickupboyapp.exceptions import CustomBadRequest
 
-import django_rq
 
 class urlencodeSerializer(Serializer):
     formats = ['json', 'jsonp', 'xml', 'yaml', 'html', 'plist', 'urlencode']
@@ -452,62 +445,6 @@ class OrderPatchReferenceResource(CORSModelResource):
         return self.create_response(request, bundle)
 
 
-def send_business_labels(db_objs, business_obj):
-    output = PdfFileWriter()
-    name = business_obj.business_name
-    phone = business_obj.contact_mob
-    address = business_obj.get_full_address()
-    for db_obj in db_objs:
-        name2 = db_obj.name
-        address2 = db_obj.get_full_address()
-        phone2 = db_obj.phone
-        s_method = db_obj.method
-        p_method = db_obj.get_payment_method_display()
-        date = str(db_obj.book_time.date())
-        order_no = db_obj.order_no
-
-        for product in db_obj.product_set.all():
-            description = product.name
-            weight = product.weight
-            price = product.price
-            sku = db_obj.reference_id
-            trackingid = product.real_tracking_no
-            params = urlencode({
-                "name": name,
-                "name2": name2,
-                "phone": phone,
-                "phone2": phone2,
-                "address": address,
-                "address2": address2,
-                "s_method": s_method,
-                "p_method": p_method,
-                "date": date,
-                "order_no": order_no,
-                "description": description,
-                "weight": weight,
-                "price": price,
-                "reference_id": sku,
-                "trackingid": trackingid
-            })
-
-            response = urlopen("http://128.199.210.166/email_businesslabel.php?%s" % params).read()
-            f1 = ContentFile(base64.b64decode(response))
-            input1 = PdfFileReader(f1, strict=False)
-            output.addPage(input1.getPage(0))
-
-
-    outputStream = cStringIO.StringIO()
-    output.write(outputStream)
-
-    message = EmailMessage('Your shipping labels have arrived - Sendd',
-                           'Hi {}, \n\n We have attached the shipping labels for the selected order/orders. \n\n '.format(business_obj.business_name) +
-                           'Thanks for choosing Sendd,\n Team Sendd',
-                           'order@sendd.co',
-                           [business_obj.email],
-                           headers={'Reply-To': 'no-reply@sendd.co'})
-    message.attach(str(business_obj.username)+"_"+str(datetime.now())+'.pdf', outputStream.getvalue(), 'application/pdf')
-    message.send(fail_silently=True)
-
 class EmailLabelsResource(CORSModelResource):
     class Meta:
         resource_name = 'email_labels'
@@ -552,7 +489,7 @@ class EmailLabelsResource(CORSModelResource):
         if db_objs.count() == 0:
             return self.create_response(request, {"success": False, "message": "No labels to create"})
 
-        django_rq.enqueue(send_business_labels, db_objs, business_obj)
+        send_business_labels.delay(db_objs, business_obj)
 
         self.log_throttled_access(request)
         return self.create_response(request, {"success": True, "message": "Labels created"})

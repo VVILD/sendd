@@ -405,7 +405,7 @@ class Command(BaseCommand):
 				tracking_table = all_the_tables[2]
 				#print all_the_tables[1]
 
-				print tracking_table
+				# print tracking_table
 				tracking_data = []
 				table_rows = tracking_table.find_all('tbody')[0].find_all('tr')
 
@@ -428,7 +428,7 @@ class Command(BaseCommand):
 				#     tracking_data.append(row)
 					# if "delivered" in row["status"].lower():
 					#     completed=True
-				print tracking_data
+				# print tracking_data
 				result = {
 					"company": company,
 					"tracking_no": product.mapped_tracking_no,
