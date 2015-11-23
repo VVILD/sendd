@@ -59,7 +59,7 @@ class ReverseTimeForm(ModelForm):
 					raise forms.ValidationError("latest_available time should be 3 hours ahead of ready time")
 
 				var= str((localtime(self.cleaned_data['reverse_pickup_timedate'])).replace(tzinfo=None).isoformat())
-				url= "/fedex_pickup_scheduler/?order_no={}&ready_timestamp={}&business_closetime={}".format(obj.pk,var,str(obj.reverse_latest_available_time))
+#				url= "/fedex_pickup_scheduler/?order_no={}&ready_timestamp={}&business_closetime={}".format(obj.pk,var,str(obj.reverse_latest_available_time))
 
 
                 # if self.cleaned_data['status']!='R':
