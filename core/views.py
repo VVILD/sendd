@@ -1,9 +1,7 @@
 import io
 import string
-
 from datetime import datetime, timedelta
 from pytz import timezone
-
 from xlsxwriter.workbook import Workbook
 from PyPDF2 import PdfFileWriter, PdfFileReader, PdfFileMerger
 import cStringIO
@@ -35,12 +33,12 @@ def create_fedex_shipment(request):
         products = Product.objects.filter(order__pk=order_pk).select_related('order')
         package_count = products.count()
         items = [{
-                    "name": p.name,
-                    "weight": p.applied_weight,
-                    "price": p.price,
-                    "quantity": p.quantity,
-                    "is_doc": p.is_document
-                } for p in products]
+                     "name": p.name,
+                     "weight": p.applied_weight,
+                     "price": p.price,
+                     "quantity": p.quantity,
+                     "is_doc": p.is_document
+                 } for p in products]
         total_docs = sum(i['is_doc'] for i in items)
         total_weight = sum(i['weight'] for i in items)
         total_price = sum(i['price'] for i in items)
@@ -48,7 +46,8 @@ def create_fedex_shipment(request):
         if products[0].order.payment_method == 'C':
             is_cod = True
         service_type, config = fedex.get_service_type(str(products[0].order.method), total_price,
-                                                          total_weight, products[0].order.city, is_cod)
+                                                      total_weight, products[0].order.city, products[0].order.pincode,
+                                                      is_cod)
         for idx, product in enumerate(products, start=1):
             sender_details = None
             warehouse = None
@@ -97,14 +96,14 @@ def create_fedex_shipment(request):
                     "quantity": product.quantity,
                     "is_doc": product.is_document
                 }]
-            result = fedex.create_shipment(sender, receiver, item, config, service_type, idx, package_count, master_tracking_no)
+            result = fedex.create_shipment(sender, receiver, item, config, service_type, idx, package_count,
+                                           master_tracking_no)
             if result['status'] != 'ERROR':
                 if product.mapped_tracking_no:
                     product.tracking_history = str(product.tracking_history) + ',' + str(product.mapped_tracking_no)
                 product.mapped_tracking_no = result['tracking_number']
                 if idx == 1:
                     master_tracking_no = result['tracking_number']
-
 
                 f1 = ContentFile(base64.b64decode(result['OUTBOUND_LABEL']))
                 input1 = PdfFileReader(f1, strict=False)
@@ -174,7 +173,7 @@ def create_fedex_shipment(request):
             receiver_country_code = 'IN'
             is_business_receiver = False
             service_type, config = fedex.get_service_type(str(shipment.category), float(shipment.cost_of_courier),
-                                                          float(item_weight), receiver_city)
+                                                          float(item_weight), receiver_city, receiver_pincode)
             item_price = shipment.cost_of_courier
             sender = {
                 "is_cod": False,
@@ -194,10 +193,10 @@ def create_fedex_shipment(request):
             }
             if idx == 1:
                 item = [{
-                    "name": s.item_name,
-                    "weight": s.weight,
-                    "price": s.cost_of_courier
-                } for s in shipments]
+                            "name": s.item_name,
+                            "weight": s.weight,
+                            "price": s.cost_of_courier
+                        } for s in shipments]
             else:
                 item = [{
                     "name": shipment.item_name,
@@ -205,11 +204,12 @@ def create_fedex_shipment(request):
                     "price": shipment.cost_of_courier
                 }]
 
-            result = fedex.create_shipment(sender, receiver, item, config, service_type, idx, package_count, master_tracking_no)
+            result = fedex.create_shipment(sender, receiver, item, config, service_type, idx, package_count,
+                                           master_tracking_no)
             if result['status'] != 'ERROR':
 
                 if shipment.mapped_tracking_no:
-                    shipment.tracking_history=str(shipment.tracking_history) + ',' + str(shipment.mapped_tracking_no)
+                    shipment.tracking_history = str(shipment.tracking_history) + ',' + str(shipment.mapped_tracking_no)
                 shipment.mapped_tracking_no = result['tracking_number']
                 if idx == 1:
                     master_tracking_no = result['tracking_number']
@@ -322,7 +322,7 @@ def create_individual_fedex_shipment(request):
         if product_type == 'C':
             is_cod = True
         service_type, config = fedex_legacy.get_service_type(str(product.order.method), float(product.price),
-                                                      float(item_weight), receiver_city, is_cod)
+                                                             float(item_weight), receiver_city, is_cod)
         item_price = product.price
     elif client_type == 'customer':
         shipment = Shipment.objects.get(pk=shipment_pk)
@@ -342,7 +342,7 @@ def create_individual_fedex_shipment(request):
         receiver_country_code = 'IN'
         is_business_receiver = False
         service_type, config = fedex_legacy.get_service_type(str(shipment.category), float(shipment.cost_of_courier),
-                                                      float(item_weight), receiver_city)
+                                                             float(item_weight), receiver_city)
         item_price = shipment.cost_of_courier
 
     sender = {
@@ -371,7 +371,7 @@ def create_individual_fedex_shipment(request):
     if result['status'] != 'ERROR':
         if client_type == 'business':
             if product.mapped_tracking_no:
-                product.tracking_history= str(product.tracking_history) + ',' + str(product.mapped_tracking_no)
+                product.tracking_history = str(product.tracking_history) + ',' + str(product.mapped_tracking_no)
             product.mapped_tracking_no = result['tracking_number']
 
             output = PdfFileWriter()
@@ -395,7 +395,7 @@ def create_individual_fedex_shipment(request):
             outputStream = cStringIO.StringIO()
             output.write(outputStream)
             product.fedex_ship_docs.save(result['tracking_number'] + '.pdf',
-                                              ContentFile(outputStream.getvalue()))
+                                         ContentFile(outputStream.getvalue()))
             fedex_ship_docs_url = str(product.fedex_ship_docs.name).split('/')[-1]
             if result["shipping_cost"]:
                 product.actual_shipping_cost = float(result["shipping_cost"])
@@ -403,7 +403,7 @@ def create_individual_fedex_shipment(request):
             product.save()
         elif client_type == 'customer':
             if shipment.mapped_tracking_no:
-                shipment.tracking_history=str(shipment.tracking_history) + ',' + str(shipment.mapped_tracking_no)
+                shipment.tracking_history = str(shipment.tracking_history) + ',' + str(shipment.mapped_tracking_no)
             shipment.mapped_tracking_no = result['tracking_number']
 
             output = PdfFileWriter()
@@ -421,7 +421,7 @@ def create_individual_fedex_shipment(request):
             outputStream = cStringIO.StringIO()
             output.write(outputStream)
             shipment.fedex_ship_docs.save(result['tracking_number'] + '.pdf',
-                                               ContentFile(outputStream.getvalue()))
+                                          ContentFile(outputStream.getvalue()))
             fedex_ship_docs_url = str(shipment.fedex_ship_docs.name).split('/')[-1]
             if result["shipping_cost"]:
                 shipment.actual_shipping_cost = float(result["shipping_cost"])
@@ -480,6 +480,7 @@ def create_ecom_shipment(request):
     else:
         return HttpResponseBadRequest("Can't recognize the request type")
 
+
 LETTERS = string.uppercase
 
 
@@ -487,7 +488,7 @@ def excel_style(row, col):
     """ Convert given row and column number to an Excel-style cell name. """
     result = []
     while col:
-        col, rem = divmod(col-1, 26)
+        col, rem = divmod(col - 1, 26)
         result[:0] = LETTERS[rem]
     return ''.join(result) + str(row)
 
@@ -541,8 +542,8 @@ def download_ecom_orders(request):
     workbook.close()
     output.seek(0)
 
-    response = HttpResponse(output.read(), content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    response = HttpResponse(output.read(),
+                            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
     response['Content-Disposition'] = "attachment; filename=ecom" + date + ".xlsx"
 
     return response
-
