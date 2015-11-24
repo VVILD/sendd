@@ -1,4 +1,4 @@
-from xdg.Exceptions import ValidationError
+from django.core.exceptions import ValidationError
 from django.forms import ModelForm, Textarea, HiddenInput
 from django import forms
 from myapp.mail.bookingConfirmationMail import SendConfirmationMail
