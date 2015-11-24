@@ -3117,7 +3117,7 @@ class FFCompletedPickupAdmin(FfAddressAdmin):
 	def get_queryset(self, request):
 		threshold_time =datetime.datetime.combine(date.today(),datetime.time(19, 00))
 		qs = super(FfAddressAdmin, self).queryset(request)
-		qs = qs.filter(status='C',default_pickup_time__lt=threshold_time).distinct()
+		qs = qs.filter(status='C').distinct()
 		return qs
 
 
