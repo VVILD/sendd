@@ -1078,7 +1078,7 @@ class OrderAdmin(FilterUserAdmin,ImportExportActionModelAdmin):
 		'order_no', 'book_time', 'business_details', 'name', 'status','mapped_ok', 'no_of_products', 'total_shipping_cost',
 		'total_cod_cost', 'method', 'fedex','print_links','payment_method','ff_comment')
 	list_editable = ('ff_comment','status')
-	list_filter = ['business', 'status', 'book_time','product__company','product__return_action','product__dispatch_time']
+	list_filter = ['business', 'status', 'book_time','product__company','product__return_action','product__dispatch_time','business__warehouse']
 
 	readonly_fields=('master_tracking_number', 'mapped_master_tracking_number', 'fedex')
 
