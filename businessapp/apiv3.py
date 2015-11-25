@@ -39,7 +39,6 @@ from tastypie.authorization import Authorization
 from tastypie.exceptions import Unauthorized, BadRequest
 from pickupboyapp.exceptions import CustomBadRequest
 
-import django_rq
 
 class urlencodeSerializer(Serializer):
     formats = ['json', 'jsonp', 'xml', 'yaml', 'html', 'plist', 'urlencode']

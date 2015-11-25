@@ -2,12 +2,11 @@ import uuid
 from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 from django.db import models
-# from django.contrib.auth.models import User
+
 from datetime import datetime, timedelta, time
-from geopy.distance import vincenty
-from geopy.geocoders import googlev3
+
 from pytz import timezone
-from django.db.models.signals import post_save, pre_save
+from django.db.models.signals import post_save
 import hashlib
 import random
 # Create your models here.
@@ -15,10 +14,8 @@ import math
 from django.contrib.auth.models import User
 
 from django.db.models import signals
-from core.fedex.base_service import FedexError
 from core.models import Warehouse, Pincode
 from core.utils import state_matcher
-from django.core.exceptions import ObjectDoesNotExist
 import json
 from datetime import date
 import urllib
@@ -168,6 +165,31 @@ class Business(models.Model):
     def __unicode__(self):
         return str(self.business_name)
 
+
+def assign_default_pickupaddress(sender, instance, created, **kwargs):
+    if created:
+        if instance.assigned_pickup_time is not None:
+            default_time=datetime.combine(date.today(), instance.assigned_pickup_time)
+        else:
+            default_time=datetime.combine(date.today(), datetime.time(18, 00))
+        pickup_default = AddressDetails(
+            instance = instance,
+            company_name = str(instance.business_name) if instance.business_name is not None else str(instance.username),
+            contact_person = str(instance.name) if instance.name is not None else str(instance.username),
+            phone_office = str(instance.contact_office) if instance.contact_office is not None else None,
+            phone_mobile = str(instance.contact_mob) if instance.contact_mob is not None else None,
+            address = str(instance.address),
+            default = True,
+            city = str(instance.city),
+            state = str(instance.state),
+            pincode = str(instance.pincode),
+            # default_vehicle = 'B',
+            default_pickup_time = default_time,
+            warehouse=instance.warehouse
+        )
+        pickup_default.save()
+
+post_save.connect(assign_default_pickupaddress, sender=Business)
 
 class AddressDetails(models.Model):
     """
