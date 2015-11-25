@@ -1,3 +1,4 @@
+from django.core.exceptions import ValidationError
 from django.forms import ModelForm, Textarea, HiddenInput
 from django import forms
 from myapp.mail.bookingConfirmationMail import SendConfirmationMail
@@ -13,8 +14,24 @@ import datetime
 from django.forms import extras
 from django.utils.timezone import localtime
 
+# class Newpickupform(ModelForm):
+# 	default_pickup_time=forms.CharField(required=True)
+# 	class Meta:
+# 		model = AddressDetails
+
+class Newpickupform(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super(Newpickupform, self).__init__(*args, **kwargs)
+
+        self.fields['default_pickup_time'].required = True
+
+	# def clean(self, exclude=None):
+	# 	if True:
+	# 		raise ValidationError({'default_pickup_time': ["error message",]})
+
+
 class NewQcCommentForm(ModelForm):
-	new_comment=forms.CharField(max_length=100,required=False)
+	new_comment=forms.CharField(widget=forms.Textarea,required=False)
 	class Meta:
 		model = Product
 		widgets = {
@@ -59,7 +76,7 @@ class ReverseTimeForm(ModelForm):
 					raise forms.ValidationError("latest_available time should be 3 hours ahead of ready time")
 
 				var= str((localtime(self.cleaned_data['reverse_pickup_timedate'])).replace(tzinfo=None).isoformat())
-				url= "/fedex_pickup_scheduler/?order_no={}&ready_timestamp={}&business_closetime={}".format(obj.pk,var,str(obj.reverse_latest_available_time))
+#				url= "/fedex_pickup_scheduler/?order_no={}&ready_timestamp={}&business_closetime={}".format(obj.pk,var,str(obj.reverse_latest_available_time))
 
 
                 # if self.cleaned_data['status']!='R':

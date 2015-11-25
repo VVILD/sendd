@@ -14,7 +14,7 @@ from django.utils.timezone import localtime
 from daterange_filter.filter import DateRangeFilter
 from django.contrib import admin
 from .models import *
-from businessapp.forms import NewQcCommentForm,NewTrackingStatus,OrderForm,NewReturnForm,Approveconfirmform,AddressForm,Completeconfirmform,ReverseTimeForm
+from businessapp.forms import NewQcCommentForm,NewTrackingStatus,OrderForm,NewReturnForm,Approveconfirmform,AddressForm,Completeconfirmform,ReverseTimeForm,Newpickupform
 from datetime import date,timedelta
 import reversion
 
@@ -156,6 +156,7 @@ class ProfileInline(admin.StackedInline):
 	model = Profile
 	can_delete = False
 	verbose_name_plural = 'profile'
+	filter_horizontal =('warehouse',)
 
 # Define a new User admin
 class UserAdmin(UserAdmin):
@@ -248,9 +249,8 @@ class BaseBusinessAdmin(reversion.VersionAdmin):
 		try:
 			profile=Profile.objects.get(user=request.user)
 			usertype=profile.usertype
-			warehouse=profile.warehouse
+			warehouse=profile.warehouse.all()
 			if (usertype=='C'):
-				print "jkjkjkjkjkjkjkjkjkjk"
 				cs=True
 			if (usertype=='O'):
 				op=True
@@ -276,7 +276,7 @@ class BaseBusinessAdmin(reversion.VersionAdmin):
 		c = Business.objects.filter(status='C',warehouse=warehouse).count()
 		#pa = Business.objects.filter(order_status='AP').count()
 		#c = Business.objects.filter(order_status='DI').count()
-		p= Order.objects.filter(book_time__gt=today_min,book_time__lt=today_max,status='P',pickup_address__warehouse=warehouse).distinct().count()
+		p= Order.objects.filter(status='P',pickup_address__warehouse=warehouse).distinct().count()
 		pu= Order.objects.filter(product__pickup_time__gt=today_min,product__pickup_time__lt=today_max,status='PU',pickup_address__warehouse=warehouse).distinct().count()
 		di= Order.objects.filter(product__dispatch_time__gt=today_min,product__dispatch_time__lt=today_max,status='DI',pickup_address__warehouse=warehouse).distinct().count()
 		un=Product.objects.filter(Q(order__book_time__gt=datetime.date(2015, 9, 1))&Q(order__pickup_address__warehouse=warehouse) & (Q(order__status__in=['PU','D'])) &(Q(mapped_tracking_no__isnull=True) | Q(mapped_tracking_no__exact="")) ).distinct().count()
@@ -1047,9 +1047,22 @@ class FilterUserAdmin(BaseBusinessAdmin):
 
 
 	def get_queryset(self, request):
+		qs = super(FilterUserAdmin, self).queryset(request)
+
+
 		try:
-			qs = super(FilterUserAdmin, self).queryset(request)
-			print "queryyyset"
+			profile=Profile.objects.get(user=request.user)
+			warehouse=profile.warehouse.all()
+
+		except:
+			warehouse=Warehouse.objects.all()
+
+		if not warehouse:
+			warehouse=Warehouse.objects.all()
+
+		qs=qs.filter(pickup_address__warehouse=warehouse)
+
+		try:
 
 			profile=Profile.objects.get(user=request.user)
 
@@ -1093,7 +1106,7 @@ class OrderAdmin(FilterUserAdmin,ImportExportActionModelAdmin):
 	list_display = (
 		'order_no', 'book_time', 'business_details', 'name', 'status','mapped_ok', 'no_of_products', 'total_shipping_cost',
 		'total_cod_cost', 'method', 'fedex','print_links','payment_method','ff_comment')
-	list_editable = ('ff_comment','status')
+	list_editable = ('ff_comment',)
 	list_filter = ['business', 'status', 'book_time','product__company','product__return_action','product__dispatch_time','pickup_address','product__pickup_time']
 
 	readonly_fields=('master_tracking_number', 'mapped_master_tracking_number', 'fedex')
@@ -1375,6 +1388,7 @@ admin.site.register(ReverseOrder, ReverseOrderAdmin)
 class ProxyProductAdmin(BaseBusinessAdmin,ImportExportActionModelAdmin):
 	list_per_page=100
 
+
 	change_list_template='businessapp/templates/admin/businessapp/change_list.html'
 	list_display = ('order_no','get_business','sent_to','city','pincode','time',"applied_weight","mapped_tracking_no","company","ff")
 	list_editable = ("mapped_tracking_no","company")
@@ -1387,7 +1401,19 @@ class ProxyProductAdmin(BaseBusinessAdmin,ImportExportActionModelAdmin):
 	order_no.admin_order_field = 'order'
 
 	def get_queryset(self, request):
-		return self.model.objects.filter(Q(order__book_time__gt=datetime.date(2015, 9, 1)) & (Q(order__status__in=['PU','D'])) &(Q(mapped_tracking_no__isnull=True) | Q(mapped_tracking_no__exact=""))).select_related('order','order__business')
+		try:
+			profile=Profile.objects.get(user=request.user)
+			warehouse=profile.warehouse.all()
+
+		except:
+			warehouse=Warehouse.objects.all()
+
+		if not warehouse:
+			warehouse=Warehouse.objects.all()
+
+		print warehouse
+
+		return self.model.objects.filter(Q(order__pickup_address__warehouse=warehouse) & Q(order__book_time__gt=datetime.date(2015, 9, 1)) & (Q(order__status__in=['PU','D'])) &(Q(mapped_tracking_no__isnull=True) | Q(mapped_tracking_no__exact=""))).select_related('order','order__business')
 
 	def get_readonly_fields(self, request, obj=None):
 		return [f.name for f in self.model._meta.fields]
@@ -2787,6 +2813,7 @@ admin.site.register(Bdheadpanel,BdheadAdmin)
 
 class BaseAddressAdmin(admin.ModelAdmin):
 
+	form = Newpickupform
 	def get_queryset(self, request):
 #total_order
 #pick_order
@@ -2798,9 +2825,20 @@ class BaseAddressAdmin(admin.ModelAdmin):
 		date_max = datetime.datetime.combine(todays_date, datetime.time.max)
 		date_min = datetime.datetime.combine(todays_date, datetime.time.min)
 
+		try:
+			profile=Profile.objects.get(user=request.user)
+			warehouse=profile.warehouse.all()
 
+		except:
+			warehouse=Warehouse.objects.all()
 
-		return AddressDetails.objects.extra(select={
+		if not warehouse:
+			warehouse=Warehouse.objects.all()
+
+		# qs = super(CsAddressAdmin, self).queryset(request)
+		# qs = qs.filter(status__in=['Y','A','C'])
+		#
+		return AddressDetails.objects.filter(warehouse=warehouse).extra(select={
 			'pending': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.pickup_address_id = businessapp_addressdetails.id and businessapp_order.status='P' ",
 			'picked': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.pickup_address_id = businessapp_addressdetails.id and businessapp_order.status='PU' ",
 			'transit': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.pickup_address_id = businessapp_addressdetails.id and businessapp_order.status='D' ",
@@ -2822,7 +2860,7 @@ class BaseAddressAdmin(admin.ModelAdmin):
 		try:
 			profile=Profile.objects.get(user=request.user)
 			usertype=profile.usertype
-			warehouse=profile.warehouse
+			warehouse=profile.warehouse.all()
 			if (usertype=='C'):
 				print "jkjkjkjkjkjkjkjkjkjk"
 				cs=True
@@ -2850,7 +2888,7 @@ class BaseAddressAdmin(admin.ModelAdmin):
 		c = Business.objects.filter(status='C',warehouse=warehouse).count()
 		#pa = Business.objects.filter(order_status='AP').count()
 		#c = Business.objects.filter(order_status='DI').count()
-		p= Order.objects.filter(book_time__gt=today_min,book_time__lt=today_max,status='P',pickup_address__warehouse=warehouse).distinct().count()
+		p= Order.objects.filter(status='P',pickup_address__warehouse=warehouse).distinct().count()
 		pu= Order.objects.filter(product__pickup_time__gt=today_min,product__pickup_time__lt=today_max,status='PU',pickup_address__warehouse=warehouse).distinct().count()
 		di= Order.objects.filter(product__dispatch_time__gt=today_min,product__dispatch_time__lt=today_max,status='DI',pickup_address__warehouse=warehouse).distinct().count()
 		un=Product.objects.filter(Q(order__book_time__gt=datetime.date(2015, 9, 1))&Q(order__pickup_address__warehouse=warehouse) & (Q(order__status__in=['PU','D'])) &(Q(mapped_tracking_no__isnull=True) | Q(mapped_tracking_no__exact="")) ).distinct().count()
@@ -2868,13 +2906,17 @@ class BaseAddressAdmin(admin.ModelAdmin):
 		except:
 			return 'No business'
 	business_details.allow_tags = True
-	pass
 
+	def pickup_time(self,obj):
+		if obj.temp_time:
+			return obj.temp_time
+		else:
+			return obj.default_pickup_time
 
 class CsAddressAdmin(BaseAddressAdmin):
 	search_fields = ['business__username','business__business_name','address','pincode','city']
 	list_filter = ['business__username','business__business_name','default_pickup_time']
-	list_display = ['pickup_address','business_details','warehouse','default_pickup_time','default_vehicle','cs_comment','status']
+	list_display = ['pickup_address','business_details','warehouse','pickup_time','default_vehicle','cs_comment','status']
 	list_editable=['cs_comment','default_vehicle']
 	def pickup_address(self,obj):
 		return str(obj.company_name) + "<br>" +str(obj.address)
@@ -2883,7 +2925,7 @@ class CsAddressAdmin(BaseAddressAdmin):
 class FfAddressAdmin(BaseAddressAdmin):
 	search_fields = ['business__username','business__business_name','address','pincode','city']
 	list_filter = ['business__username','business__business_name','default_pickup_time']
-	list_display = ['pickup_address','business_details','warehouse','default_pickup_time','pb','cs_comment','ff_comment','default_vehicle','status']
+	list_display = ['pickup_address','business_details','warehouse','pickup_time','pb','cs_comment','ff_comment','default_vehicle','status']
 	raw_id_fields = ['pb']
 	list_editable = ['pb','ff_comment']
 	def pickup_address(self,obj):
@@ -2901,6 +2943,7 @@ class CsApprovedpickupAdmin(CsAddressAdmin):
 admin.site.register(CSApprovedPickup,CsApprovedpickupAdmin)
 
 class CSAllPickupAdmin(CsAddressAdmin):
+	form=Newpickupform
 	actions = None
 	list_display = CsAddressAdmin.list_display + ['approve']
 
@@ -3017,7 +3060,7 @@ class FfApprovedpickupAdmin(FfAddressAdmin):
 		self.fieldsets=()
 		if reschedule:
 			self.fieldsets = (
-				('Basic Information', {'fields': ['default_pickup_time']}),
+				('Basic Information', {'fields': ['temp_time']}),
 			)
 			#print "inside"
 		elif complete:
@@ -3032,6 +3075,9 @@ class FfApprovedpickupAdmin(FfAddressAdmin):
 		if obj.pb and obj.status=='Y':
 			obj.status='A'
 			obj.save()
+		elif not obj.pb and obj.status=='A':
+			obj.status='Y'
+			obj.save()
 		else:
 			obj.save()
 
@@ -3045,7 +3091,7 @@ class FFCompletedPickupAdmin(FfAddressAdmin):
 	list_display = FfAddressAdmin.list_display +['pending_orders_total','pickedup_orders','dispatched_orders']
 	list_display.remove('status')
 	list_display.remove('default_vehicle')
-	list_display.remove('default_pickup_time')
+	list_display.remove('pickup_time')
 
 	def pending_orders_total(self, obj):
 
@@ -3071,7 +3117,7 @@ class FFCompletedPickupAdmin(FfAddressAdmin):
 	def get_queryset(self, request):
 		threshold_time =datetime.datetime.combine(date.today(),datetime.time(19, 00))
 		qs = super(FfAddressAdmin, self).queryset(request)
-		qs = qs.filter(status='C',default_pickup_time__lt=threshold_time).distinct()
+		qs = qs.filter(status='C').distinct()
 		return qs
 
 
@@ -3163,7 +3209,10 @@ admin.site.register(DispatchedOrder,DispatchedOrderAdmin)
 
 
 class AddressDetailsAdmin(admin.ModelAdmin):
-	pass
+	list_display = ('__str__','business',)
+	list_filter = ('business')
+
+
 
 admin.site.register(AddressDetails, AddressDetailsAdmin)
 class ProxyProduct2Admin(reversion.VersionAdmin):

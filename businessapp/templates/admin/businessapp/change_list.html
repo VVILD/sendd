@@ -46,13 +46,13 @@ function dismissAddAnotherPopup(win) {
 
 
 <center>
-    <a class="btn btn-warning" href="/admin/businessapp/csallpickup/"><span class="badge">{{csall}}</span>cs all</a>
-    <a class="btn btn-warning" href="/admin/businessapp/csapprovedpickup"><span class="badge">{{apcs}}</span>cs approved</a>
-    <a class="btn btn-warning" href="/admin/businessapp/csdailypickup/"><span class="badge">{{d}}</span>cs daily</a>
+    <a class="btn btn-info" href="/admin/businessapp/csallpickup/"><span class="badge">{{csall}}</span>cs all</a>
+    <a class="btn btn-info" href="/admin/businessapp/csapprovedpickup"><span class="badge">{{apcs}}</span>cs approved</a>
+    <a class="btn btn-info" href="/admin/businessapp/csdailypickup/"><span class="badge">{{d}}</span>cs daily</a>
 
 <a class="btn btn-info" href="/admin/businessapp/pendingorder/"><span class="badge">{{p}}</span>Pending orders </a>
 <a class="btn btn-info" href="/admin/businessapp/order/">Search orders</a>
-<a class="btn btn-error" href="/admin/businessapp/proxyproduct/"><span class="badge">{{un}}</span>Unmapped Orders</a>
+<a class="btn btn-info" href="/admin/businessapp/proxyproduct/"><span class="badge">{{un}}</span>Unmapped Orders</a>
 </center>
 <br>
 <br>
@@ -67,16 +67,16 @@ function dismissAddAnotherPopup(win) {
 {% elif op %}
 <center>
 <div class="row">
-    <a class="btn btn-warning" href="/admin/businessapp/ffapprovedpickup/"><span class="badge">{{ap}}</span>ff aproved</a>
-    <a class="btn btn-warning" href="/admin/businessapp/ffcompletedpickup/"><span class="badge">{{picked}}</span>ff picked up</a>
+    <a class="btn btn-info" href="/admin/businessapp/ffapprovedpickup/"><span class="badge">{{ap}}</span>ff aproved</a>
+    <a class="btn btn-info" href="/admin/businessapp/ffcompletedpickup/"><span class="badge">{{picked}}</span>ff picked up</a>
 
-<a class="btn btn-info" href="/admin/businessapp/order/pendingorder/"><span class="badge">{{p}}</span>Pending orders </a>
+<a class="btn btn-info" href="/admin/businessapp/pendingorder/"><span class="badge">{{p}}</span>Pending orders </a>
 <a class="btn btn-info" href="/admin/businessapp/pickedorder/?q=&product__pickup_time__gte={{ date_min }}&product__pickup_time__lt={{ date_max }}"><span class="badge">{{pu}}</span>Picked up orders</a>
-<a class="btn btn-info" href="/admin/businessapp/dispatchedorder/?q=&product__dispatch_time__lt={{ date_min }}&product__dispatch_time__gte={{ date_max }}"><span class="badge">{{di}}</span>Dispatched orders</a>
+<a class="btn btn-info" href="/admin/businessapp/dispatchedorder/?q=&product__dispatch_time__gte={{ date_min }}&product__dispatch_time__lt={{ date_max }}"><span class="badge">{{di}}</span>Dispatched orders</a>
 <a class="btn btn-info" href="/admin/businessapp/order/">Search orders</a>
-<a class="btn btn-error" href="/admin/businessapp/proxyproduct/"><span class="badge">{{un}}</span>Unmapped Orders</a>
+<a class="btn btn-info" href="/admin/businessapp/proxyproduct/"><span class="badge">{{un}}</span>Unmapped Orders</a>
 
-    <a class="btn btn-warning" href="/admin/businessapp/qcproduct/?status__exact=R">Return</a>
+    <a class="btn btn-info" href="/admin/businessapp/qcproduct/?status__exact=R">Return</a>
 <br>
 <br>
 </div>
@@ -85,13 +85,13 @@ function dismissAddAnotherPopup(win) {
 
 <center>
 Customer support links
-    <a class="btn btn-warning" href="/admin/businessapp/csallpickup/"><span class="badge">{{csall}}</span>cs all</a>
-    <a class="btn btn-warning" href="/admin/businessapp/csapprovedpickup"><span class="badge">{{apcs}}</span>cs approved</a>
-    <a class="btn btn-warning" href="/admin/businessapp/csdailypickup/"><span class="badge">{{d}}</span>cs daily</a>
+    <a class="btn btn-info" href="/admin/businessapp/csallpickup/"><span class="badge">{{csall}}</span>cs all</a>
+    <a class="btn btn-info" href="/admin/businessapp/csapprovedpickup"><span class="badge">{{apcs}}</span>cs approved</a>
+    <a class="btn btn-info" href="/admin/businessapp/csdailypickup/"><span class="badge">{{d}}</span>cs daily</a>
 
 <a class="btn btn-info" href="/admin/businessapp/pendingorder/"><span class="badge">{{p}}</span>Pending orders </a>
 <a class="btn btn-info" href="/admin/businessapp/order/">Search orders</a>
-<a class="btn btn-error" href="/admin/businessapp/proxyproduct/"><span class="badge">{{un}}</span>Unmapped Orders</a>
+<a class="btn btn-info" href="/admin/businessapp/proxyproduct/"><span class="badge">{{un}}</span>Unmapped Orders</a>
 </center>
 <br>
 <br>
@@ -100,15 +100,15 @@ Customer support links
 <center>
 Fullfillment executive link
 <div class="row">
-    <a class="btn btn-warning" href="/admin/businessapp/ffapprovedpickup/"><span class="badge">{{ap}}</span>ff aproved</a>
-    <a class="btn btn-warning" href="/admin/businessapp/ffcompletedpickup/"><span class="badge">{{picked}}</span>ff picked up</a>
+    <a class="btn btn-info" href="/admin/businessapp/ffapprovedpickup/"><span class="badge">{{ap}}</span>ff aproved</a>
+    <a class="btn btn-info" href="/admin/businessapp/ffcompletedpickup/"><span class="badge">{{picked}}</span>ff picked up</a>
 
 <a class="btn btn-info" href="/admin/businessapp/pendingorder/"><span class="badge">{{p}}</span>Pending orders </a>
 <a class="btn btn-info" href="/admin/businessapp/pickedorder/?q=&product__pickup_time__gte={{ date_min }}&product__pickup_time__lt={{ date_max }}"><span class="badge">{{pu}}</span>Picked up orders</a>
-<a class="btn btn-info" href="/admin/businessapp/dispatchedorder/?q=&product__dispatch_time__lt={{ date_min }}&product__dispatch_time__gte={{ date_max }}"><span class="badge">{{di}}</span>Dispatched orders</a>
+<a class="btn btn-info" href="/admin/businessapp/dispatchedorder/?q=&product__dispatch_time__gte={{ date_min }}&product__dispatch_time__lt={{ date_max }}"><span class="badge">{{di}}</span>Dispatched orders</a>
 <a class="btn btn-info" href="/admin/businessapp/order/">Search orders</a>
-<a class="btn btn-error" href="/admin/businessapp/proxyproduct/"><span class="badge">{{un}}</span>Unmapped Orders</a>
-    <a class="btn btn-warning" href="/admin/businessapp/qcproduct/?status__exact=R">Return</a>
+<a class="btn btn-info" href="/admin/businessapp/proxyproduct/"><span class="badge">{{un}}</span>Unmapped Orders</a>
+    <a class="btn btn-info" href="/admin/businessapp/qcproduct/?status__exact=R">Return</a>
     <br>
 <br>
 </div>

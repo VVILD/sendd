@@ -3,7 +3,7 @@ from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 from django.db import models
 # from django.contrib.auth.models import User
-from datetime import datetime
+from datetime import datetime, timedelta, time
 from geopy.distance import vincenty
 from geopy.geocoders import googlev3
 from pytz import timezone
@@ -20,6 +20,7 @@ from core.models import Warehouse, Pincode
 from core.utils import state_matcher
 from django.core.exceptions import ObjectDoesNotExist
 import json
+from datetime import date
 import urllib
 import requests
 
@@ -30,7 +31,7 @@ class Profile(models.Model):
     usertype = models.CharField(max_length=1, choices=(
     ('O', 'ops'), ('B', 'bd'), ('A', 'admin'), ('Q', 'qc'), ('C', 'customer support'),),
                                 null=True, blank=True)
-    warehouse = models.ForeignKey(Warehouse, null=True, blank=True)
+    warehouse=models.ManyToManyField(Warehouse,null=True, blank=True)
     def __unicode__(self):
         return str(self.user.username)
 
@@ -240,7 +241,8 @@ class AddressDetails(models.Model):
                               choices=(('Y', 'approved'), ('N', 'not approved'), ('A', 'alloted'),('C', 'complete'),),
                               null=True, blank=True,
                               default='N')
-    default_pickup_time = models.DateTimeField()
+    default_pickup_time = models.DateTimeField(null=True,blank=True)
+    temp_time = models.DateTimeField(null=True,blank=True)
     default = models.BooleanField(default=False)
     warehouse = models.ForeignKey(Warehouse, null=True, blank=True)
     daily = models.BooleanField(default=False)
@@ -445,6 +447,16 @@ class Order(models.Model):
             order_no = self.pk + 1000
             if self.pickup_address.status=='N':
                 self.pickup_address.status='Y'
+
+                cutoff_time=datetime.combine(date.today(), time(19, 00))
+                if self.pickup_address.default_pickup_time:
+                    if (datetime.now() > cutoff_time):
+                        self.pickup_address.default_pickup_time=datetime.combine(date.today()+timedelta(days=1) , self.pickup_address.default_pickup_time.time())
+                    elif (datetime.now().time() >self.pickup_address.default_pickup_time.time()):
+                        self.pickup_address.temp_time = datetime.now()
+                    elif (datetime.now().time() < self.pickup_address.default_pickup_time.time()):
+                        self.pickup_address.default_pickup_time=datetime.combine(date.today(), self.pickup_address.default_pickup_time.time())
+
                 self.pickup_address.save()
 
             if str(order_no) > 4:
