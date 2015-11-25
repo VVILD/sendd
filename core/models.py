@@ -1,6 +1,5 @@
 from django.core.exceptions import ValidationError
 from django.db import models
-import django_rq
 from geopy.distance import vincenty
 from geopy.geocoders import googlev3
 from core.utils import state_matcher
