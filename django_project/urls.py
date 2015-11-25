@@ -153,7 +153,3 @@ urlpatterns = patterns('',
     url(r'^download_ecom_orders/', download_ecom_orders, name='download_ecom_orders'),
     url(r'^fedex_pickup_scheduler/$', schedule_reverse_pickup, name='fedex_pickup_scheduler')
 )
-
-urlpatterns += patterns('',
-    (r'^django-rq/', include('django_rq.urls')),
-)

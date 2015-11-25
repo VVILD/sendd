@@ -1,10 +1,8 @@
 import json
 import io
 import string
-
 from datetime import datetime, timedelta
 from pytz import timezone
-
 from xlsxwriter.workbook import Workbook
 from PyPDF2 import PdfFileWriter, PdfFileReader, PdfFileMerger
 import cStringIO
@@ -187,7 +185,7 @@ def fedex_view_util(order_pk, client_type):
             receiver_country_code = 'IN'
             is_business_receiver = False
             service_type, config = fedex.get_service_type(str(shipment.category), float(shipment.cost_of_courier),
-                                                          float(item_weight), receiver_city)
+                                                          float(item_weight), receiver_city, receiver_pincode)
             item_price = shipment.cost_of_courier
             sender = {
                 "is_cod": False,
@@ -506,7 +504,6 @@ def create_ecom_shipment(request):
             selected_awb = awb.first()
             product.mapped_tracking_no = selected_awb.awb
             product.company = 'E'
-            #product.dispatch_time = datetime.now(timezone('Asia/Kolkata'))
             product.save()
             selected_awb.used = True
             selected_awb.save()
@@ -524,6 +521,7 @@ def create_ecom_shipment(request):
     else:
         return HttpResponseBadRequest("Can't recognize the request type")
 
+
 LETTERS = string.uppercase
 
 
@@ -531,7 +529,7 @@ def excel_style(row, col):
     """ Convert given row and column number to an Excel-style cell name. """
     result = []
     while col:
-        col, rem = divmod(col-1, 26)
+        col, rem = divmod(col - 1, 26)
         result[:0] = LETTERS[rem]
     return ''.join(result) + str(row)
 
@@ -585,8 +583,8 @@ def download_ecom_orders(request):
     workbook.close()
     output.seek(0)
 
-    response = HttpResponse(output.read(), content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    response = HttpResponse(output.read(),
+                            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
     response['Content-Disposition'] = "attachment; filename=ecom" + date + ".xlsx"
 
     return response
-

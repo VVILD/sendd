@@ -5,20 +5,20 @@ from datetime import timedelta
 import json
 from django.db.models import Avg, Count, F, Max, Min, Sum, Q, Prefetch
 class ProductResource(resources.ModelResource):
-	last_status = fields.Field()
-	last_date = fields.Field()
+	# last_status = fields.Field()
+	# last_date = fields.Field()
 	class Meta:
 		model = Product
 		import_id_fields = ('order_id',)
-		fields = ('order','order__book_time','order__reference_id','order__payment_method','order__name','order__city','order__pincode', 'real_tracking_no', 'mapped_tracking_no', 'company','status','last_tracking_status','weight','applied_weight','barcode','order__method','name','price','remittance','remittance_date','ff_comment','last_status','last_date')
+		fields = ('order','order__book_time','order__reference_id','order__payment_method','order__name','order__city','order__pincode', 'real_tracking_no', 'mapped_tracking_no', 'company','status','last_tracking_status','weight','applied_weight','barcode','order__method','name','price','remittance','remittance_date','ff_comment','order__address1','order__address2')
 
 
-	def dehydrate_last_status(self, product):
-		return json.loads(product.tracking_data)[-1]['status']
+	# def dehydrate_last_status(self, product):
+	# 	return json.loads(product.tracking_data)[-1]['status']
 
 
-	def dehydrate_last_date(self, product):
-		return json.loads(product.tracking_data)[-1]['date']
+	# def dehydrate_last_date(self, product):
+	# 	return json.loads(product.tracking_data)[-1]['date']
 
 	def dehydrate_ff_comment(self, product):
 		return product.order.ff_comment
@@ -72,13 +72,55 @@ class QcProductResource(resources.ModelResource):
 
 class FFOrderResource(resources.ModelResource):
 	mapped_ok = fields.Field()
-	company = fields.Field()
 	no_of_products = fields.Field()
+	cod_or_free= fields.Field()
+	bulk_or_normal= fields.Field()
+	dispatched_date  = fields.Field()
+	company_list = fields.Field()
+	tracking_list= fields.Field()
 
 	class Meta:
 		model = Order
-		fields = ('order_no','book_time','business__business_name','city','pincode','name','mapped_ok','no_of_products','company','ff_comment')
-		export_order = ('order_no','book_time','business__business_name','city','pincode','name','mapped_ok','no_of_products','company','ff_comment')
+		fields = ('tracking_list','company_list','dispatched_date','order_no','book_time','business__business_name','city','pincode','name','mapped_ok','no_of_products','bulk_or_normal','cod_or_free','ff_comment','address1','reference_id','address2')
+
+	def dehydrate_bulk_or_normal(self,order):
+		return order.get_method_display()
+
+	def dehydrate_cod_or_free(self,order):
+		return order.get_payment_method_display()
+
+
+	def dehydrate_dispatched_date(self,order):
+		products=Product.objects.filter(order=order)
+		return_string=''
+		for product in products:
+			if (product.dispatch_time):
+				return_string=return_string+str(product.dispatch_time)+','
+
+
+		return return_string
+
+	def dehydrate_company_list(self,order):
+		products=Product.objects.filter(order=order)
+		return_string=''
+		for product in products:
+			if (product.company):
+				return_string=return_string+str(product.get_company_display())+','
+
+
+		return return_string
+
+
+	def dehydrate_tracking_list(self,order):
+		products=Product.objects.filter(order=order)
+		return_string=''
+		for product in products:
+			if (product.mapped_tracking_no):
+				return_string=return_string+str(product.mapped_tracking_no)+','
+
+
+		return return_string
+
 
 	def dehydrate_mapped_ok(self,order):
 		products=Product.objects.filter(order=order)
@@ -92,11 +134,6 @@ class FFOrderResource(resources.ModelResource):
 	def dehydrate_no_of_products(self, order):
 		return Product.objects.filter(order=order).count()
 
-	def dehydrate_company(self, order):
-		try:
-			return order.product_set.first().get_company_display()
-		except:
-			return "no product"
 
 
 # 1.Order No.

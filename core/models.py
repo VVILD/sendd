@@ -1,43 +1,9 @@
 from django.core.exceptions import ValidationError
 from django.db import models
-from geopy.distance import vincenty
-from geopy.geocoders import googlev3
+from django.db.models.signals import post_save
+
+from core.tasks import new_warehouse_reassignment
 from core.utils import state_matcher
-
-
-def new_warehouse_reassignment(pk):
-    obj = Warehouse.objects.get(pk=pk)
-    geolocator = googlev3.GoogleV3(api_key="AIzaSyBEfEgATQeVkoKUnaB4O9rIdX2K2Bsh63o")
-    location = geolocator.geocode("{}, India".format(obj.pincode))
-    obj.lat, obj.long = location.latitude, location.longitude
-    obj.save()
-
-    pincodes = Pincode.objects.filter(region_name=obj.city).exclude(latitude__isnull=True)
-    warehouses = Warehouse.objects.filter(city=obj.city)
-
-    from businessapp.models import Business
-    businesses = Business.objects.filter(pincode__isnull=False).exclude(pincode=u'')
-
-    for pincode in pincodes:
-        closest_warehouse = None
-        min_dist = 9999.9999
-        for warehouse in warehouses:
-            distance = vincenty((pincode.latitude, pincode.longitude), (warehouse.lat, warehouse.long)).kilometers
-            if distance < min_dist:
-                min_dist = distance
-                closest_warehouse = warehouse
-        pincode.warehouse = closest_warehouse
-        pincode.save()
-
-    for business in businesses:
-        pincode_search = Pincode.objects.filter(pincode=str(business.pincode)).exclude(latitude__isnull=True, warehouse__isnull=True)
-        if pincode_search.count() > 0:
-            business.warehouse = pincode_search[0].warehouse
-        else:
-            business.warehouse = None
-        business.save()
-
-    print("Reassignment Complete for {}".format(obj.name))
 
 
 class Warehouse(models.Model):
@@ -89,14 +55,17 @@ class Warehouse(models.Model):
                 if closest_state:
                     self.state = closest_state[0]
         else:
-            raise ValidationError("Please enter a state")
-        if self.pincode:
-            super(Warehouse, self).save(*args, **kwargs)
-            django_rq.enqueue(new_warehouse_reassignment, self.pk)
-        else:
-            raise ValidationError("Please enter a pincode")
+            raise ValidationError("Please enter a valid state")
 
         super(Warehouse, self).save(*args, **kwargs)
+
+
+def warehouse_reassign(sender, instance, created, **kwargs):
+    if instance.pincode and created:
+        new_warehouse_reassignment.delay(instance.pk)
+
+
+post_save.connect(warehouse_reassign, sender=Warehouse)
 
 
 class StateCodes(models.Model):

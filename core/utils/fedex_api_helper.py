@@ -6,7 +6,7 @@ import textwrap
 from django.core.files.base import ContentFile
 from core.fedex.services.pickup_service import FedexCreatePickupRequest
 from core.fedex.services.rate_service import FedexRateServiceRequest
-from core.models import StateCodes
+from core.models import StateCodes, Pincode
 from django.core.exceptions import ValidationError
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -439,7 +439,7 @@ def is_oda(sender, receiver, item, FEDEX_CONFIG_OBJ, service_type):
     return status
 
 
-def get_service_type(selected_type, item_value, item_weight, receiver_city, is_cod=False):
+def get_service_type(selected_type, item_value, item_weight, receiver_city, receiver_pincode, is_cod=False):
     FEDEX_CONFIG_INTRA_MUMBAI = FedexConfig(key='FRmcajHEPfMUjNmC',
                                             password='fY5ZwylNGYFXAgNoChYYYSojG',
                                             account_number='678650382',
@@ -455,7 +455,12 @@ def get_service_type(selected_type, item_value, item_weight, receiver_city, is_c
     #                                 account_number='510087640',
     #                                 meter_number='118685245',
     #                                 use_test_server=False)
-    if str(receiver_city).lower() == 'mumbai':
+    pincode = Pincode.objects.filter(pincode=receiver_pincode)
+    if pincode.count() < 1:
+        raise ValidationError("Recevier pincode not found")
+
+    pincode_obj = pincode.first()
+    if pincode_obj.region_name == 'Mumbai':
         if item_weight <= 0.5 and not is_cod and item_value <= 5000:
             return 'PRIORITY_OVERNIGHT', FEDEX_CONFIG_INTRA_MUMBAI
         elif item_weight <= 0.5 and (is_cod or item_value > 5000):

@@ -221,7 +221,7 @@ class Shipment(models.Model):
     tracking_no = models.AutoField(primary_key=True)
     real_tracking_no = models.CharField(max_length=10, blank=True, null=True)
     mapped_tracking_no = models.CharField(max_length=50, null=True, blank=True)
-    tracking_data = models.CharField(max_length=8000, null=True, blank=True)
+    tracking_data = models.TextField(null=True, blank=True)
     img = models.ImageField(upload_to='shipment/', null=True, blank=True)
     category = models.CharField(max_length=1,
                                 choices=(('P', 'premium'), ('S', 'standard'), ('E', 'economy'),),
@@ -246,7 +246,7 @@ class Shipment(models.Model):
     company = models.CharField(max_length=2,
                                choices=[('F', 'FedEx'), ('D', 'Delhivery'), ('P', 'Professional'), ('G', 'Gati'),
                                         ('A', 'Aramex'), ('E', 'Ecomexpress'), ('DT', 'dtdc'), ('FF', 'First Flight'),
-                                        ('M', 'Maruti courier'), ('I', 'India Post'), ('S', 'Sendd'), ('B', 'Bluedart'), ('T', 'trinity'), ('V', 'vichare'), ('DH', 'dhl'), ('S', 'skycom'), ('NA', 'nandan'),('FA','Fast train'),('TE','Tej'),('TR','Track on')],
+                                        ('M', 'Maruti courier'), ('I', 'India Post'), ('S', 'Sendd'), ('B', 'Bluedart'), ('T', 'trinity'), ('V', 'vichare'), ('DH', 'dhl'), ('SK', 'skycom'), ('NA', 'nandan'),('FA','Fast train'),('TE','Tej'),('TR','Track on')],
                                blank=True, null=True)
 
     cost_of_courier = models.CharField(verbose_name='item cost', max_length=100, null=True, blank=True)

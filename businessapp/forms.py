@@ -118,7 +118,7 @@ class NewTrackingStatus(ModelForm):
 		self.cleaned_data['tracking_data']= json.dumps(tracking_list)
 		if nstatus == 'Delivered':
 			self.cleaned_data['status']= 'C'
-		if nstatus == 'Return':
+		if nstatus == 'Return' or nstatus == 'return in transit':
 			self.cleaned_data['status']= 'R'
 
 
