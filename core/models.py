@@ -63,7 +63,6 @@ class Warehouse(models.Model):
         
         super(Warehouse, self).save(*args, **kwargs)
 
-
 class StateCodes(models.Model):
     country_code = models.CharField(max_length=2)
     subdivision_name = models.CharField(max_length=128)
