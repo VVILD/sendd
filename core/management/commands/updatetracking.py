@@ -80,6 +80,8 @@ class Command(BaseCommand):
 			html2=output
 			soup2 = BeautifulSoup(html2,'html.parser')
 			try:
+				print "trying shit here bro"
+				print soup2.find("input", {"name":"cn_status"})['value']
 				return 'DELIVERED' in soup2.find("input", {"name":"cn_status"})['value']
 			except:
 				return False
@@ -443,7 +445,9 @@ class Command(BaseCommand):
 				"updated": False,
 				"error": str(e)
 			}
+
 		completed=self.is_dtdc_complete(product.mapped_tracking_no)
+
 		if json.dumps(tracking_data) != '[]':
 			Product.objects.filter(pk=product.pk).update(tracking_data=json.dumps(tracking_data))
 
@@ -459,7 +463,7 @@ class Command(BaseCommand):
 								"date": (datetime.datetime.now()).strftime('%Y-%m-%d %H:%M:%S'),
 								"location": "recipient city"
 							})
-			Product.objects.filter(pk=product.pk).update(status='C',tracking_data=str(tracking_data))
+			Product.objects.filter(pk=product.pk).update(status='C',tracking_data=json.dumps(tracking_data))
 
 			if client_type == 'customer':
 				specific_products = Shipment.objects.filter(order=order)
