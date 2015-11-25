@@ -3210,7 +3210,7 @@ admin.site.register(DispatchedOrder,DispatchedOrderAdmin)
 
 class AddressDetailsAdmin(admin.ModelAdmin):
 	list_display = ('__str__','business',)
-	list_filter = ('business')
+	list_filter = ('business',)
 
 
 
