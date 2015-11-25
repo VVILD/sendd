@@ -166,31 +166,6 @@ class Business(models.Model):
         return str(self.business_name)
 
 
-def assign_default_pickupaddress(sender, instance, created, **kwargs):
-    if created:
-        if instance.assigned_pickup_time is not None:
-            default_time=datetime.combine(date.today(), instance.assigned_pickup_time)
-        else:
-            default_time=datetime.combine(date.today(), datetime.time(18, 00))
-        pickup_default = AddressDetails(
-            instance = instance,
-            company_name = str(instance.business_name) if instance.business_name is not None else str(instance.username),
-            contact_person = str(instance.name) if instance.name is not None else str(instance.username),
-            phone_office = str(instance.contact_office) if instance.contact_office is not None else None,
-            phone_mobile = str(instance.contact_mob) if instance.contact_mob is not None else None,
-            address = str(instance.address),
-            default = True,
-            city = str(instance.city),
-            state = str(instance.state),
-            pincode = str(instance.pincode),
-            # default_vehicle = 'B',
-            default_pickup_time = default_time,
-            warehouse=instance.warehouse
-        )
-        pickup_default.save()
-
-post_save.connect(assign_default_pickupaddress, sender=Business)
-
 class AddressDetails(models.Model):
     """
     AddressDetails model. Foreign key to SenddUser.
@@ -293,6 +268,32 @@ class AddressDetails(models.Model):
     class Meta:
         verbose_name = 'Address details'
         verbose_name_plural = 'Address details'
+
+
+def assign_default_pickupaddress(sender, instance, created, **kwargs):
+    if created:
+        if instance.assigned_pickup_time is not None:
+            default_time=datetime.combine(date.today(), instance.assigned_pickup_time)
+        else:
+            default_time=datetime.combine(date.today(), datetime.time(18, 00))
+        pickup_default = AddressDetails(
+            business = instance,
+            company_name = str(instance.business_name) if instance.business_name is not None else str(instance.username),
+            contact_person = str(instance.name) if instance.name is not None else str(instance.username),
+            phone_office = str(instance.contact_office) if instance.contact_office is not None else None,
+            phone_mobile = str(instance.contact_mob) if instance.contact_mob is not None else None,
+            address = str(instance.address),
+            default = True,
+            city = str(instance.city),
+            state = str(instance.state),
+            pincode = str(instance.pincode),
+            # default_vehicle = 'B',
+            default_pickup_time = default_time,
+            warehouse=getattr(instance, 'warehouse', None)
+        )
+        pickup_default.save()
+
+post_save.connect(assign_default_pickupaddress, sender=Business)
 
 
 class CSApprovedPickup(AddressDetails):
