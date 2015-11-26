@@ -292,18 +292,23 @@ class BaseBusinessAdmin(reversion.VersionAdmin):
 		return super(BaseBusinessAdmin, self).changelist_view(request, extra_context=context)
 
 
-
+class DocInline(admin.TabularInline):
+	model = Document
+	fields = (
+		'type', 'docs')
+	extra = 0
 
 
 # Register your models here.
 class BusinessAdmin(BaseBusinessAdmin,ImportExportActionModelAdmin):
+	inlines = (DocInline,)
 	# search_fields=['name']
 	search_fields=['username','business_name']
 	list_display = ('username','business_name', 'pickup_time', 'warehouse', 'pb', 'assigned_pickup_time','status', 'pending_orders_total', 'pending_orders','pickedup_orders','dispatched_orders','daily','cs_comment','ff_comment')
 	list_editable = ('pb', 'assigned_pickup_time','daily','cs_comment','ff_comment')
 	raw_id_fields = ('pb', 'warehouse')
 	list_filter = ['username', 'daily','pb', 'warehouse']
-	readonly_fields = ('status','is_completed')
+	readonly_fields = ('status','is_completed','bde_details','bdm_details')
 	#actions = [export_as_csv_action("CSV Export", fields=['username','business_name','apikey','name','email','contact_mob','contact_office','address','city','state','pincode'])]
 	actions_on_bottom = False
 	actions_on_top = True
@@ -324,7 +329,17 @@ class BusinessAdmin(BaseBusinessAdmin,ImportExportActionModelAdmin):
 		# if c>0:
 		# 	del actions['make_remittance_initiated']
 
+	def bde_details(self,obj):
+		try:
+			return obj.businessmanager.phone + ", " +obj.businessmanager.user.email
+		except:
+			return "None"
 
+	def bdm_details(self,obj):
+		try:
+			return obj.businessmanager2.phone + ", " +obj.businessmanager2.user.email
+		except:
+			return "None"
 
 
 	def get_queryset(self, request):
@@ -2137,8 +2152,8 @@ class QcProductAdmin(reversion.VersionAdmin,ImportExportActionModelAdmin):
 	def get_queryset(self, request):
 		return self.model.objects.filter(Q(order__book_time__gt=datetime.date(2015, 9, 1))&(Q(order__status='DI')| Q(order__status='R'))).select_related('order','order__business').exclude(Q(status='C')).exclude(order__business='ecell').exclude(order__business='ghasitaram').exclude(order__business='holachef')
 	list_display = (
-		'order_no','tracking_no','company','book_date','dispatch_time','get_business','sent_to','last_location' ,'expected_delivery_date','last_updated','last_tracking_status','history','follow_up','ff_comment')
-	list_filter = ['order__method','order__business','warning','company',StatusFilter,'status','warning_type',StartNullFilterSpec]
+		'order_no','tracking_no','company','book_date','dispatch_time','get_business','sent_to','last_location' ,'expected_delivery_date_sendd','expected_delivery_date_courier','last_updated','last_tracking_status','history','follow_up','ff_comment')
+	list_filter = ['order__method','order__business','warning','company',StatusFilter,'status','warning_type',StartNullFilterSpec,('order__book_time', DateRangeFilter),]
 	list_editable = ('follow_up','ff_comment')
 	readonly_fields = ('previous_comment','p_tracking')
 	search_fields = ['order__order_no', 'real_tracking_no', 'mapped_tracking_no','tracking_data','order__name']
@@ -2243,14 +2258,22 @@ class QcProductAdmin(reversion.VersionAdmin,ImportExportActionModelAdmin):
 	tracking_no.admin_order_field = 'mapped_tracking_no' #Allows column order sorting
 	tracking_no.allow_tags=True
 	
-	def expected_delivery_date(self,obj):
+	def expected_delivery_date_sendd(self,obj):
 		if (obj.order.method=='B'):
 			return obj.date + timedelta(days=6)
 		elif (obj.order.method=='N'):
 			return obj.date + timedelta(days=3)
 		else:
 			return 'None'
-	expected_delivery_date.short_description='expected delivery date'
+	expected_delivery_date_sendd.short_description='expected delivery date(sendd)'
+
+	def expected_delivery_date_courier(self,obj):
+		if obj.estimated_delivery_timestamp:
+			return obj.estimated_delivery_timestamp
+		else:
+			return 'No data available'
+	expected_delivery_date_courier.short_description='expected delivery date(courier)'
+
 
 	def sent_to(self,obj):
 		return obj.order.name
