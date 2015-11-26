@@ -303,7 +303,7 @@ class DocInline(admin.TabularInline):
 	def download_link(self,obj):
 
 		return '<a href="/%s" target="_blank"> click here </a>' % (
-			obj.docs.replace("shipment","static"))
+			str(obj.docs).replace("shipment","static"))
 	download_link.allow_tags=True
 
 
@@ -1451,9 +1451,9 @@ class ReverseOrderAdmin(OrderAdmin):
 			return "reverse pickup time not selected. " + '<a href="/admin/businessapp/reverseorder/%s/?settime=True" onclick="return showAddAnotherPopup(this);"> Choose pickup time </a><br>' % (obj.pk)
 		elif not obj.reverse_confirmation_id:
 			var= str((localtime(obj.reverse_pickup_timedate)).replace(tzinfo=None).isoformat())
-			return str(localtime(obj.reverse_pickup_timedate).replace(tzinfo=None)) + '<br> <a href="/fedex_pickup_scheduler/?order_no={}&ready_timestamp={}&business_closetime={}" target="_blank"> Book on fedex</a><br><a href="/admin/businessapp/reverseorder/%s/?settime=True" onclick="return showAddAnotherPopup(this);"> Edit time </a>'.format(obj.pk,var,str(obj.reverse_latest_available_time),obj.pk)
+			return str(localtime(obj.reverse_pickup_timedate).replace(tzinfo=None)) + '<br> <a href="/fedex_pickup_scheduler/?order_no={}&ready_timestamp={}&business_closetime={}" target="_blank"> Book on fedex</a><br><a href="/admin/businessapp/reverseorder/{}/?settime=True" onclick="return showAddAnotherPopup(this);"> Edit time </a>'.format(obj.pk,var,str(obj.reverse_latest_available_time),obj.pk)
 		else:
-			return 'Pickup confirmation id is %s <br><a href="/admin/businessapp/reverseorder/%s/?settime=True" onclick="return showAddAnotherPopup(this);"> Edit time </a>' % ( obj.reverse_confirmation_id,obj.k)
+			return 'Pickup confirmation id is %s <br><a href="/admin/businessapp/reverseorder/%s/?settime=True" onclick="return showAddAnotherPopup(this);"> Edit time </a>' % ( obj.reverse_confirmation_id,obj.pk)
 	reverse_actions.allow_tags = True
 
 admin.site.register(ReverseOrder, ReverseOrderAdmin)
