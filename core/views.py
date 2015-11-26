@@ -1,3 +1,4 @@
+import json
 import io
 import string
 from datetime import datetime, timedelta
@@ -5,8 +6,9 @@ from pytz import timezone
 from xlsxwriter.workbook import Workbook
 from PyPDF2 import PdfFileWriter, PdfFileReader, PdfFileMerger
 import cStringIO
+from django.contrib.auth.decorators import login_required
 from django.core.files.base import ContentFile
-from django.http import HttpResponseBadRequest, HttpResponseRedirect, HttpResponse
+from django.http import HttpResponseBadRequest, HttpResponseNotFound, HttpResponse
 from django.shortcuts import render, redirect
 import base64
 from businessapp.models import Product
@@ -21,9 +23,15 @@ from django.core.exceptions import ObjectDoesNotExist
 __author__ = 'vatsalshah'
 
 
+@login_required()
 def create_fedex_shipment(request):
     order_pk = request.GET.get('order_pk', None)
     client_type = request.GET.get('client_type', None)
+
+    return render(request, 'fedex_new_shipment.html', fedex_view_util(order_pk, client_type))
+
+
+def fedex_view_util(order_pk, client_type):
     data = []
     master_tracking_no = None
     shipping_cost = None
@@ -46,16 +54,16 @@ def create_fedex_shipment(request):
         if products[0].order.payment_method == 'C':
             is_cod = True
         service_type, config = fedex.get_service_type(str(products[0].order.method), total_price,
-                                                      total_weight, products[0].order.city, products[0].order.pincode,
-                                                      is_cod)
+                                                      total_weight, products[0].order.city, products[0].order.pincode, is_cod)
         for idx, product in enumerate(products, start=1):
             sender_details = None
             warehouse = None
+            receiver_warehouse = None
             receiver_name = product.order.name
             receiver_company = None
             receiver_phone = product.order.phone
-            receiver_address1 = product.order.address1
-            receiver_address2 = product.order.address2
+            receiver_address1 = str(product.order.address1)
+            receiver_address2 = str(getattr(product.order, 'address2', ''))
             receiver_address = receiver_address1 + receiver_address2
             receiver_city = product.order.city
             receiver_state = product.order.state
@@ -64,10 +72,13 @@ def create_fedex_shipment(request):
             is_business_receiver = False
             product_type = product.order.payment_method
             is_cod = False
-            if product.order.business.business_name is not None:
-                sender_details = product.order.business.__dict__
-            if product.order.business.warehouse is not None:
-                warehouse = product.order.business.warehouse.__dict__
+            if product.order.pickup_address is not None:
+                sender_details = product.order.pickup_address.__dict__
+            if product.order.pickup_address.warehouse is not None:
+                warehouse = product.order.pickup_address.warehouse.__dict__
+            if product.order.is_reverse:
+                previous_order = BusinessOrder.objects.get(pk=product.order.reference_id)
+                receiver_warehouse = previous_order.pickup_address.warehouse.__dict__
             if product_type == 'C':
                 is_cod = True
             sender = {
@@ -84,7 +95,8 @@ def create_fedex_shipment(request):
                 "state": receiver_state,
                 "pincode": receiver_pincode,
                 "is_business": is_business_receiver,
-                "country_code": receiver_country_code
+                "country_code": receiver_country_code,
+                "warehouse": receiver_warehouse
             }
             if idx == 1:
                 item = items
@@ -97,7 +109,7 @@ def create_fedex_shipment(request):
                     "is_doc": product.is_document
                 }]
             result = fedex.create_shipment(sender, receiver, item, config, service_type, idx, package_count,
-                                           master_tracking_no)
+                                           master_tracking_no, product.order.is_reverse)
             if result['status'] != 'ERROR':
                 if product.mapped_tracking_no:
                     product.tracking_history = str(product.tracking_history) + ',' + str(product.mapped_tracking_no)
@@ -205,7 +217,7 @@ def create_fedex_shipment(request):
                 }]
 
             result = fedex.create_shipment(sender, receiver, item, config, service_type, idx, package_count,
-                                           master_tracking_no)
+                                           master_tracking_no, False)
             if result['status'] != 'ERROR':
 
                 if shipment.mapped_tracking_no:
@@ -249,14 +261,14 @@ def create_fedex_shipment(request):
         fedex_ship_docs_url = str(order.fedex_ship_docs.name).split('/')[-1]
         order.mapped_master_tracking_number = master_tracking_no
         order.save()
-    context = {
+    return {
         "data": data,
         "shipping_cost": shipping_cost,
         "fedex_ship_docs_url": fedex_ship_docs_url
     }
-    return render(request, 'fedex_new_shipment.html', context)
 
 
+@login_required()
 def barcode_fedex_redirector(request, barcode):
     try:
         shipment = Shipment.objects.get(barcode=barcode)
@@ -277,6 +289,7 @@ def barcode_fedex_redirector(request, barcode):
     return render(request, 'fedex_print.html', {"urlList": labels})
 
 
+@login_required()
 def create_individual_fedex_shipment(request):
     shipment_pk = request.GET.get('shipment_pk', None)
     client_type = request.GET.get('client_type', None)
@@ -439,6 +452,34 @@ def create_individual_fedex_shipment(request):
         "shipping_cost": result["shipping_cost"]
     }
     return render(request, 'fedex_legacy_shipment.html', {"result": context})
+
+
+# @login_required()
+def schedule_reverse_pickup(request):
+    order_no = request.GET.get('order_no', None)
+    ready_timestamp = request.GET.get('ready_timestamp', None)
+    business_closetime = request.GET.get('business_closetime', None)
+
+    print ready_timestamp
+
+    if not (order_no and ready_timestamp and business_closetime):
+        return HttpResponseBadRequest("Please provide all three parameters")
+
+    try:
+        order = BusinessOrder.objects.get(pk=order_no)
+    except ObjectDoesNotExist:
+        return HttpResponseNotFound("Order not found. Please check the order no")
+
+    result = json.dumps(fedex.pickup_scheduler(order, ready_timestamp, business_closetime))
+
+    conf_id=json.loads(result)
+    conf_id=conf_id["pickup_confirmation_number"]
+    print conf_id
+    order.reverse_confirmation_id=conf_id
+    order.save()
+
+    return HttpResponse(result, content_type='application/json')
+
 
 
 def create_ecom_shipment(request):

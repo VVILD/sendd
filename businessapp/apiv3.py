@@ -1,17 +1,30 @@
 from django.conf.urls import url
 from tastypie.utils import trailing_slash
+import time
+from datetime import datetime, timedelta
 
+from businessapp.apiv4 import BusinessPickupAddressResource
 from businessapp.models import *
 from businessapp.tasks import send_business_labels
 from myapp.models import Zipcode, Shipment
-
+from tastypie.authorization import Authorization
 from tastypie import fields
 from tastypie.serializers import Serializer
-
-from tastypie.constants import ALL
+from random import randint
+import random
+import urllib2, urllib
+import hashlib, random
+import os
+from tastypie.constants import ALL, ALL_WITH_RELATIONS
+from tastypie.authentication import ApiKeyAuthentication
 import math
-
+import string
+from django.core.mail import send_mail
+from push_notifications.models import APNSDevice, GCMDevice
+import ast
 import json
+from tastypie.resources import Resource
+from tastypie.fields import ListField
 
 import urlparse
 from tastypie.authentication import Authentication
@@ -136,6 +149,7 @@ from tastypie import http
 from tastypie.exceptions import ImmediateHttpResponse
 from tastypie.resources import csrf_exempt
 from tastypie.resources import Resource, ModelResource
+import logging
 
 
 class BaseCorsResource(Resource):
@@ -258,6 +272,7 @@ class BusinessResource(CORSModelResource):
 class OrderResource3(CORSModelResource):
     business = fields.ForeignKey(BusinessResource, 'business', null=True)
     products = fields.ToManyField("businessapp.apiv3.ProductResource3", 'product_set', related_name='product')
+    pickup_address = fields.ForeignKey(BusinessPickupAddressResource, 'pickup_address', null=True)
 
     class Meta:
         queryset = Order.objects.all()
@@ -278,6 +293,10 @@ class OrderResource3(CORSModelResource):
         try:
             business_obj = Business.objects.get(username=bundle.data['username'])
             bundle.data['business'] = "/bapi/v1/business/" + str(bundle.data['username']) + "/"
+            pickup_addr = AddressDetails.objects.filter(business=business_obj)
+            if pickup_addr.count() == 0:
+                raise ImmediateHttpResponse(HttpBadRequest("No pickupaddress found for the business"))
+            bundle.data['pickup_address'] = "/bapi/v4/pickup_address/" + str(pickup_addr.first().pk) + "/"
         except Business.DoesNotExist:
             raise ImmediateHttpResponse(HttpBadRequest("Username doesnt exist"))
         except KeyError:
@@ -382,6 +401,7 @@ class OrderPatchResource(CORSModelResource):
         }
         self.skip = True
         return new_bundle
+        # return bundle
 
 
 class OrderPatchReferenceResource(CORSModelResource):
@@ -675,6 +695,7 @@ class BusinessPatchResource(CORSModelResource):
         return super(BusinessPatchResource, self).update_in_place(
             request, original_bundle, new_data
         )
+
 
 
 class OrderCancelResource(CORSModelResource):

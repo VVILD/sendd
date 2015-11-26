@@ -313,6 +313,15 @@ class OrderResource(CORSModelResource):
         bundle.data['business'] = bundle.obj.business
         bundle.data['allowed_actual_tracking'] = bundle.obj.business.show_tracking_company
         bundle.data['products'] = [product.__dict__ for product in products]
+
+        bundle.data['reversible'] = False
+        db_pincode = Pincode.objects.filter(pincode=bundle.obj.pincode).first()
+        if bundle.obj.status == 'C' and not db_pincode.fedex_oda_opa and db_pincode.fedex_servicable and not db_pincode.fedex_delivery_only and not bundle.obj.is_reverse and not bundle.obj.reversed:
+            bundle.data['reversible'] = True
+
+        if bundle.obj.is_reverse:
+            bundle.data['reverse_label_url'] = str(bundle.obj.fedex_ship_docs.name).split('/')[-1] if bundle.obj.fedex_ship_docs is not None else None
+
         return bundle
 
 

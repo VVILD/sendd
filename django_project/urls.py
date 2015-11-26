@@ -2,7 +2,7 @@ from django.conf.urls import patterns, include, url
 from django.contrib import admin
 from businessapp.views import print_address_view,readpdf,barcode_stats_view,qc_stats_view,print_invoice_order_view,print_invoice_product_view
 from core.views import create_fedex_shipment, barcode_fedex_redirector, create_individual_fedex_shipment, \
-    create_ecom_shipment, download_ecom_orders
+    create_ecom_shipment, download_ecom_orders, schedule_reverse_pickup
 from myapp.api import UserResource,AddressResource,OrderResource,ShipmentResource,XResource,LoginSessionResource,WeborderResource,PriceappResource,DateappResource,ForgotpassResource
 from tastypie.api import Api
 from django_project import settings
@@ -105,6 +105,19 @@ bv3_api.register(OrderPatchReferenceResource())
 bv3_api.register(EmailLabelsResource())
 
 
+from businessapp.apiv4 import BusinessResource as BusinessResourceV4, ReverseOrderResource
+from businessapp.apiv4 import OrderResource as OrderResourceV4
+from businessapp.apiv4 import ProductResource as ProductResourceV4
+from businessapp.apiv4 import FedexCheckResource as FedexCheckResourceV4
+from businessapp.apiv4 import BusinessPickupAddressResource
+bv4_api = Api(api_name='v4')
+bv4_api.register(BusinessResourceV4())
+bv4_api.register(BusinessPickupAddressResource())
+bv4_api.register(ProductResourceV4())
+bv4_api.register(OrderResourceV4())
+bv4_api.register(FedexCheckResourceV4())
+bv4_api.register(ReverseOrderResource())
+
 from core.api import PincodeResource
 pv1_api = Api(api_name='v1')
 pv1_api.register(PincodeResource())
@@ -122,6 +135,7 @@ urlpatterns = patterns('',
     url(r'^bapi/', include(bv1_api.urls)),
     url(r'^bapi/', include(bv2_api.urls)),
     url(r'^bapi/', include(bv3_api.urls)),
+    url(r'^bapi/', include(bv4_api.urls)),
     url(r'^papi/', include(pv1_api.urls)),
     url(r'^stats/', include('myapp.urls')),       
     url(r'^pb_api/', include(pbv1_api.urls)),
@@ -137,4 +151,5 @@ urlpatterns = patterns('',
     url(r'^ffmanual/', readpdf, name='readpdf'),
     url(r'^barcode_fedex_print/(?P<barcode>[\w]{10})/$', barcode_fedex_redirector, name='fedex_barcode_redirector'),
     url(r'^download_ecom_orders/', download_ecom_orders, name='download_ecom_orders'),
+    url(r'^fedex_pickup_scheduler/$', schedule_reverse_pickup, name='fedex_pickup_scheduler')
 )

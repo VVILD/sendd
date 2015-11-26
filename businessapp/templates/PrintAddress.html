@@ -37,9 +37,9 @@ Sendd Order No:{{ order.pk }}
 				<h3>From:</h3>
 				<div class="col-xs-offset-1">
 					<h4>Sendd</h4>
-					<p>107 A-Wing Classique Center, Gundavali</p>
-                    <p>Andheri East, Mahakali Caves Road</p>
-					<p>Mumbai, Maharashtra - 400093</p>
+					<p>{{ order.pickup_address.warehouse.address_line_1 }}</p>
+                    <p>{{ order.pickup_address.warehouse.address_line_2 }}</p>
+					<p>{{ order.pickup_address.warehouse.city }}, {{ order.pickup_address.warehouse.state }} - {{ order.pickup_address.warehouse.pincode }}</p>
 					<p>8080028081</p>
 				</div>
 			</div>

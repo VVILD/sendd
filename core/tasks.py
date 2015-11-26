@@ -6,6 +6,7 @@ from geopy.geocoders import googlev3
 @app.task
 def new_warehouse_reassignment(pk):
     from core.models import Warehouse, Pincode
+    from businessapp.models import AddressDetails
     obj = Warehouse.objects.get(pk=pk)
     geolocator = googlev3.GoogleV3(api_key="AIzaSyBEfEgATQeVkoKUnaB4O9rIdX2K2Bsh63o")
     location = geolocator.geocode("{}, India".format(obj.pincode))
@@ -16,7 +17,8 @@ def new_warehouse_reassignment(pk):
     warehouses = Warehouse.objects.filter(city=obj.city)
 
     from businessapp.models import Business
-    businesses = Business.objects.filter(pincode__isnull=False).exclude(pincode=u'')
+    businesses = Business.objects.filter(pincode__isnull=False, city=obj.city).exclude(pincode=u'')
+    addresses = AddressDetails.objects.filter(pincode__isnull=False, city=obj.city).exclude(pincode=u'')
 
     for pincode in pincodes:
         closest_warehouse = None
@@ -36,5 +38,13 @@ def new_warehouse_reassignment(pk):
         else:
             business.warehouse = None
         business.save()
+
+    for address in addresses:
+        pincode_search = Pincode.objects.filter(pincode=str(address.pincode)).exclude(latitude__isnull=True, warehouse__isnull=True)
+        if pincode_search.count() > 0:
+            address.warehouse = pincode_search[0].warehouse
+        else:
+            address.warehouse = None
+        address.save()
 
     print("Reassignment Complete for {}".format(obj.name))

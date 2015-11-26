@@ -4,9 +4,11 @@ import os
 import sys
 import textwrap
 from django.core.files.base import ContentFile
+from core.fedex.services.pickup_service import FedexCreatePickupRequest
 from core.fedex.services.rate_service import FedexRateServiceRequest
 from core.models import StateCodes, Pincode
 from django.core.exceptions import ValidationError
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from core.fedex.config import FedexConfig
 from core.fedex.services.ship_service import FedexProcessShipmentRequest
@@ -14,64 +16,116 @@ from core.fedex.services.ship_service import FedexProcessShipmentRequest
 __author__ = 'vatsalshah'
 
 
-def create_shipment(sender, receiver, item, FEDEX_CONFIG_OBJ, service_type, sequence_no, package_count, master_tracking_no):
+def create_shipment(sender, receiver, item, FEDEX_CONFIG_OBJ, service_type, sequence_no, package_count,
+                    master_tracking_no, reverse):
     shipment = FedexProcessShipmentRequest(FEDEX_CONFIG_OBJ)
-
-    receiver_address = textwrap.wrap(text=str(receiver['address']), width=35)
-    if len(receiver_address) > 3:
-        raise ValidationError("Address Length > 130 chars")
 
     shipment.RequestedShipment.DropoffType = "REGULAR_PICKUP"
     shipment.RequestedShipment.ServiceType = str(service_type)
     shipment.RequestedShipment.PackagingType = 'YOUR_PACKAGING'
 
-    if sender['sender_details']['business_name'] is not None:
-        # Shipper contact info.
-        shipment.RequestedShipment.Shipper.Contact.PersonName = str(sender['sender_details']['business_name'])
-    else:
-        # Shipper contact info.
-        shipment.RequestedShipment.Shipper.Contact.PersonName = "Sendd"
-    # if sender['company']:
-    shipment.RequestedShipment.Shipper.Contact.CompanyName = "C/O: Sendd"
-    shipment.RequestedShipment.Shipper.Contact.PhoneNumber = '8080028081'
-    if sender['warehouse'] is not None:
-        # Shipper address.
-        if sender['warehouse']['address_line_2'] is not None:
-            shipment.RequestedShipment.Shipper.Address.StreetLines = [str(sender['warehouse']['address_line_1']),
-                                                                      str(sender['warehouse']['address_line_2'])]
+    if reverse is False:
+        if sender['sender_details']['company_name'] is not None:
+            # Shipper contact info.
+            shipment.RequestedShipment.Shipper.Contact.PersonName = str(sender['sender_details']['company_name'])
         else:
-            shipment.RequestedShipment.Shipper.Address.StreetLines = [str(sender['warehouse']['address_line_1'])]
-        shipment.RequestedShipment.Shipper.Address.City = str(sender['warehouse']['city'])
-        state_code = StateCodes.objects.get(country_code='IN', subdivision_name=str(sender['warehouse']['state']))
+            # Shipper contact info.
+            shipment.RequestedShipment.Shipper.Contact.PersonName = "Sendd"
+        # if sender['company']:
+        shipment.RequestedShipment.Shipper.Contact.CompanyName = "C/O: Sendd"
+        shipment.RequestedShipment.Shipper.Contact.PhoneNumber = '8080028081'
+        if sender['warehouse'] is not None:
+            # Shipper address.
+            if sender['warehouse']['address_line_2'] is not None:
+                shipment.RequestedShipment.Shipper.Address.StreetLines = [str(sender['warehouse']['address_line_1']),
+                                                                          str(sender['warehouse']['address_line_2'])]
+            else:
+                shipment.RequestedShipment.Shipper.Address.StreetLines = [str(sender['warehouse']['address_line_1'])]
+            shipment.RequestedShipment.Shipper.Address.City = str(sender['warehouse']['city'])
+            state_code = StateCodes.objects.get(country_code='IN', subdivision_name=str(sender['warehouse']['state']))
+            shipment.RequestedShipment.Shipper.Address.StateOrProvinceCode = str(state_code.code).split('-')[1]
+            shipment.RequestedShipment.Shipper.Address.PostalCode = str(sender['warehouse']['pincode'])
+        else:
+            # Shipper address.
+            shipment.RequestedShipment.Shipper.Address.StreetLines = ["107 A-Wing Classique Center, Gundavali",
+                                                                      "Andheri East, Mahakali Caves Road"]
+            shipment.RequestedShipment.Shipper.Address.City = "Mumbai"
+            shipment.RequestedShipment.Shipper.Address.StateOrProvinceCode = "MH"
+            shipment.RequestedShipment.Shipper.Address.PostalCode = "400093"
+
+        shipment.RequestedShipment.Shipper.Address.CountryCode = "IN"
+
+        # Recipient contact info.
+        shipment.RequestedShipment.Recipient.Contact.PersonName = str(receiver['name'])
+        receiver_address = textwrap.wrap(text=str(receiver['address']), width=35)
+        if len(receiver_address) > 3:
+            raise ValidationError("Address Length > 130 chars")
+        if len(receiver_address) > 1:
+            shipment.RequestedShipment.Recipient.Contact.CompanyName = str(receiver_address[0])
+
+        shipment.RequestedShipment.Recipient.Contact.PhoneNumber = str(receiver['phone'])
+
+        # Recipient address
+        if len(receiver_address) > 1:
+            shipment.RequestedShipment.Recipient.Address.StreetLines = [receiver_address[1:]]
+        else:
+            shipment.RequestedShipment.Recipient.Address.StreetLines = [receiver_address[0]]
+        shipment.RequestedShipment.Recipient.Address.City = str(receiver['city'])
+        state_code = StateCodes.objects.get(country_code='IN', subdivision_name=str(receiver['state']))
+        shipment.RequestedShipment.Recipient.Address.StateOrProvinceCode = str(state_code.code).split('-')[1]
+        shipment.RequestedShipment.Recipient.Address.PostalCode = str(receiver['pincode'])
+        shipment.RequestedShipment.Recipient.Address.CountryCode = str(receiver['country_code'])
+
+    else:
+        shipment.RequestedShipment.Shipper.Contact.PersonName = str(sender['sender_details']['contact_person'])
+        shipment.RequestedShipment.Shipper.Contact.PhoneNumber = str(sender['sender_details']['phone_office'])
+        sender_address = textwrap.wrap(text=str(sender['sender_details']['address']), width=35)
+        if len(sender_address) > 3:
+            raise ValidationError("Sender Address Length > 130 chars")
+        if len(sender_address) > 1:
+            shipment.RequestedShipment.Shipper.Contact.CompanyName = str(sender_address[0])
+            shipment.RequestedShipment.Shipper.Address.StreetLines = [sender_address[1:]]
+        else:
+            shipment.RequestedShipment.Shipper.Address.StreetLines = [sender_address[0]]
+        shipment.RequestedShipment.Shipper.Address.City = str(sender['sender_details']['city'])
+        state_code = StateCodes.objects.get(country_code='IN', subdivision_name=str(sender['sender_details']['state']))
         shipment.RequestedShipment.Shipper.Address.StateOrProvinceCode = str(state_code.code).split('-')[1]
-        shipment.RequestedShipment.Shipper.Address.PostalCode = str(sender['warehouse']['pincode'])
-    else:
-        # Shipper address.
-        shipment.RequestedShipment.Shipper.Address.StreetLines = ["107 A-Wing Classique Center, Gundavali",
-                                                                  "Andheri East, Mahakali Caves Road"]
-        shipment.RequestedShipment.Shipper.Address.City = "Mumbai"
-        shipment.RequestedShipment.Shipper.Address.StateOrProvinceCode = "MH"
-        shipment.RequestedShipment.Shipper.Address.PostalCode = "400093"
+        shipment.RequestedShipment.Shipper.Address.PostalCode = str(sender['sender_details']['pincode'])
+        shipment.RequestedShipment.Shipper.Address.CountryCode = "IN"
 
-    shipment.RequestedShipment.Shipper.Address.CountryCode = "IN"
+        if receiver['company'] is not None:
+            # Shipper contact info.
+            shipment.RequestedShipment.Recipient.Contact.PersonName = str(receiver['company'])
+        else:
+            # Shipper contact info.
+            shipment.RequestedShipment.Recipient.Contact.PersonName = "Sendd"
+        # if sender['company']:
+        shipment.RequestedShipment.Recipient.Contact.CompanyName = "C/O: Sendd"
+        shipment.RequestedShipment.Recipient.Contact.PhoneNumber = '8080028081'
+        if receiver['warehouse'] is not None:
+            # Shipper address.
+            if receiver['warehouse']['address_line_2'] is not None:
+                shipment.RequestedShipment.Recipient.Address.StreetLines = [
+                    str(receiver['warehouse']['address_line_1']),
+                    str(receiver['warehouse']['address_line_2'])]
+            else:
+                shipment.RequestedShipment.Recipient.Address.StreetLines = [
+                    str(receiver['warehouse']['address_line_1'])]
+            shipment.RequestedShipment.Recipient.Address.City = str(receiver['warehouse']['city'])
+            state_code = StateCodes.objects.get(country_code='IN', subdivision_name=str(receiver['warehouse']['state']))
+            shipment.RequestedShipment.Recipient.Address.StateOrProvinceCode = str(state_code.code).split('-')[1]
+            shipment.RequestedShipment.Recipient.Address.PostalCode = str(receiver['warehouse']['pincode'])
+        else:
+            # Shipper address.
+            shipment.RequestedShipment.Recipient.Address.StreetLines = ["107 A-Wing Classique Center, Gundavali",
+                                                                        "Andheri East, Mahakali Caves Road"]
+            shipment.RequestedShipment.Recipient.Address.City = "Mumbai"
+            shipment.RequestedShipment.Recipient.Address.StateOrProvinceCode = "MH"
+            shipment.RequestedShipment.Recipient.Address.PostalCode = "400093"
 
-    # Recipient contact info.
-    shipment.RequestedShipment.Recipient.Contact.PersonName = str(receiver['name'])
+        shipment.RequestedShipment.Recipient.Address.CountryCode = "IN"
 
-    if len(receiver_address) > 1:
-        shipment.RequestedShipment.Recipient.Contact.CompanyName = str(receiver_address[0])
-    shipment.RequestedShipment.Recipient.Contact.PhoneNumber = str(receiver['phone'])
 
-    # Recipient address
-    if len(receiver_address) > 1:
-        shipment.RequestedShipment.Recipient.Address.StreetLines = [receiver_address[1:]]
-    else:
-        shipment.RequestedShipment.Recipient.Address.StreetLines = [receiver_address[0]]
-    shipment.RequestedShipment.Recipient.Address.City = str(receiver['city'])
-    state_code = StateCodes.objects.get(country_code='IN', subdivision_name=str(receiver['state']))
-    shipment.RequestedShipment.Recipient.Address.StateOrProvinceCode = str(state_code.code).split('-')[1]
-    shipment.RequestedShipment.Recipient.Address.PostalCode = str(receiver['pincode'])
-    shipment.RequestedShipment.Recipient.Address.CountryCode = str(receiver['country_code'])
     # This is needed to ensure an accurate rate quote with the response.
     shipment.RequestedShipment.EdtRequestType = None
 
@@ -86,7 +140,8 @@ def create_shipment(sender, receiver, item, FEDEX_CONFIG_OBJ, service_type, sequ
         shipment.RequestedShipment.SpecialServicesRequested.CodDetail.CodCollectionAmount = shipment.create_wsdl_object_of_type(
             'Money')
         shipment.RequestedShipment.SpecialServicesRequested.CodDetail.CodCollectionAmount.Currency = 'INR'
-        shipment.RequestedShipment.SpecialServicesRequested.CodDetail.CodCollectionAmount.Amount = sum(i['price'] for i in item)
+        shipment.RequestedShipment.SpecialServicesRequested.CodDetail.CodCollectionAmount.Amount = sum(
+            i['price'] for i in item)
         shipment.RequestedShipment.SpecialServicesRequested.CodDetail.CollectionType = 'CASH'
         shipment.RequestedShipment.SpecialServicesRequested.CodDetail.FinancialInstitutionContactAndAddress = shipment.create_wsdl_object_of_type(
             'Party')
@@ -175,7 +230,8 @@ def create_shipment(sender, receiver, item, FEDEX_CONFIG_OBJ, service_type, sequ
         shipment.RequestedShipment.PackageCount = package_count
 
     shipment.RequestedShipment.ShippingDocumentSpecification.ShippingDocumentTypes = 'COMMERCIAL_INVOICE'
-    shipment.RequestedShipment.ShippingDocumentSpecification.CommercialInvoiceDetail = shipment.create_wsdl_object_of_type('CommercialInvoiceDetail')
+    shipment.RequestedShipment.ShippingDocumentSpecification.CommercialInvoiceDetail = shipment.create_wsdl_object_of_type(
+        'CommercialInvoiceDetail')
     shipment.RequestedShipment.ShippingDocumentSpecification.CommercialInvoiceDetail.Format.ImageType = 'PDF'
     shipment.RequestedShipment.ShippingDocumentSpecification.CommercialInvoiceDetail.Format.StockType = 'PAPER_LETTER'
 
@@ -204,13 +260,11 @@ def create_shipment(sender, receiver, item, FEDEX_CONFIG_OBJ, service_type, sequ
 
     shipment.send_request()
 
-
     if shipment.response.HighestSeverity == "ERROR":
         return {
             "status": shipment.response.HighestSeverity,
             "message": shipment.response.Notifications.Message
         }
-
 
     COD_RETURN_LABEL = None
 
@@ -219,7 +273,8 @@ def create_shipment(sender, receiver, item, FEDEX_CONFIG_OBJ, service_type, sequ
     shiping_cost = None
     if sequence_no == package_count:
         COMMERCIAL_INVOICE = shipment.response.CompletedShipmentDetail.ShipmentDocuments[0].Parts[0].Image
-        shiping_cost = shipment.response.CompletedShipmentDetail.ShipmentRating.ShipmentRateDetails[0].TotalNetCharge.Amount
+        shiping_cost = shipment.response.CompletedShipmentDetail.ShipmentRating.ShipmentRateDetails[
+            0].TotalNetCharge.Amount
 
         if sender['is_cod']:
             COD_RETURN_LABEL = shipment.response.CompletedShipmentDetail.AssociatedShipments[0].Label.Parts[0].Image
@@ -238,11 +293,9 @@ def create_shipment(sender, receiver, item, FEDEX_CONFIG_OBJ, service_type, sequ
 
 
 def is_oda(sender, receiver, item, FEDEX_CONFIG_OBJ, service_type):
-
     # This is the object that will be handling our tracking request.
     # We're using the FedexConfig object from example_config.py in this dir.
     rate_request = FedexRateServiceRequest(FEDEX_CONFIG_OBJ)
-
 
     receiver_address = textwrap.wrap(receiver['address'], 35)
     if len(receiver_address) > 3:
@@ -269,7 +322,7 @@ def is_oda(sender, receiver, item, FEDEX_CONFIG_OBJ, service_type):
 
     # Shipper address.
     rate_request.RequestedShipment.Shipper.Address.StreetLines = ["107 A-Wing Classique Center, Gundavali",
-                                                              "Andheri East, Mahakali Caves Road"]
+                                                                  "Andheri East, Mahakali Caves Road"]
     rate_request.RequestedShipment.Shipper.Address.City = "Mumbai"
     rate_request.RequestedShipment.Shipper.Address.StateOrProvinceCode = "MH"
     rate_request.RequestedShipment.Shipper.Address.PostalCode = "400093"
@@ -355,7 +408,6 @@ def is_oda(sender, receiver, item, FEDEX_CONFIG_OBJ, service_type):
     rate_request.RequestedShipment.CustomsClearanceDetail.ClearanceBrokerage = None
     rate_request.RequestedShipment.CustomsClearanceDetail.FreightOnValue = None
 
-
     package1_weight = rate_request.create_wsdl_object_of_type('Weight')
     # Weight, in pounds.
     package1_weight.Value = float(item['weight'])
@@ -389,10 +441,10 @@ def is_oda(sender, receiver, item, FEDEX_CONFIG_OBJ, service_type):
 
 def get_service_type(selected_type, item_value, item_weight, receiver_city, receiver_pincode, is_cod=False):
     FEDEX_CONFIG_INTRA_MUMBAI = FedexConfig(key='FRmcajHEPfMUjNmC',
-                                        password='fY5ZwylNGYFXAgNoChYYYSojG',
-                                        account_number='678650382',
-                                        meter_number='108284351',
-                                        use_test_server=False)
+                                            password='fY5ZwylNGYFXAgNoChYYYSojG',
+                                            account_number='678650382',
+                                            meter_number='108284351',
+                                            use_test_server=False)
     FEDEX_CONFIG_INDIA = FedexConfig(key='jFdC6SAqFS9vz7gY',
                                      password='6bxCaeVdszjUo2iHw5R3tbrBu',
                                      account_number='677853204',
@@ -431,3 +483,71 @@ def get_service_type(selected_type, item_value, item_weight, receiver_city, rece
             return 'FEDEX_EXPRESS_SAVER', FEDEX_CONFIG_INDIA
         else:
             return 'FEDEX_EXPRESS_SAVER', FEDEX_CONFIG_INTRA_MUMBAI
+
+
+def pickup_scheduler(order, ready_timestamp, closetime):
+    FEDEX_CONFIG_OBJ = FedexConfig(key='jFdC6SAqFS9vz7gY',
+                                   password='6bxCaeVdszjUo2iHw5R3tbrBu',
+                                   account_number='677853204',
+                                   meter_number='108284345',
+                                   express_region_code='APAC',
+                                   use_test_server=False)
+
+    # Set this to the INFO level to see the response from Fedex printed in stdout.
+    logging.basicConfig(level=logging.INFO)
+
+    # This is the object that will be handling our tracking request.
+    # We're using the FedexConfig object from example_config.py in this dir.
+    pickup = FedexCreatePickupRequest(FEDEX_CONFIG_OBJ)
+
+    pickup.OriginDetail.UseAccountAddress = False
+    pickup.OriginDetail.PickupDateType = None
+    pickup.OriginDetail.PickupLocation.Contact.PersonName = str(
+        order.pickup_address.contact_person) if order.pickup_address.contact_person is not None else str(
+        order.pickup_address.company_name)
+    pickup.OriginDetail.PickupLocation.Contact.CompanyName = str(order.pickup_address.company_name)
+    pickup.OriginDetail.PickupLocation.Contact.PhoneNumber = str(order.pickup_address.phone_office)
+    address = textwrap.wrap(text=str(order.pickup_address.address), width=35)
+    if len(address) > 2:
+        raise ValidationError("Address Length > 90 chars")
+    if len(address) > 1:
+        pickup.OriginDetail.PickupLocation.Address.StreetLines = [address[0:]]
+    else:
+        pickup.OriginDetail.PickupLocation.Address.StreetLines = [address[0]]
+    pickup.OriginDetail.PickupLocation.Address.City = str(order.pickup_address.city)
+    state_code = StateCodes.objects.get(country_code='IN', subdivision_name=str(order.pickup_address.state))
+    pickup.OriginDetail.PickupLocation.Address.StateOrProvinceCode = str(state_code.code).split('-')[1]
+    pickup.OriginDetail.PickupLocation.Address.PostalCode = str(order.pickup_address.pincode)
+    pickup.OriginDetail.PickupLocation.Address.CountryCode = "IN"
+    pickup.OriginDetail.PickupLocation.Address.Residential = False
+    pickup.OriginDetail.PackageLocation = "FRONT"
+    pickup.OriginDetail.BuildingPart = "BUILDING"
+    # pickup.OriginDetail.BuildingPartDescription = "1FL"
+    pickup.OriginDetail.ReadyTimestamp = ready_timestamp
+    pickup.OriginDetail.CompanyCloseTime = closetime
+
+    pickup.PackageCount = 1
+
+    pickup.TotalWeight.Units = "KG"
+    total_weight = sum([float(product.applied_weight) for product in order.product_set.all()])
+    pickup.TotalWeight.Value = total_weight
+
+    pickup.CarrierCode = "FDXE"
+    pickup.OversizePackageCount = 0
+    # pickup.Remarks = "This is a test.  Do not pickup"
+    # pickup.CommodityDescription = "Test Package"
+    pickup.CountryRelationship = "DOMESTIC"
+
+    pickup.send_request()
+
+    if pickup.response.HighestSeverity == "SUCCESS":
+        result = {
+            "pickup_confirmation_number":  pickup.response.Location + pickup.response.PickupConfirmationNumber
+        }
+        return result
+    else:
+        result = {
+            "status": pickup.response.HighestSeverity,
+            "message": pickup.response.Notifications.Message
+        }
+        return result

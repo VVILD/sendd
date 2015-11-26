@@ -36,18 +36,22 @@
     });
 })(django.jQuery);
 
+function dismissAddAnotherPopup(win) {
+    win.close();
+    location.reload(true);
+    }
+
 </script>
 {% if cs %}
 
 
 <center>
-<a class="btn btn-info" href="/admin/businessapp/notapprovedbusiness/"><span class="badge">{{nap}}</span> Not Approved</a>
-<a class="btn btn-info" href="/admin/businessapp/approvedbusiness/"><span class="badge">{{apcs}}</span>Approved</a>
-<a class="btn btn-info" href="/admin/businessapp/cancelledbusiness/"><span class="badge">{{c}}</span>cancelled</a>
-<a class="btn btn-info" href="/admin/businessapp/dailybusiness/"><span class="badge">{{d}}</span>daily</a>
-<a class="btn btn-info" href="/admin/businessapp/order/?q=&status__exact=P"><span class="badge">{{p}}</span>Pending orders </a>
-<a class="btn btn-info" href="/admin/businessapp/order/">Search orders</a>
-<a class="btn btn-error" href="/admin/businessapp/proxyproduct/"><span class="badge">{{un}}</span>Unmapped Orders</a>
+    <a class="btn btn-info" href="/admin/businessapp/csallpickup/"><span class="badge">{{csall}}</span>All pickups</a>
+    <a class="btn btn-info" href="/admin/businessapp/csapprovedpickup"><span class="badge">{{apcs}}</span>New Bookings</a>
+    <a class="btn btn-info" href="/admin/businessapp/csdailypickup/"><span class="badge">{{d}}</span>Daily Pickups</a>
+
+<a class="btn btn-info" href="/admin/businessapp/pendingorder/"><span class="badge">{{p}}</span>Pending orders </a>
+<a class="btn btn-info" href="/admin/businessapp/proxyproduct/"><span class="badge">{{un}}</span>Unmapped Orders</a>
 </center>
 <br>
 <br>
@@ -62,17 +66,15 @@
 {% elif op %}
 <center>
 <div class="row">
-<a class="btn btn-info" href="/admin/businessapp/approvedbusinessop/"><span class="badge">{{ap}}</span> Approved business</a>
-<a class="btn btn-info" href="/admin/businessapp/allotedbusiness/"><span class="badge">{{a}}</span> Alloted business</a>
-<a class="btn btn-info" href="/admin/businessapp/pickedupbusiness/"><span class="badge">{{picked}}</span> picked up business</a>
+    <a class="btn btn-info" href="/admin/businessapp/ffapprovedpickup/"><span class="badge">{{ap}}</span>New Bookings</a>
+    <a class="btn btn-info" href="/admin/businessapp/ffcompletedpickup/"><span class="badge">{{picked}}</span>Picked up bookings</a>
 
-<a class="btn btn-info" href="/admin/businessapp/order/?q=&status__exact=P"><span class="badge">{{p}}</span>Pending orders </a>
-<a class="btn btn-info" href="/admin/businessapp/order/?q=&status__exact=PU"><span class="badge">{{pu}}</span>Picked up orders</a>
-<a class="btn btn-info" href="/admin/businessapp/order/?q=&status__exact=DI"><span class="badge">{{di}}</span>Dispatched orders</a>
-<a class="btn btn-info" href="/admin/businessapp/order/">Search orders</a>
-<a class="btn btn-error" href="/admin/businessapp/proxyproduct/"><span class="badge">{{un}}</span>Unmapped Orders</a>
+<a class="btn btn-info" href="/admin/businessapp/pendingorder/"><span class="badge">{{p}}</span>Pending orders </a>
+<a class="btn btn-info" href="/admin/businessapp/pickedorder/?q=&product__pickup_time__gte={{ date_min }}&product__pickup_time__lt={{ date_max }}"><span class="badge">{{pu}}</span>Picked up orders</a>
+<a class="btn btn-info" href="/admin/businessapp/dispatchedorder/?q=&product__dispatch_time__gte={{ date_min }}&product__dispatch_time__lt={{ date_max }}"><span class="badge">{{di}}</span>Dispatched orders</a>
+<a class="btn btn-info" href="/admin/businessapp/proxyproduct/"><span class="badge">{{un}}</span>Unmapped Orders</a>
 
-    <a class="btn btn-warning" href="/admin/businessapp/qcproduct/?status__exact=R">Return</a>
+    <a class="btn btn-info" href="/admin/businessapp/qcproduct/?status__exact=R">Return</a>
 <br>
 <br>
 </div>
@@ -81,13 +83,13 @@
 
 <center>
 Customer support links
-<a class="btn btn-info" href="/admin/businessapp/notapprovedbusiness/?o=-9"><span class="badge">{{nap}}</span> Not Approved</a>
-<a class="btn btn-info" href="/admin/businessapp/approvedbusiness/"><span class="badge">{{apcs}}</span>Approved</a>
-<a class="btn btn-info" href="/admin/businessapp/cancelledbusiness/"><span class="badge">{{c}}</span>cancelled</a>
-<a class="btn btn-info" href="/admin/businessapp/dailybusiness/"><span class="badge">{{d}}</span>daily</a>
-<a class="btn btn-info" href="/admin/businessapp/order/?q=&status__exact=P"><span class="badge">{{p}}</span>Pending orders </a>
-<a class="btn btn-info" href="/admin/businessapp/order/">Search orders</a>
-<a class="btn btn-error" href="/admin/businessapp/proxyproduct/"><span class="badge">{{un}}</span>Unmapped Orders</a>
+    <a class="btn btn-info" href="/admin/businessapp/csallpickup/"><span class="badge">{{csall}}</span>All pickups</a>
+    <a class="btn btn-info" href="/admin/businessapp/csapprovedpickup"><span class="badge">{{apcs}}</span>New Bookings</a>
+    <a class="btn btn-info" href="/admin/businessapp/csdailypickup/"><span class="badge">{{d}}</span>Daily Pickups</a>
+
+<a class="btn btn-info" href="/admin/businessapp/pendingorder/"><span class="badge">{{p}}</span>Pending orders </a>
+
+<a class="btn btn-info" href="/admin/businessapp/proxyproduct/"><span class="badge">{{un}}</span>Unmapped Orders</a>
 </center>
 <br>
 <br>
@@ -96,16 +98,15 @@ Customer support links
 <center>
 Fullfillment executive link
 <div class="row">
-<a class="btn btn-info" href="/admin/businessapp/approvedbusinessop/"><span class="badge">{{ap}}</span> Approved business</a>
-<a class="btn btn-info" href="/admin/businessapp/allotedbusiness/"><span class="badge">{{a}}</span> Alloted business</a>
-<a class="btn btn-info" href="/admin/businessapp/pickedupbusiness/"><span class="badge">{{picked}}</span> picked up business</a>
+    <a class="btn btn-info" href="/admin/businessapp/ffapprovedpickup/"><span class="badge">{{ap}}</span>New Bookings</a>
+    <a class="btn btn-info" href="/admin/businessapp/ffcompletedpickup/"><span class="badge">{{picked}}</span>Picked up bookings</a>
 
-<a class="btn btn-info" href="/admin/businessapp/order/?q=&status__exact=P"><span class="badge">{{p}}</span>Pending orders </a>
-<a class="btn btn-info" href="/admin/businessapp/order/?q=&status__exact=PU"><span class="badge">{{pu}}</span>Picked up orders</a>
-<a class="btn btn-info" href="/admin/businessapp/order/?q=&status__exact=DI"><span class="badge">{{di}}</span>Dispatched orders</a>
-<a class="btn btn-info" href="/admin/businessapp/order/">Search orders</a>
-<a class="btn btn-error" href="/admin/businessapp/proxyproduct/"><span class="badge">{{un}}</span>Unmapped Orders</a>
-    <a class="btn btn-warning" href="/admin/businessapp/qcproduct/?status__exact=R">Return</a>
+<a class="btn btn-info" href="/admin/businessapp/pendingorder/"><span class="badge">{{p}}</span>Pending orders </a>
+<a class="btn btn-info" href="/admin/businessapp/pickedorder/?q=&product__pickup_time__gte={{ date_min }}&product__pickup_time__lt={{ date_max }}"><span class="badge">{{pu}}</span>Picked up orders</a>
+<a class="btn btn-info" href="/admin/businessapp/dispatchedorder/?q=&product__dispatch_time__gte={{ date_min }}&product__dispatch_time__lt={{ date_max }}"><span class="badge">{{di}}</span>Dispatched orders</a>
+
+<a class="btn btn-info" href="/admin/businessapp/proxyproduct/"><span class="badge">{{un}}</span>Unmapped Orders</a>
+    <a class="btn btn-info" href="/admin/businessapp/qcproduct/?status__exact=R">Return</a>
     <br>
 <br>
 </div>

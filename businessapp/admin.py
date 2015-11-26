@@ -2,16 +2,19 @@ from django.contrib.admin.filters import SimpleListFilter
 import urllib
 import json
 from django.contrib.admin import ModelAdmin, RelatedFieldListFilter, BooleanFieldListFilter
-
+import urllib2
 from django.contrib.admin.models import LogEntry, CHANGE
 from django.contrib.contenttypes.models import ContentType
 from random import randint
 
 import datetime
+from django.utils.timezone import localtime
+
+
 from daterange_filter.filter import DateRangeFilter
 from django.contrib import admin
 from .models import *
-from businessapp.forms import NewQcCommentForm,NewTrackingStatus,NewReturnForm
+from businessapp.forms import NewQcCommentForm,NewTrackingStatus,OrderForm,NewReturnForm,Approveconfirmform,AddressForm,Completeconfirmform,ReverseTimeForm,Newpickupform,Weightform,Testform
 from datetime import date,timedelta
 import reversion
 
@@ -153,6 +156,7 @@ class ProfileInline(admin.StackedInline):
 	model = Profile
 	can_delete = False
 	verbose_name_plural = 'profile'
+	filter_horizontal =('warehouse',)
 
 # Define a new User admin
 class UserAdmin(UserAdmin):
@@ -237,57 +241,82 @@ def export_as_csv_action(description="Export selected objects as CSV file",
 # <br>
 class BaseBusinessAdmin(reversion.VersionAdmin):
 
-	
-
 	def changelist_view(self, request, extra_context=None):
-		extra_context = extra_context or {}
-		
+		context = extra_context or {}
+		warehouse=None
 		cs=False
 		op=False
 		try:
-			print "jkjkjkjkjkjkjkjkjkjk"
-			print "see"
 			profile=Profile.objects.get(user=request.user)
 			usertype=profile.usertype
+			warehouse=profile.warehouse.all()
 			if (usertype=='C'):
-				print "jkjkjkjkjkjkjkjkjkjk"
 				cs=True
 			if (usertype=='O'):
 				op=True
 		except:
 			pass
-		a = Business.objects.filter(status='A',is_completed=False).count()
-		
-		nap = Order.objects.filter(business__status='N',status='P').count()
-		ap = Business.objects.filter(status='Y',is_completed=False).count()
-		apcs=Business.objects.filter().exclude(status='N').count()
-		d = Business.objects.filter(daily=True).count()
-		c = Business.objects.filter(status='C').count()
+		csall=AddressDetails.objects.all().count()
+		threshold_time =datetime.datetime.combine(date.today(),datetime.time(19, 00))
+		if not warehouse:
+			warehouse = Warehouse.objects.all()
+
+		todays_date=date.today()
+		today_min=datetime.datetime.combine(todays_date, datetime.time.min)
+		today_max = datetime.datetime.combine(todays_date, datetime.time.max)
+
+		a = Business.objects.filter(status='A',warehouse=warehouse,is_completed=False).count()
+
+		csall = AddressDetails.objects.filter().count()
+
+		nap = Order.objects.filter(book_time__gt=today_min,book_time__lt=today_max,business__status='N',status='P',pickup_address__warehouse=warehouse).distinct().count()
+		ap = AddressDetails.objects.filter(status__in=['Y','A'],default_pickup_time__lt=threshold_time,warehouse=warehouse).distinct().count()
+		apcs=AddressDetails.objects.filter(status__in=['Y','A','C'],warehouse=warehouse).count()
+		d = AddressDetails.objects.filter(daily=True,warehouse=warehouse).count()
+		c = Business.objects.filter(status='C',warehouse=warehouse).count()
 		#pa = Business.objects.filter(order_status='AP').count()
 		#c = Business.objects.filter(order_status='DI').count()
-		p= Order.objects.filter(status='P').count()
-		pu= Order.objects.filter(status='PU').count()
-		di= Order.objects.filter(status='DI').count()
-		un=Product.objects.filter(Q(order__book_time__gt=datetime.date(2015, 9, 1)) & (Q(order__status__in=['PU','D'])) &(Q(mapped_tracking_no__isnull=True) | Q(mapped_tracking_no__exact="")) ).count()
-		picked= Business.objects.filter(is_completed=True,status='A').count()
+		p= Order.objects.filter(status='P',pickup_address__warehouse=warehouse).distinct().count()
+		pu= Order.objects.filter(product__pickup_time__gt=today_min,product__pickup_time__lt=today_max,status='PU',pickup_address__warehouse=warehouse).distinct().count()
+		di= Order.objects.filter(product__dispatch_time__gt=today_min,product__dispatch_time__lt=today_max,status='DI',pickup_address__warehouse=warehouse).distinct().count()
+		un=Product.objects.filter(Q(order__book_time__gt=datetime.date(2015, 9, 1))&Q(order__pickup_address__warehouse=warehouse) & (Q(order__status__in=['PU','D'])) &(Q(mapped_tracking_no__isnull=True) | Q(mapped_tracking_no__exact="")) ).distinct().count()
+		picked= AddressDetails.objects.filter(status='C',warehouse=warehouse).count()
 
-		context = {'cs':cs,'op':op,'nap':nap,'ap':ap,'d':d,'c':c,'p':p,'pu':pu,'di':di,'a':a,'apcs':apcs,'un':un,'picked':picked}
+
+		date_max=urllib2.quote(str(date.today()+datetime.timedelta(days=1))+str(' 00:00:00+05:30'))
+		date_min=urllib2.quote(str(date.today())+str(' 00:00:00+05:30'))
+
+
+		context = {'cs':cs,'op':op,'nap':nap,'ap':ap,'d':d,'c':c,'p':p,'pu':pu,'di':di,'a':a,'apcs':apcs,'un':un,'picked':picked,'csall':csall,'date_max':date_max,'date_min':date_min}
+
 		return super(BaseBusinessAdmin, self).changelist_view(request, extra_context=context)
 
 
+class DocInline(admin.TabularInline):
+	model = Document
+	readonly_fields = ('download_link',)
+	fields = (
+		'type', 'docs','download_link',)
+	extra = 0
 
 
+	def download_link(self,obj):
+
+		return '<a href="/%s" target="_blank"> click here </a>' % (
+			str(obj.docs).replace("shipment","static"))
+	download_link.allow_tags=True
 
 
 # Register your models here.
 class BusinessAdmin(BaseBusinessAdmin,ImportExportActionModelAdmin):
+	inlines = (DocInline,)
 	# search_fields=['name']
 	search_fields=['username','business_name']
 	list_display = ('username','business_name', 'pickup_time', 'warehouse', 'pb', 'assigned_pickup_time','status', 'pending_orders_total', 'pending_orders','pickedup_orders','dispatched_orders','daily','cs_comment','ff_comment')
 	list_editable = ('pb', 'assigned_pickup_time','daily','cs_comment','ff_comment')
 	raw_id_fields = ('pb', 'warehouse')
 	list_filter = ['username', 'daily','pb', 'warehouse']
-	readonly_fields = ('status','is_completed')
+	readonly_fields = ('status','is_completed','BDE_details','BDM_details')
 	#actions = [export_as_csv_action("CSV Export", fields=['username','business_name','apikey','name','email','contact_mob','contact_office','address','city','state','pincode'])]
 	actions_on_bottom = False
 	actions_on_top = True
@@ -308,7 +337,19 @@ class BusinessAdmin(BaseBusinessAdmin,ImportExportActionModelAdmin):
 		# if c>0:
 		# 	del actions['make_remittance_initiated']
 
+	def BDE_details(self,obj):
+		try:
+			return obj.businessmanager.user.first_name+ " " + obj.businessmanager.user.last_name +"," + obj.businessmanager.phone + ", " +obj.businessmanager.user.email
+		except:
+			return "None"
+	BDE_details.short_description ='BDE Details'
 
+	def BDM_details(self,obj):
+		try:
+			return obj.businessmanager.user.first_name+ " " + obj.businessmanager.user.last_name +"," +obj.businessmanager2.phone + ", " +obj.businessmanager2.user.email
+		except:
+			return "None"
+	BDM_details.short_description ='BDM Details'
 
 
 	def get_queryset(self, request):
@@ -1031,9 +1072,22 @@ class FilterUserAdmin(BaseBusinessAdmin):
 
 
 	def get_queryset(self, request):
+		qs = super(FilterUserAdmin, self).queryset(request)
+
+
 		try:
-			qs = super(FilterUserAdmin, self).queryset(request)
-			print "queryyyset"
+			profile=Profile.objects.get(user=request.user)
+			warehouse=profile.warehouse.all()
+
+		except:
+			warehouse=Warehouse.objects.all()
+
+		if not warehouse:
+			warehouse=Warehouse.objects.all()
+
+		qs=qs.filter(pickup_address__warehouse=warehouse)
+
+		try:
 
 			profile=Profile.objects.get(user=request.user)
 
@@ -1075,15 +1129,193 @@ class OrderAdmin(FilterUserAdmin,ImportExportActionModelAdmin):
 	inlines = (ProductInline,)
 	search_fields = ['order_no','business__business_name', 'name', 'product__real_tracking_no', 'product__kartrocket_order', 'product__barcode','city','state','product__mapped_tracking_no']
 	list_display = (
-		'order_no', 'book_time', 'business_details', 'name', 'status','mapped_ok', 'no_of_products', 'total_shipping_cost',
-		'total_cod_cost', 'method', 'fedex','print_links','payment_method','ff_comment')
-	list_editable = ('ff_comment','status')
-	list_filter = ['business', 'status', 'book_time','product__company','product__return_action','product__dispatch_time','business__warehouse']
+		'order_no', 'book_time', 'business_details', 'receiver_detail', 'status','mapped_ok', 'no_of_products', 'weight', 'method', 'fedex','ecom','generate_order','print_links','payment_method','ff_comment')
+	list_editable = ('ff_comment','weight',)
+	list_filter = ['business', 'status', 'book_time','product__company','product__return_action','product__dispatch_time','pickup_address','product__pickup_time', 'business__warehouse']
 
 	readonly_fields=('master_tracking_number', 'mapped_master_tracking_number', 'fedex')
 
+	def get_changelist_form(self, request, **kwargs):
+		return Weightform
+
+	def get_form(self, request, obj=None, **kwargs):
+		self.form=Testform
+		return super(OrderAdmin, self).get_form(request, obj, **kwargs)
 
 
+	def receiver_detail(self, obj):
+		return obj.name + "<br>" + obj.city + "<br>" + obj.state
+	receiver_detail.allow_tags=True
+
+	def generate_order(self, obj):
+		obj=obj.product_set.first()
+		cod=''
+		valid = 1
+		try:
+			string = 'ot=1&'
+			product = Product.objects.get(pk=obj.pk)
+			order = product.order
+			error_string = ''
+			try:
+				shipmentid = product.real_tracking_no
+				string = string + 'shipmentid=' + str(shipmentid) + '&'
+			except:
+				valid = 0
+				error_string = error_string + 'shipmentid not set <br>'
+
+			try:
+				name = order.name
+				if (str(name) != ''):
+					string = string + 'name=' + str(name) + '&'
+				else:
+					error_string = error_string + 'drop_name not set<br>'
+					valid = 0
+
+			except:
+				valid = 0
+				error_string = error_string + 'drop_name not set<br>'
+
+			try:
+				pname = product.name
+				if (str(pname) != ''):
+					string = string + 'pname=' + str(pname) + '&'
+				else:
+					error_string = error_string + 'item_name not set<br>'
+					valid = 0
+			except:
+				error_string = error_string + 'item_name not set<br>'
+				valid = 0
+
+			try:
+				price = product.price
+
+				if (str(price) != '' and str(price) != 'None'):
+					string = string + 'price=' + str(price) + '&'
+				else:
+					error_string = error_string + 'item_cost not set<br>'
+					valid = 0
+			except:
+				error_string = error_string + 'item_cost not set<br>'
+				valid = 0
+
+			try:
+				weight = product.applied_weight
+				if (str(weight) != '' and str(weight) != 'None'):
+					string = string + 'weight=' + str(weight) + '&'
+				else:
+					error_string = error_string + 'item_weight not set<br>'
+					valid = 0
+
+			except:
+				error_string = error_string + 'item_weight not set<br>'
+				valid = 0
+
+			try:
+				phone = order.phone
+				if (str(phone) != '' and str(phone) != 'None'):
+					string = string + 'phone=' + str(phone) + '&'
+				else:
+					error_string = error_string + 'drop_phone not set<br>'
+					valid = 0
+			except:
+				error_string = error_string + 'drop_phone not set<br>'
+				valid = 0
+
+			try:
+				address1 = str(order.address1)
+				string = string + 'address=' + str(address1) + '&'
+			except:
+				error_string = error_string + 'address 1 not set<br>'
+				valid = 0
+
+			try:
+				address2 = str(order.address2)
+				string = string + 'address1=' + str(address2) + '&'
+			except:
+				error_string = error_string + 'address 2 not set<br>'
+				valid = 0
+
+			try:
+				city = order.city
+				string = string + 'city=' + str(city) + '&'
+			except:
+				error_string = error_string + 'city not set<br>'
+				valid = 0
+
+			try:
+				state = order.state
+				string = string + 'state=' + str(state) + '&'
+			except:
+				error_string = error_string + 'state not set<br>'
+				valid = 0
+
+			try:
+				pincode = order.pincode
+				string = string + 'pincode=' + str(pincode) + '&'
+			except:
+				error_string = error_string + 'pincode not set<br>'
+				valid = 0
+
+			try:
+
+				cod = order.payment_method
+				string = string + 'cod=' + str(cod) + '&'
+			except:
+				error_string = error_string + 'cod not set<br>'
+				valid = 0
+
+		except:
+			pass
+
+		if (valid):
+			if (cod=='F'):
+				return 'All good!<br><a href="/stats/kartrocket/?%s" target="_blank" >Create Kartrocket Normal Order</a>' % (string)
+			elif (cod=='C'):
+				return 'All good!<br><a href="/stats/kartrocket/?%s" target="_blank" >Create Kartrocket Cod Order</a>' % (string)
+			else:
+				return "no payment_method set"
+		else:
+			return '<div style="color:red">' + error_string + '</div>'
+
+	generate_order.allow_tags = True
+
+
+	def ecom(self, obj):
+		obj=obj.product_set.first()
+		if not obj.order.state:
+			return "Enter state"
+
+		if not state_matcher.is_state(obj.order.state):
+			return '<h2 style="color:red">Enter a valid state</h2>'
+
+		if not obj.order.pincode:
+			return "Enter pincode"
+
+		db_pincode = Pincode.objects.filter(pincode=obj.order.pincode)
+
+		if db_pincode:
+			if not db_pincode[0].ecom_servicable:
+				return '<h2 style="color:red">Not Servicable</h2>'
+		else:
+			return '<h2 style="color:red">Enter a valid pincode</h2>'
+
+		if not obj.applied_weight:
+			return "Enter applied weight"
+
+		if not obj.price:
+			return "Enter item value"
+
+		if obj.mapped_tracking_no and obj.company == "E":
+			params = urllib.urlencode({'shipment_pk': obj.pk, 'client_type': "business"})
+			return '<a href="/create_ecom_shipment/?%s&type=invoice" target="_blank">%s</a>' % (params, "Print Invoice") + ' <br><br> <a href="/create_ecom_shipment/?%s&type=label" target="_blank">%s</a>' % (params, "Print Label")
+
+		params = urllib.urlencode({'shipment_pk': obj.pk, 'client_type': "business", 'type': 'create'})
+
+		return '<a href="/create_ecom_shipment/?%s">%s</a>' % (params, "Create Order")
+
+
+
+	ecom.allow_tags = True
 
 	def make_pickedup(modeladmin, request, queryset):
 #checking if valid
@@ -1106,6 +1338,7 @@ class OrderAdmin(FilterUserAdmin,ImportExportActionModelAdmin):
 		#messages.error(request, "Error for "+ str(intersection.first().business_name))
 		for product in product_queryset:
 			product.status='PU'
+			product.pickup_time=datetime.datetime.now()
 			product.save()
 
 	make_pickedup.short_description = "make pickedup of selected orders"
@@ -1183,11 +1416,11 @@ class OrderAdmin(FilterUserAdmin,ImportExportActionModelAdmin):
 		return Product.objects.filter(order=obj).count()
 	no_of_products.allow_tags = True
 
-	def total_cod_cost(self, obj):
-		return Product.objects.filter(order=obj).aggregate(Sum('cod_cost'))['cod_cost__sum']
-
-	def total_shipping_cost(self, obj):
-		return Product.objects.filter(order=obj).aggregate(Sum('shipping_cost'))['shipping_cost__sum']
+	# def total_cod_cost(self, obj):
+	# 	return Product.objects.filter(order=obj).aggregate(Sum('cod_cost'))['cod_cost__sum']
+    #
+	# def total_shipping_cost(self, obj):
+	# 	return Product.objects.filter(order=obj).aggregate(Sum('shipping_cost'))['shipping_cost__sum']
 
 
 	def response_change(self, request, obj):
@@ -1308,11 +1541,61 @@ reference_id=models.CharField(max_length=100)
 	business=models.ForeignKey(Business)
 	'''
 
+class TestAdmin(OrderAdmin):
+
+	list_display = ('order_no','address1','weight')
+	list_editable = ('weight',)
+
+
 admin.site.register(Order, OrderAdmin)
 
+class ReverseOrderAdmin(OrderAdmin):
+	list_display = OrderAdmin.list_display + ('reverse_actions',)
+	inlines = ()
+	readonly_fields = ()
+
+	def response_change(self, request, obj):
+		settime = request.GET.get('settime',None)
+
+
+		if settime:
+			return HttpResponse('''
+   <script type="text/javascript">
+	  opener.dismissAddAnotherPopup(window);
+   </script>''')
+		else:
+			return super(ReverseOrderAdmin, self).response_change( request, obj)
+
+	def get_form(self, request, obj=None, **kwargs):
+		#tracking=request.GET.get["tracking",None]
+		settime = request.GET.get('settime',None)
+
+		if settime:
+			self.form=ReverseTimeForm
+
+		else:
+			self.form = OrderForm
+
+		return super(ReverseOrderAdmin, self).get_form(request, obj, **kwargs)
+
+	def get_queryset(self, request):
+		return self.model.objects.filter(is_reverse=True)
+
+	def reverse_actions(self, obj):
+		if not obj.reverse_pickup_timedate or not obj.reverse_latest_available_time:
+			return "reverse pickup time not selected. " + '<a href="/admin/businessapp/reverseorder/%s/?settime=True" onclick="return showAddAnotherPopup(this);"> Choose pickup time </a><br>' % (obj.pk)
+		elif not obj.reverse_confirmation_id:
+			var= str((localtime(obj.reverse_pickup_timedate)).replace(tzinfo=None).isoformat())
+			return str(localtime(obj.reverse_pickup_timedate).replace(tzinfo=None)) + '<br> <a href="/fedex_pickup_scheduler/?order_no={}&ready_timestamp={}&business_closetime={}" target="_blank"> Book on fedex</a><br><a href="/admin/businessapp/reverseorder/{}/?settime=True" onclick="return showAddAnotherPopup(this);"> Edit time </a>'.format(obj.pk,var,str(obj.reverse_latest_available_time),obj.pk)
+		else:
+			return 'Pickup confirmation id is %s <br><a href="/admin/businessapp/reverseorder/%s/?settime=True" onclick="return showAddAnotherPopup(this);"> Edit time </a>' % ( obj.reverse_confirmation_id,obj.pk)
+	reverse_actions.allow_tags = True
+
+admin.site.register(ReverseOrder, ReverseOrderAdmin)
 
 class ProxyProductAdmin(BaseBusinessAdmin,ImportExportActionModelAdmin):
 	list_per_page=100
+
 
 	change_list_template='businessapp/templates/admin/businessapp/change_list.html'
 	list_display = ('order_no','get_business','sent_to','city','pincode','time',"applied_weight","mapped_tracking_no","company","ff")
@@ -1326,7 +1609,19 @@ class ProxyProductAdmin(BaseBusinessAdmin,ImportExportActionModelAdmin):
 	order_no.admin_order_field = 'order'
 
 	def get_queryset(self, request):
-		return self.model.objects.filter(Q(order__book_time__gt=datetime.date(2015, 9, 1)) & (Q(order__status__in=['PU','D'])) &(Q(mapped_tracking_no__isnull=True) | Q(mapped_tracking_no__exact=""))).select_related('order','order__business')
+		try:
+			profile=Profile.objects.get(user=request.user)
+			warehouse=profile.warehouse.all()
+
+		except:
+			warehouse=Warehouse.objects.all()
+
+		if not warehouse:
+			warehouse=Warehouse.objects.all()
+
+		print warehouse
+
+		return self.model.objects.filter(Q(order__pickup_address__warehouse=warehouse) & Q(order__book_time__gt=datetime.date(2015, 9, 1)) & (Q(order__status__in=['PU','D'])) &(Q(mapped_tracking_no__isnull=True) | Q(mapped_tracking_no__exact=""))).select_related('order','order__business')
 
 	def get_readonly_fields(self, request, obj=None):
 		return [f.name for f in self.model._meta.fields]
@@ -1383,7 +1678,7 @@ class ShipmentAdmin(reversion.VersionAdmin):
 	suit_form_tabs = (('general', 'General'), ('tracking', 'Tracking'))
 
 '''
-
+from daterange_filter.filter import DateRangeFilter
 
 
 class CodBusinessPanelAdmin(admin.ModelAdmin):
@@ -2000,8 +2295,8 @@ class QcProductAdmin(reversion.VersionAdmin,ImportExportActionModelAdmin):
 	def get_queryset(self, request):
 		return self.model.objects.filter(Q(order__book_time__gt=datetime.date(2015, 9, 1))&(Q(order__status='DI')| Q(order__status='R'))).select_related('order','order__business').exclude(Q(status='C')).exclude(order__business='ecell').exclude(order__business='ghasitaram').exclude(order__business='holachef')
 	list_display = (
-		'order_no','tracking_no','company','book_date','dispatch_time','get_business','sent_to','last_location' ,'expected_delivery_date','last_updated','last_tracking_status','history','follow_up','ff_comment')
-	list_filter = ['order__method','order__business','warning','company',StatusFilter,'status','warning_type',StartNullFilterSpec]
+		'order_no','tracking_no','company','book_date','dispatch_time','get_business','sent_to','last_location' ,'expected_delivery_date_sendd','expected_delivery_date_courier','last_updated','last_tracking_status','history','follow_up','ff_comment')
+	list_filter = ['order__method','order__business','warning','company',StatusFilter,'status','warning_type',StartNullFilterSpec,('order__book_time', DateRangeFilter),]
 	list_editable = ('follow_up','ff_comment')
 	readonly_fields = ('previous_comment','p_tracking')
 	search_fields = ['order__order_no', 'real_tracking_no', 'mapped_tracking_no','tracking_data','order__name']
@@ -2106,14 +2401,22 @@ class QcProductAdmin(reversion.VersionAdmin,ImportExportActionModelAdmin):
 	tracking_no.admin_order_field = 'mapped_tracking_no' #Allows column order sorting
 	tracking_no.allow_tags=True
 	
-	def expected_delivery_date(self,obj):
+	def expected_delivery_date_sendd(self,obj):
 		if (obj.order.method=='B'):
 			return obj.date + timedelta(days=6)
 		elif (obj.order.method=='N'):
 			return obj.date + timedelta(days=3)
 		else:
 			return 'None'
-	expected_delivery_date.short_description='expected delivery date'
+	expected_delivery_date_sendd.short_description='expected delivery date(sendd)'
+
+	def expected_delivery_date_courier(self,obj):
+		if obj.estimated_delivery_timestamp:
+			return obj.estimated_delivery_timestamp
+		else:
+			return 'No data available'
+	expected_delivery_date_courier.short_description='expected delivery date(courier)'
+
 
 	def sent_to(self,obj):
 		return obj.order.name
@@ -2724,7 +3027,420 @@ admin.site.register(Bdheadpanel,BdheadAdmin)
 
 
 
+class BaseAddressAdmin(admin.ModelAdmin):
 
+	form = Newpickupform
+	def get_queryset(self, request):
+#total_order
+#pick_order
+#pending_count
+#transit_count
+#dispatch_count
+		todays_date=date.today()
+		import datetime
+		date_max = datetime.datetime.combine(todays_date, datetime.time.max)
+		date_min = datetime.datetime.combine(todays_date, datetime.time.min)
+
+		try:
+			profile=Profile.objects.get(user=request.user)
+			warehouse=profile.warehouse.all()
+
+		except:
+			warehouse=Warehouse.objects.all()
+
+		if not warehouse:
+			warehouse=Warehouse.objects.all()
+
+		# qs = super(CsAddressAdmin, self).queryset(request)
+		# qs = qs.filter(status__in=['Y','A','C'])
+		#
+		return AddressDetails.objects.filter(warehouse=warehouse).extra(select={
+			'pending': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.pickup_address_id = businessapp_addressdetails.id and businessapp_order.status='P' ",
+			'picked': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.pickup_address_id = businessapp_addressdetails.id and businessapp_order.status='PU' ",
+			'transit': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.pickup_address_id = businessapp_addressdetails.id and businessapp_order.status='D' ",
+			'dispatch': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.pickup_address_id = businessapp_addressdetails.id and businessapp_order.status='DI' ",
+			'pending_today': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.pickup_address_id = businessapp_addressdetails.id and businessapp_order.status='P' and businessapp_order.book_time BETWEEN %s AND %s",
+			'pickedup_today': "SELECT COUNT(DISTINCT businessapp_order.order_no) from businessapp_order LEFT OUTER JOIN businessapp_product on businessapp_order.order_no =businessapp_product.order_id where businessapp_order.pickup_address_id = businessapp_addressdetails.id and businessapp_order.status='PU' and businessapp_product.pickup_time BETWEEN %s AND %s",
+			'dispatched_today': "SELECT COUNT(DISTINCT businessapp_order.order_no) from businessapp_order LEFT OUTER JOIN businessapp_product on businessapp_order.order_no =businessapp_product.order_id where businessapp_order.pickup_address_id = businessapp_addressdetails.id and businessapp_order.status='DI' and businessapp_product.dispatch_time BETWEEN %s AND %s",},
+			select_params=(date_min,date_max,date_min,date_max,date_min,date_max,),
+			)
+
+
+
+
+	def changelist_view(self, request, extra_context=None):
+		context = extra_context or {}
+		warehouse=None
+		cs=False
+		op=False
+		try:
+			profile=Profile.objects.get(user=request.user)
+			usertype=profile.usertype
+			warehouse=profile.warehouse.all()
+			if (usertype=='C'):
+				print "jkjkjkjkjkjkjkjkjkjk"
+				cs=True
+			if (usertype=='O'):
+				op=True
+		except:
+			pass
+		csall=AddressDetails.objects.all().count()
+		threshold_time =datetime.datetime.combine(date.today(),datetime.time(19, 00))
+		if not warehouse:
+			warehouse = Warehouse.objects.all()
+
+		todays_date=date.today()
+		today_min=datetime.datetime.combine(todays_date, datetime.time.min)
+		today_max = datetime.datetime.combine(todays_date, datetime.time.max)
+
+		a = Business.objects.filter(status='A',warehouse=warehouse,is_completed=False).count()
+
+		csall = AddressDetails.objects.filter().count()
+
+		nap = Order.objects.filter(book_time__gt=today_min,book_time__lt=today_max,business__status='N',status='P',pickup_address__warehouse=warehouse).distinct().count()
+		ap = AddressDetails.objects.filter(status__in=['Y','A'],default_pickup_time__lt=threshold_time,warehouse=warehouse).distinct().count()
+		apcs=AddressDetails.objects.filter(status__in=['Y','A','C'],warehouse=warehouse).count()
+		d = AddressDetails.objects.filter(daily=True,warehouse=warehouse).count()
+		c = Business.objects.filter(status='C',warehouse=warehouse).count()
+		#pa = Business.objects.filter(order_status='AP').count()
+		#c = Business.objects.filter(order_status='DI').count()
+		p= Order.objects.filter(status='P',pickup_address__warehouse=warehouse).distinct().count()
+		pu= Order.objects.filter(product__pickup_time__gt=today_min,product__pickup_time__lt=today_max,status='PU',pickup_address__warehouse=warehouse).distinct().count()
+		di= Order.objects.filter(product__dispatch_time__gt=today_min,product__dispatch_time__lt=today_max,status='DI',pickup_address__warehouse=warehouse).distinct().count()
+		un=Product.objects.filter(Q(order__book_time__gt=datetime.date(2015, 9, 1))&Q(order__pickup_address__warehouse=warehouse) & (Q(order__status__in=['PU','D'])) &(Q(mapped_tracking_no__isnull=True) | Q(mapped_tracking_no__exact="")) ).distinct().count()
+		picked= AddressDetails.objects.filter(status='C',warehouse=warehouse).count()
+
+		date_max=urllib2.quote(str(date.today()+datetime.timedelta(days=1))+str(' 00:00:00+05:30'))
+		date_min=urllib2.quote(str(date.today())+str(' 00:00:00+05:30'))
+		context = {'cs':cs,'op':op,'nap':nap,'ap':ap,'d':d,'c':c,'p':p,'pu':pu,'di':di,'a':a,'apcs':apcs,'un':un,'picked':picked,'csall':csall,'date_min':date_min,'date_max':date_max}
+		return super(BaseAddressAdmin, self).changelist_view(request, extra_context=context)
+
+
+	def business_details(self, obj):
+		try:
+			return '<a href="/admin/businessapp/business/%s/">%s</a>' % (obj.business.username, obj.business.business_name)
+		except:
+			return 'No business'
+	business_details.allow_tags = True
+
+	def pickup_time(self,obj):
+		if obj.temp_time:
+			return obj.temp_time
+		else:
+			return obj.default_pickup_time
+
+class CsAddressAdmin(BaseAddressAdmin):
+	search_fields = ['business__username','business__business_name','address','pincode','city']
+	list_filter = ['business__username','business__business_name','default_pickup_time']
+	list_display = ['pickup_address','business_details','warehouse','pickup_time','default_vehicle','cs_comment','status']
+	list_editable=['cs_comment','default_vehicle']
+	def pickup_address(self,obj):
+		return str(obj.company_name) + "<br>" +str(obj.address)
+	pickup_address.allow_tags = True
+
+class FfAddressAdmin(BaseAddressAdmin):
+	search_fields = ['business__username','business__business_name','address','pincode','city']
+	list_filter = ['business__username','business__business_name','default_pickup_time']
+	list_display = ['pickup_address','business_details','warehouse','pickup_time','pb','cs_comment','ff_comment','default_vehicle','status']
+	raw_id_fields = ['pb']
+	list_editable = ['pb','ff_comment']
+	def pickup_address(self,obj):
+		return str(obj.company_name) + "<br>" +str(obj.address)
+	pickup_address.allow_tags = True
+
+
+class CsApprovedpickupAdmin(CsAddressAdmin):
+	def get_queryset(self, request):
+		qs = super(CsAddressAdmin, self).queryset(request)
+		qs = qs.filter(status__in=['Y','A','C'])
+		return qs
+
+
+admin.site.register(CSApprovedPickup,CsApprovedpickupAdmin)
+
+class CSAllPickupAdmin(CsAddressAdmin):
+	form=Newpickupform
+	actions = None
+	list_display = CsAddressAdmin.list_display + ['approve']
+
+
+
+
+	def response_change(self, request, obj):
+		approve = request.GET.get('approve',None)
+
+
+		if approve:
+			return HttpResponse('''
+   <script type="text/javascript">
+	  opener.dismissAddAnotherPopup(window);
+   </script>''')
+		else:
+			return super(CSAllPickupAdmin, self).response_change( request, obj)
+
+
+	def get_form(self, request, obj=None, **kwargs):
+		#tracking=request.GET.get["tracking",None]
+		approve = request.GET.get('approve',None)
+		#print self.form
+
+		if approve:
+			self.form=Approveconfirmform
+			#print "inside"
+		else:
+			self.form=AddressForm
+
+		return super(CSAllPickupAdmin, self).get_form(request, obj, **kwargs)
+
+	def approve(self,obj):
+		if obj.status=='N':
+			return '<a href="/admin/businessapp/csallpickup/%s/?approve=True" onclick="return showAddAnotherPopup(this);">Approve </a><br>' % (obj.pk)
+		else:
+			return "already approved"
+	approve.allow_tags=True
+
+	def suit_row_attributes(self, obj, request):
+		css_class = {
+			'Y': 'success',
+			'A': 'success',
+			'C': 'success',
+			'N': 'error',
+		}.get(obj.status)
+		if css_class:
+			return {'class': css_class, 'data': obj.status}
+
+admin.site.register(CSAllPickup,CSAllPickupAdmin)
+
+class CSDailyPickupAdmin(CSAllPickupAdmin):
+
+	def get_queryset(self, request):
+		qs = super(CSAllPickupAdmin, self).queryset(request)
+		qs = qs.filter(daily=True)
+		return qs
+
+
+admin.site.register(CSDailyPickup,CSDailyPickupAdmin)
+
+class FfApprovedpickupAdmin(FfAddressAdmin):
+
+	list_display = FfAddressAdmin.list_display + ['tasks','pending']
+
+	def pending(self, obj):
+
+		return '<a href="/admin/businessapp/pendingorder/?q=&pickup_address__id__exact=%s"> %s </a>' % (
+			obj.pk, obj.pending)
+
+	pending.allow_tags = True
+	pending.admin_order_field='pending'
+
+
+
+	def tasks(self,obj):
+		return '<a href="/admin/businessapp/ffapprovedpickup/%s/?reschedule=True" onclick="return showAddAnotherPopup(this);">reschedule</a><br><a href="/admin/businessapp/ffapprovedpickup/%s/?complete=True" onclick="return showAddAnotherPopup(this);">complete</a> ' % (obj.pk,obj.pk)
+	tasks.allow_tags=True
+
+	def suit_row_attributes(self, obj, request):
+		css_class = {
+			'Y': 'error',
+			'A': 'success',
+		}.get(obj.status)
+		if css_class:
+			return {'class': css_class, 'data': obj.status}
+
+	def get_queryset(self, request):
+		threshold_time =datetime.datetime.combine(date.today(),datetime.time(19, 00))
+		qs = super(FfAddressAdmin, self).queryset(request)
+		qs = qs.filter((Q(status='Y')|Q(status='A'))).order_by('-status').distinct()
+		return qs
+
+	def response_change(self, request, obj):
+		reschedule = request.GET.get('reschedule',None)
+		complete = request.GET.get('complete',None)
+
+
+		if reschedule or complete:
+			return HttpResponse('''
+   <script type="text/javascript">
+	  opener.dismissAddAnotherPopup(window);
+   </script>''')
+		else:
+			return super(FfApprovedpickupAdmin, self).response_change( request, obj)
+
+	def get_form(self, request, obj=None, **kwargs):
+		#tracking=request.GET.get["tracking",None]
+		reschedule=False
+		complete=False
+		reschedule = request.GET.get('reschedule',None)
+		#print self.form
+		complete = request.GET.get('complete',None)
+		self.fieldsets=()
+		if reschedule:
+			self.fieldsets = (
+				('Basic Information', {'fields': ['temp_time']}),
+			)
+			#print "inside"
+		elif complete:
+			self.form=Completeconfirmform
+		else:
+			self.form=AddressForm
+
+		return super(FfAddressAdmin, self).get_form(request, obj, **kwargs)
+
+
+	def save_model(self, request, obj, form, change):
+		if obj.pb and obj.status=='Y':
+			obj.status='A'
+			obj.save()
+		elif not obj.pb and obj.status=='A':
+			obj.status='Y'
+			obj.save()
+		else:
+			obj.save()
+
+
+
+
+admin.site.register(FFApprovedPickup,FfApprovedpickupAdmin)
+
+class FFCompletedPickupAdmin(FfAddressAdmin):
+
+	list_display = FfAddressAdmin.list_display +['pending_orders_total','pickedup_orders','dispatched_orders']
+	list_display.remove('status')
+	list_display.remove('default_vehicle')
+	list_display.remove('pickup_time')
+
+	def pending_orders_total(self, obj):
+
+		return '<a href="/admin/businessapp/pendingorder/?q=&pickup_address__id__exact=%s"> %s </a>' % (
+			obj.pk, obj.pending)
+
+	pending_orders_total.allow_tags = True
+	pending_orders_total.admin_order_field='pending'
+
+	def pickedup_orders(self, obj):
+		urllib2.quote(str(date.today())+str(' 00:00:00+05:30')),urllib2.quote(str(date.today()+datetime.timedelta(days=1))+str(' 00:00:00+05:30'))
+		return '<a href="/admin/businessapp/pickedorder/?q=&pickup_address__id__exact=%s&status__exact=PU&product__pickup_time__gte=%s&product__pickup_time__lt=%s"> %s </a>' % (obj.pk,urllib2.quote(str(date.today())+str(' 00:00:00+05:30')),urllib2.quote(str(date.today()+datetime.timedelta(days=1))+str(' 00:00:00+05:30')), obj.pickedup_today)
+	pickedup_orders.allow_tags = True
+	pickedup_orders.admin_order_field='pickedup_today'
+
+	def dispatched_orders(self, obj):
+		return '<a href="/admin/businessapp/dispatchedorder/?q=&pickup_address__id__exact=%s&product__dispatch_time__gte=%s&product__dispatch_time__lt=%s"> %s </a>' % (obj.pk,urllib2.quote(str(date.today())+str(' 00:00:00+05:30')),urllib2.quote(str(date.today()+datetime.timedelta(days=1))+str(' 00:00:00+05:30')), obj.dispatched_today)
+	dispatched_orders.allow_tags = True
+	dispatched_orders.admin_order_field='dispatched_today'
+
+
+
+	def get_queryset(self, request):
+		threshold_time =datetime.datetime.combine(date.today(),datetime.time(19, 00))
+		qs = super(FfAddressAdmin, self).queryset(request)
+		qs = qs.filter(status='C').distinct()
+		return qs
+
+
+
+admin.site.register(FFCompletedPickup,FFCompletedPickupAdmin)
+
+
+class PendingOrderAdmin(OrderAdmin):
+	# list_editable = ['ff_comment']
+	# list_display = (
+	# 	'order_no', 'book_time', 'business_details', 'name', 'status_action','mapped_ok', 'no_of_products', 'total_shipping_cost',
+	# 	'total_cod_cost', 'method', 'fedex','ff_comment')
+    #
+	# def status_action(self,obj):
+	# 	return obj.get_status_display() + '<br>'
+	# status_action.allow_tags = True
+	new_list=list(OrderAdmin.list_display)
+	new_list.remove('mapped_ok')
+	new_list.remove('weight')
+	new_list.remove('ecom')
+	new_list.remove('fedex')
+	new_list.remove('generate_order')
+	new_list.remove('print_links')
+	list_display = new_list
+
+	new_list2=list(OrderAdmin.list_editable)
+	new_list2.remove('weight')
+	list_editable = new_list2
+
+	def make_pickedup(modeladmin, request, queryset):
+#checking if valid
+		ct = ContentType.objects.get_for_model(queryset.model)
+
+		for obj in queryset:
+			LogEntry.objects.log_action(
+				user_id=request.user.id,
+				content_type_id=ct.pk,
+				object_id=obj.pk,
+				object_repr=str(obj.pk),
+				action_flag=CHANGE,
+				change_message="action button : picked up of these order")
+
+
+		product_queryset=Product.objects.filter(order__in=queryset)
+
+
+
+		#messages.error(request, "Error for "+ str(intersection.first().business_name))
+		for product in product_queryset:
+			product.status='PU'
+			product.pickup_time=datetime.datetime.now()
+			product.save()
+
+
+	make_pickedup.short_description = "make pickedup of selected orders"
+
+	actions = ['make_pickedup']
+
+
+
+	def get_queryset(self, request):
+		#threshold_time =datetime.datetime.combine(date.today(),datetime.time(19, 00))
+		qs = super(OrderAdmin, self).queryset(request)
+		qs = qs.filter(status='P').exclude(is_reverse=True)
+		return qs
+
+
+
+admin.site.register(PendingOrder,PendingOrderAdmin)
+
+
+class PickedOrderAdmin(OrderAdmin):
+	new_list=list(OrderAdmin.list_display)
+	new_list.remove('mapped_ok')
+	list_display = new_list
+
+	def get_queryset(self, request):
+		#threshold_time =datetime.datetime.combine(date.today(),datetime.time(19, 00))
+		qs = super(OrderAdmin, self).queryset(request)
+		qs = qs.filter(status='PU')
+		return qs
+
+
+
+admin.site.register(PickedOrder,PickedOrderAdmin)
+
+class DispatchedOrderAdmin(OrderAdmin):
+
+
+	def get_queryset(self, request):
+		#threshold_time =datetime.datetime.combine(date.today(),datetime.time(19, 00))
+		qs = super(OrderAdmin, self).queryset(request)
+		qs = qs.filter(status='DI')
+		return qs
+
+
+
+admin.site.register(DispatchedOrder,DispatchedOrderAdmin)
+
+
+class AddressDetailsAdmin(admin.ModelAdmin):
+	list_display = ('__str__','business',)
+	list_filter = ('business',)
+
+
+
+admin.site.register(AddressDetails, AddressDetailsAdmin)
 class ProxyProduct2Admin(reversion.VersionAdmin):
 	list_display = ('pk','order_id','get_business','sent_to','barcode',)
 	list_editable = ('barcode',)

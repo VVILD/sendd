@@ -60,7 +60,6 @@ class Command(BaseCommand):
 
 	FEDEX_CONFIGS = [FEDEX_CONFIG_INDIA, FEDEX_CONFIG_INTRA_MUMBAI]
 
-	logging.basicConfig(level=logging.INFO)
 
 	@staticmethod
 	def remove_non_ascii_1(raw_text):
@@ -80,8 +79,6 @@ class Command(BaseCommand):
 			html2=output
 			soup2 = BeautifulSoup(html2,'html.parser')
 			try:
-				print "trying shit here bro"
-				print soup2.find("input", {"name":"cn_status"})['value']
 				return 'DELIVERED' in soup2.find("input", {"name":"cn_status"})['value']
 			except:
 				return False
@@ -396,18 +393,15 @@ class Command(BaseCommand):
 		try:
 			html = self.make_request(str(product.mapped_tracking_no))
 			if(html != "error"):
-				#print html
 				soup = BeautifulSoup(html,'html.parser')
 
 				#print soup
 
 				all_the_tables = soup.find_all(id="box-table-a")
-				#print all_the_tables
-				#print len(all_the_tables)
 				tracking_table = all_the_tables[2]
 				#print all_the_tables[1]
 
-				# print tracking_table
+
 				tracking_data = []
 				table_rows = tracking_table.find_all('tbody')[0].find_all('tr')
 
@@ -430,7 +424,7 @@ class Command(BaseCommand):
 				#     tracking_data.append(row)
 					# if "delivered" in row["status"].lower():
 					#     completed=True
-				# print tracking_data
+
 				result = {
 					"company": company,
 					"tracking_no": product.mapped_tracking_no,

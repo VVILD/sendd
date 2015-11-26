@@ -2,12 +2,11 @@ import uuid
 from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 from django.db import models
-# from django.contrib.auth.models import User
-from datetime import datetime
-from geopy.distance import vincenty
-from geopy.geocoders import googlev3
+
+from datetime import datetime, timedelta, time
+
 from pytz import timezone
-from django.db.models.signals import post_save, pre_save
+from django.db.models.signals import post_save
 import hashlib
 import random
 # Create your models here.
@@ -15,11 +14,10 @@ import math
 from django.contrib.auth.models import User
 
 from django.db.models import signals
-from core.fedex.base_service import FedexError
 from core.models import Warehouse, Pincode
 from core.utils import state_matcher
-from django.core.exceptions import ObjectDoesNotExist
 import json
+from datetime import date
 import urllib
 import requests
 
@@ -30,7 +28,7 @@ class Profile(models.Model):
     usertype = models.CharField(max_length=1, choices=(
     ('O', 'ops'), ('B', 'bd'), ('A', 'admin'), ('Q', 'qc'), ('C', 'customer support'),),
                                 null=True, blank=True)
-
+    warehouse=models.ManyToManyField(Warehouse,null=True, blank=True)
     def __unicode__(self):
         return str(self.user.username)
 
@@ -71,6 +69,14 @@ class Zone(models.Model):
 
 
 class Business(models.Model):
+    created_at = models.DateTimeField(
+        verbose_name='created at',
+        auto_now_add=True
+    )
+    updated_at = models.DateTimeField(
+        verbose_name='updated at',
+        auto_now=True
+    )
     # phone_regex = RegexValidator(regex=r'^[0-9]*$', message="Phone number must be entered in the format: '999999999'. Up to 12 digits allowed.")
     username = models.CharField(max_length=20, primary_key=True)
     apikey = models.CharField(max_length=100, null=True, blank=True)
@@ -90,7 +96,8 @@ class Business(models.Model):
     company_name = models.CharField(max_length=100, null=True, blank=True)
     website = models.CharField(max_length=100, null=True, blank=True)
     # key=models.CharField(max_length = 100,null=True,blank =True)
-    businessmanager = models.ForeignKey(Profile, null=True, blank=True)
+    businessmanager = models.ForeignKey(Profile,verbose_name='BDE', null=True, blank=True ,limit_choices_to={'usertype': 'B'})
+    businessmanager2 = models.ForeignKey(Profile,verbose_name='BDM', null=True, blank=True ,limit_choices_to={'usertype': 'B'}, related_name='businessmanager2')
     show_tracking_company = models.CharField(max_length=1, choices=(('Y', 'yes'), ('N', 'no'),), null=True, blank=True,
                                              default='N')
     send_notification = models.CharField(max_length=1, choices=(('Y', 'yes'), ('N', 'no'),), null=True, blank=True,
@@ -160,6 +167,169 @@ class Business(models.Model):
         return str(self.business_name)
 
 
+class AddressDetails(models.Model):
+    """
+    AddressDetails model. Foreign key to SenddUser.
+    """
+    id = models.AutoField(primary_key=True)
+    created_at = models.DateTimeField(
+        verbose_name='created at',
+        auto_now_add=True
+    )
+    updated_at = models.DateTimeField(
+        verbose_name='updated at',
+        auto_now=True
+    )
+    business = models.ForeignKey(
+        to=Business,
+        null=True,
+        blank=True
+    )
+    company_name = models.CharField(
+        verbose_name='company name',
+        max_length=100
+    )
+    contact_person = models.CharField(
+        verbose_name='contact person',
+        max_length=100,
+        blank=True,
+        null=True
+    )
+    phone_office = models.CharField(
+        verbose_name='phone office',
+        max_length=20
+    )
+    phone_mobile = models.CharField(
+        verbose_name='phone mobile',
+        max_length=20,
+        blank=True,
+        null=True
+    )
+    email = models.EmailField(blank=True, null=True)
+    address = models.CharField(
+        verbose_name='address',
+        max_length=250
+    )
+    city = models.CharField(
+        verbose_name='city',
+        max_length=50
+    )
+    state = models.CharField(
+        verbose_name='state',
+        max_length=50
+    )
+    pincode = models.CharField(
+        verbose_name='pincode',
+        max_length=20
+    )
+    default_vehicle_choices = (
+        ('T', 'Tempo'),
+        ('B', 'Bike')
+    )
+    cs_comment = models.TextField(null=True, blank=True)
+    ff_comment = models.TextField(null=True, blank=True)
+    default_vehicle = models.CharField(
+        verbose_name='default vehicle',
+        max_length=2,
+        choices=default_vehicle_choices,
+        default='B'
+    )
+    pb = models.ForeignKey(PBUser, null=True, blank=True)
+    status = models.CharField(max_length=2,
+                              choices=(('Y', 'approved'), ('N', 'not approved'), ('A', 'alloted'),('C', 'complete'),),
+                              null=True, blank=True,
+                              default='N')
+    default_pickup_time = models.DateTimeField(null=True,blank=True)
+    temp_time = models.DateTimeField(null=True,blank=True)
+    default = models.BooleanField(default=False)
+    warehouse = models.ForeignKey(Warehouse, null=True, blank=True)
+    daily = models.BooleanField(default=False)
+
+    def get_full_address(self):
+        return "\n".join([self.company_name,self.address, self.city,self.contact_person,"(",self.phone_office,",",self.phone_mobile,")"])
+
+    def __unicode__(self):
+        return str(self.company_name + " " + self.address)
+
+    def save(self, force_insert=False, force_update=False, using=None,
+             update_fields=None):
+        if self.pincode and not self.warehouse:
+                pincode = Pincode.objects.filter(pincode=self.pincode).exclude(latitude__isnull=True, warehouse__isnull=True)
+                if len(pincode) > 0:
+                    self.warehouse = pincode[0].warehouse
+
+        if self.state:
+            if not state_matcher.is_state(self.state):
+                closest_state = state_matcher.get_closest_state(self.state)
+                if closest_state:
+                    self.state = closest_state[0]
+
+        super(AddressDetails, self).save()
+
+    class Meta:
+        verbose_name = 'Address details'
+        verbose_name_plural = 'Address details'
+
+
+def assign_default_pickupaddress(sender, instance, created, **kwargs):
+    if created:
+        if instance.assigned_pickup_time is not None:
+            default_time=datetime.combine(date.today(), instance.assigned_pickup_time)
+        else:
+            default_time=datetime.combine(date.today(), datetime.time(18, 00))
+        pickup_default = AddressDetails(
+            business = instance,
+            company_name = str(instance.business_name) if instance.business_name is not None else str(instance.username),
+            contact_person = str(instance.name) if instance.name is not None else str(instance.username),
+            phone_office = str(instance.contact_office) if instance.contact_office is not None else None,
+            phone_mobile = str(instance.contact_mob) if instance.contact_mob is not None else None,
+            address = str(instance.address),
+            default = True,
+            city = str(instance.city),
+            state = str(instance.state),
+            pincode = str(instance.pincode),
+            # default_vehicle = 'B',
+            default_pickup_time = default_time,
+            warehouse=getattr(instance, 'warehouse', None)
+        )
+        pickup_default.save()
+
+post_save.connect(assign_default_pickupaddress, sender=Business)
+
+
+class CSApprovedPickup(AddressDetails):
+    class Meta:
+        proxy = True
+        verbose_name = 'Cs approved pickups'
+        verbose_name_plural = 'Cs approved pickups'
+
+
+class CSAllPickup(AddressDetails):
+    class Meta:
+        proxy = True
+        verbose_name = 'Cs all pickups'
+        verbose_name_plural = 'Cs all pickups'
+
+class CSDailyPickup(AddressDetails):
+    class Meta:
+        proxy = True
+        verbose_name = 'Cs daily pickups'
+        verbose_name_plural = 'Cs daily pickups'
+
+
+class FFApprovedPickup(AddressDetails):
+    class Meta:
+        proxy = True
+        verbose_name = 'pickup address'
+        verbose_name_plural = 'pickupaddress'
+
+class FFCompletedPickup(AddressDetails):
+    class Meta:
+        proxy = True
+        verbose_name = 'ff completed pickups'
+        verbose_name_plural = 'ff completed pickups'
+
+
 class NotApprovedBusiness(Business):
     class Meta:
         proxy = True
@@ -218,6 +388,21 @@ class PendingBusinessRemittance(Business):
         proxy = True
         verbose_name_plural = "PendingBusinessRemittance"
 
+class Document(models.Model):
+    type=models.CharField(max_length=100,
+                           choices=(('passport', 'passport'),
+                                    ('panp', 'pan personal'),
+                                    ('tin', 'tin'),
+                                    ('vat', 'vat'),
+                                    ('ebill', 'electricity bill'),
+                                    ('tbill', 'telephone bill'),
+                                    ('aadhar', 'aadhar card'),
+                                    ('voterid', 'voter id'),
+                                    ('panc', 'pan company'),))
+
+    docs = models.FileField(upload_to='shipment', blank=True, null=True)
+    business=models.ForeignKey(Business)
+
 
 class LoginSession(models.Model):
     Business = models.ForeignKey(Business, null=True, blank=True)
@@ -240,6 +425,7 @@ class LoginSession(models.Model):
 class Order(models.Model):
     reference_id = models.CharField(max_length=100, null=True, blank=True)
     third_party_id = models.CharField(max_length=100, null=True, blank=True)
+    weight=models.FloatField(null=True,blank=True) # temp variable do not delete
     order_no = models.AutoField(primary_key=True)
     name = models.CharField(max_length=100, null=True, blank=True)
     phone = models.CharField(max_length=12)
@@ -269,6 +455,12 @@ class Order(models.Model):
     __status = None
     ff_comment=models.TextField(null=True, blank=True)
     refund = models.FloatField(default=0.0)
+    pickup_address = models.ForeignKey(AddressDetails, null=True, blank=True)
+    is_reverse = models.BooleanField(default=False)
+    reversed = models.BooleanField(default=False)
+    reverse_pickup_timedate=models.DateTimeField(null=True,blank=True)
+    reverse_latest_available_time=models.TimeField(null=True,blank=True)
+    reverse_confirmation_id=models.CharField(max_length=100,null=True,blank=True)
 
 
     def __unicode__(self):
@@ -293,6 +485,20 @@ class Order(models.Model):
                 self.book_time = ind_time
             super(Order, self).save(*args, **kwargs)
             order_no = self.pk + 1000
+            if self.pickup_address.status=='N':
+                self.pickup_address.status='Y'
+
+                cutoff_time=datetime.combine(date.today(), time(19, 00))
+                if self.pickup_address.default_pickup_time:
+                    if (datetime.now() > cutoff_time):
+                        self.pickup_address.default_pickup_time=datetime.combine(date.today()+timedelta(days=1) , self.pickup_address.default_pickup_time.time())
+                    elif (datetime.now().time() >self.pickup_address.default_pickup_time.time()):
+                        self.pickup_address.temp_time = datetime.now()
+                    elif (datetime.now().time() < self.pickup_address.default_pickup_time.time()):
+                        self.pickup_address.default_pickup_time=datetime.combine(date.today(), self.pickup_address.default_pickup_time.time())
+
+                self.pickup_address.save()
+
             if str(order_no) > 4:
                 order_no = str(order_no)[:4]
             self.master_tracking_number = 'M' + order_no + str(uuid.uuid4().get_hex().upper()[:5])
@@ -300,12 +506,31 @@ class Order(models.Model):
         if self.status != self.__status or not self.last_updated_status:
             self.last_updated_status = datetime.now()
 
+
         if self.state:
             if not state_matcher.is_state(self.state):
                 closest_state = state_matcher.get_closest_state(self.state)
                 if closest_state:
                     self.state = closest_state[0]
         super(Order, self).save(*args, **kwargs)
+
+
+class PendingOrder(Order):
+    class Meta:
+        proxy = True
+
+class PickedOrder(Order):
+    class Meta:
+        proxy = True
+
+
+class DispatchedOrder(Order):
+    class Meta:
+        proxy = True
+
+class ReverseOrder(Order):
+    class Meta:
+        proxy = True
 
 
 
@@ -325,7 +550,7 @@ class Product(models.Model):
                                choices=[('F', 'FedEx'), ('D', 'Delhivery'), ('P', 'Professional'), ('G', 'Gati'),
                                         ('A', 'Aramex'), ('E', 'Ecomexpress'), ('DT', 'dtdc'), ('FF', 'First Flight'),
                                         ('M', 'Maruti courier'), ('I', 'India Post'), ('S', 'Sendd'), ('B', 'bluedart'),
-                                        ('T', 'trinity'), ('V', 'vichare'), ('DH', 'dhl'), ('SK', 'skycom'), ('NA', 'nandan'),('FA','Fast train'),('TE','Tej'),('TR','Track on')],
+                                        ('T', 'trinity'), ('V', 'vichare'), ('DH', 'dhl'), ('SK', 'skycom'), ('NA', 'nandan'),('FA','Fast train'),('TE','Tej'),('TR','Track on'),('LC','local courier')],
                                blank=True, null=True)
     shipping_cost = models.FloatField(default=0.0)
     cod_cost = models.FloatField(default=0.0)
@@ -353,6 +578,7 @@ class Product(models.Model):
     __original_tracking_data = None
     update_time = models.DateTimeField(null=True, blank=True)
     dispatch_time = models.DateTimeField(null=True, blank=True)
+    pickup_time = models.DateTimeField(null=True, blank=True)
 
     remittance_date = models.DateTimeField(null=True, blank=True)
 
@@ -390,6 +616,9 @@ class Product(models.Model):
         fmt = '%Y-%m-%d %H:%M:%S'
         ind_time = datetime.now(z)
         time = ind_time
+
+        if self.status == 'PU' and not self.pickup_time:
+            self.pickup_time = time
 
 
         if self.mapped_tracking_no:
@@ -800,8 +1029,6 @@ post_save.connect(send_update_product, sender=Product)
 
 
 def add_pricing(sender, instance, created, **kwargs):
-    # print "assadfasd"
-    # print instance.pricing2s.count()
     if instance.pricing2s.count()==0:
         ndict = {'a': [(0.25,15), (0.5,15), (1,28), (1.5,41),(2,54), (2.5,67), (3,80), (3.5,93), (4,106), (4.5,119), (5,132), (5.5,145),(6,158), (6.5,171), (7,184),(7.5,197), (8,210), (8.5,223), (9,236),(9.5,249), (10,262), (11,286)],
                  'b': [(0.25,20), (0.5,30), (1,56), (1.5,82),(2,108), (2.5,134), (3,160), (3.5,186),(4,212),(4.5,238), (5,264), (5.5,290),(6,316), (6.5,342),(7,368),(7.5,394), (8,420), (8.5,446),(9,472),(9.5,498), (10,524), (11,572)],
