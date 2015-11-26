@@ -1129,7 +1129,7 @@ class OrderAdmin(FilterUserAdmin,ImportExportActionModelAdmin):
 	inlines = (ProductInline,)
 	search_fields = ['order_no','business__business_name', 'name', 'product__real_tracking_no', 'product__kartrocket_order', 'product__barcode','city','state','product__mapped_tracking_no']
 	list_display = (
-		'order_no', 'book_time', 'business_details', 'receiver_detail', 'status','mapped_ok', 'no_of_products', 'weight', 'method', 'fedex','ecom','print_links','payment_method','ff_comment')
+		'order_no', 'book_time', 'business_details', 'receiver_detail', 'status','mapped_ok', 'no_of_products', 'weight', 'method', 'fedex','ecom','generate_order','print_links','payment_method','ff_comment')
 	list_editable = ('ff_comment','weight',)
 	list_filter = ['business', 'status', 'book_time','product__company','product__return_action','product__dispatch_time','pickup_address','product__pickup_time', 'business__warehouse']
 
@@ -1146,6 +1146,139 @@ class OrderAdmin(FilterUserAdmin,ImportExportActionModelAdmin):
 	def receiver_detail(self, obj):
 		return obj.name + "<br>" + obj.city + "<br>" + obj.state
 	receiver_detail.allow_tags=True
+
+	def generate_order(self, obj):
+		obj=obj.product_set.first()
+		cod=''
+		valid = 1
+		try:
+			string = 'ot=1&'
+			product = Product.objects.get(pk=obj.pk)
+			order = product.order
+			error_string = ''
+			try:
+				shipmentid = product.real_tracking_no
+				string = string + 'shipmentid=' + str(shipmentid) + '&'
+			except:
+				valid = 0
+				error_string = error_string + 'shipmentid not set <br>'
+
+			try:
+				name = order.name
+				if (str(name) != ''):
+					string = string + 'name=' + str(name) + '&'
+				else:
+					error_string = error_string + 'drop_name not set<br>'
+					valid = 0
+
+			except:
+				valid = 0
+				error_string = error_string + 'drop_name not set<br>'
+
+			try:
+				pname = product.name
+				if (str(pname) != ''):
+					string = string + 'pname=' + str(pname) + '&'
+				else:
+					error_string = error_string + 'item_name not set<br>'
+					valid = 0
+			except:
+				error_string = error_string + 'item_name not set<br>'
+				valid = 0
+
+			try:
+				price = product.price
+
+				if (str(price) != '' and str(price) != 'None'):
+					string = string + 'price=' + str(price) + '&'
+				else:
+					error_string = error_string + 'item_cost not set<br>'
+					valid = 0
+			except:
+				error_string = error_string + 'item_cost not set<br>'
+				valid = 0
+
+			try:
+				weight = product.applied_weight
+				if (str(weight) != '' and str(weight) != 'None'):
+					string = string + 'weight=' + str(weight) + '&'
+				else:
+					error_string = error_string + 'item_weight not set<br>'
+					valid = 0
+
+			except:
+				error_string = error_string + 'item_weight not set<br>'
+				valid = 0
+
+			try:
+				phone = order.phone
+				if (str(phone) != '' and str(phone) != 'None'):
+					string = string + 'phone=' + str(phone) + '&'
+				else:
+					error_string = error_string + 'drop_phone not set<br>'
+					valid = 0
+			except:
+				error_string = error_string + 'drop_phone not set<br>'
+				valid = 0
+
+			try:
+				address1 = str(order.address1)
+				string = string + 'address=' + str(address1) + '&'
+			except:
+				error_string = error_string + 'address 1 not set<br>'
+				valid = 0
+
+			try:
+				address2 = str(order.address2)
+				string = string + 'address1=' + str(address2) + '&'
+			except:
+				error_string = error_string + 'address 2 not set<br>'
+				valid = 0
+
+			try:
+				city = order.city
+				string = string + 'city=' + str(city) + '&'
+			except:
+				error_string = error_string + 'city not set<br>'
+				valid = 0
+
+			try:
+				state = order.state
+				string = string + 'state=' + str(state) + '&'
+			except:
+				error_string = error_string + 'state not set<br>'
+				valid = 0
+
+			try:
+				pincode = order.pincode
+				string = string + 'pincode=' + str(pincode) + '&'
+			except:
+				error_string = error_string + 'pincode not set<br>'
+				valid = 0
+
+			try:
+
+				cod = order.payment_method
+				string = string + 'cod=' + str(cod) + '&'
+			except:
+				error_string = error_string + 'cod not set<br>'
+				valid = 0
+
+		except:
+			pass
+
+		if (valid):
+			if (cod=='F'):
+				return 'All good!<br><a href="/stats/kartrocket/?%s" target="_blank" >Create Kartrocket Normal Order</a>' % (string)
+			elif (cod=='C'):
+				return 'All good!<br><a href="/stats/kartrocket/?%s" target="_blank" >Create Kartrocket Cod Order</a>' % (string)
+			else:
+				return "no payment_method set"
+		else:
+			return '<div style="color:red">' + error_string + '</div>'
+
+	generate_order.allow_tags = True
+
 
 	def ecom(self, obj):
 		obj=obj.product_set.first()
