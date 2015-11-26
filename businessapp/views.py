@@ -139,7 +139,7 @@ def qc_stats_view(request):
     for x in total_products_data:
         x['name']=str(x['name'])
 
-    warning_products=total_products.filter(warning_type__isnull=True)
+    warning_products=total_products.filter(warning_type__isnull=False)
     warning_products_count=warning_products.count()
     warning_products_data=warning_products.extra(select={'name': 'company'}).values('name').annotate(y=Count('company'))
     for x in warning_products_data:
