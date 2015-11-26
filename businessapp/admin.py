@@ -3217,7 +3217,12 @@ class PendingOrderAdmin(OrderAdmin):
 	# status_action.allow_tags = True
 	new_list=list(OrderAdmin.list_display)
 	new_list.remove('mapped_ok')
+	new_list.remove('weight')
 	list_display = new_list
+
+	new_list2=list(OrderAdmin.list_editable)
+	new_list2.remove('weight')
+	list_editable = new_list2
 
 	def make_pickedup(modeladmin, request, queryset):
 #checking if valid
@@ -3253,7 +3258,7 @@ class PendingOrderAdmin(OrderAdmin):
 	def get_queryset(self, request):
 		#threshold_time =datetime.datetime.combine(date.today(),datetime.time(19, 00))
 		qs = super(OrderAdmin, self).queryset(request)
-		qs = qs.filter(status='P')
+		qs = qs.filter(status='P').exclude()
 		return qs
 
 

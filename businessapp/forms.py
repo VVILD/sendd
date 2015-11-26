@@ -41,10 +41,12 @@ class Weightform(ModelForm):
 	def clean(self, *args, **kwargs):
 		# use whatever parsing you like here
 		print self.cleaned_data['order_no']
-		dat_product=Order.objects.get(order_no=self.cleaned_data['order_no'].pk).product_set.first()
-		dat_product.applied_weight=self.cleaned_data['weight']
-		dat_product.save()
-		# first_name, last_name = self.cleaned_data['name'].split(None, 1)
+		datorder=Order.objects.get(order_no=self.cleaned_data['order_no'].pk)
+		if datorder.product_set.count()==1:
+			dat_product=datorder.product_set.first()
+			dat_product.applied_weight=self.cleaned_data['weight']
+			dat_product.save()
+			# first_name, last_name = self.cleaned_data['name'].split(None, 1)
 		# self.cleaned_data['first_name'] = first_name
 		# self.cleaned_data['last_name'] = last_name
 
