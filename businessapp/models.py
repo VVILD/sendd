@@ -409,6 +409,7 @@ class LoginSession(models.Model):
 class Order(models.Model):
     reference_id = models.CharField(max_length=100, null=True, blank=True)
     third_party_id = models.CharField(max_length=100, null=True, blank=True)
+    weight=models.FloatField(null=True,blank=True) # temp variable do not delete
     order_no = models.AutoField(primary_key=True)
     name = models.CharField(max_length=100, null=True, blank=True)
     phone = models.CharField(max_length=12)

@@ -14,10 +14,39 @@ import datetime
 from django.forms import extras
 from django.utils.timezone import localtime
 
-# class Newpickupform(ModelForm):
-# 	default_pickup_time=forms.CharField(required=True)
-# 	class Meta:
-# 		model = AddressDetails
+class Testform(ModelForm):
+	class Meta:
+		model = Order
+
+	def clean(self, *args, **kwargs):
+		# use whatever parsing you like here
+		print self.cleaned_data
+
+class Weightform(ModelForm):
+	class Meta:
+		model = Order
+
+	def __init__(self, *args, **kwargs):
+		instance = kwargs.get('instance')
+		#print instance
+		if instance:
+			initial = kwargs.get('initial', {})
+			initial['weight'] = '%s' % (instance.product_set.first().applied_weight)
+
+			if instance.product_set.count()>1:
+				initial['weight'] = None
+			kwargs['initial'] = initial
+		super(Weightform, self).__init__(*args, **kwargs)
+
+	def clean(self, *args, **kwargs):
+		# use whatever parsing you like here
+		print self.cleaned_data['order_no']
+		dat_product=Order.objects.get(order_no=self.cleaned_data['order_no'].pk).product_set.first()
+		dat_product.applied_weight=self.cleaned_data['weight']
+		dat_product.save()
+		# first_name, last_name = self.cleaned_data['name'].split(None, 1)
+		# self.cleaned_data['first_name'] = first_name
+		# self.cleaned_data['last_name'] = last_name
 
 class Newpickupform(forms.ModelForm):
     def __init__(self, *args, **kwargs):

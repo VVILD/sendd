@@ -14,7 +14,7 @@ from django.utils.timezone import localtime
 from daterange_filter.filter import DateRangeFilter
 from django.contrib import admin
 from .models import *
-from businessapp.forms import NewQcCommentForm,NewTrackingStatus,OrderForm,NewReturnForm,Approveconfirmform,AddressForm,Completeconfirmform,ReverseTimeForm,Newpickupform
+from businessapp.forms import NewQcCommentForm,NewTrackingStatus,OrderForm,NewReturnForm,Approveconfirmform,AddressForm,Completeconfirmform,ReverseTimeForm,Newpickupform,Weightform,Testform
 from datetime import date,timedelta
 import reversion
 
@@ -1105,15 +1105,56 @@ class OrderAdmin(FilterUserAdmin,ImportExportActionModelAdmin):
 	search_fields = ['order_no','business__business_name', 'name', 'product__real_tracking_no', 'product__kartrocket_order', 'product__barcode','city','state','product__mapped_tracking_no']
 	list_display = (
 		'order_no', 'book_time', 'business_details', 'name', 'status','mapped_ok', 'no_of_products', 'total_shipping_cost',
-		'total_cod_cost', 'method', 'fedex','print_links','payment_method','ff_comment')
-	list_editable = ('ff_comment',)
+		'total_cod_cost', 'method', 'fedex','ecom','print_links','payment_method','ff_comment','weight')
+	list_editable = ('ff_comment','weight',)
 	list_filter = ['business', 'status', 'book_time','product__company','product__return_action','product__dispatch_time','pickup_address','product__pickup_time', 'business__warehouse']
 
 	readonly_fields=('master_tracking_number', 'mapped_master_tracking_number', 'fedex')
 
+	def get_changelist_form(self, request, **kwargs):
+		return Weightform
+
+	def get_form(self, request, obj=None, **kwargs):
+		self.form=Testform
+		return super(OrderAdmin, self).get_form(request, obj, **kwargs)
+
+
+	def ecom(self, obj):
+		obj=obj.product_set.first()
+		if not obj.order.state:
+			return "Enter state"
+
+		if not state_matcher.is_state(obj.order.state):
+			return '<h2 style="color:red">Enter a valid state</h2>'
+
+		if not obj.order.pincode:
+			return "Enter pincode"
+
+		db_pincode = Pincode.objects.filter(pincode=obj.order.pincode)
+
+		if db_pincode:
+			if not db_pincode[0].ecom_servicable:
+				return '<h2 style="color:red">Not Servicable</h2>'
+		else:
+			return '<h2 style="color:red">Enter a valid pincode</h2>'
+
+		if not obj.applied_weight:
+			return "Enter applied weight"
+
+		if not obj.price:
+			return "Enter item value"
+
+		if obj.mapped_tracking_no and obj.company == "E":
+			params = urllib.urlencode({'shipment_pk': obj.pk, 'client_type': "business"})
+			return '<a href="/create_ecom_shipment/?%s&type=invoice" target="_blank">%s</a>' % (params, "Print Invoice") + ' <br><br> <a href="/create_ecom_shipment/?%s&type=label" target="_blank">%s</a>' % (params, "Print Label")
+
+		params = urllib.urlencode({'shipment_pk': obj.pk, 'client_type': "business", 'type': 'create'})
+
+		return '<a href="/create_ecom_shipment/?%s">%s</a>' % (params, "Create Order")
 
 
 
+	ecom.allow_tags = True
 
 	def make_pickedup(modeladmin, request, queryset):
 #checking if valid
@@ -1338,6 +1379,12 @@ reference_id=models.CharField(max_length=100)
 
 	business=models.ForeignKey(Business)
 	'''
+
+class TestAdmin(OrderAdmin):
+
+	list_display = ('order_no','address1','weight')
+	list_editable = ('weight',)
+
 
 admin.site.register(Order, OrderAdmin)
 
