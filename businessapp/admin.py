@@ -1451,9 +1451,9 @@ class ReverseOrderAdmin(OrderAdmin):
 			return "reverse pickup time not selected. " + '<a href="/admin/businessapp/reverseorder/%s/?settime=True" onclick="return showAddAnotherPopup(this);"> Choose pickup time </a><br>' % (obj.pk)
 		elif not obj.reverse_confirmation_id:
 			var= str((localtime(obj.reverse_pickup_timedate)).replace(tzinfo=None).isoformat())
-			return str(localtime(obj.reverse_pickup_timedate).replace(tzinfo=None)) + '<br> <a href="/fedex_pickup_scheduler/?order_no={}&ready_timestamp={}&business_closetime={}" target="_blank"> Book on fedex</a><br>'.format(obj.pk,var,str(obj.reverse_latest_available_time))
+			return str(localtime(obj.reverse_pickup_timedate).replace(tzinfo=None)) + '<br> <a href="/fedex_pickup_scheduler/?order_no={}&ready_timestamp={}&business_closetime={}" target="_blank"> Book on fedex</a><br><a href="/admin/businessapp/reverseorder/%s/?settime=True" onclick="return showAddAnotherPopup(this);"> Edit time </a>'.format(obj.pk,var,str(obj.reverse_latest_available_time),obj.pk)
 		else:
-			return 'Pickup confirmation id is %s' % ( obj.reverse_confirmation_id)
+			return 'Pickup confirmation id is %s <br><a href="/admin/businessapp/reverseorder/%s/?settime=True" onclick="return showAddAnotherPopup(this);"> Edit time </a>' % ( obj.reverse_confirmation_id,obj.k)
 	reverse_actions.allow_tags = True
 
 admin.site.register(ReverseOrder, ReverseOrderAdmin)
@@ -3258,7 +3258,7 @@ class PendingOrderAdmin(OrderAdmin):
 	def get_queryset(self, request):
 		#threshold_time =datetime.datetime.combine(date.today(),datetime.time(19, 00))
 		qs = super(OrderAdmin, self).queryset(request)
-		qs = qs.filter(status='P').exclude()
+		qs = qs.filter(status='P').exclude(is_reverse=True)
 		return qs
 
 

@@ -105,6 +105,9 @@ class ReverseTimeForm(ModelForm):
 						raise forms.ValidationError("ready time should be greater than 30 minutes from current time")
 				if self.cleaned_data['reverse_latest_available_time']<(datetime.datetime.now() + datetime.timedelta(hours=3)).time():
 					raise forms.ValidationError("latest_available time should be 3 hours ahead of ready time")
+				if self.cleaned_data['reverse_pickup_timedate'].time()>datetime.time(20,00):
+					raise forms.ValidationError("schedule reverse earlier than 8 pm")
+
 
 				var= str((localtime(self.cleaned_data['reverse_pickup_timedate'])).replace(tzinfo=None).isoformat())
 #				url= "/fedex_pickup_scheduler/?order_no={}&ready_timestamp={}&business_closetime={}".format(obj.pk,var,str(obj.reverse_latest_available_time))
