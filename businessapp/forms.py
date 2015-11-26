@@ -103,7 +103,7 @@ class ReverseTimeForm(ModelForm):
 				if self.cleaned_data['reverse_pickup_timedate'].date() == today:
 					if self.cleaned_data['reverse_pickup_timedate'].time()<(datetime.datetime.now() + datetime.timedelta(minutes=30)).time():
 						raise forms.ValidationError("ready time should be greater than 30 minutes from current time")
-				if self.cleaned_data['reverse_latest_available_time']<(datetime.datetime.now() + datetime.timedelta(hours=3)).time():
+				if self.cleaned_data['reverse_latest_available_time']<(self.cleaned_data['reverse_pickup_timedate']+ datetime.timedelta(hours=3)).time():
 					raise forms.ValidationError("latest_available time should be 3 hours ahead of ready time")
 				if self.cleaned_data['reverse_pickup_timedate'].time()>datetime.time(20,00):
 					raise forms.ValidationError("schedule reverse earlier than 8 pm")
