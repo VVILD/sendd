@@ -8,7 +8,7 @@ from PyPDF2 import PdfFileWriter, PdfFileReader, PdfFileMerger
 import cStringIO
 from django.contrib.auth.decorators import login_required
 from django.core.files.base import ContentFile
-from django.http import HttpResponseBadRequest, HttpResponseNotFound, HttpResponse
+from django.http import HttpResponseBadRequest, HttpResponseNotFound, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect
 import base64
 from businessapp.models import Product
