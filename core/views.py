@@ -54,7 +54,7 @@ def fedex_view_util(order_pk, client_type):
         if products[0].order.payment_method == 'C':
             is_cod = True
         service_type, config = fedex.get_service_type(str(products[0].order.method), total_price,
-                                                      total_weight, products[0].order.city, is_cod)
+                                                      total_weight, products[0].order.city, products[0].order.pincode, is_cod)
         for idx, product in enumerate(products, start=1):
             sender_details = None
             warehouse = None
