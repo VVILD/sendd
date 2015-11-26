@@ -342,12 +342,14 @@ class BusinessAdmin(BaseBusinessAdmin,ImportExportActionModelAdmin):
 			return obj.businessmanager.user.first_name+ " " + obj.businessmanager.user.last_name +"," + obj.businessmanager.phone + ", " +obj.businessmanager.user.email
 		except:
 			return "None"
+	BDE_details.short_description ='BDE Details'
 
 	def BDM_details(self,obj):
 		try:
 			return obj.businessmanager.user.first_name+ " " + obj.businessmanager.user.last_name +"," +obj.businessmanager2.phone + ", " +obj.businessmanager2.user.email
 		except:
 			return "None"
+	BDM_details.short_description ='BDM Details'
 
 
 	def get_queryset(self, request):
