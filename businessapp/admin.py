@@ -3356,6 +3356,7 @@ class PendingOrderAdmin(OrderAdmin):
 	new_list.remove('ecom')
 	new_list.remove('fedex')
 	new_list.remove('generate_order')
+	new_list.remove('print_links')
 	list_display = new_list
 
 	new_list2=list(OrderAdmin.list_editable)
