@@ -1104,8 +1104,7 @@ class OrderAdmin(FilterUserAdmin,ImportExportActionModelAdmin):
 	inlines = (ProductInline,)
 	search_fields = ['order_no','business__business_name', 'name', 'product__real_tracking_no', 'product__kartrocket_order', 'product__barcode','city','state','product__mapped_tracking_no']
 	list_display = (
-		'order_no', 'book_time', 'business_details', 'name', 'status','mapped_ok', 'no_of_products', 'total_shipping_cost',
-		'total_cod_cost', 'method', 'fedex','ecom','print_links','payment_method','ff_comment','weight')
+		'order_no', 'book_time', 'business_details', 'receiver_detail', 'status','mapped_ok', 'no_of_products', 'weight', 'method', 'fedex','ecom','print_links','payment_method','ff_comment')
 	list_editable = ('ff_comment','weight',)
 	list_filter = ['business', 'status', 'book_time','product__company','product__return_action','product__dispatch_time','pickup_address','product__pickup_time', 'business__warehouse']
 
@@ -1118,6 +1117,10 @@ class OrderAdmin(FilterUserAdmin,ImportExportActionModelAdmin):
 		self.form=Testform
 		return super(OrderAdmin, self).get_form(request, obj, **kwargs)
 
+
+	def receiver_detail(self, obj):
+		return obj.name + "<br>" + obj.city + "<br>" + obj.state
+	receiver_detail.allow_tags=True
 
 	def ecom(self, obj):
 		obj=obj.product_set.first()
@@ -1255,11 +1258,11 @@ class OrderAdmin(FilterUserAdmin,ImportExportActionModelAdmin):
 		return Product.objects.filter(order=obj).count()
 	no_of_products.allow_tags = True
 
-	def total_cod_cost(self, obj):
-		return Product.objects.filter(order=obj).aggregate(Sum('cod_cost'))['cod_cost__sum']
-
-	def total_shipping_cost(self, obj):
-		return Product.objects.filter(order=obj).aggregate(Sum('shipping_cost'))['shipping_cost__sum']
+	# def total_cod_cost(self, obj):
+	# 	return Product.objects.filter(order=obj).aggregate(Sum('cod_cost'))['cod_cost__sum']
+    #
+	# def total_shipping_cost(self, obj):
+	# 	return Product.objects.filter(order=obj).aggregate(Sum('shipping_cost'))['shipping_cost__sum']
 
 
 	def response_change(self, request, obj):
@@ -3181,6 +3184,9 @@ class PendingOrderAdmin(OrderAdmin):
 	# def status_action(self,obj):
 	# 	return obj.get_status_display() + '<br>'
 	# status_action.allow_tags = True
+	new_list=list(OrderAdmin.list_display)
+	new_list.remove('mapped_ok')
+	list_display = new_list
 
 	def make_pickedup(modeladmin, request, queryset):
 #checking if valid
@@ -3227,8 +3233,6 @@ admin.site.register(PendingOrder,PendingOrderAdmin)
 class PickedOrderAdmin(OrderAdmin):
 	new_list=list(OrderAdmin.list_display)
 	new_list.remove('mapped_ok')
-	new_list.remove('total_cod_cost')
-	new_list.remove('total_shipping_cost')
 	list_display = new_list
 
 	def get_queryset(self, request):
