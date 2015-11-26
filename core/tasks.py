@@ -1,4 +1,3 @@
-from businessapp.models import AddressDetails
 from django_project.celery import app
 from geopy.distance import vincenty
 from geopy.geocoders import googlev3
@@ -7,6 +6,7 @@ from geopy.geocoders import googlev3
 @app.task
 def new_warehouse_reassignment(pk):
     from core.models import Warehouse, Pincode
+    from businessapp.models import AddressDetails
     obj = Warehouse.objects.get(pk=pk)
     geolocator = googlev3.GoogleV3(api_key="AIzaSyBEfEgATQeVkoKUnaB4O9rIdX2K2Bsh63o")
     location = geolocator.geocode("{}, India".format(obj.pincode))

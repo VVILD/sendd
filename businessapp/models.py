@@ -97,7 +97,7 @@ class Business(models.Model):
     website = models.CharField(max_length=100, null=True, blank=True)
     # key=models.CharField(max_length = 100,null=True,blank =True)
     businessmanager = models.ForeignKey(Profile,verbose_name='BDE', null=True, blank=True ,limit_choices_to={'usertype': 'B'})
-    businessmanager2 = models.ForeignKey(Profile,verbose_name='BDM', null=True, blank=True ,limit_choices_to={'usertype': 'B'})
+    businessmanager2 = models.ForeignKey(Profile,verbose_name='BDM', null=True, blank=True ,limit_choices_to={'usertype': 'B'}, related_name='businessmanager2')
     show_tracking_company = models.CharField(max_length=1, choices=(('Y', 'yes'), ('N', 'no'),), null=True, blank=True,
                                              default='N')
     send_notification = models.CharField(max_length=1, choices=(('Y', 'yes'), ('N', 'no'),), null=True, blank=True,
