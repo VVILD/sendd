@@ -14,7 +14,7 @@ from django.utils.timezone import localtime
 from daterange_filter.filter import DateRangeFilter
 from django.contrib import admin
 from .models import *
-from businessapp.forms import NewQcCommentForm,NewTrackingStatus,OrderForm,NewReturnForm,Approveconfirmform,AddressForm,Completeconfirmform,ReverseTimeForm,Newpickupform
+from businessapp.forms import NewQcCommentForm,NewTrackingStatus,OrderForm,NewReturnForm,Approveconfirmform,AddressForm,Completeconfirmform,ReverseTimeForm,Newpickupform,Weightform,Testform
 from datetime import date,timedelta
 import reversion
 
@@ -292,18 +292,31 @@ class BaseBusinessAdmin(reversion.VersionAdmin):
 		return super(BaseBusinessAdmin, self).changelist_view(request, extra_context=context)
 
 
+class DocInline(admin.TabularInline):
+	model = Document
+	readonly_fields = ('download_link',)
+	fields = (
+		'type', 'docs','download_link',)
+	extra = 0
 
+
+	def download_link(self,obj):
+
+		return '<a href="/static/%s/" target="_blank"> click here </a>' % (
+			obj.docs)
+	download_link.allow_tags=True
 
 
 # Register your models here.
 class BusinessAdmin(BaseBusinessAdmin,ImportExportActionModelAdmin):
+	inlines = (DocInline,)
 	# search_fields=['name']
 	search_fields=['username','business_name']
 	list_display = ('username','business_name', 'pickup_time', 'warehouse', 'pb', 'assigned_pickup_time','status', 'pending_orders_total', 'pending_orders','pickedup_orders','dispatched_orders','daily','cs_comment','ff_comment')
 	list_editable = ('pb', 'assigned_pickup_time','daily','cs_comment','ff_comment')
 	raw_id_fields = ('pb', 'warehouse')
 	list_filter = ['username', 'daily','pb', 'warehouse']
-	readonly_fields = ('status','is_completed')
+	readonly_fields = ('status','is_completed','bde_details','bdm_details')
 	#actions = [export_as_csv_action("CSV Export", fields=['username','business_name','apikey','name','email','contact_mob','contact_office','address','city','state','pincode'])]
 	actions_on_bottom = False
 	actions_on_top = True
@@ -324,7 +337,17 @@ class BusinessAdmin(BaseBusinessAdmin,ImportExportActionModelAdmin):
 		# if c>0:
 		# 	del actions['make_remittance_initiated']
 
+	def bde_details(self,obj):
+		try:
+			return obj.businessmanager.user.first_name+ " " + obj.businessmanager.user.last_name +"," + obj.businessmanager.phone + ", " +obj.businessmanager.user.email
+		except:
+			return "None"
 
+	def bdm_details(self,obj):
+		try:
+			return obj.businessmanager.user.first_name+ " " + obj.businessmanager.user.last_name +"," +obj.businessmanager2.phone + ", " +obj.businessmanager2.user.email
+		except:
+			return "None"
 
 
 	def get_queryset(self, request):
@@ -1104,16 +1127,60 @@ class OrderAdmin(FilterUserAdmin,ImportExportActionModelAdmin):
 	inlines = (ProductInline,)
 	search_fields = ['order_no','business__business_name', 'name', 'product__real_tracking_no', 'product__kartrocket_order', 'product__barcode','city','state','product__mapped_tracking_no']
 	list_display = (
-		'order_no', 'book_time', 'business_details', 'name', 'status','mapped_ok', 'no_of_products', 'total_shipping_cost',
-		'total_cod_cost', 'method', 'fedex','print_links','payment_method','ff_comment')
-	list_editable = ('ff_comment',)
+		'order_no', 'book_time', 'business_details', 'receiver_detail', 'status','mapped_ok', 'no_of_products', 'weight', 'method', 'fedex','ecom','print_links','payment_method','ff_comment')
+	list_editable = ('ff_comment','weight',)
 	list_filter = ['business', 'status', 'book_time','product__company','product__return_action','product__dispatch_time','pickup_address','product__pickup_time', 'business__warehouse']
 
 	readonly_fields=('master_tracking_number', 'mapped_master_tracking_number', 'fedex')
 
+	def get_changelist_form(self, request, **kwargs):
+		return Weightform
+
+	def get_form(self, request, obj=None, **kwargs):
+		self.form=Testform
+		return super(OrderAdmin, self).get_form(request, obj, **kwargs)
+
+
+	def receiver_detail(self, obj):
+		return obj.name + "<br>" + obj.city + "<br>" + obj.state
+	receiver_detail.allow_tags=True
+
+	def ecom(self, obj):
+		obj=obj.product_set.first()
+		if not obj.order.state:
+			return "Enter state"
+
+		if not state_matcher.is_state(obj.order.state):
+			return '<h2 style="color:red">Enter a valid state</h2>'
+
+		if not obj.order.pincode:
+			return "Enter pincode"
+
+		db_pincode = Pincode.objects.filter(pincode=obj.order.pincode)
+
+		if db_pincode:
+			if not db_pincode[0].ecom_servicable:
+				return '<h2 style="color:red">Not Servicable</h2>'
+		else:
+			return '<h2 style="color:red">Enter a valid pincode</h2>'
+
+		if not obj.applied_weight:
+			return "Enter applied weight"
+
+		if not obj.price:
+			return "Enter item value"
+
+		if obj.mapped_tracking_no and obj.company == "E":
+			params = urllib.urlencode({'shipment_pk': obj.pk, 'client_type': "business"})
+			return '<a href="/create_ecom_shipment/?%s&type=invoice" target="_blank">%s</a>' % (params, "Print Invoice") + ' <br><br> <a href="/create_ecom_shipment/?%s&type=label" target="_blank">%s</a>' % (params, "Print Label")
+
+		params = urllib.urlencode({'shipment_pk': obj.pk, 'client_type': "business", 'type': 'create'})
+
+		return '<a href="/create_ecom_shipment/?%s">%s</a>' % (params, "Create Order")
 
 
 
+	ecom.allow_tags = True
 
 	def make_pickedup(modeladmin, request, queryset):
 #checking if valid
@@ -1214,11 +1281,11 @@ class OrderAdmin(FilterUserAdmin,ImportExportActionModelAdmin):
 		return Product.objects.filter(order=obj).count()
 	no_of_products.allow_tags = True
 
-	def total_cod_cost(self, obj):
-		return Product.objects.filter(order=obj).aggregate(Sum('cod_cost'))['cod_cost__sum']
-
-	def total_shipping_cost(self, obj):
-		return Product.objects.filter(order=obj).aggregate(Sum('shipping_cost'))['shipping_cost__sum']
+	# def total_cod_cost(self, obj):
+	# 	return Product.objects.filter(order=obj).aggregate(Sum('cod_cost'))['cod_cost__sum']
+    #
+	# def total_shipping_cost(self, obj):
+	# 	return Product.objects.filter(order=obj).aggregate(Sum('shipping_cost'))['shipping_cost__sum']
 
 
 	def response_change(self, request, obj):
@@ -1338,6 +1405,12 @@ reference_id=models.CharField(max_length=100)
 
 	business=models.ForeignKey(Business)
 	'''
+
+class TestAdmin(OrderAdmin):
+
+	list_display = ('order_no','address1','weight')
+	list_editable = ('weight',)
+
 
 admin.site.register(Order, OrderAdmin)
 
@@ -2087,8 +2160,8 @@ class QcProductAdmin(reversion.VersionAdmin,ImportExportActionModelAdmin):
 	def get_queryset(self, request):
 		return self.model.objects.filter(Q(order__book_time__gt=datetime.date(2015, 9, 1))&(Q(order__status='DI')| Q(order__status='R'))).select_related('order','order__business').exclude(Q(status='C')).exclude(order__business='ecell').exclude(order__business='ghasitaram').exclude(order__business='holachef')
 	list_display = (
-		'order_no','tracking_no','company','book_date','dispatch_time','get_business','sent_to','last_location' ,'expected_delivery_date','last_updated','last_tracking_status','history','follow_up','ff_comment')
-	list_filter = ['order__method','order__business','warning','company',StatusFilter,'status','warning_type',StartNullFilterSpec]
+		'order_no','tracking_no','company','book_date','dispatch_time','get_business','sent_to','last_location' ,'expected_delivery_date_sendd','expected_delivery_date_courier','last_updated','last_tracking_status','history','follow_up','ff_comment')
+	list_filter = ['order__method','order__business','warning','company',StatusFilter,'status','warning_type',StartNullFilterSpec,('order__book_time', DateRangeFilter),]
 	list_editable = ('follow_up','ff_comment')
 	readonly_fields = ('previous_comment','p_tracking')
 	search_fields = ['order__order_no', 'real_tracking_no', 'mapped_tracking_no','tracking_data','order__name']
@@ -2193,14 +2266,22 @@ class QcProductAdmin(reversion.VersionAdmin,ImportExportActionModelAdmin):
 	tracking_no.admin_order_field = 'mapped_tracking_no' #Allows column order sorting
 	tracking_no.allow_tags=True
 	
-	def expected_delivery_date(self,obj):
+	def expected_delivery_date_sendd(self,obj):
 		if (obj.order.method=='B'):
 			return obj.date + timedelta(days=6)
 		elif (obj.order.method=='N'):
 			return obj.date + timedelta(days=3)
 		else:
 			return 'None'
-	expected_delivery_date.short_description='expected delivery date'
+	expected_delivery_date_sendd.short_description='expected delivery date(sendd)'
+
+	def expected_delivery_date_courier(self,obj):
+		if obj.estimated_delivery_timestamp:
+			return obj.estimated_delivery_timestamp
+		else:
+			return 'No data available'
+	expected_delivery_date_courier.short_description='expected delivery date(courier)'
+
 
 	def sent_to(self,obj):
 		return obj.order.name
@@ -3134,6 +3215,9 @@ class PendingOrderAdmin(OrderAdmin):
 	# def status_action(self,obj):
 	# 	return obj.get_status_display() + '<br>'
 	# status_action.allow_tags = True
+	new_list=list(OrderAdmin.list_display)
+	new_list.remove('mapped_ok')
+	list_display = new_list
 
 	def make_pickedup(modeladmin, request, queryset):
 #checking if valid
@@ -3180,8 +3264,6 @@ admin.site.register(PendingOrder,PendingOrderAdmin)
 class PickedOrderAdmin(OrderAdmin):
 	new_list=list(OrderAdmin.list_display)
 	new_list.remove('mapped_ok')
-	new_list.remove('total_cod_cost')
-	new_list.remove('total_shipping_cost')
 	list_display = new_list
 
 	def get_queryset(self, request):

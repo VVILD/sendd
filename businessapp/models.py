@@ -96,7 +96,8 @@ class Business(models.Model):
     company_name = models.CharField(max_length=100, null=True, blank=True)
     website = models.CharField(max_length=100, null=True, blank=True)
     # key=models.CharField(max_length = 100,null=True,blank =True)
-    businessmanager = models.ForeignKey(Profile, null=True, blank=True)
+    businessmanager = models.ForeignKey(Profile,verbose_name='BDE', null=True, blank=True ,limit_choices_to={'usertype': 'B'})
+    businessmanager2 = models.ForeignKey(Profile,verbose_name='BDM', null=True, blank=True ,limit_choices_to={'usertype': 'B'})
     show_tracking_company = models.CharField(max_length=1, choices=(('Y', 'yes'), ('N', 'no'),), null=True, blank=True,
                                              default='N')
     send_notification = models.CharField(max_length=1, choices=(('Y', 'yes'), ('N', 'no'),), null=True, blank=True,
@@ -387,6 +388,21 @@ class PendingBusinessRemittance(Business):
         proxy = True
         verbose_name_plural = "PendingBusinessRemittance"
 
+class Document(models.Model):
+    type=models.CharField(max_length=100,
+                           choices=(('passport', 'passport'),
+                                    ('panp', 'pan personal'),
+                                    ('tin', 'tin'),
+                                    ('vat', 'vat'),
+                                    ('ebill', 'electricity bill'),
+                                    ('tbill', 'telephone bill'),
+                                    ('aadhar', 'aadhar card'),
+                                    ('voterid', 'voter id'),
+                                    ('panc', 'pan company'),))
+
+    docs = models.FileField(upload_to='shipment', blank=True, null=True)
+    business=models.ForeignKey(Business)
+
 
 class LoginSession(models.Model):
     Business = models.ForeignKey(Business, null=True, blank=True)
@@ -409,6 +425,7 @@ class LoginSession(models.Model):
 class Order(models.Model):
     reference_id = models.CharField(max_length=100, null=True, blank=True)
     third_party_id = models.CharField(max_length=100, null=True, blank=True)
+    weight=models.FloatField(null=True,blank=True) # temp variable do not delete
     order_no = models.AutoField(primary_key=True)
     name = models.CharField(max_length=100, null=True, blank=True)
     phone = models.CharField(max_length=12)
@@ -533,7 +550,7 @@ class Product(models.Model):
                                choices=[('F', 'FedEx'), ('D', 'Delhivery'), ('P', 'Professional'), ('G', 'Gati'),
                                         ('A', 'Aramex'), ('E', 'Ecomexpress'), ('DT', 'dtdc'), ('FF', 'First Flight'),
                                         ('M', 'Maruti courier'), ('I', 'India Post'), ('S', 'Sendd'), ('B', 'bluedart'),
-                                        ('T', 'trinity'), ('V', 'vichare'), ('DH', 'dhl'), ('SK', 'skycom'), ('NA', 'nandan'),('FA','Fast train'),('TE','Tej'),('TR','Track on')],
+                                        ('T', 'trinity'), ('V', 'vichare'), ('DH', 'dhl'), ('SK', 'skycom'), ('NA', 'nandan'),('FA','Fast train'),('TE','Tej'),('TR','Track on'),('LC','local courier')],
                                blank=True, null=True)
     shipping_cost = models.FloatField(default=0.0)
     cod_cost = models.FloatField(default=0.0)
