@@ -302,8 +302,8 @@ class DocInline(admin.TabularInline):
 
 	def download_link(self,obj):
 
-		return '<a href="/static/%s/" target="_blank"> click here </a>' % (
-			obj.docs)
+		return '<a href="/%s" target="_blank"> click here </a>' % (
+			obj.docs.replace("shipment","static"))
 	download_link.allow_tags=True
 
 
@@ -316,7 +316,7 @@ class BusinessAdmin(BaseBusinessAdmin,ImportExportActionModelAdmin):
 	list_editable = ('pb', 'assigned_pickup_time','daily','cs_comment','ff_comment')
 	raw_id_fields = ('pb', 'warehouse')
 	list_filter = ['username', 'daily','pb', 'warehouse']
-	readonly_fields = ('status','is_completed','bde_details','bdm_details')
+	readonly_fields = ('status','is_completed','BDE_details','BDM_details')
 	#actions = [export_as_csv_action("CSV Export", fields=['username','business_name','apikey','name','email','contact_mob','contact_office','address','city','state','pincode'])]
 	actions_on_bottom = False
 	actions_on_top = True
@@ -337,13 +337,13 @@ class BusinessAdmin(BaseBusinessAdmin,ImportExportActionModelAdmin):
 		# if c>0:
 		# 	del actions['make_remittance_initiated']
 
-	def bde_details(self,obj):
+	def BDE_details(self,obj):
 		try:
 			return obj.businessmanager.user.first_name+ " " + obj.businessmanager.user.last_name +"," + obj.businessmanager.phone + ", " +obj.businessmanager.user.email
 		except:
 			return "None"
 
-	def bdm_details(self,obj):
+	def BDM_details(self,obj):
 		try:
 			return obj.businessmanager.user.first_name+ " " + obj.businessmanager.user.last_name +"," +obj.businessmanager2.phone + ", " +obj.businessmanager2.user.email
 		except:
