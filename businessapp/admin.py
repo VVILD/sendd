@@ -1136,8 +1136,7 @@ class OrderAdmin(FilterUserAdmin,ImportExportActionModelAdmin):
 
     readonly_fields=('master_tracking_number', 'mapped_master_tracking_number', 'fedex')
 
-    # def get_queryset(self, request):
-    #     return Order.objects.all().select_related('business', 'product_set')
+
 
     def get_changelist_form(self, request, **kwargs):
         return Weightform
@@ -1545,8 +1544,9 @@ reference_id=models.CharField(max_length=100)
     '''
 
 class TestAdmin(OrderAdmin):
+
     def get_queryset(self, request):
-        return self.model.objects.filter()
+        return Order.objects.all().select_related('business', 'product_set')
 
 
 
@@ -3163,6 +3163,7 @@ admin.site.register(CSApprovedPickup,CsApprovedpickupAdmin)
 
 class CSAllPickupAdmin(CsAddressAdmin):
     #form=Newpickupform
+    list_per_page=200
     actions = None
     list_display = CsAddressAdmin.list_display + ['approve']
 
@@ -3215,7 +3216,7 @@ class CSAllPickupAdmin(CsAddressAdmin):
 admin.site.register(CSAllPickup,CSAllPickupAdmin)
 
 class CSDailyPickupAdmin(CSAllPickupAdmin):
-
+    list_per_page=200
     def get_queryset(self, request):
         qs = super(CSAllPickupAdmin, self).queryset(request)
         qs = qs.filter(daily=True)
@@ -3227,7 +3228,7 @@ admin.site.register(CSDailyPickup,CSDailyPickupAdmin)
 class FfApprovedpickupAdmin(FfAddressAdmin):
 
     list_display = FfAddressAdmin.list_display + ['tasks','pending']
-
+    list_per_page=200
     def pending(self, obj):
 
         return '<a href="/admin/businessapp/pendingorder/?q=&pickup_address__id__exact=%s"> %s </a>' % (
@@ -3322,7 +3323,7 @@ class FfApprovedpickupAdmin(FfAddressAdmin):
 admin.site.register(FFApprovedPickup,FfApprovedpickupAdmin)
 
 class FFCompletedPickupAdmin(FfAddressAdmin):
-
+    list_per_page=200
     list_display = FfAddressAdmin.list_display +['pending_orders_total','pickedup_orders','dispatched_orders']
     list_display.remove('status')
     list_display.remove('default_vehicle')
