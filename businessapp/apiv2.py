@@ -1,3 +1,4 @@
+from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 from tastypie.resources import ModelResource
 from django.conf.urls import url

@@ -1136,8 +1136,8 @@ class OrderAdmin(FilterUserAdmin,ImportExportActionModelAdmin):
 
     readonly_fields=('master_tracking_number', 'mapped_master_tracking_number', 'fedex')
 
-    def get_queryset(self, request):
-        return Order.objects.all().select_related('business', 'product_set')
+    # def get_queryset(self, request):
+    #     return Order.objects.all().select_related('business', 'product_set')
 
     def get_changelist_form(self, request, **kwargs):
         return Weightform
