@@ -3029,7 +3029,7 @@ admin.site.register(Bdheadpanel,BdheadAdmin)
 
 class BaseAddressAdmin(admin.ModelAdmin):
 
-	form = Newpickupform
+	#form = Newpickupform
 	def get_queryset(self, request):
 #total_order
 #pick_order
@@ -3159,7 +3159,7 @@ class CsApprovedpickupAdmin(CsAddressAdmin):
 admin.site.register(CSApprovedPickup,CsApprovedpickupAdmin)
 
 class CSAllPickupAdmin(CsAddressAdmin):
-	form=Newpickupform
+	#form=Newpickupform
 	actions = None
 	list_display = CsAddressAdmin.list_display + ['approve']
 
