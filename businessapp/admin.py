@@ -3236,7 +3236,7 @@ class FfApprovedpickupAdmin(FfAddressAdmin):
 
 
 	def tasks(self,obj):
-		return '<a href="/admin/businessapp/ffapprovedpickup/%s/?reschedule=True" onclick="return showAddAnotherPopup(this);">reschedule</a><br><a href="/admin/businessapp/ffapprovedpickup/%s/?complete=True" onclick="return showAddAnotherPopup(this);">complete</a> ' % (obj.pk,obj.pk)
+		return '<a href="/admin/businessapp/ffapprovedpickup/%s/?reschedule=True" onclick="return showAddAnotherPopup(this);">reschedule</a><br><a href="/admin/businessapp/ffapprovedpickup/%s/?complete=True" onclick="return showAddAnotherPopup(this);">Picked Up</a> ' % (obj.pk,obj.pk)
 	tasks.allow_tags=True
 
 	def suit_row_attributes(self, obj, request):
