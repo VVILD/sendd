@@ -6,7 +6,7 @@ from myapp.models import Shipment, Order, User, Namemail, Address
 from suit.widgets import AutosizedTextarea
 from django.core.mail import send_mail
 from django.core.validators import RegexValidator
-from businessapp.models import Product,AddressDetails,Order
+from businessapp.models import Product,AddressDetails,Order,Business
 import json
 from django.contrib.admin import widgets
 from datetime import timedelta,date
@@ -61,6 +61,19 @@ class Newpickupform(forms.ModelForm):
 	# def clean(self, exclude=None):
 	# 	if True:
 	# 		raise ValidationError({'default_pickup_time': ["error message",]})
+
+class NewBusinessForm(forms.ModelForm):
+	class Meta:
+		model = Business
+	def clean(self, exclude=None):
+		if not self.cleaned_data['address']:
+			raise ValidationError({'address': ["enter addresss",]})
+		if not self.cleaned_data['city']:
+			raise ValidationError({'city': ["enter addresss",]})
+		if not self.cleaned_data['state']:
+			raise ValidationError({'state': ["enter state",]})
+		if not self.cleaned_data['pincode']:
+			raise ValidationError({'pincode': ["enter pincode",]})
 
 
 class NewQcCommentForm(ModelForm):

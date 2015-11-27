@@ -14,7 +14,7 @@ from django.utils.timezone import localtime
 from daterange_filter.filter import DateRangeFilter
 from django.contrib import admin
 from .models import *
-from businessapp.forms import NewQcCommentForm,NewTrackingStatus,OrderForm,NewReturnForm,Approveconfirmform,AddressForm,Completeconfirmform,ReverseTimeForm,Newpickupform,Weightform,Testform
+from businessapp.forms import NewQcCommentForm,NewTrackingStatus,OrderForm,NewReturnForm,Approveconfirmform,AddressForm,Completeconfirmform,ReverseTimeForm,Newpickupform,Weightform,Testform,NewBusinessForm
 from datetime import date,timedelta
 import reversion
 
@@ -310,6 +310,7 @@ class DocInline(admin.TabularInline):
 # Register your models here.
 class BusinessAdmin(BaseBusinessAdmin,ImportExportActionModelAdmin):
     inlines = (DocInline,)
+    form= NewBusinessForm
     # search_fields=['name']
     search_fields=['username','business_name']
     list_display = ('username','business_name', 'pickup_time', 'warehouse', 'pb', 'assigned_pickup_time','status', 'pending_orders_total', 'pending_orders','pickedup_orders','dispatched_orders','daily','cs_comment','ff_comment')
