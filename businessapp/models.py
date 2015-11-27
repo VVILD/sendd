@@ -534,6 +534,8 @@ class ReverseOrder(Order):
 
 
 
+
+
 class Product(models.Model):
     name = models.TextField(null=True, blank=True)
     quantity = models.IntegerField(max_length=10, null=True, blank=True)

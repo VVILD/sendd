@@ -1545,12 +1545,12 @@ reference_id=models.CharField(max_length=100)
     '''
 
 class TestAdmin(OrderAdmin):
+    def get_queryset(self, request):
+        return self.model.objects.filter()
 
-    list_display = ('order_no','address1','weight')
-    list_editable = ('weight',)
 
 
-admin.site.register(Order, OrderAdmin)
+admin.site.register(Order, TestAdmin)
 
 class ReverseOrderAdmin(OrderAdmin):
     list_display = OrderAdmin.list_display + ('reverse_actions',)
