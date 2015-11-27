@@ -52,11 +52,11 @@ class Weightform(ModelForm):
 		# self.cleaned_data['first_name'] = first_name
 		# self.cleaned_data['last_name'] = last_name
 
-# class Newpickupform(forms.ModelForm):
-#     def __init__(self, *args, **kwargs):
-#         super(Newpickupform, self).__init__(*args, **kwargs)
-#
-#         self.fields['default_pickup_time'].required = True
+class Newpickupform(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super(Newpickupform, self).__init__(*args, **kwargs)
+
+        self.fields['default_pickup_time'].required = True
 
 	# def clean(self, exclude=None):
 	# 	if True:
