@@ -276,7 +276,7 @@ def assign_default_pickupaddress(sender, instance, created, **kwargs):
         if instance.assigned_pickup_time is not None:
             default_time=datetime.combine(date.today(), instance.assigned_pickup_time)
         else:
-            default_time=datetime.combine(date.today(), datetime.time(18, 00))
+            default_time=datetime.combine(date.today(), time(18, 00))
         pickup_default = AddressDetails(
             business = instance,
             company_name = str(instance.business_name) if instance.business_name is not None else str(instance.username),
