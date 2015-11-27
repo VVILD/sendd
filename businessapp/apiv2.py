@@ -525,7 +525,8 @@ class SearchResource(CORSResource):
         orders = Order.objects.filter((Q(product__real_tracking_no=tracking_id) | Q(product__barcode=tracking_id) |
                                       Q(product__sku=tracking_id) | Q(reference_id=tracking_id) |
                                       Q(third_party_id=tracking_id) | Q(pk=tracking_id_int) |
-                                      Q(master_tracking_number=tracking_id)) & ~Q(status='N') & Q(business=business)).distinct().select_related('product_set')
+                                      Q(master_tracking_number=tracking_id) | Q(name__icontains=tracking_id) |
+                                        Q()) & ~Q(status='N') & Q(business=business)).distinct().select_related('product_set')
 
         result = []
         for order in orders:

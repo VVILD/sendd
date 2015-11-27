@@ -93,7 +93,7 @@ class PickupboyResource(Resource):
         #                                                        date=datetime.date.today()).order_by("time")
         business_pending_orders = BusinessOrder.objects.filter(Q(pickup_address__pb__phone=pb_ph) & Q(status='P') &
                                                                ~Q(pickup_address__status='C'))
-        alloted_businesses = AddressDetails.objects.filter(Q(pb__phone=pb_ph) & ~Q(status='C')).exclude(order__status='P')
+        alloted_businesses = AddressDetails.objects.filter(Q(pb__phone=pb_ph) & ~Q(status='C') & Q(business__isnull=False)).exclude(order__status='P')
 
         for order in business_pending_orders:
             business = Business.objects.get(pk=order.business.pk)
