@@ -84,10 +84,4 @@ class Command(BaseCommand):
                 print(pickup_default)
 
                 orders = Order.objects.filter(business=business)
-                with futures.ThreadPoolExecutor(max_workers=workers) as executor:
-                    futures_track = (executor.submit(self.order_saver, order, pickup_default) for order in orders)
-                    for result in futures.as_completed(futures_track):
-                        if result.exception() is not None:
-                            print('%s' % result.exception())
-                        else:
-                            print(result.result())
+                orders.update(pickup_address=pickup_default)
