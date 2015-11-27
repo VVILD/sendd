@@ -74,6 +74,8 @@ class NewBusinessForm(forms.ModelForm):
 			raise ValidationError({'state': ["enter state",]})
 		if not self.cleaned_data['pincode']:
 			raise ValidationError({'pincode': ["enter pincode",]})
+		if not self.cleaned_data['assigned_pickup_time']:
+			raise ValidationError({'assigned_pickup_time': ["Please enter the time when business want the pickup",]})
 
 
 class NewQcCommentForm(ModelForm):
