@@ -1150,6 +1150,8 @@ class OrderAdmin(FilterUserAdmin,ImportExportActionModelAdmin):
 
     def generate_order(self, obj):
         obj=obj.product_set.first()
+        if not obj:
+            return "no products"
         cod=''
         valid = 1
         try:
@@ -1283,6 +1285,8 @@ class OrderAdmin(FilterUserAdmin,ImportExportActionModelAdmin):
 
     def ecom(self, obj):
         obj=obj.product_set.first()
+        if not obj:
+            return "no products"
         if not obj.order.state:
             return "Enter state"
 
