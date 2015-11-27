@@ -31,8 +31,10 @@ class Weightform(ModelForm):
 		#print instance
 		if instance:
 			initial = kwargs.get('initial', {})
-			initial['weight'] = '%s' % (instance.product_set.first().applied_weight)
-
+			if instance.product_set.first():
+				initial['weight'] = '%s' % (instance.product_set.first().applied_weight)
+			else:
+				initial['weight']=0
 			if instance.product_set.count()>1:
 				initial['weight'] = None
 			kwargs['initial'] = initial
