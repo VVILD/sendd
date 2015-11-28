@@ -128,7 +128,10 @@ class Command(BaseCommand):
 				if hasattr(match, 'ActualDeliveryTimestamp'):
 					Product.objects.filter(pk=product.pk).update(status='C', actual_delivery_timestamp=match.ActualDeliveryTimestamp, estimated_delivery_timestamp=None)
 				elif hasattr(match, 'EstimatedDeliveryTimestamp'):
-					Product.objects.filter(pk=product.pk).update(actual_delivery_timestamp=None, estimated_delivery_timestamp=match.EstimatedDeliveryTimestamp)
+					if product.estimated_delivery_timestamp_1 is not None:
+						Product.objects.filter(pk=product.pk).update(actual_delivery_timestamp=None, estimated_delivery_timestamp=match.EstimatedDeliveryTimestamp)
+					else:
+						Product.objects.filter(pk=product.pk).update(actual_delivery_timestamp=None, estimated_delivery_timestamp=match.EstimatedDeliveryTimestamp, estimated_delivery_timestamp_1=match.EstimatedDeliveryTimestamp)
 				for event in match.Events:
 					if event.EventType == 'RS':
 						Product.objects.filter(pk=product.pk).update(status='R', return_cost=product.shipping_cost)
