@@ -366,7 +366,7 @@ class BusinessAdmin(BaseBusinessAdmin,ImportExportActionModelAdmin):
         
 
 
-        return Business.objects.extra(select={
+        query= Business.objects.extra(select={
             'pending': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.business_id = businessapp_business.username and businessapp_order.status='P' ",
             'picked': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.business_id = businessapp_business.username and businessapp_order.status='PU' ",
             'transit': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.business_id = businessapp_business.username and businessapp_order.status='D' ",
@@ -377,7 +377,7 @@ class BusinessAdmin(BaseBusinessAdmin,ImportExportActionModelAdmin):
             select_params=(date_min,date_max,date_min,date_max,date_min,date_max,),
             )
 
-
+    
 # Business.objects.extra(select={'pending': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.business_id = businessapp_business.username and businessapp_order.status='P' ",'picked': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.business_id = businessapp_business.username and businessapp_order.status='PU' ",'transit': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.business_id = businessapp_business.username and businessapp_order.status='D' ",'dispatch': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.business_id = businessapp_business.username and businessapp_order.status='DI' ",'pending_today': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.business_id = businessapp_business.username and businessapp_order.status='P' and businessapp_order.book_time BETWEEN '2015-09-07 00:00:00' AND '2015-09-07 23:59:59'",},)
 
 
@@ -1546,7 +1546,17 @@ reference_id=models.CharField(max_length=100)
 class TestAdmin(OrderAdmin):
 
     def get_queryset(self, request):
-        return Order.objects.all().select_related('business', 'product_set')
+        qs = Order.objects.all().select_related('business', 'product_set')
+        try:
+
+            profile=Profile.objects.get(user=request.user)
+
+            if (profile.usertype!='B'):
+                return qs.filter()
+            else:
+                return qs.filter(Q(business__businessmanager__user=request.user)|Q(business__businessmanager2__user=request.user)).distinct()
+        except:
+            return qs.filter()
 
 
 
@@ -3227,17 +3237,24 @@ admin.site.register(CSDailyPickup,CSDailyPickupAdmin)
 
 class FfApprovedpickupAdmin(FfAddressAdmin):
 
-    list_display = FfAddressAdmin.list_display + ['tasks','pending']
+    list_display = FfAddressAdmin.list_display + ['tasks','today','old']
     list_per_page=200
-    def pending(self, obj):
+    def today(self, obj):
 
-        return '<a href="/admin/businessapp/pendingorder/?q=&pickup_address__id__exact=%s"> %s </a>' % (
-            obj.pk, obj.pending)
+        return '<a href="/admin/businessapp/pendingorder/?q=&pickup_address__id__exact=%s&book_time__gte=%s&book_time__lt=%s"> %s </a>' % (
+            obj.pk,urllib2.quote(str(date.today())+str(' 00:00:00+05:30')),urllib2.quote(str(date.today()+datetime.timedelta(days=1))+str(' 00:00:00+05:30')), obj.pending_today)
 
-    pending.allow_tags = True
-    pending.admin_order_field='pending'
+    today.allow_tags = True
+    today.admin_order_field='pending'
+
+    def old(self, obj):
+        return '<a href="/admin/businessapp/pendingorder/?q=&pickup_address__id__exact=%s&book_time__lt=%s"> %s </a>' % (
+            obj.pk,urllib2.quote(str(date.today())+str(' 00:00:00+05:30')), str(int(obj.pending)- int(obj.pending_today)))
+
+    old.allow_tags = True
 
 
+#pending_today
 
     def tasks(self,obj):
         return '<a href="/admin/businessapp/ffapprovedpickup/%s/?reschedule=True" onclick="return showAddAnotherPopup(this);">reschedule</a><br><a href="/admin/businessapp/ffapprovedpickup/%s/?complete=True" onclick="return showAddAnotherPopup(this);">Picked Up</a> ' % (obj.pk,obj.pk)
@@ -3338,7 +3355,7 @@ class FFCompletedPickupAdmin(FfAddressAdmin):
     pending_orders_total.admin_order_field='pending'
 
     def pickedup_orders(self, obj):
-        urllib2.quote(str(date.today())+str(' 00:00:00+05:30')),urllib2.quote(str(date.today()+datetime.timedelta(days=1))+str(' 00:00:00+05:30'))
+     #urllib2.quote(str(date.today())+str(' 00:00:00+05:30')),urllib2.quote(str(date.today()+datetime.timedelta(days=1))+str(' 00:00:00+05:30'))
         return '<a href="/admin/businessapp/pickedorder/?q=&pickup_address__id__exact=%s&status__exact=PU&product__pickup_time__gte=%s&product__pickup_time__lt=%s"> %s </a>' % (obj.pk,urllib2.quote(str(date.today())+str(' 00:00:00+05:30')),urllib2.quote(str(date.today()+datetime.timedelta(days=1))+str(' 00:00:00+05:30')), obj.pickedup_today)
     pickedup_orders.allow_tags = True
     pickedup_orders.admin_order_field='pickedup_today'
