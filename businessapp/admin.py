@@ -306,10 +306,15 @@ class DocInline(admin.TabularInline):
             str(obj.docs).replace("shipment","static"))
     download_link.allow_tags=True
 
+class ContactInline(admin.TabularInline):
+    model = Contact
+    fields = (
+        'name', 'designation','phone_no',)
+    extra = 0
 
 # Register your models here.
 class BusinessAdmin(BaseBusinessAdmin,ImportExportActionModelAdmin):
-    inlines = (DocInline,)
+    inlines = (DocInline,ContactInline)
     form= NewBusinessForm
     # search_fields=['name']
     search_fields=['username','business_name']
@@ -366,7 +371,7 @@ class BusinessAdmin(BaseBusinessAdmin,ImportExportActionModelAdmin):
         
 
 
-        return Business.objects.extra(select={
+        qs= Business.objects.extra(select={
             'pending': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.business_id = businessapp_business.username and businessapp_order.status='P' ",
             'picked': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.business_id = businessapp_business.username and businessapp_order.status='PU' ",
             'transit': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.business_id = businessapp_business.username and businessapp_order.status='D' ",
@@ -377,7 +382,17 @@ class BusinessAdmin(BaseBusinessAdmin,ImportExportActionModelAdmin):
             select_params=(date_min,date_max,date_min,date_max,date_min,date_max,),
             )
 
+        try:
 
+            profile=Profile.objects.get(user=request.user)
+
+            if (profile.usertype!='B'):
+                return qs.filter()
+            else:
+                return qs.filter(Q(business__businessmanager__user=request.user)|Q(business__businessmanager2__user=request.user)).distinct()
+        except:
+            return qs.filter()
+    
 # Business.objects.extra(select={'pending': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.business_id = businessapp_business.username and businessapp_order.status='P' ",'picked': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.business_id = businessapp_business.username and businessapp_order.status='PU' ",'transit': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.business_id = businessapp_business.username and businessapp_order.status='D' ",'dispatch': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.business_id = businessapp_business.username and businessapp_order.status='DI' ",'pending_today': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.business_id = businessapp_business.username and businessapp_order.status='P' and businessapp_order.book_time BETWEEN '2015-09-07 00:00:00' AND '2015-09-07 23:59:59'",},)
 
 
@@ -1136,14 +1151,14 @@ class OrderAdmin(FilterUserAdmin,ImportExportActionModelAdmin):
 
     readonly_fields=('master_tracking_number', 'mapped_master_tracking_number', 'fedex')
 
-    # def get_queryset(self, request):
-    #     return Order.objects.all().select_related('business', 'product_set')
+
 
     def get_changelist_form(self, request, **kwargs):
         return Weightform
 
     def receiver_detail(self, obj):
-        return obj.name + "<br>" + obj.city + "<br>" + obj.state
+
+        return "<p style='line-height: 180%;'>"+obj.name + "<br>" + obj.city + "<br>" + obj.state + "<br>" + obj.pincode
     receiver_detail.allow_tags=True
 
     def generate_order(self, obj):
@@ -1154,7 +1169,7 @@ class OrderAdmin(FilterUserAdmin,ImportExportActionModelAdmin):
         valid = 1
         try:
             string = 'ot=1&'
-            product = Product.objects.get(pk=obj.pk)
+            product = obj
             order = product.order
             error_string = ''
             try:
@@ -1396,7 +1411,7 @@ class OrderAdmin(FilterUserAdmin,ImportExportActionModelAdmin):
         return super(OrderAdmin, self).change_view(request, object_id, form_url, extra_context=extra_context)
 
     def mapped_ok(self,obj):
-        products=Product.objects.filter(order=obj)
+        products=obj.product_set.all()
         mapped_ok=True
         for product in products:
             if (not product.mapped_tracking_no):
@@ -1406,7 +1421,7 @@ class OrderAdmin(FilterUserAdmin,ImportExportActionModelAdmin):
 
 
     def no_of_products(self, obj):
-        if (Product.objects.filter(order=obj).count()==1):
+        if (obj.product_set.count()==1):
             only_product=Product.objects.get(order=obj)
             if (only_product.company=='F'):
                 return '<a href="https://www.fedex.com/apps/fedextrack/?action=track&trackingnumber=%s" target="_blank" >%s</a> ' % (only_product.mapped_tracking_no, only_product.mapped_tracking_no)
@@ -1416,7 +1431,7 @@ class OrderAdmin(FilterUserAdmin,ImportExportActionModelAdmin):
                 return "1|" + only_product.mapped_tracking_no +"|"+only_product.company
             else:
                 return 1
-        return Product.objects.filter(order=obj).count()
+        return obj.product_set.count()
     no_of_products.allow_tags = True
 
     # def total_cod_cost(self, obj):
@@ -1546,11 +1561,24 @@ reference_id=models.CharField(max_length=100)
 
 class TestAdmin(OrderAdmin):
 
-    list_display = ('order_no','address1','weight')
-    list_editable = ('weight',)
+    list_per_page=10
+
+    def get_queryset(self, request):
+        qs = Order.objects.all().select_related('business', 'product_set')
+        try:
+
+            profile=Profile.objects.get(user=request.user)
+
+            if (profile.usertype!='B'):
+                return qs.filter()
+            else:
+                return qs.filter(Q(business__businessmanager__user=request.user)|Q(business__businessmanager2__user=request.user)).distinct()
+        except:
+            return qs.filter()
 
 
-admin.site.register(Order, OrderAdmin)
+
+admin.site.register(Order, TestAdmin)
 
 class ReverseOrderAdmin(OrderAdmin):
     list_display = OrderAdmin.list_display + ('reverse_actions',)
@@ -3163,6 +3191,7 @@ admin.site.register(CSApprovedPickup,CsApprovedpickupAdmin)
 
 class CSAllPickupAdmin(CsAddressAdmin):
     #form=Newpickupform
+    list_per_page=200
     actions = None
     list_display = CsAddressAdmin.list_display + ['approve']
 
@@ -3215,7 +3244,7 @@ class CSAllPickupAdmin(CsAddressAdmin):
 admin.site.register(CSAllPickup,CSAllPickupAdmin)
 
 class CSDailyPickupAdmin(CSAllPickupAdmin):
-
+    list_per_page=200
     def get_queryset(self, request):
         qs = super(CSAllPickupAdmin, self).queryset(request)
         qs = qs.filter(daily=True)
@@ -3226,17 +3255,24 @@ admin.site.register(CSDailyPickup,CSDailyPickupAdmin)
 
 class FfApprovedpickupAdmin(FfAddressAdmin):
 
-    list_display = FfAddressAdmin.list_display + ['tasks','pending']
+    list_display = FfAddressAdmin.list_display + ['tasks','today','old']
+    list_per_page=200
+    def today(self, obj):
 
-    def pending(self, obj):
+        return '<a href="/admin/businessapp/pendingorder/?q=&pickup_address__id__exact=%s&book_time__gte=%s&book_time__lt=%s"> %s </a>' % (
+            obj.pk,urllib2.quote(str(date.today())+str(' 00:00:00+05:30')),urllib2.quote(str(date.today()+datetime.timedelta(days=1))+str(' 00:00:00+05:30')), obj.pending_today)
 
-        return '<a href="/admin/businessapp/pendingorder/?q=&pickup_address__id__exact=%s"> %s </a>' % (
-            obj.pk, obj.pending)
+    today.allow_tags = True
+    today.admin_order_field='pending'
 
-    pending.allow_tags = True
-    pending.admin_order_field='pending'
+    def old(self, obj):
+        return '<a href="/admin/businessapp/pendingorder/?q=&pickup_address__id__exact=%s&book_time__lt=%s"> %s </a>' % (
+            obj.pk,urllib2.quote(str(date.today())+str(' 00:00:00+05:30')), str(int(obj.pending)- int(obj.pending_today)))
+
+    old.allow_tags = True
 
 
+#pending_today
 
     def tasks(self,obj):
         return '<a href="/admin/businessapp/ffapprovedpickup/%s/?reschedule=True" onclick="return showAddAnotherPopup(this);">reschedule</a><br><a href="/admin/businessapp/ffapprovedpickup/%s/?complete=True" onclick="return showAddAnotherPopup(this);">Picked Up</a> ' % (obj.pk,obj.pk)
@@ -3322,7 +3358,7 @@ class FfApprovedpickupAdmin(FfAddressAdmin):
 admin.site.register(FFApprovedPickup,FfApprovedpickupAdmin)
 
 class FFCompletedPickupAdmin(FfAddressAdmin):
-
+    list_per_page=200
     list_display = FfAddressAdmin.list_display +['pending_orders_total','pickedup_orders','dispatched_orders']
     list_display.remove('status')
     list_display.remove('default_vehicle')
@@ -3337,7 +3373,7 @@ class FFCompletedPickupAdmin(FfAddressAdmin):
     pending_orders_total.admin_order_field='pending'
 
     def pickedup_orders(self, obj):
-        urllib2.quote(str(date.today())+str(' 00:00:00+05:30')),urllib2.quote(str(date.today()+datetime.timedelta(days=1))+str(' 00:00:00+05:30'))
+     #urllib2.quote(str(date.today())+str(' 00:00:00+05:30')),urllib2.quote(str(date.today()+datetime.timedelta(days=1))+str(' 00:00:00+05:30'))
         return '<a href="/admin/businessapp/pickedorder/?q=&pickup_address__id__exact=%s&status__exact=PU&product__pickup_time__gte=%s&product__pickup_time__lt=%s"> %s </a>' % (obj.pk,urllib2.quote(str(date.today())+str(' 00:00:00+05:30')),urllib2.quote(str(date.today()+datetime.timedelta(days=1))+str(' 00:00:00+05:30')), obj.pickedup_today)
     pickedup_orders.allow_tags = True
     pickedup_orders.admin_order_field='pickedup_today'

@@ -404,6 +404,12 @@ class Document(models.Model):
     business=models.ForeignKey(Business)
 
 
+class Contact(models.Model):
+    name=models.CharField(max_length=100)
+    designation=models.CharField(max_length=100)
+    phone_no=models.CharField(max_length=15)
+    business=models.ForeignKey(Business)
+
 class LoginSession(models.Model):
     Business = models.ForeignKey(Business, null=True, blank=True)
     time = models.DateTimeField(null=True, blank=True)
@@ -531,6 +537,8 @@ class DispatchedOrder(Order):
 class ReverseOrder(Order):
     class Meta:
         proxy = True
+
+
 
 
 
