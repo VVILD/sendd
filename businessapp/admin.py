@@ -1143,7 +1143,7 @@ class OrderAdmin(FilterUserAdmin,ImportExportActionModelAdmin):
 
     def receiver_detail(self, obj):
 
-        return "<p style='line-height: 150%;'>"+obj.name + "<br>" + obj.city + "<br>" + obj.state + "<br>" + obj.pincode
+        return "<p style='line-height: 180%;'>"+obj.name + "<br>" + obj.city + "<br>" + obj.state + "<br>" + obj.pincode
     receiver_detail.allow_tags=True
 
     def generate_order(self, obj):
