@@ -1395,7 +1395,7 @@ class OrderAdmin(FilterUserAdmin,ImportExportActionModelAdmin):
         return super(OrderAdmin, self).change_view(request, object_id, form_url, extra_context=extra_context)
 
     def mapped_ok(self,obj):
-        products=Product.objects.filter(order=obj)
+        products=obj.product_set
         mapped_ok=True
         for product in products:
             if (not product.mapped_tracking_no):
@@ -1405,7 +1405,7 @@ class OrderAdmin(FilterUserAdmin,ImportExportActionModelAdmin):
 
 
     def no_of_products(self, obj):
-        if (Product.objects.filter(order=obj).count()==1):
+        if (obj.product_set.count()==1):
             only_product=Product.objects.get(order=obj)
             if (only_product.company=='F'):
                 return '<a href="https://www.fedex.com/apps/fedextrack/?action=track&trackingnumber=%s" target="_blank" >%s</a> ' % (only_product.mapped_tracking_no, only_product.mapped_tracking_no)
@@ -1415,7 +1415,7 @@ class OrderAdmin(FilterUserAdmin,ImportExportActionModelAdmin):
                 return "1|" + only_product.mapped_tracking_no +"|"+only_product.company
             else:
                 return 1
-        return Product.objects.filter(order=obj).count()
+        return obj.product_set.count()
     no_of_products.allow_tags = True
 
     # def total_cod_cost(self, obj):
@@ -1544,6 +1544,8 @@ reference_id=models.CharField(max_length=100)
     '''
 
 class TestAdmin(OrderAdmin):
+
+    list_per_page=10
 
     def get_queryset(self, request):
         qs = Order.objects.all().select_related('business', 'product_set')

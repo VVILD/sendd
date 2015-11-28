@@ -5,8 +5,8 @@ from datetime import timedelta
 import json
 from django.db.models import Avg, Count, F, Max, Min, Sum, Q, Prefetch
 class ProductResource(resources.ModelResource):
-	# last_status = fields.Field()
-	# last_date = fields.Field()
+	last_status = fields.Field()
+	last_date = fields.Field()
 	class Meta:
 		model = Product
 		import_id_fields = ('order_id',)
