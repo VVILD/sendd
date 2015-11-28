@@ -2,7 +2,7 @@ import datetime
 from optparse import make_option
 from concurrent import futures
 from django.core.management import BaseCommand
-import django_rq
+#import django_rq
 from businessapp.models import Business, AddressDetails,Order
 from datetime import date
 
