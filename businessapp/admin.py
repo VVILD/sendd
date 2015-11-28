@@ -371,7 +371,7 @@ class BusinessAdmin(BaseBusinessAdmin,ImportExportActionModelAdmin):
         
 
 
-        query= Business.objects.extra(select={
+        qs= Business.objects.extra(select={
             'pending': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.business_id = businessapp_business.username and businessapp_order.status='P' ",
             'picked': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.business_id = businessapp_business.username and businessapp_order.status='PU' ",
             'transit': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.business_id = businessapp_business.username and businessapp_order.status='D' ",
@@ -382,6 +382,16 @@ class BusinessAdmin(BaseBusinessAdmin,ImportExportActionModelAdmin):
             select_params=(date_min,date_max,date_min,date_max,date_min,date_max,),
             )
 
+        try:
+
+            profile=Profile.objects.get(user=request.user)
+
+            if (profile.usertype!='B'):
+                return qs.filter()
+            else:
+                return qs.filter(Q(business__businessmanager__user=request.user)|Q(business__businessmanager2__user=request.user)).distinct()
+        except:
+            return qs.filter()
     
 # Business.objects.extra(select={'pending': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.business_id = businessapp_business.username and businessapp_order.status='P' ",'picked': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.business_id = businessapp_business.username and businessapp_order.status='PU' ",'transit': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.business_id = businessapp_business.username and businessapp_order.status='D' ",'dispatch': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.business_id = businessapp_business.username and businessapp_order.status='DI' ",'pending_today': "SELECT COUNT(businessapp_order.status) from businessapp_order where businessapp_order.business_id = businessapp_business.username and businessapp_order.status='P' and businessapp_order.book_time BETWEEN '2015-09-07 00:00:00' AND '2015-09-07 23:59:59'",},)
 
