@@ -41,6 +41,7 @@ class Command(BaseCommand):
         daily_pickup=AddressDetails.objects.filter(daily=True)
         for p in daily_pickup:
             p.default_pickup_time=datetime.datetime.combine(date.today(), p.default_pickup_time.astimezone(ads).time())
+            p.status='Y'
             p.save()
 
 
