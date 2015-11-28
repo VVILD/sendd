@@ -306,10 +306,16 @@ class DocInline(admin.TabularInline):
             str(obj.docs).replace("shipment","static"))
     download_link.allow_tags=True
 
+class ContactInline(admin.TabularInline):
+    model = Document
+    readonly_fields = ('download_link',)
+    fields = (
+        'type', 'docs','download_link',)
+    extra = 0
 
 # Register your models here.
 class BusinessAdmin(BaseBusinessAdmin,ImportExportActionModelAdmin):
-    inlines = (DocInline,)
+    inlines = (DocInline,ContactInline)
     form= NewBusinessForm
     # search_fields=['name']
     search_fields=['username','business_name']
