@@ -307,10 +307,9 @@ class DocInline(admin.TabularInline):
     download_link.allow_tags=True
 
 class ContactInline(admin.TabularInline):
-    model = Document
-    readonly_fields = ('download_link',)
+    model = Contact
     fields = (
-        'type', 'docs','download_link',)
+        'name', 'designation','phone_no',)
     extra = 0
 
 # Register your models here.
