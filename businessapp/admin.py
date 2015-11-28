@@ -1395,7 +1395,7 @@ class OrderAdmin(FilterUserAdmin,ImportExportActionModelAdmin):
         return super(OrderAdmin, self).change_view(request, object_id, form_url, extra_context=extra_context)
 
     def mapped_ok(self,obj):
-        products=obj.product_set
+        products=obj.product_set.all()
         mapped_ok=True
         for product in products:
             if (not product.mapped_tracking_no):
