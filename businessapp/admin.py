@@ -1142,7 +1142,7 @@ class OrderAdmin(FilterUserAdmin,ImportExportActionModelAdmin):
         return Weightform
 
     def receiver_detail(self, obj):
-        return obj.name + "<br>" + obj.city + "<br>" + obj.state
+        return obj.name + "<br><br>" + obj.city + "<br><br>" + obj.state + "<br><br>" + obj.pincode
     receiver_detail.allow_tags=True
 
     def generate_order(self, obj):
@@ -1153,7 +1153,7 @@ class OrderAdmin(FilterUserAdmin,ImportExportActionModelAdmin):
         valid = 1
         try:
             string = 'ot=1&'
-            product = Product.objects.get(pk=obj.pk)
+            product = obj
             order = product.order
             error_string = ''
             try:
