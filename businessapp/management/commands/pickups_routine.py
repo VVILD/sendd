@@ -33,9 +33,14 @@ class Command(BaseCommand):
         not_done_pickups.update(temp_time=None)
 
 
-    #removing missed pickups
+    #rescheduling missed pickups
         not_done_pickups2=AddressDetails.objects.filter(status__in=['Y','A'],default_pickup_time__lt=datetime.datetime.now(),temp_time=None)
-        not_done_pickups2.update(status='N',temp_time=None)
+    #    not_done_pickups2.update(status='Y',temp_time=None)
+        for z in not_done_pickups2:
+            z.default_pickup_time=datetime.datetime.combine(date.today(), z.default_pickup_time.astimezone(ads).time())
+            z.status='Y'
+            z.save()
+
 
         #approving daily pickups
         daily_pickup=AddressDetails.objects.filter(daily=True)
