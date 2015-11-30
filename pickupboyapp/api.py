@@ -113,6 +113,7 @@ class PickupboyResource(Resource):
             order_transformed = {
                 "b_business_name": order.pickup_address.company_name,
                 "b_username": str(order.pickup_address.pk),
+                "bb_username": business.username,
                 "b_address": order.pickup_address.address,
                 "b_contact_mob": order.pickup_address.phone_mobile,
                 "b_contact_office": order.pickup_address.phone_office,
@@ -141,6 +142,7 @@ class PickupboyResource(Resource):
             order_transformed = {
                 "b_business_name": business.company_name,
                 "b_username": str(business.pk),
+                "bb_username": str(business.pk),
                 "b_address": business.address,
                 "b_contact_mob": business.phone_mobile,
                 "b_contact_office": business.phone_office,

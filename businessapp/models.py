@@ -607,6 +607,7 @@ class Product(models.Model):
     h=models.FloatField(default=0)
     actual_delivery_timestamp = models.DateTimeField(blank=True, null=True)
     estimated_delivery_timestamp = models.DateTimeField(blank=True, null=True)
+    estimated_delivery_timestamp_1 = models.DateTimeField(blank=True, null=True)
     return_action=models.CharField(max_length=2,blank=True,null=True,
                               choices=(('R', 'Reshipped'),('RB','Returned to business')),
                               default=None)
