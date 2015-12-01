@@ -446,7 +446,7 @@ class Order(models.Model):
     book_time = models.DateTimeField(null=True, blank=True)
     status = models.CharField(max_length=2, choices=(
         ('P', 'pending'), ('C', 'complete'), ('N', 'cancelled'), ('D', 'in transit'), ('PU', 'pickedup'),
-        ('RC', 'return/completed'), ('R', 'return'), ('DI', 'dispatched'),), default='P')
+        ('RC', 'return/completed'), ('R', 'return'), ('DI', 'dispatched'), ('RO', 'Returned to origin')), default='P')
     confirmed = models.BooleanField(default=True)
     method = models.CharField(max_length=1,
                               choices=(('B', 'Bulk'), ('N', 'Normal'),),
@@ -568,7 +568,7 @@ class Product(models.Model):
     barcode = models.CharField(null=True, blank=True, default=None, max_length=12, unique=True)
     status = models.CharField(max_length=2,
                               choices=(('P', 'pending'), ('C', 'complete'), ('PU', 'pickedup'), ('CA', 'cancelled'),
-                                       ('R', 'return'), ('DI', 'dispatched')),
+                                       ('R', 'return'), ('DI', 'dispatched'), ('RO', 'Returned to origin')),
                               default='P')
 
     date = models.DateTimeField(null=True, blank=True)

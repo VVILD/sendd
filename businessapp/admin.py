@@ -1003,6 +1003,43 @@ class ProductInline(admin.TabularInline):
 
     ecom.allow_tags = True
 
+    def gati(self, obj):
+
+        if not obj.order.state:
+            return "Enter state"
+
+        if not state_matcher.is_state(obj.order.state):
+            return '<h2 style="color:red">Enter a valid state</h2>'
+
+        if not obj.order.pincode:
+            return "Enter pincode"
+
+        db_pincode = Pincode.objects.filter(pincode=obj.order.pincode)
+
+        if db_pincode:
+            if not db_pincode[0].gati_servicable:
+                return '<h2 style="color:red">Not Servicable</h2>'
+        else:
+            return '<h2 style="color:red">Enter a valid pincode</h2>'
+
+        if not obj.applied_weight:
+            return "Enter applied weight"
+
+        if not obj.price:
+            return "Enter item value"
+
+        if obj.mapped_tracking_no and obj.company == "G":
+            params = urllib.urlencode({'shipment_pk': obj.pk, 'client_type': "business"})
+            return '<a href="/create_gati_shipment/?%s&type=invoice" target="_blank">%s</a>' % (params, "Print Invoice") + ' <br><br> <a href="/create_gati_shipment/?%s&type=label" target="_blank">%s</a>' % (params, "Print Label")
+
+        params = urllib.urlencode({'shipment_pk': obj.pk, 'client_type': "business", 'type': 'create'})
+
+        return '<a href="/create_gati_shipment/?%s">%s</a>' % (params, "Create Order")
+
+
+
+    gati.allow_tags = True
+
     def fedex(self, obj):
         params = urllib.urlencode({'shipment_pk': obj.pk, 'client_type': "business"})
 

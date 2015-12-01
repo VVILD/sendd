@@ -1,7 +1,6 @@
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models.signals import post_save
-
 from core.tasks import new_warehouse_reassignment
 from core.utils import state_matcher
 
@@ -165,6 +164,7 @@ class Pincode(models.Model):
     fedex_cod_service = models.BooleanField(default=False)
     fedex_servicable = models.BooleanField(default=False)
     ecom_servicable = models.BooleanField(default=False)
+    gati_servicable = models.BooleanField(default=False)
     fedex_delivery_only = models.BooleanField(default=False)
     warehouse = models.ForeignKey(Warehouse, null=True, blank=True, related_name="pincode_warehouse")
 
@@ -189,6 +189,16 @@ class Offline(models.Model):
 class EcomAWB(models.Model):
     awb = models.CharField(max_length=10, unique=True)
     label_type = models.CharField(max_length=1, choices=(('P', 'Prepaid'), ('C', 'COD')))
+    used = models.BooleanField(default=False)
+
+    def is_used(self):
+        return self.used
+
+
+class GatiAWB(models.Model):
+    awb = models.CharField(max_length=10, unique=True)
+    label_type = models.CharField(max_length=1, choices=(('P', 'Prepaid'), ('C', 'COD'), ('N', 'Not Applicable')),
+                                  default='N')
     used = models.BooleanField(default=False)
 
     def is_used(self):

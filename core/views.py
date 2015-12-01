@@ -13,7 +13,7 @@ from django.shortcuts import render, redirect
 import base64
 from businessapp.models import Product
 from businessapp.models import Order as BusinessOrder
-from core.models import EcomAWB
+from core.models import EcomAWB, GatiAWB
 from core.utils.fedex_legacy_helper import FedexLegacy
 from myapp.models import Order as CustomerOrder
 import core.utils.fedex_api_helper as fedex
@@ -515,6 +515,47 @@ def create_ecom_shipment(request):
 
         if action_type == 'label':
             return render(request, 'ecom_label.html', {"product": product})
+
+        return HttpResponseBadRequest("Can't recognize the request type")
+
+    else:
+        return HttpResponseBadRequest("Can't recognize the request type")
+
+
+def create_gati_shipment(request):
+    shipment_pk = request.GET.get('shipment_pk', None)
+    client_type = request.GET.get('client_type', None)
+    action_type = request.GET.get('type', None)
+
+    if client_type == 'business':
+        product = Product.objects.get(pk=shipment_pk)
+        if action_type == "create":
+            # is_cod = False
+            # if product.order.payment_method == 'C':
+            #     is_cod = True
+            # if is_cod:
+            #     awb = EcomAWB.objects.filter(label_type='C', used=False)
+            #     if awb.count() == 0:
+            #         return HttpResponseBadRequest("Ran out of ecom cod awb. Contact tech-support@sendd.co")
+            # else:
+            #     awb = EcomAWB.objects.filter(label_type='P', used=False)
+            #     if awb.count() == 0:
+            #         return HttpResponseBadRequest("Ran out of ecom prepaid awb. Contact tech-support@sendd.co")
+            awb = GatiAWB.objects.filter(used=False)
+            selected_awb = awb.first()
+            product.mapped_tracking_no = selected_awb.awb
+            product.company = 'G'
+            product.save()
+            selected_awb.used = True
+            selected_awb.save()
+
+            return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
+        if action_type == 'invoice':
+            return render(request, 'gati_invoice.html', {"product": product})
+
+        if action_type == 'label':
+            return render(request, 'gati_label.html', {"product": product})
 
         return HttpResponseBadRequest("Can't recognize the request type")
 

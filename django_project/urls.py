@@ -2,7 +2,7 @@ from django.conf.urls import patterns, include, url
 from django.contrib import admin
 from businessapp.views import print_address_view,readpdf,barcode_stats_view,qc_stats_view,print_invoice_order_view,print_invoice_product_view
 from core.views import create_fedex_shipment, barcode_fedex_redirector, create_individual_fedex_shipment, \
-    create_ecom_shipment, download_ecom_orders, schedule_reverse_pickup
+    create_ecom_shipment, download_ecom_orders, schedule_reverse_pickup, create_gati_shipment
 from myapp.api import UserResource,AddressResource,OrderResource,ShipmentResource,XResource,LoginSessionResource,WeborderResource,PriceappResource,DateappResource,ForgotpassResource
 from tastypie.api import Api
 from django_project import settings
@@ -142,6 +142,7 @@ urlpatterns = patterns('',
     url(r'^pb_location/', pb_location_view, name='pb_location'),
     url(r'^create_fedex_shipment/', create_fedex_shipment, name='create_fedex'),
     url(r'^create_ecom_shipment/', create_ecom_shipment, name='create_ecom_shipment'),
+    url(r'^create_gati_shipment/', create_gati_shipment, name='create_gati_shipment'),
     url(r'^create_fedex_legacy/', create_individual_fedex_shipment, name='create_fedex_legacy'),
     url(r'^print_address/', print_address_view, name='print_business_address'),
     url(r'^print_invoice/', print_invoice_order_view, name='print_invoice_order_view'),
