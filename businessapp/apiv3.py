@@ -766,7 +766,6 @@ class PincodecheckResource3(CORSResource):
 
 
 class PincodecheckResource(CORSResource):
-    goodpincodes = ['400076', '400072', '400078', '400077', '400080', '400079', '400069', '400086']
 
     class Meta:
         resource_name = 'check_pincode'
@@ -784,29 +783,21 @@ class PincodecheckResource(CORSResource):
         self.is_authenticated(request)
         self.throttle_check(request)
 
-        pincode = request.GET.get('pincode', '')
-        if not pincode:
+        zipcode = request.GET.get('pincode', None)
+        if not zipcode:
             raise CustomBadRequest(
                 code="request_invalid",
                 message="No pincode found. Please supply pincode as a GET parameter")
 
-        try:
-            length = len(str(pincode))
-            int_pincode = int(pincode)
-        except:
-            raise CustomBadRequest(
-                code="request_invalid",
-                message="enter correct pincode")
-        if (length != 6):
-            raise CustomBadRequest(
-                code="request_invalid",
-                message="enter correct pincode length")
+        pincode = Pincode.objects.filter(pincode=zipcode)
+        if pincode.count() < 1:
+            raise CustomBadRequest("request_invalid", "No pincode found")
 
-        if (pincode[:3] == '400'):
+        pincode_obj = pincode.first()
+        if pincode_obj.region_name == 'Mumbai':
             valid = True
         else:
             valid = False
-
         bundle = {"valid": valid}
         self.log_throttled_access(request)
         return self.create_response(request, bundle)
