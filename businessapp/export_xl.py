@@ -4,6 +4,8 @@ from import_export import fields
 from datetime import timedelta
 import json
 from django.db.models import Avg, Count, F, Max, Min, Sum, Q, Prefetch
+from django.core.exceptions import ValidationError
+
 class ProductResource(resources.ModelResource):
 	last_status = fields.Field()
 	last_date = fields.Field()
@@ -14,11 +16,17 @@ class ProductResource(resources.ModelResource):
 
 
 	def dehydrate_last_status(self, product):
-		return json.loads(product.tracking_data)[-1]['status']
+		try:
+			return json.loads(product.tracking_data)[-1]['status']
+		except:
+			 raise ValidationError("error in " +str(product.pk))
 
 
 	def dehydrate_last_date(self, product):
-		return json.loads(product.tracking_data)[-1]['date']
+		try:
+			return json.loads(product.tracking_data)[-1]['date']
+		except:
+			 raise ValidationError("error in "+str(product.pk))
 
 	def dehydrate_ff_comment(self, product):
 		return product.order.ff_comment
