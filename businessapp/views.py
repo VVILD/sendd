@@ -1,9 +1,11 @@
 import csv
 import json
+import re
+import textwrap
 
 import magic
 from django.core.context_processors import csrf
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.core.files.base import ContentFile
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
@@ -18,6 +20,9 @@ from datetime import date,timedelta
 import datetime
 from django.db.models import Avg, Count, F, Max, Min, Sum, Q, Prefetch
 import inflect
+
+from core.models import Pincode
+
 
 @login_required
 def print_address_view(request):
@@ -131,9 +136,168 @@ def readpdf(request):
 def handle_uploaded_file(f):
     mem_file = ContentFile(f.read())
     reader = csv.DictReader(mem_file)
-    rows = [row for row in reader]
-    print(reader.fieldnames)
-    print(rows)
+    result = []
+    ref_fieldnames = ['receiver_name', 'receiver_phone', 'receiver_address', 'receiver_pincode', 'receiver_email',
+                      'payment_method', 'reference_id', 'shipment_method', 'item_name', 'item_price', 'item_weight',
+                      'item_sku', 'barcode']
+    phone_check = re.compile("^\d{10}$")
+    email_check = re.compile("(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)")
+    barcode_check = re.compile("^(SE)[a-zA-Z0-9]{10}$")
+    if set(ref_fieldnames) != set(reader.fieldnames):
+        return [{
+            "error": True,
+            "row": None,
+            "column": None,
+            "message": "Column names don't match. Please ensure the sheet uploaded is the same as the template"
+        }]
+
+    for i, row in enumerate(reader, start=1):
+        if len(row['receiver_name']) < 1:
+            result.append({
+                "error": True,
+                "row": i,
+                "column": "receiver_name",
+                "message": "Receiver name is a required field"
+            })
+        if not re.match(phone_check, row['receiver_phone']):
+            result.append({
+                "error": True,
+                "row": i,
+                "column": "receiver_phone",
+                "message": "Receiver phone should be 10 digits"
+            })
+        if len(row["receiver_address"]) > 120 or len(row["receiver_address"]) < 1:
+            result.append({
+                "error": True,
+                "row": i,
+                "column": "receiver_address",
+                "message": "Receiver address should be 1-120 characters"
+            })
+        r_pincodes = Pincode.objects.filter(pincode=row['receiver_pincode'])
+        r_pincode = None
+        if r_pincodes.count() < 1:
+            result.append({
+                "error": True,
+                "row": i,
+                "column": "receiver_pincode",
+                "message": "Enter a valid pincode"
+            })
+        else:
+            r_pincode = r_pincodes.first()
+            if r_pincode.district_name is None or r_pincode.state_name is None:
+                result.append({
+                    "error": True,
+                    "row": i,
+                    "column": "receiver_pincode",
+                    "message": "Enter a valid pincode"
+                })
+        if row['receiver_email']:
+            if not re.match(email_check, row['receiver_email']):
+                result.append({
+                    "error": True,
+                    "row": i,
+                    "column": "receiver_email",
+                    "message": "Not a valid email address"
+                })
+        if not row['payment_method'] in ['F', 'C']:
+            result.append({
+                "error": True,
+                "row": i,
+                "column": "payment_method",
+                "message": "Enter a valid payment method. F -> Free Shipping, C -> COD"
+            })
+        if row['payment_method'] == 'C' and r_pincode:
+            if not (r_pincode.fedex_cod_service and not r_pincode.fedex_oda_opa):
+                if not r_pincode.ecom_servicable:
+                    result.append({
+                        "error": True,
+                        "row": i,
+                        "column": "payment_method",
+                        "message": "COD Service not available at this pincode"
+                    })
+        if len(row['reference_id']) > 100:
+            result.append({
+                "error": True,
+                "row": i,
+                "column": "reference_id",
+                "message": "Max length for reference_id is 100"
+            })
+        if not row['shipment_method'] in ['B', 'N']:
+            result.append({
+                "error": True,
+                "row": i,
+                "column": "shipment_method",
+                "message": "Enter a valid shipping method. B -> Bulk, N -> Premium"
+            })
+        if len(row['item_name']) < 1:
+            result.append({
+                "error": True,
+                "row": i,
+                "column": "item_name",
+                "message": "item_name is a required field"
+            })
+        try:
+            float(row['item_price'])
+        except ValueError:
+            result.append({
+                "error": True,
+                "row": i,
+                "column": "item_price",
+                "message": "item_price is a required field and should be a valid float value"
+            })
+        try:
+            float(row['item_weight'])
+        except ValueError:
+            result.append({
+                "error": True,
+                "row": i,
+                "column": "item_weight",
+                "message": "item_weight is a required field and should be a valid float value"
+            })
+
+        if row['item_sku']:
+            if len(row['item_sku']) > 100:
+                result.append({
+                    "error": True,
+                    "row": i,
+                    "column": "item_sku",
+                    "message": "item_sku should be <= 100 characters"
+                })
+
+        if row['barcode']:
+            if not re.match(barcode_check, row['barcode']):
+                result.append({
+                    "error": True,
+                    "row": i,
+                    "column": "barcode",
+                    "message": "Enter a valid barcode. SE**********"
+                })
+            try:
+                Product.objects.get(barcode=row['barcode'])
+                result.append({
+                    "error": True,
+                    "row": i,
+                    "column": "barcode",
+                    "message": "Barcode already exists. Duplicate entry"
+                })
+            except ObjectDoesNotExist:
+                pass
+
+    if result > 0:
+        return result
+    else:
+        orders_created = []
+        products_created = []
+        for row in reader:
+            address = textwrap.wrap(text=str(row['receiver_address']), width=60)
+            address1 = address[0]
+            address2 = address[1] if len(address) > 1 else None
+            order = Order(
+                name=row['receiver_name'],
+                phone=row['receiver_phone'],
+                address1=address1,
+                address2
+            )
     return True
 
 
@@ -144,7 +308,7 @@ def upload_file(request):
         if form.is_valid():
             if request.FILES['file']:
                 result = handle_uploaded_file(request.FILES['file'])
-                return HttpResponse(json.dumps({"valid": result}), content_type='application/json')
+                return HttpResponse(json.dumps({"result": result}), content_type='application/json')
         else:
             return HttpResponseBadRequest("Invalid file")
     else:
