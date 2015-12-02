@@ -1003,7 +1003,7 @@ def update_price(order):
                 weight=get_weight(best_weight,order.method)
                 ppkg=Pricing2.objects.get(business=order.business,weight=weight,zone=zone,type=order.method).ppkg
                 # print "ppkg=",ppkg
-                shipping_cost=ppkg*best_weight
+                shipping_cost=ppkg*nround(best_weight)
                 if order.payment_method=='C':
                     percentage=business.cod_percentage*product.price/100
                     if percentage > business.cod_sum:
