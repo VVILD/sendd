@@ -1,6 +1,7 @@
 from django.conf.urls import patterns, include, url
 from django.contrib import admin
-from businessapp.views import print_address_view,readpdf,barcode_stats_view,qc_stats_view,print_invoice_order_view,print_invoice_product_view
+from businessapp.views import print_address_view,readpdf,barcode_stats_view,qc_stats_view,print_invoice_order_view,print_invoice_product_view, \
+    upload_file
 from core.views import create_fedex_shipment, barcode_fedex_redirector, create_individual_fedex_shipment, \
     create_ecom_shipment, download_ecom_orders, schedule_reverse_pickup
 from myapp.api import UserResource,AddressResource,OrderResource,ShipmentResource,XResource,LoginSessionResource,WeborderResource,PriceappResource,DateappResource,ForgotpassResource
@@ -151,5 +152,6 @@ urlpatterns = patterns('',
     url(r'^ffmanual/', readpdf, name='readpdf'),
     url(r'^barcode_fedex_print/(?P<barcode>[\w]{10})/$', barcode_fedex_redirector, name='fedex_barcode_redirector'),
     url(r'^download_ecom_orders/', download_ecom_orders, name='download_ecom_orders'),
-    url(r'^fedex_pickup_scheduler/$', schedule_reverse_pickup, name='fedex_pickup_scheduler')
+    url(r'^fedex_pickup_scheduler/$', schedule_reverse_pickup, name='fedex_pickup_scheduler'),
+    url(r'^business_sheet_uploader/$', upload_file, name='business_sheet_uploader')
 )

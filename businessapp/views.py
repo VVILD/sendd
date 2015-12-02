@@ -1,9 +1,18 @@
+import csv
+import json
+
+import magic
+from django.core.context_processors import csrf
 from django.core.exceptions import ValidationError
+from django.core.files.base import ContentFile
 from django.shortcuts import render
+from django.views.decorators.csrf import csrf_exempt
+
+from businessapp.forms import UploadFileForm
 from businessapp.models import Order,Product,Business
 from PyPDF2 import PdfFileWriter, PdfFileReader
 import cStringIO
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseNotAllowed
 from django.contrib.auth.decorators import login_required
 from datetime import date,timedelta
 import datetime
@@ -118,6 +127,28 @@ def readpdf(request):
 
     return response
 
+
+def handle_uploaded_file(f):
+    mem_file = ContentFile(f.read())
+    reader = csv.DictReader(mem_file)
+    rows = [row for row in reader]
+    print(reader.fieldnames)
+    print(rows)
+    return True
+
+
+@csrf_exempt
+def upload_file(request):
+    if request.method == 'POST':
+        form = UploadFileForm(request.POST, request.FILES)
+        if form.is_valid():
+            if request.FILES['file']:
+                result = handle_uploaded_file(request.FILES['file'])
+                return HttpResponse(json.dumps({"valid": result}), content_type='application/json')
+        else:
+            return HttpResponseBadRequest("Invalid file")
+    else:
+        return HttpResponseNotAllowed(['POST'])
 
 @login_required
 def qc_stats_view(request):
