@@ -11,7 +11,7 @@ from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 
 from businessapp.forms import UploadFileForm
-from businessapp.models import Order,Product,Business
+from businessapp.models import Order,Product,Business, AddressDetails
 from PyPDF2 import PdfFileWriter, PdfFileReader
 import cStringIO
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseNotAllowed
@@ -133,9 +133,10 @@ def readpdf(request):
     return response
 
 
-def handle_uploaded_file(f):
+def handle_uploaded_file(f, pickup_address):
     mem_file = ContentFile(f.read())
-    reader = csv.DictReader(mem_file)
+    reader_raw = csv.DictReader(mem_file)
+    reader = [row for row in reader_raw]
     result = []
     ref_fieldnames = ['receiver_name', 'receiver_phone', 'receiver_address', 'receiver_pincode', 'receiver_email',
                       'payment_method', 'reference_id', 'shipment_method', 'item_name', 'item_price', 'item_weight',
@@ -143,7 +144,7 @@ def handle_uploaded_file(f):
     phone_check = re.compile("^\d{10}$")
     email_check = re.compile("(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)")
     barcode_check = re.compile("^(SE)[a-zA-Z0-9]{10}$")
-    if set(ref_fieldnames) != set(reader.fieldnames):
+    if set(ref_fieldnames) != set(reader_raw.fieldnames):
         return [{
             "error": True,
             "row": None,
@@ -283,31 +284,91 @@ def handle_uploaded_file(f):
             except ObjectDoesNotExist:
                 pass
 
-    if result > 0:
+    if len(result) > 0:
         return result
     else:
         orders_created = []
         products_created = []
-        for row in reader:
-            address = textwrap.wrap(text=str(row['receiver_address']), width=60)
+        for r in reader:
+            address = textwrap.wrap(text=str(r['receiver_address']), width=60)
             address1 = address[0]
             address2 = address[1] if len(address) > 1 else None
+            r_pincodes = Pincode.objects.filter(pincode=r['receiver_pincode'])
+            r_pincode = r_pincodes.first()
             order = Order(
-                name=row['receiver_name'],
-                phone=row['receiver_phone'],
+                name=r['receiver_name'],
+                phone=r['receiver_phone'],
                 address1=address1,
-                address2
+                address2=address2,
+                city=r_pincode.district_name,
+                state=r_pincode.state_name,
+                pincode=r['receiver_pincode'],
+                country='India',
+                payment_method=r['payment_method'],
+                method=r['shipment_method'],
+                business=pickup_address.business,
+                pickup_address=pickup_address,
+                reference_id=r['reference_id'],
+                email=r['receiver_email']
             )
-    return True
+            try:
+                order.save()
+                orders_created.append(order)
+            except Exception as e:
+                for o in orders_created:
+                    o.delete()
+                for p in products_created:
+                    p.delete()
+                return [{
+                    "error": True,
+                    "r": None,
+                    "column": None,
+                    "message": "Unknown error. Please contact your BDM with this message: " + str(e)
+                }]
+            product = Product(
+                name=r['item_name'],
+                price=r['item_price'],
+                weight=r['item_weight'],
+                sku=r['item_sku'],
+                barcode=r['barcode'] if r['barcode'] != '' else None,
+                order=order
+            )
+            try:
+                product.save()
+                products_created.append(product)
+            except Exception as e:
+                for o in orders_created:
+                    o.delete()
+                for p in products_created:
+                    p.delete()
+                return [{
+                    "error": True,
+                    "r": None,
+                    "column": None,
+                    "message": "Unknown error. Please contact your BDM with this message: " + str(e)
+                }]
+        return [{
+            "error": False,
+            "row": None,
+            "column": None,
+            "message": orders_created
+        }]
 
 
 @csrf_exempt
 def upload_file(request):
     if request.method == 'POST':
+        pickup_address_id = request.POST.get('pid', None)
+        if pickup_address_id is None:
+            return HttpResponseBadRequest("Please provide a pickup address id")
+        try:
+            pickup_address = AddressDetails.objects.get(pk=pickup_address_id)
+        except ObjectDoesNotExist:
+            return HttpResponseBadRequest("Please provide a valid pickup address id")
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
             if request.FILES['file']:
-                result = handle_uploaded_file(request.FILES['file'])
+                result = handle_uploaded_file(request.FILES['file'], pickup_address)
                 return HttpResponse(json.dumps({"result": result}), content_type='application/json')
         else:
             return HttpResponseBadRequest("Invalid file")
