@@ -4,7 +4,7 @@ from django.core.validators import RegexValidator
 from django.db import models
 
 from datetime import datetime, timedelta, time
-
+import pytz
 from pytz import timezone
 from django.db.models.signals import post_save
 import hashlib
@@ -494,15 +494,19 @@ class Order(models.Model):
             if self.pickup_address.status=='N':
                 self.pickup_address.status='Y'
 
+                ads=pytz.timezone('Asia/Kolkata')
                 cutoff_time=datetime.combine(date.today(), time(19, 00))
+                current_time=datetime.now().time()
+                pickup_time=self.pickup_address.default_pickup_time.astimezone(ads).time()
+
                 if self.pickup_address.default_pickup_time:
                     if (datetime.now() > cutoff_time):
                         self.pickup_address.default_pickup_time=datetime.combine(date.today()+timedelta(days=1) , self.pickup_address.default_pickup_time.time())
-                    elif (datetime.now().time() >self.pickup_address.default_pickup_time.time()):
+                    elif (current_time > pickup_time):
                         self.pickup_address.temp_time = datetime.now()
-                    elif (datetime.now().time() < self.pickup_address.default_pickup_time.time()):
-                        self.pickup_address.default_pickup_time=datetime.combine(date.today(), self.pickup_address.default_pickup_time.time())
 
+                    elif (current_time < pickup_time):
+                        self.pickup_address.default_pickup_time=datetime.combine(date.today(), pytz.utc.localize(self.pickup_address.default_pickup_time.time()))
                 self.pickup_address.save()
 
             if str(order_no) > 4:
@@ -558,7 +562,10 @@ class Product(models.Model):
                                choices=[('F', 'FedEx'), ('D', 'Delhivery'), ('P', 'Professional'), ('G', 'Gati'),
                                         ('A', 'Aramex'), ('E', 'Ecomexpress'), ('DT', 'dtdc'), ('FF', 'First Flight'),
                                         ('M', 'Maruti courier'), ('I', 'India Post'), ('S', 'Sendd'), ('B', 'bluedart'),
-                                        ('T', 'trinity'), ('V', 'vichare'), ('DH', 'dhl'), ('SK', 'skycom'), ('NA', 'nandan'),('FA','Fast train'),('TE','Tej'),('TR','Track on'),('LC','local courier')],
+                                        ('T', 'trinity'), ('V', 'vichare'), ('DH', 'dhl'), ('SK', 'skycom'),
+                                        ('NA', 'nandan'),('FA','Fast train'),('TE','Tej'),('TR','Track on'),
+                                        ('LC','local courier'), ('UP', 'UPS'), ('VX', 'Vertex'),
+                                        ('PC', 'Pacific Courier')],
                                blank=True, null=True)
     shipping_cost = models.FloatField(default=0.0)
     cod_cost = models.FloatField(default=0.0)
@@ -1000,7 +1007,7 @@ def update_price(order):
                 weight=get_weight(best_weight,order.method)
                 ppkg=Pricing2.objects.get(business=order.business,weight=weight,zone=zone,type=order.method).ppkg
                 # print "ppkg=",ppkg
-                shipping_cost=ppkg*weight.weight
+                shipping_cost=ppkg*nround(best_weight)
                 if order.payment_method=='C':
                     percentage=business.cod_percentage*product.price/100
                     if percentage > business.cod_sum:

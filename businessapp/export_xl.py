@@ -4,21 +4,29 @@ from import_export import fields
 from datetime import timedelta
 import json
 from django.db.models import Avg, Count, F, Max, Min, Sum, Q, Prefetch
+from django.core.exceptions import ValidationError
+
 class ProductResource(resources.ModelResource):
-	last_status = fields.Field()
-	last_date = fields.Field()
+#	last_status = fields.Field()
+#	last_date = fields.Field()
 	class Meta:
 		model = Product
 		import_id_fields = ('order_id',)
-		fields = ('order','order__book_time','order__reference_id','order__payment_method','order__name','order__city','order__pincode', 'real_tracking_no', 'mapped_tracking_no', 'company','status','last_tracking_status','weight','applied_weight','barcode','order__method','name','price','remittance','remittance_date','ff_comment','order__address1','order__address2','last_date','last_status')
+		fields = ('order','order__book_time','order__reference_id','order__payment_method','order__name','order__city','order__pincode', 'real_tracking_no', 'mapped_tracking_no', 'company','status','last_tracking_status','weight','applied_weight','barcode','order__method','name','price','remittance','remittance_date','ff_comment','order__address1','order__address2','kartrocket_order')
 
 
 	def dehydrate_last_status(self, product):
-		return json.loads(product.tracking_data)[-1]['status']
+		try:
+			return json.loads(product.tracking_data)[-1]['status']
+		except:
+			 raise ValidationError("error in " +str(product.pk))
 
 
 	def dehydrate_last_date(self, product):
-		return json.loads(product.tracking_data)[-1]['date']
+		try:
+			return json.loads(product.tracking_data)[-1]['date']
+		except:
+			 raise ValidationError("error in "+str(product.pk))
 
 	def dehydrate_ff_comment(self, product):
 		return product.order.ff_comment
