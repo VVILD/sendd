@@ -506,8 +506,7 @@ class Order(models.Model):
                         self.pickup_address.temp_time = datetime.now()
 
                     elif (current_time < pickup_time):
-                        self.pickup_address.default_pickup_time=datetime.combine(date.today(), self.pickup_address.default_pickup_time.astimezone(ads).time())
-
+                        self.pickup_address.default_pickup_time=datetime.combine(date.today(), pytz.utc.localize(self.pickup_address.default_pickup_time.time()))
                 self.pickup_address.save()
 
             if str(order_no) > 4:
