@@ -828,7 +828,7 @@ class ProductInline(admin.TabularInline):
             obj.cod_cost) + '<br>' + "<b>BARCODE:</b>" + str(
             obj.barcode) + '<br>'+ "<b> actual_shipping_cost :</b>" + str(
             obj.actual_shipping_cost) + '<br>'  + "<b><a href='%s%s/' target='_blank' >Product link (use this only when parcel is not sent via KARTROCKET):</b></a>" % (
-            "/admin/businessapp/product/", obj.pk).encode("utf-8")
+            "/admin/businessapp/product/", obj.pk)
 
     product_info.allow_tags = True
     #'cod_cost'
@@ -3218,7 +3218,16 @@ class CSAllPickupAdmin(CsAddressAdmin):
 
         if approve:
             self.form=Approveconfirmform
+            self.fieldsets = (
+                ('Approve this pickup address', {'fields': ['sure', ],
+                                       'classes': ('suit-tab', 'suit-tab-general')}),
+                ('Do not edit this', {'fields': ['default_pickup_time','status' ], 'classes': ('suit-tab', 'suit-tab-tracking')}),
+
+            )
+
+            self.suit_form_tabs = (('general', 'General'), ('tracking', 'Tracking'))
             #print "inside"
+
         else:
             self.form=AddressForm
 

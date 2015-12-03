@@ -1,6 +1,7 @@
 from django.core.exceptions import ValidationError
 from django.forms import ModelForm, Textarea, HiddenInput
 from django import forms
+import pytz
 from myapp.mail.bookingConfirmationMail import SendConfirmationMail
 from myapp.models import Shipment, Order, User, Namemail, Address
 from suit.widgets import AutosizedTextarea
@@ -184,8 +185,8 @@ class OrderForm(ModelForm):
 class Approveconfirmform(ModelForm):
 	sure=forms.BooleanField(initial=True)
 	class Meta:
-		model = Product
-		fields = ('sure','status')
+		model = AddressDetails
+		fields = ('sure','status','default_pickup_time')
 		widgets = {
 			'status': HiddenInput,
 		}
@@ -194,6 +195,8 @@ class Approveconfirmform(ModelForm):
 		if self.cleaned_data['sure']:
 			self.cleaned_data['status']='Y'
 			self.cleaned_data['is_approved']=True
+			self.cleaned_data['default_pickup_time']=datetime.datetime.combine(date.today(), pytz.utc.localize(self.instance.default_pickup_time.time()))
+			print self.cleaned_data['default_pickup_time']
 		# else:
 		# 	pass
 

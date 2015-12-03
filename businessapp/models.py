@@ -127,6 +127,7 @@ class Business(models.Model):
                               choices=(('S', 'savings'), ('C', 'current'),),
                               null=True, blank=True)
     bank_name=models.CharField(max_length=100,blank=True,null=True)
+    acc_no=models.CharField(max_length=100,blank=True,null=True)
     branch=models.CharField(max_length=100,blank=True,null=True)
     ifsc_code=models.CharField(max_length=100,blank=True,null=True)
 
