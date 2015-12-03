@@ -143,7 +143,7 @@ def handle_uploaded_file(f, pickup_address):
                       'item_sku', 'barcode']
     phone_check = re.compile("^\d{10}$")
     email_check = re.compile("(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)")
-    barcode_check = re.compile("^(SE)[a-zA-Z0-9]{10}$")
+    barcode_check = re.compile("^SE[0-9]{8}$")
     if set(ref_fieldnames) != set(reader_raw.fieldnames):
         return [{
             "error": True,
