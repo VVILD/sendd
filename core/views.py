@@ -568,7 +568,8 @@ def download_ecom_orders(request):
                            product.order.business.business_name, product.order.name, product.order.address1,
                            product.order.address2, " ", product.order.city, product.order.pincode,
                            product.order.state, product.order.phone, product.order.phone, product.name,
-                           product.quantity, product.price, product.price, product.applied_weight, 0, 0, 0, 0, "77492",
+                           product.quantity, product.price if product.order.payment_method == 'C' else " ",
+                           product.price, product.applied_weight, 0, 0, 0, 0, "77492",
                            product.order.business.business_name + " C/O: Sendd",
                            product.order.business.warehouse.address_line_1 +
                            product.order.business.warehouse.address_line_2, "8080028081",
