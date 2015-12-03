@@ -230,7 +230,7 @@ class BusinessPickupAddressResource(CORSModelResource):
 
 class OrderResource(CORSModelResource):
     business = fields.ForeignKey(BusinessResource, 'business', full=True)
-    products = fields.ToManyField("businessapp.apiv4.ProductResource", 'product_set', related_name='product')
+    products = fields.ToManyField("businessapp.apiv4.ProductResource", 'product_set', related_name='product', full=True)
     pickup_address = fields.ForeignKey(BusinessPickupAddressResource, 'pickup_address', full=True)
 
     class Meta:
@@ -248,7 +248,7 @@ class OrderResource(CORSModelResource):
 
 
 class ProductResource(CORSModelResource):
-    order = fields.ToOneField(OrderResource, 'order', full=True)
+    # order = fields.ToOneField(OrderResource, 'order', full=True)
 
     class Meta:
         queryset = Product.objects.all()
