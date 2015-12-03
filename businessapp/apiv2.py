@@ -535,6 +535,7 @@ class SearchResource(CORSResource):
             #     product['tracking_data'] = json.loads(product['tracking_data'])
             order = order.__dict__
             order['products'] =products
+            order['allowed_actual_tracking'] = business.show_tracking_company
             result.append(order)
         bundle = result
         self.log_throttled_access(request)
