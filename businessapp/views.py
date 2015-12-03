@@ -152,7 +152,7 @@ def handle_uploaded_file(f, pickup_address):
             "message": "Column names don't match. Please ensure the sheet uploaded is the same as the template"
         }]
 
-    for i, row in enumerate(reader, start=1):
+    for i, row in enumerate(reader, start=2):
         if len(row['receiver_name']) < 1:
             result.append({
                 "error": True,
@@ -274,7 +274,7 @@ def handle_uploaded_file(f, pickup_address):
                     "message": "Enter a valid barcode. SE**********"
                 })
             duplicate_entries = []
-            for j, rw in enumerate(reader, start=1):
+            for j, rw in enumerate(reader, start=2):
                 if i != j:
                     if rw['barcode'] == row['barcode']:
                         duplicate_entries.append(j)
