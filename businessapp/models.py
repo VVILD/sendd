@@ -4,7 +4,7 @@ from django.core.validators import RegexValidator
 from django.db import models
 
 from datetime import datetime, timedelta, time
-
+import pytz
 from pytz import timezone
 from django.db.models.signals import post_save
 import hashlib
@@ -494,17 +494,19 @@ class Order(models.Model):
             if self.pickup_address.status=='N':
                 self.pickup_address.status='Y'
 
+                ads=pytz.timezone('Asia/Kolkata')
                 cutoff_time=datetime.combine(date.today(), time(19, 00))
                 current_time=datetime.now().time()
-                pickup_time=self.pickup_address.default_pickup_time.time()
+                pickup_time=self.pickup_address.default_pickup_time.astimezone(ads).time()
 
                 if self.pickup_address.default_pickup_time:
                     if (datetime.now() > cutoff_time):
                         self.pickup_address.default_pickup_time=datetime.combine(date.today()+timedelta(days=1) , self.pickup_address.default_pickup_time.time())
                     elif (current_time > pickup_time):
                         self.pickup_address.temp_time = datetime.now()
+
                     elif (current_time < pickup_time):
-                        self.pickup_address.default_pickup_time=datetime.combine(date.today(), self.pickup_address.default_pickup_time.time())
+                        self.pickup_address.default_pickup_time=datetime.combine(date.today(), self.pickup_address.default_pickup_time.astimezone(ads).time())
 
                 self.pickup_address.save()
 
