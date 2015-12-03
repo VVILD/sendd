@@ -206,7 +206,7 @@ class BusinessResource(CORSModelResource):
         resource_name = 'business'
         authentication = Authentication()
         authorization = OnlyAuthorization()
-        fields = ['username', 'business_name', 'email', 'name', 'contact_mob', 'contact_office']
+        fields = ['username', 'business_name', 'email', 'name', 'contact_mob', 'contact_office', 'show_tracking_company']
         filtering = {
             'username': ALL,
             'business_name': ALL
