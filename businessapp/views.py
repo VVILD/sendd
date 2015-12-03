@@ -388,7 +388,7 @@ def upload_file(request):
                 "message": "Invalid file. Please upload a valid csv file."
             }]}), content_type='application/json', status=400)
     else:
-        return HttpResponseNoChangtAllowed(['POST'])
+        return HttpResponseNotAllowed(['POST'])
 
 @login_required
 def qc_stats_view(request):
