@@ -243,7 +243,8 @@ class OrderResource(CORSModelResource):
         filtering = {
             'business': ALL_WITH_RELATIONS,
             'pickup_address': ALL_WITH_RELATIONS,
-            'status': ALL
+            'status': ALL,
+            'book_time': ALL
         }
 
 
