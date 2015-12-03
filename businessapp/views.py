@@ -360,20 +360,35 @@ def upload_file(request):
     if request.method == 'POST':
         pickup_address_id = request.POST.get('pid', None)
         if pickup_address_id is None:
-            return HttpResponseBadRequest("Please provide a pickup address id")
+            return HttpResponse(json.dumps({"result": [{
+                "error": True,
+                "row": None,
+                "column": None,
+                "message": "No pickup_address (pid) provided."
+            }]}), content_type='application/json', status=400)
         try:
             pickup_address = AddressDetails.objects.get(pk=pickup_address_id)
         except ObjectDoesNotExist:
-            return HttpResponseBadRequest("Please provide a valid pickup address id")
+            return HttpResponse(json.dumps({"result": [{
+                "error": True,
+                "row": None,
+                "column": None,
+                "message": "pickup_address (pid) not found. Please enter a valid pid"
+            }]}), content_type='application/json', status=400)
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
             if request.FILES['file']:
                 result = handle_uploaded_file(request.FILES['file'], pickup_address)
                 return HttpResponse(json.dumps({"result": result}), content_type='application/json')
         else:
-            return HttpResponseBadRequest("Invalid file")
+            return HttpResponse(json.dumps({"result": [{
+                "error": True,
+                "row": None,
+                "column": None,
+                "message": "Invalid file. Please upload a valid csv file."
+            }]}), content_type='application/json', status=400)
     else:
-        return HttpResponseNotAllowed(['POST'])
+        return HttpResponseNoChangtAllowed(['POST'])
 
 @login_required
 def qc_stats_view(request):
