@@ -363,7 +363,7 @@ def handle_uploaded_file(f, pickup_address):
             "error": False,
             "row": None,
             "column": None,
-            "message": orders_created
+            "message": str(orders_created)
         }]
 
 
