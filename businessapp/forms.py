@@ -214,3 +214,6 @@ class Completeconfirmform(ModelForm):
 		if self.cleaned_data['sure']:
 			self.cleaned_data['status']='C'
 
+
+class UploadFileForm(forms.Form):
+	file = forms.FileField()
