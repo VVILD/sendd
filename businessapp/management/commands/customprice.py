@@ -22,51 +22,60 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
 
-        b_list=["rkonline"]
+        b_list=["Timpax,Nirmalayur"]
 
         price=[40,80]
         price2=[8,12]
 
+        pricingquerset=Pricing2.objects.filter(business='colorize')
+
         for b in b_list:
-            print "doing it for",
-            print b
-
-            pricingquerset=Pricing2.objects.filter(business=b,type='N',weight__weight__gt="0.4")
+            copyquerset=Pricing2.objects.filter(business=b)
+            copyquerset.delete()
             for p in pricingquerset:
-                p.override=True
-                if p.zone.zone=='a':
-                    p.price=price[0]*p.weight.weight
-                    p.save()
-                else:
-                    p.price=price[1]*p.weight.weight
-                    p.save()
+                p.business=Business.objects.get(pk=b)
+                p.save()
 
-            pricingquerset=Pricing2.objects.filter(business=b,type='N',weight__weight="11.0")
-            for p in pricingquerset:
-                p.override=True
-                if p.zone.zone=='a':
-                    p.price=price[0]*11
-                    p.save()
-                else:
-                    p.price=price[1]*11
-                    p.save()
 
-            pricingquerset=Pricing2.objects.filter(business=b,type='B',weight__weight__lt="10.9")
-            for p in pricingquerset:
-                p.override=True
-                if p.zone.zone=='a':
-                    p.price=price2[0]*10
-                    p.save()
-                else:
-                    p.price=price2[1]*10
-                    p.save()
-
-            pricingquerset=Pricing2.objects.filter(business=b,type='B',weight__weight="11")
-            for p in pricingquerset:
-                p.override=True
-                if p.zone.zone=='a':
-                    p.price=price2[0]*11
-                    p.save()
-                else:
-                    p.price=price2[1]*11
-                    p.save()
+            # print "doing it for",
+            # print b
+            #
+            # pricingquerset=Pricing2.objects.filter(business=b,type='N',weight__weight__gt="0.4")
+            # for p in pricingquerset:
+            #     p.override=True
+            #     if p.zone.zone=='a':
+            #         p.price=price[0]*p.weight.weight
+            #         p.save()
+            #     else:
+            #         p.price=price[1]*p.weight.weight
+            #         p.save()
+            #
+            # pricingquerset=Pricing2.objects.filter(business=b,type='N',weight__weight="11.0")
+            # for p in pricingquerset:
+            #     p.override=True
+            #     if p.zone.zone=='a':
+            #         p.price=price[0]*11
+            #         p.save()
+            #     else:
+            #         p.price=price[1]*11
+            #         p.save()
+            #
+            # pricingquerset=Pricing2.objects.filter(business=b,type='B',weight__weight__lt="10.9")
+            # for p in pricingquerset:
+            #     p.override=True
+            #     if p.zone.zone=='a':
+            #         p.price=price2[0]*10
+            #         p.save()
+            #     else:
+            #         p.price=price2[1]*10
+            #         p.save()
+            #
+            # pricingquerset=Pricing2.objects.filter(business=b,type='B',weight__weight="11")
+            # for p in pricingquerset:
+            #     p.override=True
+            #     if p.zone.zone=='a':
+            #         p.price=price2[0]*11
+            #         p.save()
+            #     else:
+            #         p.price=price2[1]*11
+            #         p.save()
