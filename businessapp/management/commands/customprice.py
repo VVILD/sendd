@@ -22,7 +22,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
 
-        b_list=["Timpax,Nirmalayur"]
+        b_list=["Timpax","Nirmalayur"]
 
         price=[40,80]
         price2=[8,12]
