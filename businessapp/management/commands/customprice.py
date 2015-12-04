@@ -27,6 +27,7 @@ class Command(BaseCommand):
         price=[20,40]
         price2=[10,14]
 
+
         for b in b_list:
             print "doing it for",
             print b
