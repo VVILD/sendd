@@ -22,90 +22,38 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
 
-        b_list=["DEARA","gogappa","KPS","laxmiprint"]
+        b_list=["adorn","ajmera","Alive","bodypower","bootwale","bottomline","dealwithus","DEARA","vipul_yadav","DEZAINS","divineinternational","dubaria","drishti","ecell","eureka_paints","feltfetish","flintstop","footballmerchandise","furtados_andheri","gandhisouvenirs","giftmania","gifteez","gogappa","manav","accessorywala","happygiftmart","happydolphine","Hazelighting","herbalremedy","hexatriangle","randeep","Indiacircus","inkspire","kiarajewelss","Khushiz","KPS","kuotient","Vishal","lejion_kitchen","Leonish","mdfoods","stickerbazaar","mmf","morefashion","muhenera","Origin","panoraa","pricebaba","Print2Gift","PRREMIA","reitindiabhiwandi","sushma","madhav","resonancecandles","resonancedombivili","rhea","Ayesha","rocketboxandheri","saiimpexbhiwandi","gipsy","shriram","sisterhoodofstyle","ankur","stutikanodia","surbhigrover","thehappystyle","thelabelcorp","theshoppersadda","topcolor","towelexpression","veetee","vertex","triman","visionmedia","zenotrading"]
 
         price=[20,40]
+        price2=[8,12]
 
         for b in b_list:
-            pricingquerset=Pricing2.objects.filter(business=b,type='N')
+            pricingquerset=Pricing2.objects.filter(business=b,type='N',weight__weight="11.0")
             for p in pricingquerset:
+                p.override=True
                 if p.zone.zone=='a':
-                    p.price=price[0]*round(p.weight.weight/0.5)
+                    p.price=price[0]*22
                     p.save()
                 else:
-                    p.price=price[1]*round(p.weight.weight/0.5)
+                    p.price=price[1]*22
                     p.save()
 
-        b_list=["mdfoods","shreeji_group"]
-
-        price=[20,45]
-
-        for b in b_list:
-            pricingquerset=Pricing2.objects.filter(business=b,type='N')
+            pricingquerset=Pricing2.objects.filter(business=b,type='B',weight__weight__lt="10.9")
             for p in pricingquerset:
+                p.override=True
                 if p.zone.zone=='a':
-                    p.price=price[0]*round(p.weight.weight/0.5)
+                    p.price=price2[0]*10
                     p.save()
                 else:
-                    p.price=price[1]*round(p.weight.weight/0.5)
+                    p.price=price2[1]*10
                     p.save()
 
-
-        b_list=["zorooms"]
-
-        price=[25,50]
-
-        for b in b_list:
-            pricingquerset=Pricing2.objects.filter(business=b,type='N')
+            pricingquerset=Pricing2.objects.filter(business=b,type='B',weight__weight="11")
             for p in pricingquerset:
+                p.override=True
                 if p.zone.zone=='a':
-                    p.price=price[0]*round(p.weight.weight/0.5)
+                    p.price=price2[0]*11
                     p.save()
                 else:
-                    p.price=price[1]*round(p.weight.weight/0.5)
+                    p.price=price2[1]*11
                     p.save()
-
-
-        b_list=["DEARA","gogappa","KPS","mdfoods"]
-
-        price=[8,12]
-
-        for b in b_list:
-            pricingquerset=Pricing2.objects.filter(business=b,type='B')
-            for p in pricingquerset:
-                if p.zone.zone=='a':
-                    p.price=price[0]*round(p.weight.weight)
-                    p.save()
-                else:
-                    p.price=price[1]*round(p.weight.weight)
-                    p.save()
-
-        b_list=["laxmiprint","shreeji_group"]
-
-        price=[20,20]
-
-        for b in b_list:
-            pricingquerset=Pricing2.objects.filter(business=b,type='B')
-            for p in pricingquerset:
-                if p.zone.zone=='a':
-                    p.price=price[0]*round(p.weight.weight)
-                    p.save()
-                else:
-                    p.price=price[1]*round(p.weight.weight)
-                    p.save()
-
-
-        b_list=["zorooms"]
-
-        price=[10,14]
-
-        for b in b_list:
-            pricingquerset=Pricing2.objects.filter(business=b,type='B')
-            for p in pricingquerset:
-                if p.zone.zone=='a':
-                    p.price=price[0]*round(p.weight.weight)
-                    p.save()
-                else:
-                    p.price=price[1]*round(p.weight.weight)
-                    p.save()
-

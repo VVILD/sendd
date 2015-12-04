@@ -123,11 +123,11 @@ class Business(models.Model):
     discount_percentage=models.FloatField(default=0.0)
     billed_to=models.CharField(max_length=100,blank=True,null=True)
     account_name=models.CharField(max_length=100,blank=True,null=True)
+    acc_no=models.CharField(max_length=100,blank=True,null=True)
     account_type=models.CharField(max_length=1,
                               choices=(('S', 'savings'), ('C', 'current'),),
                               null=True, blank=True)
     bank_name=models.CharField(max_length=100,blank=True,null=True)
-    acc_no=models.CharField(max_length=100,blank=True,null=True)
     branch=models.CharField(max_length=100,blank=True,null=True)
     ifsc_code=models.CharField(max_length=100,blank=True,null=True)
 
@@ -842,10 +842,14 @@ class Pricing2(models.Model):
 
     def save(self, *args, **kwargs):
         ''' On save, update timestamps '''
-        if self.weight.weight==11.0:
-            self.price=self.ppkg*11
-        else:
-            self.ppkg = self.price / self.weight.weight
+        try:
+            if self.override:
+                self.ppkg = self.price / self.weight.weight
+        except:
+            if self.weight.weight==11.0:
+                self.price=self.ppkg*11
+            else:
+                self.ppkg = self.price / self.weight.weight
 
         if not self.pk:
             if Pricing2.objects.filter(zone__zone=self.zone.zone,weight__weight=self.weight.weight,type=self.type,business=self.business).count() > 0:
