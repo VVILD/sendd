@@ -25,7 +25,7 @@ class Command(BaseCommand):
         b_list=["rkonline"]
 
         price=[40,80]
-        price2=[10,14]
+        price2=[8,12]
 
         for b in b_list:
             print "doing it for",
@@ -45,10 +45,10 @@ class Command(BaseCommand):
             for p in pricingquerset:
                 p.override=True
                 if p.zone.zone=='a':
-                    p.price=price[0]*22
+                    p.price=price[0]*11
                     p.save()
                 else:
-                    p.price=price[1]*22
+                    p.price=price[1]*11
                     p.save()
 
             pricingquerset=Pricing2.objects.filter(business=b,type='B',weight__weight__lt="10.9")
