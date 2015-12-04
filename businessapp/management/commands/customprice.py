@@ -28,6 +28,8 @@ class Command(BaseCommand):
         price2=[8,12]
 
         for b in b_list:
+            print "doing it for",
+            print b
             pricingquerset=Pricing2.objects.filter(business=b,type='N',weight__weight="11.0")
             for p in pricingquerset:
                 p.override=True
