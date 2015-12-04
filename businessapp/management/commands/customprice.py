@@ -22,7 +22,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
 
-        b_list=["MyCroyance"]
+        b_list=["rkonline"]
 
         price=[20,40]
         price2=[10,14]
@@ -30,6 +30,17 @@ class Command(BaseCommand):
         for b in b_list:
             print "doing it for",
             print b
+
+            pricingquerset=Pricing2.objects.filter(business=b,type='N',weight__weight__gt="0.4")
+            for p in pricingquerset:
+                p.override=True
+                if p.zone.zone=='a':
+                    p.price=price[0]*p.weight.weight
+                    p.save()
+                else:
+                    p.price=price[1]*p.weight.weight
+                    p.save()
+
             pricingquerset=Pricing2.objects.filter(business=b,type='N',weight__weight="11.0")
             for p in pricingquerset:
                 p.override=True
