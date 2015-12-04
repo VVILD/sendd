@@ -24,7 +24,7 @@ class Command(BaseCommand):
 
         b_list=["rkonline"]
 
-        price=[20,40]
+        price=[40,80]
         price2=[10,14]
 
         for b in b_list:
