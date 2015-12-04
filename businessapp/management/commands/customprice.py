@@ -22,10 +22,10 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
 
-        b_list=["shubham","talonsdor","venuss","xmex_clothing",]
+        b_list=["shreeji_group","laxmiprint"]
 
         price=[40,80]
-        price2=[8,12]
+        price2=[20,20]
 #        print "colorise"
 #        pricingquerset=Pricing2.objects.filter(business='colorize')
 
