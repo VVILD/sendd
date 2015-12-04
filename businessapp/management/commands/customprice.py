@@ -22,7 +22,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
 
-        b_list=["adorn","ajmera","Alive","bodypower","bootwale","bottomline","dealwithus","DEARA","vipul_yadav","DEZAINS","divineinternational","dubaria","drishti","ecell","eureka_paints","feltfetish","flintstop","footballmerchandise","furtados_andheri","gandhisouvenirs","giftmania","gifteez","gogappa","manav","accessorywala","happygiftmart","happydolphine","Hazelighting","herbalremedy","hexatriangle","randeep","Indiacircus","inkspire","kiarajewelss","Khushiz","KPS","kuotient","Vishal","lejion_kitchen","Leonish","mdfoods","stickerbazaar","mmf","morefashion","muhenera","Origin","panoraa","pricebaba","Print2Gift","PRREMIA","reitindiabhiwandi","sushma","madhav","resonancecandles","resonancedombivili","rhea","Ayesha","rocketboxandheri","saiimpexbhiwandi","gipsy","shriram","sisterhoodofstyle","ankur","stutikanodia","surbhigrover","thehappystyle","thelabelcorp","theshoppersadda","topcolor","towelexpression","veetee","vertex","triman","visionmedia","zenotrading"]
+        b_list=["AutoTrends","Inopen","pricebaba_rev","rydersakinaka","trident","vedantaorganics"]
 
         price=[20,40]
         price2=[8,12]
@@ -30,16 +30,6 @@ class Command(BaseCommand):
         for b in b_list:
             print "doing it for",
             print b
-            pricingquerset=Pricing2.objects.filter(business=b,type='N',weight__weight="11.0")
-            for p in pricingquerset:
-                p.override=True
-                if p.zone.zone=='a':
-                    p.price=price[0]*22
-                    p.save()
-                else:
-                    p.price=price[1]*22
-                    p.save()
-
             pricingquerset=Pricing2.objects.filter(business=b,type='B',weight__weight__lt="10.9")
             for p in pricingquerset:
                 p.override=True
