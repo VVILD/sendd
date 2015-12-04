@@ -138,7 +138,8 @@ def handle_uploaded_file(f, pickup_address):
     reader_raw = csv.DictReader(mem_file)
     reader = [row for row in reader_raw]
     result = []
-    ref_fieldnames = ['receiver_name', 'receiver_phone', 'receiver_address', 'receiver_pincode', 'receiver_email',
+    ref_fieldnames = ['receiver_name', 'receiver_phone', 'receiver_address', 'receiver_pincode', 'receiver_city',
+                      'receiver_state', 'receiver_email',
                       'payment_method', 'reference_id', 'shipment_method', 'item_name', 'item_price', 'item_weight',
                       'item_sku', 'barcode']
     phone_check = re.compile("^\d{10}$")
