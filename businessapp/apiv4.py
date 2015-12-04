@@ -206,7 +206,7 @@ class BusinessResource(CORSModelResource):
         resource_name = 'business'
         authentication = Authentication()
         authorization = OnlyAuthorization()
-        fields = ['username', 'business_name', 'email', 'name', 'contact_mob', 'contact_office']
+        fields = ['username', 'business_name', 'email', 'name', 'contact_mob', 'contact_office', 'show_tracking_company']
         filtering = {
             'username': ALL,
             'business_name': ALL
@@ -230,7 +230,7 @@ class BusinessPickupAddressResource(CORSModelResource):
 
 class OrderResource(CORSModelResource):
     business = fields.ForeignKey(BusinessResource, 'business', full=True)
-    products = fields.ToManyField("businessapp.apiv4.ProductResource", 'product_set', related_name='product')
+    products = fields.ToManyField("businessapp.apiv4.ProductResource", 'product_set', related_name='product', full=True)
     pickup_address = fields.ForeignKey(BusinessPickupAddressResource, 'pickup_address', full=True)
 
     class Meta:
@@ -249,7 +249,7 @@ class OrderResource(CORSModelResource):
 
 
 class ProductResource(CORSModelResource):
-    order = fields.ToOneField(OrderResource, 'order', full=True)
+    # order = fields.ToOneField(OrderResource, 'order', full=True)
 
     class Meta:
         queryset = Product.objects.all()
