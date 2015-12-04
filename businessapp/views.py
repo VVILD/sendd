@@ -200,14 +200,14 @@ def handle_uploaded_file(f, pickup_address):
                     "column": "receiver_email",
                     "message": "Not a valid email address"
                 })
-        if not row['payment_method'] in ['F', 'C']:
+        if not row['payment_method'].upper() in ['F', 'C']:
             result.append({
                 "error": True,
                 "row": i,
                 "column": "payment_method",
                 "message": "Enter a valid payment method. F -> Free Shipping, C -> COD"
             })
-        if row['payment_method'] == 'C' and r_pincode:
+        if row['payment_method'].upper() == 'C' and r_pincode:
             if not (r_pincode.fedex_cod_service and not r_pincode.fedex_oda_opa):
                 if not r_pincode.ecom_servicable:
                     result.append({
@@ -223,7 +223,7 @@ def handle_uploaded_file(f, pickup_address):
                 "column": "reference_id",
                 "message": "Max length for reference_id is 100"
             })
-        if not row['shipment_method'] in ['B', 'N']:
+        if not row['shipment_method'].upper() in ['B', 'N']:
             result.append({
                 "error": True,
                 "row": i,
@@ -316,8 +316,8 @@ def handle_uploaded_file(f, pickup_address):
                 state=r_pincode.state_name,
                 pincode=r['receiver_pincode'],
                 country='India',
-                payment_method=r['payment_method'],
-                method=r['shipment_method'],
+                payment_method=r['payment_method'].upper(),
+                method=r['shipment_method'].upper(),
                 business=pickup_address.business,
                 pickup_address=pickup_address,
                 reference_id=r['reference_id'],
