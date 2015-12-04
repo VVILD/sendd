@@ -26,14 +26,17 @@ class Command(BaseCommand):
 
         price=[40,80]
         price2=[8,12]
-
+        print "colorise"
         pricingquerset=Pricing2.objects.filter(business='colorize')
 
         for b in b_list:
+            print b
+            yo=Business.objects.get(pk=b)
+
             copyquerset=Pricing2.objects.filter(business=b)
             copyquerset.delete()
             for p in pricingquerset:
-                p.business=Business.objects.get(pk=b)
+                p.business=yo
                 p.save()
 
 
