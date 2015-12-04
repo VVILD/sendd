@@ -22,10 +22,10 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
 
-        b_list=["AutoTrends","Inopen","pricebaba_rev","rydersakinaka","trident","vedantaorganics"]
+        b_list=["zesthouse"]
 
         price=[20,40]
-        price2=[8,12]
+        price2=[10,14]
 
         for b in b_list:
             print "doing it for",
