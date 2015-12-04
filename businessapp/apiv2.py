@@ -273,6 +273,10 @@ class OrderResource(CORSModelResource):
         # authentication=Authentication()
         always_return_data = True
         ordering = ['book_time']
+        filtering = {
+            'status': ALL,
+            'book_time': ALL
+        }
 
 
     def build_filters(self, filters=None):
