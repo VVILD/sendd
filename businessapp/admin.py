@@ -3164,7 +3164,7 @@ class BaseAddressAdmin(admin.ModelAdmin):
 class CsAddressAdmin(BaseAddressAdmin):
     search_fields = ['business__username','business__business_name','address','pincode','city']
     list_filter = ['business__username','business__business_name','default_pickup_time']
-    list_display = ['pickup_address','business_details','warehouse','pickup_time','default_vehicle','cs_comment','status']
+    list_display = ['pickup_address','business_details','warehouse','pickup_time','default_vehicle','cs_comment','status','warehouse']
     list_editable=['cs_comment','default_vehicle']
     def pickup_address(self,obj):
         return str(obj.company_name) + "<br>" +str(obj.address)
@@ -3172,7 +3172,7 @@ class CsAddressAdmin(BaseAddressAdmin):
 
 class FfAddressAdmin(BaseAddressAdmin):
     search_fields = ['business__username','business__business_name','address','pincode','city']
-    list_filter = ['business__username','business__business_name','default_pickup_time']
+    list_filter = ['business__username','business__business_name','default_pickup_time','warehouse']
     list_display = ['pickup_address','business_details','warehouse','pickup_time','pb','cs_comment','ff_comment','default_vehicle','status']
     raw_id_fields = ['pb']
     list_editable = ['pb','ff_comment']
