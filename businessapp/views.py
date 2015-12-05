@@ -1,10 +1,6 @@
 import csv
 import json
 import re
-import textwrap
-
-import magic
-from django.core.context_processors import csrf
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.core.files.base import ContentFile
 from django.shortcuts import render
@@ -21,6 +17,7 @@ import datetime
 from django.db.models import Avg, Count, F, Max, Min, Sum, Q, Prefetch
 import inflect
 
+from businessapp.tasks import business_sheet_uploader
 from core.models import Pincode
 
 
@@ -300,71 +297,12 @@ def handle_uploaded_file(f, pickup_address):
     if len(result) > 0:
         return result
     else:
-        orders_created = []
-        products_created = []
-        for r in reader:
-            address = textwrap.wrap(text=str(r['receiver_address']), width=60)
-            address1 = address[0]
-            address2 = address[1] if len(address) > 1 else None
-            r_pincodes = Pincode.objects.filter(pincode=r['receiver_pincode'])
-            r_pincode = r_pincodes.first()
-            order = Order(
-                name=r['receiver_name'],
-                phone=r['receiver_phone'],
-                address1=address1,
-                address2=address2,
-                city=r_pincode.district_name,
-                state=r_pincode.state_name,
-                pincode=r['receiver_pincode'],
-                country='India',
-                payment_method=r['payment_method'].upper(),
-                method=r['shipment_method'].upper(),
-                business=pickup_address.business,
-                pickup_address=pickup_address,
-                reference_id=r['reference_id'],
-                email=r['receiver_email']
-            )
-            try:
-                order.save()
-                orders_created.append(order)
-            except Exception as e:
-                for o in orders_created:
-                    o.delete()
-                for p in products_created:
-                    p.delete()
-                return [{
-                    "error": True,
-                    "r": None,
-                    "column": None,
-                    "message": "Unknown error. Please contact your BDM with this message: " + str(e)
-                }]
-            product = Product(
-                name=r['item_name'],
-                price=r['item_price'],
-                weight=r['item_weight'],
-                sku=r['item_sku'],
-                barcode=r['barcode'] if r['barcode'] != '' else None,
-                order=order
-            )
-            try:
-                product.save()
-                products_created.append(product)
-            except Exception as e:
-                for o in orders_created:
-                    o.delete()
-                for p in products_created:
-                    p.delete()
-                return [{
-                    "error": True,
-                    "r": None,
-                    "column": None,
-                    "message": "Unknown error. Please contact your BDM with this message: " + str(e)
-                }]
+        business_sheet_uploader.delay(reader, pickup_address, mem_file)
         return [{
             "error": False,
             "row": None,
             "column": None,
-            "message": "{} orders created".format(len(orders_created))
+            "message": "Sheet uploaded successfully"
         }]
 
 
