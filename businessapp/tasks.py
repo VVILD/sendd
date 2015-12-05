@@ -109,10 +109,11 @@ def business_sheet_uploader(reader, pickup_address, mem_file):
             message = EmailMessage(
                 'There was an error processing the sheet for business {}. Error: {}'.format(pickup_address.company_name,
                                                                                             str(e)),
-                'django-app@sendd.co', ['tech-support@sendd.co'], headers={'Reply-To': 'no-reply@sendd.co'})
+                'django-app@sendd.co', ['vatsal@sendd.co', 'sargun@sendd.co'], headers={'Reply-To': 'no-reply@sendd.co'})
             message.attach(str(pickup_address.company_name) + "_" + str(datetime.now()) + '.pdf', mem_file, 'text/csv')
             message.send()
             print("Email sent with the error message to tech-support")
+            return False
         orders_created.append(order)
         product = Product(
             name=r['item_name'],
@@ -134,9 +135,11 @@ def business_sheet_uploader(reader, pickup_address, mem_file):
             message = EmailMessage(
                 'There was an error processing the sheet for business {}. Error: {}'.format(pickup_address.company_name,
                                                                                             str(e)),
-                'django-app@sendd.co', ['tech-support@sendd.co'], headers={'Reply-To': 'no-reply@sendd.co'})
+                'django-app@sendd.co', ['vatsal@sendd.co', 'sargun@sendd.co'], headers={'Reply-To': 'no-reply@sendd.co'})
             message.attach(str(pickup_address.company_name) + "_" + str(datetime.now()) + '.pdf', mem_file, 'text/csv')
             message.send()
             print("Email sent with the error message to tech-support")
+            return False
         products_created.append(product)
     print("Sheet for {} uploaded successfully!".format(pickup_address.company_name))
+    return True
