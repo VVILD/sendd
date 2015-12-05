@@ -816,6 +816,119 @@ class Pricing(models.Model):
         return str(self.business)
 
 
+class SetPricing(models.Model):
+    business = models.ForeignKey(Business)
+    normal_zone_a_0 = models.FloatField(default=40)
+    normal_zone_b_0 = models.FloatField(default=80)
+    normal_zone_c_0 = models.FloatField(default=80)
+    normal_zone_d_0 = models.FloatField(default=80)
+    normal_zone_e_0 = models.FloatField(default=80)
+    bulk_zone_a = models.FloatField(default=8)
+    bulk_zone_b = models.FloatField(default=12)
+    bulk_zone_c = models.FloatField(default=12)
+    bulk_zone_d = models.FloatField(default=12)
+    bulk_zone_e = models.FloatField(default=12)
+
+    def __unicode__(self):
+        return str(self.business)
+    def save(self, *args, **kwargs):
+        #setting up bulk prices
+        bulk_zonea=Pricing2.objects.filter(business=self.business,type='B',zone__zone='a')
+        for p in bulk_zonea:
+            p.override=True
+            if p.weight.weight>10:
+                p.price=self.bulk_zone_a*11
+            else:
+                p.price=self.bulk_zone_a*10
+            p.save()
+
+        bulk_zoneb=Pricing2.objects.filter(business=self.business,type='B',zone__zone='b')
+        for p in bulk_zoneb:
+            p.override=True
+            if p.weight.weight>10:
+                p.price=self.bulk_zone_b*11
+            else:
+                p.price=self.bulk_zone_b*10
+            p.save()
+
+        bulk_zonec=Pricing2.objects.filter(business=self.business,type='B',zone__zone='c')
+        for p in bulk_zonec:
+            p.override=True
+            if p.weight.weight>10:
+                p.price=self.bulk_zone_c*11
+            else:
+                p.price=self.bulk_zone_c*10
+            p.save()
+
+        bulk_zoned=Pricing2.objects.filter(business=self.business,type='B',zone__zone='d')
+        for p in bulk_zoned:
+            p.override=True
+            if p.weight.weight>10:
+                p.price=self.bulk_zone_d*11
+            else:
+                p.price=self.bulk_zone_d*10
+            p.save()
+
+        bulk_zonee=Pricing2.objects.filter(business=self.business,type='B',zone__zone='e')
+        for p in bulk_zonee:
+            p.override=True
+            if p.weight.weight>10:
+                p.price=self.bulk_zone_e*11
+            else:
+                p.price=self.bulk_zone_e*10
+            p.save()
+
+        #setting up normal prices
+        bulk_zonea=Pricing2.objects.filter(business=self.business,type='N',zone__zone='a')
+        for p in bulk_zonea:
+            p.override=True
+            if p.weight.weight>0.4:
+                p.price=self.normal_zone_a_0*p.weight.weight
+            else:
+                p.price=self.normal_zone_a_0*0.5
+            p.save()
+
+        bulk_zoneb=Pricing2.objects.filter(business=self.business,type='N',zone__zone='b')
+        for p in bulk_zoneb:
+            p.override=True
+            if p.weight.weight>0.4:
+                p.price=self.normal_zone_b_0*p.weight.weight
+            else:
+                p.price=self.normal_zone_b_0*0.5
+            p.save()
+
+        bulk_zonec=Pricing2.objects.filter(business=self.business,type='N',zone__zone='c')
+        for p in bulk_zonec:
+            p.override=True
+            if p.weight.weight>0.4:
+                p.price=self.normal_zone_c_0*p.weight.weight
+            else:
+                p.price=self.normal_zone_c_0*0.5
+            p.save()
+
+        bulk_zoned=Pricing2.objects.filter(business=self.business,type='N',zone__zone='d')
+        for p in bulk_zoned:
+            p.override=True
+            if p.weight.weight>0.4:
+                p.price=self.normal_zone_d_0*p.weight.weight
+            else:
+                p.price=self.normal_zone_d_0*0.5
+            p.save()
+
+        bulk_zonee=Pricing2.objects.filter(business=self.business,type='N',zone__zone='e')
+        for p in bulk_zonee:
+            p.override=True
+            if p.weight.weight>0.4:
+                p.price=self.normal_zone_e_0*p.weight.weight
+            else:
+                p.price=self.normal_zone_e_0*0.5
+            p.save()
+
+
+
+        super(SetPricing, self).save(*args, **kwargs)
+
+
 class Weight(models.Model):
     weight = models.FloatField(primary_key=True)
 

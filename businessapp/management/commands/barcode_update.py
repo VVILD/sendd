@@ -37,7 +37,7 @@ class Command(BaseCommand):
             for row in reader:
                 print"hi1"
                 try:
-                    order = Order.objects.get(business='macmerise',name=row["name"],book_time__gt=date(2015, 11, 28))
+                    order = Order.objects.get(business='snoogg',name=row["name"],book_time__gt=date(2015, 12, 4))
                     print "adding reference id"
                     order.reference_id=row["ref"]
                     order.save()
