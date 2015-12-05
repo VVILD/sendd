@@ -271,18 +271,18 @@ def handle_uploaded_file(f, pickup_address):
                     "column": "barcode",
                     "message": "Enter a valid barcode. SE**********"
                 })
-            # duplicate_entries = []
-            # for j, rw in enumerate(reader, start=2):
-            #     if i != j:
-            #         if rw['barcode'] == row['barcode']:
-            #             duplicate_entries.append(j)
-            # if len(duplicate_entries) > 0:
-            #     result.append({
-            #         "error": True,
-            #         "row": i,
-            #         "column": "barcode",
-            #         "message": "Duplicate barcode entries in rows: {}".format(str(duplicate_entries))
-            #     })
+            duplicate_entries = []
+            for j, rw in enumerate(reader, start=2):
+                if i != j:
+                    if rw['barcode'] == row['barcode']:
+                        duplicate_entries.append(j)
+            if len(duplicate_entries) > 0:
+                result.append({
+                    "error": True,
+                    "row": i,
+                    "column": "barcode",
+                    "message": "Duplicate barcode entries in rows: {}".format(str(duplicate_entries))
+                })
             try:
                 Product.objects.get(barcode=row['barcode'])
                 result.append({
