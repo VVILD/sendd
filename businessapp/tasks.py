@@ -100,10 +100,12 @@ def business_sheet_uploader(reader, pickup_address, mem_file):
         try:
             order.save()
         except Exception as e:
-            for o in orders_created:
-                o.delete()
             for p in products_created:
-                p.delete()
+                if p.pk is not None:
+                    p.delete()
+            for o in orders_created:
+                if o.pk is not None:
+                    o.delete()
             message = EmailMessage(
                 'There was an error processing the sheet for business {}. Error: {}'.format(pickup_address.company_name,
                                                                                             str(e)),
@@ -123,10 +125,12 @@ def business_sheet_uploader(reader, pickup_address, mem_file):
         try:
             product.save()
         except Exception as e:
-            for o in orders_created:
-                o.delete()
             for p in products_created:
-                p.delete()
+                if p.pk is not None:
+                    p.delete()
+            for o in orders_created:
+                if o.pk is not None:
+                    o.delete()
             message = EmailMessage(
                 'There was an error processing the sheet for business {}. Error: {}'.format(pickup_address.company_name,
                                                                                             str(e)),
