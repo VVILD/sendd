@@ -107,10 +107,10 @@ def business_sheet_uploader(reader, pickup_address, mem_file):
                 if o.pk is not None:
                     o.delete()
             message = EmailMessage(
-                'There was an error processing the sheet for business {}. Error: {}'.format(pickup_address.company_name,
-                                                                                            str(e)),
-                'tech-support@sendd.co', ['tech-support@sendd.co'], headers={'Reply-To': 'no-reply@sendd.co'})
-            message.attach(str(pickup_address.company_name) + "_" + str(datetime.now()) + '.pdf', mem_file, 'text/csv')
+                'There was an error processing the sheet for business {}.'.format(pickup_address.company_name),
+                'Error: {}'.format(str(e)),
+                'app-errors@sendd.co', ['tech-support@sendd.co'], headers={'Reply-To': 'no-reply@sendd.co'})
+            message.attach(str(pickup_address.company_name) + "_" + str(datetime.now()) + '.csv', mem_file.read(), 'text/csv')
             message.send()
             print("Email sent with the error message to tech-support")
             return False
@@ -133,10 +133,10 @@ def business_sheet_uploader(reader, pickup_address, mem_file):
                 if o.pk is not None:
                     o.delete()
             message = EmailMessage(
-                'There was an error processing the sheet for business {}. Error: {}'.format(pickup_address.company_name,
-                                                                                            str(e)),
-                'tech-support@sendd.co', ['tech-support@sendd.co'], headers={'Reply-To': 'no-reply@sendd.co'})
-            message.attach(str(pickup_address.company_name) + "_" + str(datetime.now()) + '.pdf', mem_file, 'text/csv')
+                'There was an error processing the sheet for business {}.'.format(pickup_address.company_name),
+                'Error: {}'.format(str(e)),
+                'app-errors@sendd.co', ['tech-support@sendd.co'], headers={'Reply-To': 'no-reply@sendd.co'})
+            message.attach(str(pickup_address.company_name) + "_" + str(datetime.now()) + '.csv', mem_file.read(), 'text/csv')
             message.send()
             print("Email sent with the error message to tech-support")
             return False
