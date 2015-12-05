@@ -99,7 +99,6 @@ def business_sheet_uploader(reader, pickup_address, mem_file):
         )
         try:
             order.save()
-            orders_created.append(order)
         except Exception as e:
             for o in orders_created:
                 o.delete()
@@ -111,6 +110,8 @@ def business_sheet_uploader(reader, pickup_address, mem_file):
                 'django-app@sendd.co', ['tech-support@sendd.co'], headers={'Reply-To': 'no-reply@sendd.co'})
             message.attach(str(pickup_address.company_name) + "_" + str(datetime.now()) + '.pdf', mem_file, 'text/csv')
             message.send()
+            print("Email sent with the error message to tech-support")
+        orders_created.append(order)
         product = Product(
             name=r['item_name'],
             price=r['item_price'],
@@ -121,7 +122,6 @@ def business_sheet_uploader(reader, pickup_address, mem_file):
         )
         try:
             product.save()
-            products_created.append(product)
         except Exception as e:
             for o in orders_created:
                 o.delete()
@@ -133,5 +133,6 @@ def business_sheet_uploader(reader, pickup_address, mem_file):
                 'django-app@sendd.co', ['tech-support@sendd.co'], headers={'Reply-To': 'no-reply@sendd.co'})
             message.attach(str(pickup_address.company_name) + "_" + str(datetime.now()) + '.pdf', mem_file, 'text/csv')
             message.send()
-
+            print("Email sent with the error message to tech-support")
+        products_created.append(product)
     print("Sheet for {} uploaded successfully!".format(pickup_address.company_name))
