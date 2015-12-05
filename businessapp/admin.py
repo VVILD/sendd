@@ -760,7 +760,7 @@ class PricingAdmin(reversion.VersionAdmin):
     list_filter=('business__username','business__business_name')
 
 
-admin.site.register(Pricing,PricingAdmin)
+admin.site.register(SetPricing,PricingAdmin)
 
 
 
