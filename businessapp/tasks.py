@@ -119,6 +119,7 @@ def business_sheet_uploader(reader, pickup_address, mem_file):
             name=r['item_name'],
             price=r['item_price'],
             weight=r['item_weight'],
+            quantity=1,
             sku=r['item_sku'],
             barcode=r['barcode'] if r['barcode'] != '' else None,
             order=order
