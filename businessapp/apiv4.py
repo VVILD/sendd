@@ -247,6 +247,16 @@ class OrderResource(CORSModelResource):
             'book_time': ALL
         }
 
+    def dehydrate(self, bundle):
+        bundle.data['reversible'] = False
+        db_pincode = Pincode.objects.filter(pincode=bundle.obj.pincode).first()
+        if bundle.obj.status == 'C' and not db_pincode.fedex_oda_opa and db_pincode.fedex_servicable and not db_pincode.fedex_delivery_only and not bundle.obj.is_reverse and not bundle.obj.reversed:
+            bundle.data['reversible'] = True
+
+        if bundle.obj.is_reverse:
+            bundle.data['reverse_label_url'] = str(bundle.obj.fedex_ship_docs.name).split('/')[-1] if bundle.obj.fedex_ship_docs is not None else None
+
+        return bundle
 
 class ProductResource(CORSModelResource):
     # order = fields.ToOneField(OrderResource, 'order', full=True)
