@@ -245,6 +245,7 @@ class AddressDetails(models.Model):
     default = models.BooleanField(default=False)
     warehouse = models.ForeignKey(Warehouse, null=True, blank=True)
     daily = models.BooleanField(default=False)
+    temporary = models.BooleanField(default=False)
 
     def get_full_address(self):
         return "\n".join([self.company_name,self.address, self.city,self.contact_person,"(",self.phone_office,",",self.phone_mobile,")"])
@@ -492,23 +493,24 @@ class Order(models.Model):
                 self.book_time = ind_time
             super(Order, self).save(*args, **kwargs)
             order_no = self.pk + 1000
-            if self.pickup_address.status=='N':
-                self.pickup_address.status='Y'
+            if not self.pickup_address.temporary:
+                if self.pickup_address.status=='N':
+                    self.pickup_address.status='Y'
 
-                ads=pytz.timezone('Asia/Kolkata')
-                cutoff_time=datetime.combine(date.today(), time(19, 00))
-                current_time=datetime.now().time()
-                pickup_time=self.pickup_address.default_pickup_time.astimezone(ads).time()
+                    ads=pytz.timezone('Asia/Kolkata')
+                    cutoff_time=datetime.combine(date.today(), time(19, 00))
+                    current_time=datetime.now().time()
+                    pickup_time=self.pickup_address.default_pickup_time.astimezone(ads).time()
 
-                if self.pickup_address.default_pickup_time:
-                    if (datetime.now() > cutoff_time):
-                        self.pickup_address.default_pickup_time=datetime.combine(date.today()+timedelta(days=1) , self.pickup_address.default_pickup_time.time())
-                    elif (current_time > pickup_time):
-                        self.pickup_address.temp_time = datetime.now()
+                    if self.pickup_address.default_pickup_time:
+                        if (datetime.now() > cutoff_time):
+                            self.pickup_address.default_pickup_time=datetime.combine(date.today()+timedelta(days=1) , self.pickup_address.default_pickup_time.time())
+                        elif (current_time > pickup_time):
+                            self.pickup_address.temp_time = datetime.now()
 
-                    elif (current_time < pickup_time):
-                        self.pickup_address.default_pickup_time=datetime.combine(date.today(), pytz.utc.localize(self.pickup_address.default_pickup_time.time()))
-                self.pickup_address.save()
+                        elif (current_time < pickup_time):
+                            self.pickup_address.default_pickup_time=datetime.combine(date.today(), pytz.utc.localize(self.pickup_address.default_pickup_time.time()))
+                    self.pickup_address.save()
 
             if str(order_no) > 4:
                 order_no = str(order_no)[:4]

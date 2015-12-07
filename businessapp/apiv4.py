@@ -328,7 +328,8 @@ class ReverseOrderResource(BaseCorsResource):
             address=str(existing_order.address1) + " " + str(existing_order.address2),
             city=str(existing_order.city),
             state=str(existing_order.state),
-            pincode=str(existing_order.pincode)
+            pincode=str(existing_order.pincode),
+            temporary=True
         )
         temp_pickup_address.save()
 
@@ -373,19 +374,25 @@ class ReverseOrderResource(BaseCorsResource):
                 new_product.save()
                 new_products.append(new_product)
         except Exception, e:
-            temp_pickup_address.delete()
-            new_order.delete()
+            if temp_pickup_address.pk is not None:
+                temp_pickup_address.delete()
+            if new_order.pk is not None:
+                new_order.delete()
             for np in new_products:
-                np.delete()
+                if np.pk is not None:
+                    np.delete()
             raise CustomBadRequest(code="error", message=str(e))
 
         try:
             response = fedex_view_util(new_order.pk, 'business')
         except Exception, e:
-            temp_pickup_address.delete()
-            new_order.delete()
+            if temp_pickup_address.pk is not None:
+                temp_pickup_address.delete()
+            if new_order.pk is not None:
+                new_order.delete()
             for np in new_products:
-                np.delete()
+                if np.pk is not None:
+                    np.delete()
             raise CustomBadRequest(code="error", message=str(e))
 
         existing_order.reversed = True
